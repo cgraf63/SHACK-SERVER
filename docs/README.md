@@ -1,40 +1,63 @@
 # SHACK-SERVER
 
-"Turning amateur radio data into actionable information."
+> Turning amateur radio data into actionable information.
 
-Amateurfunk erzeugt heute mehr Informationen als je zuvor.
+SHACK-SERVER is an open-source platform that transforms amateur radio data into actionable information for radio operators.
 
-Der Operator hat jedoch nicht zu wenig Informationen.
+---
 
-Er hat zu viele.
+## Why?
 
-SHACK-SERVER versucht deshalb nicht, noch mehr Daten anzuzeigen.
+Modern amateur radio operators are overwhelmed by information.
 
-SHACK-SERVER versucht, aus Daten Informationen zu machen.
+DX Clusters, POTA, SOTA, beacons, radios and propagation data continuously generate new events.
 
+The problem is no longer finding information.
 
-Und aus Informationen Entscheidungen.
+The problem is understanding what matters.
 
+SHACK-SERVER focuses on exactly that.
 
+---
 
-"SHACK-SERVER doesn't try to show everything. It tries to show what matters."
+## Vision
 
-Auf Deutsch:
+Collect less.
+Understand more.
 
-„Der SHACK-SERVER versucht nicht, alles anzuzeigen. Er versucht, das Wesentliche anzuzeigen.“
+---
 
+## Architecture
 
-## What is SHACK-SERVER?
+Collectors
 
-SHACK-SERVER is an Amateur Radio Information Platform.
+↓
 
-It collects information from multiple amateur radio sources,
-normalizes the data, detects duplicates, evaluates relevance,
-and presents the results in a modern web dashboard.
+RawSpot
 
-It is **not** another DX Cluster client.
+↓
 
-It is an intelligent information platform for radio amateurs.
+Normalizer
+
+↓
+
+Spot
+
+↓
+
+Fusion Engine
+
+↓
+
+Rule Engine
+
+↓
+
+Score Engine
+
+↓
+
+Dashboard
 
 ---
 
@@ -49,12 +72,7 @@ It is an intelligent information platform for radio amateurs.
 
 ---
 
-## Main Features
+## Status
 
-- Multiple data sources
-- Source normalization
-- Duplicate detection
-- Intelligent filtering
-- Rule Engine
-- Live Dashboard
-- WebSocket API
+🚧 Early Development (v0.1.0-alpha)
+
