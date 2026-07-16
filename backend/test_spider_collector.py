@@ -20,11 +20,21 @@ async def main():
         ),
     )
 
-    await collector.connect()
+    try:
 
-    await collector.login()
+        await collector.connect()
 
-    await collector.disconnect()
+        print("\nWaiting for server...\n")
+
+        await collector.receive_line()
+
+        await collector.login()
+
+        await collector.receive_line()
+
+    finally:
+
+        await collector.disconnect()
 
 
 asyncio.run(main())

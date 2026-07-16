@@ -39,12 +39,29 @@ class SpiderCollector:
 
         print("✅ TCP connection established")
 
-        # Read the first line from the server
+    async def login(self):
+        """Send operator callsign."""
+
+        print(f"Logging in as {self.operator.callsign}")
+
+        self.writer.write(
+            f"{self.operator.callsign}\n".encode()
+        )
+
+        await self.writer.drain()
+
+        print("✓ Callsign sent")
+
+    async def receive_line(self):
+        """Receive one line from the cluster."""
+
         line = await self.reader.readline()
 
-        print("Server says:")
+        text = line.decode(errors="ignore").rstrip()
 
-        print(line.decode(errors="ignore").strip())
+        print(f"<-- {text}")
+
+        return text
 
     async def disconnect(self):
         """Close TCP connection."""
