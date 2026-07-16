@@ -5,9 +5,11 @@ Generic Spider Cluster Collector
 """
 
 import asyncio
+from datetime import date
 
 from app.models.operator import Operator
 from app.models.spider_cluster import SpiderCluster
+from app.recorders.line_recorder import LineRecorder
 
 
 class SpiderCollector:
@@ -23,6 +25,13 @@ class SpiderCollector:
 
         self.reader = None
         self.writer = None
+
+        filename = (
+            f"data/captures/"
+            f"{self.cluster.name.lower()}-{date.today().isoformat()}.log"
+        )
+
+        self.recorder = LineRecorder(filename)
 
     async def connect(self):
         """Open TCP connection to the Spider Cluster."""
@@ -77,6 +86,11 @@ class SpiderCollector:
         text = line.decode(errors="ignore").rstrip()
 
         print(f"<-- {text}")
+
+        await self.recorder.record(
+            self.cluster.name,
+            text,
+        )
 
         return text
 
