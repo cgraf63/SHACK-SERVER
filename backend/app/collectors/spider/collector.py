@@ -52,6 +52,23 @@ class SpiderCollector:
 
         print("✓ Callsign sent")
 
+    async def initialize(self):
+        """Send initialization commands."""
+
+        print("Initializing cluster...")
+
+        for command in self.cluster.init_commands:
+
+            print(f"--> {command}")
+
+            self.writer.write(
+                f"{command}\n".encode()
+            )
+
+            await self.writer.drain()
+
+            await asyncio.sleep(0.2)
+
     async def receive_line(self):
         """Receive one line from the cluster."""
 
@@ -71,3 +88,4 @@ class SpiderCollector:
             await self.writer.wait_closed()
 
             print("Disconnected")
+

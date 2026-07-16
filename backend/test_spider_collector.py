@@ -12,7 +12,9 @@ async def main():
         cluster=SpiderCluster(
             name="HB9ON",
             host="spider.hb9on.net",
-            init_commands=["SH/DX 30"],
+            init_commands=[
+                "SH/DX 30",
+            ],
         ),
 
         operator=Operator(
@@ -24,13 +26,17 @@ async def main():
 
         await collector.connect()
 
-        print("\nWaiting for server...\n")
-
         await collector.receive_line()
 
         await collector.login()
 
         await collector.receive_line()
+
+        await collector.initialize()
+
+        # Jetzt einige Zeilen lesen
+        for _ in range(10):
+            await collector.receive_line()
 
     finally:
 
