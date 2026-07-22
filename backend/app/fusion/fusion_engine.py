@@ -1,16 +1,18 @@
 from app.models.master_spot import MasterSpot
 from app.models.spot import Spot
+from app.repositories.memory_repository import MemoryRepository
 
 
 class FusionEngine:
     """
-    Fusion Engine.
+    Fuses incoming Spot objects into MasterSpot objects.
 
-    Combines identical spots from different sources into one MasterSpot.
+    Spots with the same callsign, frequency and mode are merged into
+    a single MasterSpot.
     """
 
     def __init__(self):
-        self._master_spots: dict[str, MasterSpot] = {}
+        self._repository = MemoryRepository()
 
     def _make_key(self, spot: Spot) -> str:
         return f"{spot.callsign.upper()}|{spot.frequency:.1f}|{spot.mode.upper()}"
@@ -18,33 +20,35 @@ class FusionEngine:
     def add(self, spot: Spot) -> MasterSpot:
         key = self._make_key(spot)
 
-        if key in self._master_spots:
-            master = self._master_spots[key]
+        master = self._repository.get(key)
 
-            if spot.source not in master.sources:
-                master.sources.append(spot.source)
+        if master is None:
+            master = MasterSpot(
+                callsign=spot.callsign,
+                frequency=spot.frequency,
+                mode=spot.mode,
+                first_seen=spot.received_at,
+		last_seen=spot.received_at,
+                sources=[spot.source],
+                comments=[spot.comment] if spot.comment else [],
+                confidence=1.0,
+            )
 
-            if spot.comment and spot.comment not in master.comments:
-                master.comments.append(spot.comment)
-
-            master.last_seen = spot.received_at
-
+            self._repository.save(key, master)
             return master
 
-        master = MasterSpot(
-            callsign=spot.callsign,
-            frequency=spot.frequency,
-            mode=spot.mode,
-            sources=[spot.source],
-            comments=[spot.comment] if spot.comment else [],
-            confidence=spot.confidence,
-            first_seen=spot.received_at,
-            last_seen=spot.received_at,
-        )
+        # Update existing MasterSpot
+        master.last_seen = spot.received_at
 
-        self._master_spots[key] = master
+        if spot.source not in master.sources:
+            master.sources.append(spot.source)
+
+        if spot.comment and spot.comment not in master.comments:
+            master.comments.append(spot.comment)
+
+        self._repository.save(key, master)
 
         return master
 
     def all(self) -> list[MasterSpot]:
-        return list(self._master_spots.values())
+        return self._repository.all()
