@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
@@ -22,7 +22,7 @@ class Spot(BaseModel):
     comment: str = ""
 
     # Metadata
-    received_at: datetime = Field(default_factory=datetime.utcnow)
+    received_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Fusion
     sources: list[str] = Field(default_factory=list)
