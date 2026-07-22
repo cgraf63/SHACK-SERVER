@@ -32,3 +32,26 @@ def test_invalid_line():
 
     with pytest.raises(ValueError):
         parser.parse("Hello World")
+def test_parse_without_mode():
+    parser = SpiderParser()
+
+    spot = parser.parse(
+        "DX de HB9ON: 14025.0 DL1ABC"
+    )
+
+    assert spot.callsign == "DL1ABC"
+    assert spot.frequency == 14025.0
+    assert spot.mode == ""
+    assert spot.comment == ""
+
+
+def test_parse_usb_comment():
+    parser = SpiderParser()
+
+    spot = parser.parse(
+        "DX de HB9ON: 28480.0 DL1ABC USB CQ DX"
+    )
+
+    assert spot.mode == "USB"
+    assert spot.comment == "CQ DX"
+
