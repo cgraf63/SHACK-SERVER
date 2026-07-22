@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -17,7 +17,7 @@ class LineRecorder:
         line: str,
     ):
 
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(UTC).isoformat()
 
         with self.path.open(
             "a",
