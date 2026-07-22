@@ -6,3 +6,5 @@ websockets
 apscheduler
 httpx
 python-dotenv
+pytest>=8.0.0
+
