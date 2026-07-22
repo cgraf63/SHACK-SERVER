@@ -1,11 +1,7 @@
-from fastapi import FastAPI
+"""
+SHACK-SERVER application entry point.
 
-from app.api.routes import router
+The FastAPI application is started via:
 
-app = FastAPI(
-    title="SHACK-SERVER",
-    description="Open-source platform for intelligent amateur radio information processing.",
-    version="0.4.0",
-)
-
-app.include_router(router)
+    uvicorn app.api.main:app
+"""
