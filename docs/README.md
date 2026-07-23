@@ -1,78 +1,41 @@
-# SHACK-SERVER
++---------------------------------------------------------------+
 
-> Turning amateur radio data into actionable information.
+                     SHACK-SERVER
 
-SHACK-SERVER is an open-source platform that transforms amateur radio data into actionable information for radio operators.
+        Operations Center for Modern Amateur Radio
 
----
+      Turning amateur radio data into actionable information.
 
-## Why?
+                 [ Dashboard Screenshot ]
 
-Modern amateur radio operators are overwhelmed by information.
+---------------------------------------------------------------
 
-DX Clusters, POTA, SOTA, beacons, radios and propagation data continuously generate new events.
+Live DX Intelligence
 
-The problem is no longer finding information.
+Station Monitoring
 
-The problem is understanding what matters.
-
-SHACK-SERVER focuses on exactly that.
-
----
-
-## Vision
-
-Collect less.
-Understand more.
-
----
-
-## Architecture
-
-Collectors
-
-↓
-
-RawSpot
-
-↓
-
-Normalizer
-
-↓
-
-Spot
-
-↓
+Propagation Analysis
 
 Fusion Engine
 
-↓
+REST API
 
-Rule Engine
+WebSocket
 
-↓
+Plugin Architecture
 
-Score Engine
+---------------------------------------------------------------
 
-↓
+Documentation
 
-Dashboard
+Getting Started
 
----
+Architecture
 
-## Planned Sources
+Roadmap
 
-- HB9ON
-- Holy Cluster
-- DX Summit
-- FTDX10
-- FTX-1
-- RGO ONE
+Contributing
 
----
+---------------------------------------------------------------
 
-## Status
-
-🚧 Early Development (v0.1.0-alpha)
-
+Made in Switzerland 🇨🇭 with ❤️ for Amateur Radio
