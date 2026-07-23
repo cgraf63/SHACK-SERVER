@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class SpiderCluster(BaseModel):
@@ -7,7 +7,6 @@ class SpiderCluster(BaseModel):
     port: int = 8000
 
     enabled: bool = True
-
     password: str = ""
 
-    init_commands: list[str] = []
+    init_commands: list[str] = Field(default_factory=list)

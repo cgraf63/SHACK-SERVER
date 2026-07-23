@@ -19,9 +19,11 @@ class SpiderCollector:
         self,
         cluster: SpiderCluster,
         operator: Operator,
+        pipeline=None,
     ):
         self.cluster = cluster
         self.operator = operator
+        self.pipeline = pipeline
 
         self.reader = None
         self.writer = None
@@ -83,6 +85,9 @@ class SpiderCollector:
 
         line = await self.reader.readline()
 
+        if not line:
+            return None
+
         text = line.decode(errors="ignore").rstrip()
 
         print(f"<-- {text}")
@@ -92,7 +97,19 @@ class SpiderCollector:
             text,
         )
 
+        if self.pipeline:
+            await self.pipeline.process(text)
+
         return text
+
+    async def receive_forever(self):
+        """Receive cluster data until the connection is closed."""
+
+        while True:
+            text = await self.receive_line()
+
+            if text is None:
+                break
 
     async def disconnect(self):
         """Close TCP connection."""
@@ -102,4 +119,3 @@ class SpiderCollector:
             await self.writer.wait_closed()
 
             print("Disconnected")
-

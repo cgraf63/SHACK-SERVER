@@ -10,6 +10,8 @@ class ClusterSettings(BaseModel):
     host: str
     port: int = 8000
     operator: str
+    password: str = ""
+    init_commands: list[str] = Field(default_factory=list)
 
 
 class Settings(BaseModel):
@@ -20,8 +22,13 @@ class Settings(BaseModel):
             host="spider.hb9on.net",
             port=8000,
             operator="HB9ISO",
+            init_commands=[
+                "set/page 0",
+                "set/beep 0",
+            ],
         )
     )
 
 
 settings = Settings()
+

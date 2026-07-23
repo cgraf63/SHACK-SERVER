@@ -5,9 +5,9 @@ Processing pipeline for Spider Cluster messages.
 """
 
 from app.classifiers.spider_classifier import SpiderClassifier
+from app.fusion.fusion_engine import FusionEngine
 from app.models.message_type import MessageType
 from app.parsers.spider_parser import SpiderParser
-from app.fusion.fusion_engine import FusionEngine
 
 
 class Pipeline:
@@ -41,3 +41,10 @@ class Pipeline:
             return
 
         self.fusion.add(spot)
+
+        print(
+            f"✓ Spot processed: "
+            f"{spot.callsign} "
+            f"{spot.frequency} "
+            f"{spot.mode}"
+        )
