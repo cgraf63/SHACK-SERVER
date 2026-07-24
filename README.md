@@ -1,7 +1,7 @@
 # SHACK-SERVER
 
 <p align="center">
-  <img src="docs/images/logo.png" width="220">
+  <img src="docs/images/logos/logo_v1.png" alt="SHACK-SERVER Fusion Logo" width="220">
 </p>
 
 <h3 align="center">
