@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.database import SessionLocal
 from app.models.master_spot import MasterSpot
@@ -43,6 +43,18 @@ class SQLiteRepository(MasterSpotRepository):
         ).all()
 
         return [self._from_model(model) for model in models]
+
+    def count(self) -> int:
+        """
+        Return the total number of master spots.
+        """
+
+        return (
+            self._session.scalar(
+                select(func.count()).select_from(MasterSpotModel)
+            )
+            or 0
+        )
 
     def _to_model(
         self,
