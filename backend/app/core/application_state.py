@@ -18,9 +18,6 @@ class ApplicationState:
     def uptime(cls) -> str:
         """
         Return formatted application uptime.
-
-        Example:
-            0d 02h 17m
         """
 
         delta = datetime.now() - cls._started_at
@@ -38,4 +35,3 @@ class ApplicationState:
         """
 
         return cls._started_at
-

@@ -56,6 +56,19 @@ class SQLiteRepository(MasterSpotRepository):
             or 0
         )
 
+    def latest(self, limit: int = 10) -> list[MasterSpot]:
+        """
+        Return the most recently seen master spots.
+        """
+
+        models = self._session.scalars(
+            select(MasterSpotModel)
+            .order_by(MasterSpotModel.last_seen.desc())
+            .limit(limit)
+        ).all()
+
+        return [self._from_model(model) for model in models]
+
     def _to_model(
         self,
         model: MasterSpotModel,
