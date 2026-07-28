@@ -69,6 +69,23 @@ class SQLiteRepository(MasterSpotRepository):
 
         return [self._from_model(model) for model in models]
 
+    def source_count(self) -> int:
+        """
+        Return the number of unique spot sources.
+        """
+
+        sources: set[str] = set()
+
+        models = self._session.scalars(
+            select(MasterSpotModel)
+        ).all()
+
+        for model in models:
+            if model.sources:
+                sources.update(model.sources)
+
+        return len(sources)
+
     def _to_model(
         self,
         model: MasterSpotModel,

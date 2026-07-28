@@ -30,6 +30,7 @@ def dashboard():
 
     try:
         processed_spots = repository.count()
+        fusion_sources = repository.source_count()
         latest_spots = repository.latest(10)
 
         now = datetime.now()
@@ -58,7 +59,7 @@ def dashboard():
             summary={
                 "uptime": ApplicationState.uptime(),
                 "processed_spots": processed_spots,
-                "fusion_sources": 0,
+                "fusion_sources": fusion_sources,
                 "latency_ms": 0,
                 "cpu_percent": 0.0,
                 "memory_percent": 0.0,
