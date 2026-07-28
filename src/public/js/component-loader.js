@@ -5,12 +5,12 @@ async function loadComponent(id, file) {
     if (!element) return;
 
 
-    const response = await fetch(
-        `components/${file}`
-    );
+    const response =
+        await fetch(`components/${file}`);
 
 
-    element.innerHTML = await response.text();
+    element.innerHTML =
+        await response.text();
 
 }
 
@@ -43,8 +43,6 @@ async function loadComponents() {
     );
 
 
-    // Main Operations
-
     await loadComponent(
         "cluster-connections",
         "cluster-connections.html"
@@ -56,8 +54,6 @@ async function loadComponents() {
         "live-spots.html"
     );
 
-
-    // Lower Information
 
     await loadComponent(
         "station-status",
@@ -77,22 +73,14 @@ async function loadComponents() {
     );
 
 
-    await loadComponent(
-        "sources",
-        "sources.html"
-    );
-
-
 }
 
 
 
 loadComponents().then(() => {
 
-
     window.dispatchEvent(
         new Event("componentsLoaded")
     );
-
 
 });
