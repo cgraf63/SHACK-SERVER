@@ -1,0 +1,603 @@
+/* =========================================
+   SHACK-SERVER COMPONENTS
+   Dashboard v1.0
+========================================= */
+
+
+/* ---------- General Cards ---------- */
+
+.card {
+
+    background: var(--panel);
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    padding: 16px;
+
+    box-sizing: border-box;
+
+}
+
+
+.card h2 {
+
+    color: var(--cyan);
+
+    font-size: 16px;
+
+    margin: 0 0 14px 0;
+
+    font-weight: 600;
+
+}
+
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.header {
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+
+.header-title {
+
+    color:var(--cyan);
+
+    font-size:28px;
+
+    font-weight:700;
+
+}
+
+
+
+/* =========================================
+   COMMAND STRIP
+========================================= */
+
+.command-card {
+
+    min-height:70px;
+
+}
+
+
+
+/* =========================================
+   PROPAGATION
+========================================= */
+
+.propagation-bar {
+
+    height:100px;
+
+    min-height:100px;
+
+    padding:14px 20px;
+
+    overflow:hidden;
+
+}
+
+
+.propagation-bar h2 {
+
+    font-size:13px;
+
+    margin:0 0 5px 0;
+
+}
+
+
+
+.propagation-content {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:25px;
+
+}
+
+
+
+.solar-data {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    white-space:nowrap;
+
+}
+
+
+
+.sun-icon {
+
+    font-size:22px;
+
+}
+
+
+
+.solar-data strong {
+
+    display:block;
+
+    color:var(--cyan);
+
+    font-size:18px;
+
+}
+
+
+
+.band-section {
+
+    width:600px;
+
+    flex:none;
+
+}
+
+.band-labels {
+
+    display:flex;
+
+    justify-content:space-between;
+
+    width:600px;
+
+}
+
+
+
+.band-line {
+
+    height:35px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    width:600px;
+
+}
+.band-point {
+
+    width:10px;
+
+    height:10px;
+
+    border-radius:50%;
+
+    display:block;
+
+}
+
+
+.band-point.excellent {
+
+    background:#7fff00;
+
+}
+
+
+.band-point.good {
+
+    background:#00ffff;
+
+}
+
+
+.band-point.fair {
+
+    background:#ffd000;
+
+}
+
+
+.band-point.poor {
+
+    background:#ff4040;
+
+}
+
+
+
+.condition-labels {
+
+    display:flex;
+
+    justify-content:space-between;
+
+    font-size:11px;
+
+}
+
+
+.condition-labels span:first-child {
+
+    color:#ff4040;
+
+}
+
+
+.condition-labels span:last-child {
+
+    color:#7fff00;
+
+}
+
+
+
+/* =========================================
+   CLUSTER CONNECTIONS
+========================================= */
+
+
+.cluster-list {
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+
+
+.cluster-item {
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    font-size:14px;
+
+}
+
+
+
+.status-online {
+
+    width:8px;
+
+    height:8px;
+
+    border-radius:50%;
+
+    background:#7fff00;
+
+    margin-right:8px;
+
+}
+
+
+
+/* =========================================
+   LIVE SPOTS
+========================================= */
+
+
+.live-card {
+
+    width:100%;
+
+}
+
+
+
+.card-header {
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+
+
+.view-link {
+
+    color:var(--cyan);
+
+    font-size:13px;
+
+}
+
+
+
+.live-table {
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+
+
+.live-table th {
+
+    text-align:left;
+
+    color:#ffc400;
+
+    font-size:12px;
+
+    padding:8px;
+
+}
+
+
+
+.live-table td {
+
+    padding:8px;
+
+    border-bottom:1px solid var(--border);
+
+    font-size:14px;
+
+}
+
+
+
+.live-table .frequency {
+
+    color:var(--cyan);
+
+}
+
+
+
+.live-table .source {
+
+    color:var(--cyan);
+
+}
+
+
+
+.live-table .confidence {
+
+    color:#9cff00;
+
+}
+
+
+
+/* =========================================
+   STATION STATUS
+========================================= */
+
+
+.station-status {
+
+    min-height:180px;
+
+}
+
+
+
+.station-status p {
+
+    margin:6px 0;
+
+}
+
+
+
+/* =========================================
+   PRIORITY DX
+========================================= */
+
+
+.priority-list {
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+
+
+/* =========================================
+   RECOMMENDATIONS
+========================================= */
+
+
+.recommendation-item {
+
+    padding:8px 0;
+
+    border-bottom:1px solid var(--border);
+
+}
+
+
+
+/* =========================================
+   SOURCES
+========================================= */
+
+
+.source-item {
+
+    padding:8px 0;
+
+    border-bottom:1px solid var(--border);
+
+}
+
+
+
+/* =========================================
+   SMALL SCREENS
+========================================= */
+
+@media(max-width:900px) {
+
+
+    .propagation-content {
+
+        gap:10px;
+
+    }
+
+
+    .band-section {
+
+        display:none;
+
+    }
+
+
+}
+/* =========================================
+   SIDEBAR BRAND / LOGO
+========================================= */
+
+.brand {
+
+    text-align: center;
+
+}
+
+
+.logo {
+
+    width: 120px;
+
+    height: 120px;
+
+    object-fit: contain;
+
+    display: block;
+
+    margin: 0 auto 15px auto;
+
+}
+
+
+.brand-name {
+
+    text-align: center;
+
+    color: var(--cyan);
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+}
+.command-strip {
+
+    margin-top:20px;
+
+}
+
+
+.command-strip h2 {
+
+    font-size:14px;
+
+    margin-bottom:10px;
+
+}
+
+
+.command-grid {
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+}
+
+
+
+.command-item {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding:12px 25px;
+
+    border-right:1px solid var(--border);
+
+}
+
+
+.command-item:last-child {
+
+    border-right:none;
+
+}
+
+
+.command-icon {
+
+    font-size:28px;
+
+}
+
+
+.command-item span {
+
+    display:block;
+
+    font-size:12px;
+
+    color:#cccccc;
+
+}
+
+
+.command-item strong {
+
+    display:block;
+
+    margin-top:4px;
+
+    color:var(--cyan);
+
+}
+.header h1 {
+
+    margin:0;
+
+    font-size:32px;
+
+    line-height:1;
+
+}

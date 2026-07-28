@@ -1,0 +1,73 @@
+#app {
+
+    display: grid;
+
+    grid-template-columns: 240px 1fr;
+
+    min-height:100vh;
+
+}
+
+
+.full-width {
+
+    grid-column: 1 / -1;
+
+}
+
+.sidebar {
+
+    background: #08131b;
+
+    border-right:1px solid var(--panel-border);
+
+    padding:25px;
+
+}
+
+
+main {
+
+
+    padding:10px 25px 25px 25px;
+
+}
+}
+
+
+.header {
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:12px;
+
+}
+
+
+.dashboard-grid {
+
+    display:grid;
+
+    grid-template-columns: 350px 1fr;
+
+    gap:24px;
+
+    margin-top:28px;
+
+}
+main {
+
+    padding:32px;
+
+}
+
+
+.header {
+
+    margin-bottom:20px;
+
+}
