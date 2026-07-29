@@ -4,9 +4,17 @@ import {
 } from "./sources.config.js";
 
 
+
 import {
     DXSpiderConnector
 } from "./dxspider.connector.js";
+
+
+
+import {
+    DXSummitConnector
+} from "./dxsummit.connector.js";
+
 
 
 import {
@@ -16,11 +24,23 @@ import {
 
 
 
+
+
+
 export class SourceManager {
 
 
-    private connectors:
+
+    private dxspiderConnectors:
         DXSpiderConnector[] = [];
+
+
+
+    private dxsummitConnectors:
+        DXSummitConnector[] = [];
+
+
+
 
 
 
@@ -36,7 +56,11 @@ export class SourceManager {
 
 
 
+
+
+
     start() {
+
 
 
         console.log(
@@ -45,10 +69,14 @@ export class SourceManager {
 
 
 
+
+
         clusterSources
 
             .filter(
+
                 source => source.enabled
+
             )
 
             .forEach(
@@ -65,6 +93,8 @@ export class SourceManager {
 
 
     }
+
+
 
 
 
@@ -96,7 +126,7 @@ export class SourceManager {
 
 
 
-                const connector =
+                const dxspider =
 
                     new DXSpiderConnector(
 
@@ -108,13 +138,15 @@ export class SourceManager {
 
 
 
-                this.connectors.push(
-                    connector
+                this.dxspiderConnectors.push(
+
+                    dxspider
+
                 );
 
 
 
-                connector.connect();
+                dxspider.connect();
 
 
 
@@ -122,20 +154,6 @@ export class SourceManager {
 
 
 
-
-
-
-            case "holycluster":
-
-
-                console.log(
-
-                    `HolyCluster pending: ${source.name}`
-
-                );
-
-
-                break;
 
 
 
@@ -145,11 +163,59 @@ export class SourceManager {
             case "dxsummit":
 
 
+
                 console.log(
 
-                    `DX Summit pending: ${source.name}`
+                    `Starting ${source.name}`
 
                 );
+
+
+
+                const dxsummit =
+
+                    new DXSummitConnector(
+
+                        source,
+
+                        this.fusionEngine
+
+                    );
+
+
+
+                this.dxsummitConnectors.push(
+
+                    dxsummit
+
+                );
+
+
+
+                dxsummit.connect();
+
+
+
+                break;
+
+
+
+
+
+
+
+
+
+            case "holycluster":
+
+
+
+                console.log(
+
+                    `HolyCluster pending: ${source.name}`
+
+                );
+
 
 
                 break;
@@ -168,10 +234,26 @@ export class SourceManager {
 
 
 
+
     stop() {
 
 
-        this.connectors.forEach(
+
+        this.dxspiderConnectors.forEach(
+
+            connector => {
+
+                connector.disconnect();
+
+            }
+
+        );
+
+
+
+
+
+        this.dxsummitConnectors.forEach(
 
             connector => {
 

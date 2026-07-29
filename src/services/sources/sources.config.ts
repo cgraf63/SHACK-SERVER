@@ -6,7 +6,9 @@ import {
 
 export interface ClusterSource {
 
+
     name: string;
+
 
 
     type:
@@ -19,11 +21,13 @@ export interface ClusterSource {
     host: string;
 
 
+
     port: number;
 
 
 
     callsign: string;
+
 
 
     password?: string;
@@ -33,16 +37,27 @@ export interface ClusterSource {
     enabled: boolean;
 
 
+
     reconnect: boolean;
 
 
+
     reconnectDelay: number;
+
+
+
+    interval?: number;
+
 
 }
 
 
 
+
+
+
 export const clusterSources: ClusterSource[] = [
+
 
 
     {
@@ -64,6 +79,8 @@ export const clusterSources: ClusterSource[] = [
 
         reconnectDelay: 30
     },
+
+
 
 
 
@@ -89,6 +106,8 @@ export const clusterSources: ClusterSource[] = [
 
 
 
+
+
     {
         name: "HolyCluster",
 
@@ -111,6 +130,8 @@ export const clusterSources: ClusterSource[] = [
 
 
 
+
+
     {
         name: "DX Summit",
 
@@ -126,7 +147,10 @@ export const clusterSources: ClusterSource[] = [
 
         reconnect: false,
 
-        reconnectDelay: 0
+        reconnectDelay: 0,
+
+        interval: 60
     }
+
 
 ];
