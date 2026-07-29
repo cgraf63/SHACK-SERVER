@@ -15,7 +15,9 @@ import {
     DXSummitConnector
 } from "./dxsummit.connector.js";
 
-
+import {
+    HolyClusterConnector
+} from "./holycluster.connector.js";
 
 import {
     FusionEngine
@@ -39,7 +41,8 @@ export class SourceManager {
     private dxsummitConnectors:
         DXSummitConnector[] = [];
 
-
+    private holyClusterConnectors:
+        HolyClusterConnector[] = [];
 
 
 
@@ -209,16 +212,36 @@ export class SourceManager {
             case "holycluster":
 
 
-
-                console.log(
-
-                    `HolyCluster pending: ${source.name}`
-
-                );
+    console.log(
+        `Starting ${source.name}`
+    );
 
 
+    const holyCluster =
 
-                break;
+        new HolyClusterConnector(
+
+            source,
+
+            this.fusionEngine
+
+        );
+
+
+    this.holyClusterConnectors.push(
+
+        holyCluster
+
+    );
+
+
+    holyCluster.connect();
+
+
+    break;
+
+
+                
 
 
 
