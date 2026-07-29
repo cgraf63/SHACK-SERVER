@@ -27,6 +27,14 @@ export class SpotNormalizer {
 
 
 
+        const mode =
+            this.detectMode(
+                raw.mode,
+                frequency
+            );
+
+
+
         return {
 
             call:
@@ -44,8 +52,7 @@ export class SpotNormalizer {
                 ),
 
 
-            mode:
-                raw.mode || "UNKNOWN",
+            mode,
 
 
             sources: [
@@ -53,12 +60,165 @@ export class SpotNormalizer {
             ],
 
 
-            timestamp:
-                Date.now()
+            firstSeen:
+                Date.now(),
+
+
+            lastSeen:
+                Date.now(),
+
+
+            confidence:
+                this.calculateConfidence(
+                    mode
+                ),
+
+
+            snr:
+                raw.snr
 
         };
 
     }
+
+
+
+
+
+
+
+    private detectMode(
+        mode: string | undefined,
+        frequency: number
+    ): string {
+
+
+        if (mode) {
+
+            const upper =
+                mode.toUpperCase();
+
+
+            const known = [
+
+                "CW",
+                "FT8",
+                "FT4",
+                "RTTY",
+                "SSB",
+                "USB",
+                "LSB"
+
+            ];
+
+
+            for (
+                const item of known
+            ) {
+
+                if (
+                    upper.includes(item)
+                ) {
+
+                    return item;
+
+                }
+
+            }
+
+        }
+
+
+
+
+        /*
+            Bandplan fallback
+        */
+
+
+        if (
+            frequency >= 14070 &&
+            frequency <= 14110
+        )
+            return "FT8";
+
+
+
+        if (
+            frequency >= 18090 &&
+            frequency <= 18110
+        )
+            return "FT8";
+
+
+
+        if (
+            frequency >= 21070 &&
+            frequency <= 21110
+        )
+            return "FT8";
+
+
+
+        if (
+            frequency >= 7000 &&
+            frequency <= 7050
+        )
+            return "CW";
+
+
+
+        if (
+            frequency >= 14000 &&
+            frequency <= 14070
+        )
+            return "CW";
+
+
+
+        return "UNKNOWN";
+
+    }
+
+
+if (
+    frequency >= 50300 &&
+    frequency <= 50400
+)
+    return "FT8";
+
+
+
+
+
+    private calculateConfidence(
+        mode: string
+    ): number {
+
+
+        let value = 60;
+
+
+
+        if (
+            mode !== "UNKNOWN"
+        ) {
+
+            value += 15;
+
+        }
+
+
+        return Math.min(
+            value,
+            99
+        );
+
+    }
+
+
+
+
 
 
 

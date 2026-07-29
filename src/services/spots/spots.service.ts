@@ -17,7 +17,7 @@ export interface Spot {
 
     confidence: number;
 
-    snr: number;
+    snr?: number;
 
 }
 
@@ -56,7 +56,7 @@ export async function getSpots(): Promise<Spot[]> {
                         (
                             Date.now()
                             -
-                            spot.timestamp
+                            spot.lastSeen
                         )
                         /
                         1000
@@ -64,7 +64,7 @@ export async function getSpots(): Promise<Spot[]> {
 
 
                 confidence:
-                    spot.confidence ?? 0,
+                    spot.confidence,
 
 
                 snr:
