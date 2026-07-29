@@ -3,21 +3,33 @@ import {
 } from "../fusion/fusion-instance.js";
 
 
+
 export interface Spot {
+
 
     call: string;
 
+
     frequency: string;
+
 
     mode: string;
 
+
     source: string;
+
 
     age: string;
 
+
     confidence: number;
 
+
     snr?: number;
+
+
+    flag?: string;
+
 
 }
 
@@ -26,32 +38,44 @@ export interface Spot {
 export async function getSpots(): Promise<Spot[]> {
 
 
+
     return fusionEngine
         .getSpots()
         .map(
+
             spot => ({
 
+
                 call:
+
                     spot.call,
 
 
+
                 frequency:
+
                     String(
                         spot.frequency
                     ),
 
 
+
                 mode:
+
                     spot.mode,
 
 
+
                 source:
+
                     spot.sources.join(
                         ", "
                     ),
 
 
+
                 age:
+
                     `${Math.floor(
                         (
                             Date.now()
@@ -63,15 +87,27 @@ export async function getSpots(): Promise<Spot[]> {
                     )}s`,
 
 
+
                 confidence:
+
                     spot.confidence,
 
 
+
                 snr:
-                    spot.snr ?? 0
+
+                    spot.snr ?? 0,
+
+
+
+                flag:
+
+                    spot.flag ?? ""
+
 
 
             })
+
         );
 
 }

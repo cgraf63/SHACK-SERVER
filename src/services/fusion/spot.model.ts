@@ -1,5 +1,6 @@
 export interface FusionSpot {
 
+
     call: string;
 
 
@@ -37,5 +38,28 @@ export interface FusionSpot {
 
 
     comments?: string[];
+
+
+
+    // DX information
+
+    country?: string;
+
+
+    dxcc?: number;
+
+
+    continent?: string;
+
+
+    flag?: string;
+
+
+    // ISO 3166-1 alpha-2 country code
+
+    // used for graphical flag assets
+
+    countryCode?: string;
+
 
 }
