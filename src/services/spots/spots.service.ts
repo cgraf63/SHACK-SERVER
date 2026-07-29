@@ -28,10 +28,15 @@ export interface Spot {
     snr?: number;
 
 
-    flag?: string;
+    flag: string | undefined;
+
+
+    countryCode: string | undefined;
 
 
 }
+
+
 
 
 
@@ -102,8 +107,13 @@ export async function getSpots(): Promise<Spot[]> {
 
                 flag:
 
-                    spot.flag ?? ""
+                    spot.flag,
 
+
+
+                countryCode:
+
+                    spot.countryCode
 
 
             })
