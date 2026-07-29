@@ -98,7 +98,7 @@ export const clusterSources: ClusterSource[] = [
 
         port: 7300,
 
-        callsign: "HB9OM",
+        callsign: operator.callsign,
 
         password: "",
 
@@ -120,7 +120,7 @@ export const clusterSources: ClusterSource[] = [
 
         port: 0,
 
-        callsign: "HB9OM",
+        callsign: operator.callsign,
 
         enabled: true,
 
