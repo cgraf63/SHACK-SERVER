@@ -10,6 +10,7 @@ import {
 
 
 
+
 export class DXSpiderParser {
 
 
@@ -31,6 +32,8 @@ export class DXSpiderParser {
 
 
 
+
+
     parse(data: string) {
 
 
@@ -42,12 +45,12 @@ export class DXSpiderParser {
         for (const line of lines) {
 
 
-            const rawSpot =
+            const raw =
                 this.parseLine(line);
 
 
 
-            if (!rawSpot)
+            if (!raw)
                 continue;
 
 
@@ -55,7 +58,7 @@ export class DXSpiderParser {
             const spot =
                 this.normalizer.normalize(
 
-                    rawSpot,
+                    raw,
 
                     this.sourceName
 
@@ -65,18 +68,15 @@ export class DXSpiderParser {
 
             if (spot) {
 
-
                 this.fusionEngine.addSpot(
                     spot
                 );
-
 
             }
 
 
         }
 
-
     }
 
 
@@ -85,53 +85,144 @@ export class DXSpiderParser {
 
 
 
-    private parseLine(line: string) {
+
+
+    private parseLine(line:string) {
+
 
 
         /*
-            Typische DXSpider Meldung:
+            Nur echte DXSpider Spots
+
+            Beispiel:
 
             DX de HB9XXX:
             14025.0 VK9XX CW
+
         */
+
+
+
+        if (
+            !line.includes("DX de")
+        ) {
+
+            return null;
+
+        }
+
+
 
 
 
         const match =
             line.match(
 
-                /(\d+\.\d+)\s+([A-Z0-9\/]+)\s+([A-Z0-9]+)/i
+                /(\d+\.\d+)\s+([A-Z0-9\/]+)\s+(.*)/i
 
             );
 
 
 
-        if (!match)
+        if(!match)
             return null;
+
+
+
+
+        const frequency =
+            Number(match[1]);
+
+
+
+        const call =
+            match[2];
+
+
+
+        const comment =
+    (match[3] ?? "")
+        .trim();
+
+
 
 
 
         return {
 
 
-            frequency:
-                Number(match[1]),
+            frequency,
 
 
-
-            call:
-                match[2],
-
+            call,
 
 
             mode:
-                match[3]
+                this.detectMode(
+                    comment
+                ),
+
+
+            comment
+
 
         };
 
 
     }
 
+
+
+
+
+
+
+
+
+    private detectMode(
+        text:string
+    ):string {
+
+
+        const modes = [
+
+            "FT8",
+            "FT4",
+            "RTTY",
+            "CW",
+            "SSB",
+            "USB",
+            "LSB"
+
+        ];
+
+
+
+        const upper =
+            text.toUpperCase();
+
+
+
+        for(
+            const mode of modes
+        ) {
+
+
+            if(
+                upper.includes(mode)
+            ) {
+
+                return mode;
+
+            }
+
+        }
+
+
+
+        return "UNKNOWN";
+
+    }
 
 
 }

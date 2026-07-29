@@ -1,5 +1,10 @@
-export interface ClusterSource {
+import {
+    operator
+} from "../../config/operator.config.js";
 
+
+
+export interface ClusterSource {
 
     name: string;
 
@@ -41,15 +46,15 @@ export const clusterSources: ClusterSource[] = [
 
 
     {
-        name: "DXSpider #1",
+        name: "HB9ON-8",
 
         type: "dxspider",
 
-        host: "CHANGE_ME",
+        host: "spider.hb9on.net",
 
-        port: 7300,
+        port: 8000,
 
-        callsign: "HB9OM",
+        callsign: operator.callsign,
 
         password: "",
 
@@ -63,15 +68,15 @@ export const clusterSources: ClusterSource[] = [
 
 
     {
-        name: "DXSpider #2",
+        name: "HB9IAC-8",
 
         type: "dxspider",
 
-        host: "CHANGE_ME",
+        host: "dxc.iapc.ch",
 
-        port: 7300,
+        port: 8000,
 
-        callsign: "HB9OM",
+        callsign: operator.callsign,
 
         password: "",
 
