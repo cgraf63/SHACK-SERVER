@@ -1,3 +1,8 @@
+import {
+    fusionEngine
+} from "../fusion/fusion-instance.js";
+
+
 export interface Spot {
 
     call: string;
@@ -17,43 +22,56 @@ export interface Spot {
 }
 
 
+
 export async function getSpots(): Promise<Spot[]> {
 
 
-    return [
+    return fusionEngine
+        .getSpots()
+        .map(
+            spot => ({
 
-        {
-            call: "ZD7XX",
-            frequency: "14.025.0",
-            mode: "CW",
-            source: "HB9ON",
-            age: "4s",
-            confidence: 96,
-            snr: 21
-        },
+                call:
+                    spot.call,
 
 
-        {
-            call: "5Z4VJ",
-            frequency: "18.100.0",
-            mode: "FT8",
-            source: "HB9ON",
-            age: "8s",
-            confidence: 91,
-            snr: 15
-        },
+                frequency:
+                    String(
+                        spot.frequency
+                    ),
 
 
-        {
-            call: "VK9XX",
-            frequency: "14.025.0",
-            mode: "CW",
-            source: "DXSpider",
-            age: "15s",
-            confidence: 94,
-            snr: 24
-        }
+                mode:
+                    spot.mode,
 
-    ];
+
+                source:
+                    spot.sources.join(
+                        ", "
+                    ),
+
+
+                age:
+                    `${Math.floor(
+                        (
+                            Date.now()
+                            -
+                            spot.timestamp
+                        )
+                        /
+                        1000
+                    )}s`,
+
+
+                confidence:
+                    spot.confidence ?? 0,
+
+
+                snr:
+                    spot.snr ?? 0
+
+
+            })
+        );
 
 }

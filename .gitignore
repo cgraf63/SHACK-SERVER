@@ -48,3 +48,5 @@ certs/
 *.pem
 *.key
 *.crt
+.env
+
