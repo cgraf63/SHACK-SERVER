@@ -185,8 +185,48 @@ export class SpotNormalizer {
             return "FT8";
 
         }
+//15m
+if (
+    frequency >= 21150 &&
+    frequency <= 21450
+) {
 
+    return "SSB";
 
+}
+if (
+    frequency >= 28300 &&
+    frequency <= 29700
+) {
+
+    return "SSB";
+
+}
+if (
+    frequency >= 28000 &&
+    frequency <= 28070
+)
+{
+    return "CW";
+}
+
+if (
+    frequency >= 7050 &&
+    frequency <= 7200
+)
+{
+    return "SSB";
+}
+
+//20m SSB
+if (
+    frequency >= 14150 &&
+    frequency <= 14350
+) {
+
+    return "SSB";
+
+}
 
         // 40m CW Bereich
         if (
