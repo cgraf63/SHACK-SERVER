@@ -8,11 +8,21 @@ import {
 } from "../fusion/fusion-engine.js";
 
 
+import {
+    SpotNormalizer
+} from "../fusion/spot-normalizer.js";
+
+
 
 export class DXSummitConnector {
 
 
     private timer?: NodeJS.Timeout;
+
+
+    private normalizer =
+        new SpotNormalizer();
+
 
 
 
@@ -34,6 +44,7 @@ export class DXSummitConnector {
         console.log(
             `DX Summit started: ${this.source.name}`
         );
+
 
 
         const interval =
@@ -60,7 +71,10 @@ export class DXSummitConnector {
 
             );
 
+
     }
+
+
 
 
 
@@ -79,14 +93,87 @@ export class DXSummitConnector {
             );
 
 
-            /*
-                TODO:
-                HTTP/API Zugriff
-                Parser
-                SpotNormalizer
 
-            */
+            const response =
+                await fetch(
+                    "http://www.dxsummit.fi/api/v1/spots"
+                );
 
+
+
+            const data =
+                await response.json();
+
+
+
+            let count = 0;
+
+
+
+            for (
+                const raw of data
+            ) {
+
+
+                const spot =
+
+                    this.normalizer.normalize(
+
+                        {
+
+                            call:
+                                raw.dx_call,
+
+
+                            frequency:
+                                raw.frequency,
+
+
+                            mode:
+                                raw.info,
+
+
+                            snr:
+                                this.extractSnr(
+                                    raw.info
+                                )
+
+                        },
+
+                        "DX Summit"
+
+                    );
+
+
+
+                if (
+                    spot
+                ) {
+
+
+                    console.log(
+                        "DX Summit normalized:",
+                        spot
+                    );
+
+
+                    this.fusionEngine.addSpot(
+                        spot
+                    );
+
+
+                    count++;
+
+                }
+
+
+            }
+
+
+
+            console.log(
+                `DX Summit processed ${count} spots`
+            );
 
 
         }
@@ -110,14 +197,66 @@ export class DXSummitConnector {
 
 
 
+
+
+    private extractSnr(
+        info: string | undefined
+    ): number | undefined {
+
+
+        if (
+            !info
+        ) {
+
+            return undefined;
+
+        }
+
+
+
+        const match =
+            info.match(
+                /([+-]\d+)\s*dB/i
+            );
+
+
+
+        if (
+            match
+        ) {
+
+            return Number(
+                match[1]
+            );
+
+        }
+
+
+
+        return undefined;
+
+    }
+
+
+
+
+
+
+
+
+
     disconnect() {
 
 
-        if(this.timer) {
+        if(
+            this.timer
+        ) {
+
 
             clearInterval(
                 this.timer
             );
+
 
         }
 

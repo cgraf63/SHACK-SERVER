@@ -100,7 +100,6 @@ export class SpotNormalizer {
                 mode.toUpperCase();
 
 
-
             const known = [
 
                 "FT8",
@@ -112,7 +111,6 @@ export class SpotNormalizer {
                 "LSB"
 
             ];
-
 
 
             for (
@@ -131,124 +129,96 @@ export class SpotNormalizer {
 
         }
 
+if (
+    frequency >= 144100 &&
+    frequency <= 144150
+)
+    return "FT8";
 
 
+if (
+    frequency >= 144300 &&
+    frequency <= 144500
+)
+    return "SSB";
 
-
-        /*
-            Bandplan fallback
-        */
-
-
-        // 6m FT8
         if (
             frequency >= 50300 &&
             frequency <= 50400
-        ) {
-
+        )
             return "FT8";
 
-        }
 
 
-
-        // 20m FT8
         if (
             frequency >= 14070 &&
             frequency <= 14110
-        ) {
-
+        )
             return "FT8";
 
-        }
 
 
-
-        // 17m FT8
         if (
             frequency >= 18090 &&
             frequency <= 18110
-        ) {
-
+        )
             return "FT8";
 
-        }
 
 
-
-        // 15m FT8
         if (
             frequency >= 21070 &&
             frequency <= 21110
-        ) {
-
+        )
             return "FT8";
 
-        }
-//15m
-if (
-    frequency >= 21150 &&
-    frequency <= 21450
-) {
 
-    return "SSB";
 
-}
-if (
-    frequency >= 28300 &&
-    frequency <= 29700
-) {
-
-    return "SSB";
-
-}
-if (
-    frequency >= 28000 &&
-    frequency <= 28070
-)
-{
-    return "CW";
-}
-
-if (
-    frequency >= 7050 &&
-    frequency <= 7200
-)
-{
-    return "SSB";
-}
-
-//20m SSB
-if (
-    frequency >= 14150 &&
-    frequency <= 14350
-) {
-
-    return "SSB";
-
-}
-
-        // 40m CW Bereich
         if (
             frequency >= 7000 &&
             frequency <= 7050
-        ) {
-
+        )
             return "CW";
 
-        }
 
 
-
-        // 20m CW Bereich
         if (
             frequency >= 14000 &&
             frequency <= 14070
-        ) {
-
+        )
             return "CW";
 
-        }
+
+
+        if (
+            frequency >= 7050 &&
+            frequency <= 7200
+        )
+            return "SSB";
+
+
+
+        if (
+            frequency >= 14150 &&
+            frequency <= 14350
+        )
+            return "SSB";
+
+
+
+        if (
+            frequency >= 21150 &&
+            frequency <= 21450
+        )
+            return "SSB";
+
+
+
+        if (
+            frequency >= 28300 &&
+            frequency <= 29700
+        )
+            return "SSB";
 
 
 
@@ -272,7 +242,6 @@ if (
         let value = 60;
 
 
-
         if (
             mode !== "UNKNOWN"
         ) {
@@ -280,7 +249,6 @@ if (
             value += 15;
 
         }
-
 
 
         return Math.min(
