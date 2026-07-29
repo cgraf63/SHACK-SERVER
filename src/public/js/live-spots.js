@@ -40,9 +40,20 @@ async function updateLiveSpots() {
             row.innerHTML = `
 
 
-                <td>
-                    ${spot.flag ?? ""} ${spot.call}
-                </td>
+                
+                    <td class="call-cell">
+    ${
+        spot.countryCode
+        ?
+        `<img 
+            src="/assets/flags/${spot.countryCode}.svg"
+            class="flag">`
+        :
+        ""
+    }
+    <span>${spot.call}</span>
+</td>
+                
 
 
                 <td class="frequency">

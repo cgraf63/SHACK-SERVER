@@ -149,4 +149,18 @@ header h1{
 
     box-shadow:0 6px 15px rgba(0,0,0,.35);
 
+.call-cell {
+   
+
+   
+}
+
+.flag {
+    width: 18px;
+    height: 12px;
+    vertical-align: middle;
+    margin-right: 4px;
+    object-fit: cover;
+}
+
 }

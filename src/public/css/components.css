@@ -594,10 +594,25 @@
 }
 .header h1 {
 
-    margin:0;
+    margin: 0;
 
-    font-size:32px;
+    font-size: 32px;
 
-    line-height:1;
+    line-height: 1;
+
+}
+
+
+/* DX Cluster flags */
+img.flag {
+    width: 16px;
+    height: 12px;
+    max-width: 16px;
+    max-height: 12px;
+    display: inline-block;
+    object-fit: cover;
+    vertical-align: middle;
+    margin-right: 5px;
+}
 
 }
