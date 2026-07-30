@@ -3,6 +3,11 @@ import {
 } from "./spot.model.js";
 
 
+import {
+    GeoEnrichmentService
+} from "../geo/geo-enrichment.service.js";
+
+
 
 export class FusionEngine {
 
@@ -11,6 +16,8 @@ export class FusionEngine {
         new Map<string, FusionSpot>();
 
 
+    private geo =
+        new GeoEnrichmentService();
 
 
 
@@ -23,7 +30,6 @@ export class FusionEngine {
             this.createKey(
                 spot
             );
-
 
 
         const existing =
@@ -148,11 +154,9 @@ export class FusionEngine {
                 );
 
 
-
             return;
 
         }
-
 
 
 
@@ -181,10 +185,64 @@ export class FusionEngine {
         );
 
 
+        this.enrichGeo(
+            spot
+        );
+
     }
 
 
 
+
+
+    private async enrichGeo(
+        spot: FusionSpot
+    ): Promise<void> {
+
+
+        const location =
+            await this.geo.enrich(
+                spot.call
+            );
+
+
+
+        if (!location) {
+            return;
+        }
+
+
+
+        if (location.locator) {
+
+            spot.locator =
+                location.locator;
+
+        }
+
+
+
+        if (
+            location.latitude !== undefined
+        ) {
+
+            spot.latitude =
+                location.latitude;
+
+        }
+
+
+
+        if (
+            location.longitude !== undefined
+        ) {
+
+            spot.longitude =
+                location.longitude;
+
+        }
+
+    }
 
 
 
@@ -199,12 +257,7 @@ export class FusionEngine {
 
         );
 
-
     }
-
-
-
-
 
 
 
@@ -226,12 +279,7 @@ export class FusionEngine {
         ]
         .join("-");
 
-
     }
-
-
-
-
 
 
 
@@ -242,58 +290,46 @@ export class FusionEngine {
     ): number {
 
 
-        let confidence = 50;
+        let score = 50;
 
 
-
-        /*
-            Multiple independent sources
-        */
-
-        confidence +=
-            spot.sources.length * 15;
-
-
-
-        /*
-            Signal information available
-        */
 
         if (
-            spot.snr !== undefined
+            spot.sources.length > 1
         ) {
 
-            confidence += 10;
+            score += 20;
 
         }
 
 
 
-        /*
-            Multiple spotters
-        */
-
         if (
-            spot.spotters
+            spot.snr !== undefined
         ) {
 
-            confidence +=
-                spot.spotters.length * 5;
+            score += 10;
+
+        }
+
+
+
+        if (
+            spot.spotters &&
+            spot.spotters.length > 0
+        ) {
+
+            score += 10;
 
         }
 
 
 
         return Math.min(
-
-            confidence,
-
-            99
-
+            score,
+            100
         );
 
-
     }
-
 
 }
