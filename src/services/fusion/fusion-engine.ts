@@ -8,6 +8,21 @@ import {
 } from "../geo/geo-enrichment.service.js";
 
 
+import {
+    DistanceService
+} from "../geo/distance.service.js";
+
+
+import {
+    BearingService
+} from "../geo/bearing.service.js";
+
+
+import {
+    ShackLocationService
+} from "../geo/shack-location.service.js";
+
+
 
 export class FusionEngine {
 
@@ -18,6 +33,18 @@ export class FusionEngine {
 
     private geo =
         new GeoEnrichmentService();
+
+
+    private distance =
+        new DistanceService();
+
+
+    private bearing =
+        new BearingService();
+
+
+    private shack =
+        new ShackLocationService();
 
 
 
@@ -42,12 +69,6 @@ export class FusionEngine {
         if (existing) {
 
 
-            /*
-                Existing spot:
-                merge information
-            */
-
-
             existing.lastSeen =
                 spot.lastSeen;
 
@@ -55,7 +76,6 @@ export class FusionEngine {
 
             const source =
                 spot.sources[0];
-
 
 
             if (source) {
@@ -160,7 +180,6 @@ export class FusionEngine {
 
 
 
-
         /*
             New spot
         */
@@ -177,11 +196,8 @@ export class FusionEngine {
 
 
         this.spots.set(
-
             key,
-
             spot
-
         );
 
 
@@ -204,7 +220,6 @@ export class FusionEngine {
             await this.geo.enrich(
                 spot.call
             );
-
 
 
         if (!location) {
@@ -239,6 +254,47 @@ export class FusionEngine {
 
             spot.longitude =
                 location.longitude;
+
+        }
+
+
+
+        if (
+            location.latitude !== undefined &&
+            location.longitude !== undefined
+        ) {
+
+
+            const shack =
+                this.shack.getCoordinates();
+
+
+
+            const dx = {
+
+                latitude:
+                    location.latitude,
+
+                longitude:
+                    location.longitude
+
+            };
+
+
+
+            spot.distance =
+                this.distance.distanceKm(
+                    shack,
+                    dx
+                );
+
+
+
+            spot.azimuth =
+                this.bearing.bearing(
+                    shack,
+                    dx
+                );
 
         }
 
