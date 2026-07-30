@@ -61,5 +61,16 @@ export interface FusionSpot {
 
     countryCode?: string;
 
+    // Geo information
+
+    locator?: string;
+
+    latitude?: number;
+
+    longitude?: number;
+
+    distance?: number;
+
+    azimuth?: number;
 
 }
