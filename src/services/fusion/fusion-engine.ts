@@ -226,6 +226,15 @@ export class FusionEngine {
             return;
         }
 
+console.log(
+    "GEO OK:",
+    spot.call,
+    location
+);
+
+
+
+
 
 
         if (location.locator) {
