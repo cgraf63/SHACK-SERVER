@@ -25,13 +25,19 @@ export interface Spot {
     confidence: number;
 
 
-    snr?: number;
+    snr: number;
 
 
     flag: string | undefined;
 
 
     countryCode: string | undefined;
+
+
+    distance: number | undefined;
+
+
+    azimuth: number | undefined;
 
 
 }
@@ -43,7 +49,6 @@ export interface Spot {
 export async function getSpots(): Promise<Spot[]> {
 
 
-
     return fusionEngine
         .getSpots()
         .map(
@@ -52,13 +57,11 @@ export async function getSpots(): Promise<Spot[]> {
 
 
                 call:
-
                     spot.call,
 
 
 
                 frequency:
-
                     String(
                         spot.frequency
                     ),
@@ -66,13 +69,11 @@ export async function getSpots(): Promise<Spot[]> {
 
 
                 mode:
-
                     spot.mode,
 
 
 
                 source:
-
                     spot.sources.join(
                         ", "
                     ),
@@ -80,7 +81,6 @@ export async function getSpots(): Promise<Spot[]> {
 
 
                 age:
-
                     `${Math.floor(
                         (
                             Date.now()
@@ -94,26 +94,32 @@ export async function getSpots(): Promise<Spot[]> {
 
 
                 confidence:
-
                     spot.confidence,
 
 
 
                 snr:
-
                     spot.snr ?? 0,
 
 
 
                 flag:
-
                     spot.flag,
 
 
 
                 countryCode:
+                    spot.countryCode,
 
-                    spot.countryCode
+
+
+                distance:
+                    spot.distance,
+
+
+
+                azimuth:
+                    spot.azimuth
 
 
             })

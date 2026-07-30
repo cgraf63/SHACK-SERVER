@@ -43,6 +43,12 @@ export class GeoEnrichmentService {
     ): Promise<DxLocation | null> {
 
 
+console.log(
+    "GEO LOOKUP:",
+    call
+);
+
+
         const normalized =
             call
                 .toUpperCase()
@@ -56,12 +62,17 @@ export class GeoEnrichmentService {
             );
 
 
-        if (cached) {
+        if (
+    cached &&
+    (
+        cached.latitude !== undefined &&
+        cached.longitude !== undefined
+    )
+) {
 
-            return cached;
+    return cached;
 
-        }
-
+}
 
 
         let location: DxLocation = {
@@ -102,11 +113,18 @@ export class GeoEnrichmentService {
 
 
 
+
         const qrzLocation =
             await this.qrz.lookup(
                 normalized
             );
 
+
+        console.log(
+            "QRZ RESULT:",
+            normalized,
+            qrzLocation
+        );
 
 
         if (qrzLocation) {

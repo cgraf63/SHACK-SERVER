@@ -74,11 +74,9 @@ export class FusionEngine {
                 spot.lastSeen;
 
 
-
             for (
                 const source of spot.sources
             ) {
-
 
                 if (
                     !existing.sources.includes(
@@ -107,64 +105,6 @@ export class FusionEngine {
 
 
 
-            if (
-                spot.spotters
-            ) {
-
-                existing.spotters ??= [];
-
-
-                for (
-                    const spotter of spot.spotters
-                ) {
-
-                    if (
-                        !existing.spotters.includes(
-                            spotter
-                        )
-                    ) {
-
-                        existing.spotters.push(
-                            spotter
-                        );
-
-                    }
-
-                }
-
-            }
-
-
-
-            if (
-                spot.comments
-            ) {
-
-                existing.comments ??= [];
-
-
-                for (
-                    const comment of spot.comments
-                ) {
-
-                    if (
-                        !existing.comments.includes(
-                            comment
-                        )
-                    ) {
-
-                        existing.comments.push(
-                            comment
-                        );
-
-                    }
-
-                }
-
-            }
-
-
-
             existing.confidence =
                 this.calculateConfidence(
                     existing
@@ -174,7 +114,6 @@ export class FusionEngine {
             return;
 
         }
-
 
 
 
@@ -194,12 +133,13 @@ export class FusionEngine {
         );
 
 
-
         this.enrichGeo(
             spot
         );
 
     }
+
+
 
 
 
@@ -216,13 +156,11 @@ export class FusionEngine {
             );
 
 
-
         if (!location) {
 
             return;
 
         }
-
 
 
 
@@ -236,7 +174,6 @@ export class FusionEngine {
         }
 
 
-
         if (
             location.countryCode
         ) {
@@ -245,7 +182,6 @@ export class FusionEngine {
                 location.countryCode;
 
         }
-
 
 
         if (
@@ -271,7 +207,7 @@ export class FusionEngine {
 
 
         if (
-            location.latitude !== undefined
+            typeof location.latitude === "number"
         ) {
 
             spot.latitude =
@@ -282,7 +218,7 @@ export class FusionEngine {
 
 
         if (
-            location.longitude !== undefined
+            typeof location.longitude === "number"
         ) {
 
             spot.longitude =
@@ -293,9 +229,10 @@ export class FusionEngine {
 
 
 
+
         if (
-            location.latitude !== undefined &&
-            location.longitude !== undefined
+            typeof location.latitude === "number" &&
+            typeof location.longitude === "number"
         ) {
 
 
@@ -330,9 +267,22 @@ export class FusionEngine {
                     dx
                 );
 
+
+
+            console.log(
+                "GEO FINAL",
+                spot.call,
+                spot.latitude,
+                spot.longitude,
+                spot.distance,
+                spot.azimuth
+            );
+
         }
 
     }
+
+
 
 
 
@@ -346,6 +296,8 @@ export class FusionEngine {
         );
 
     }
+
+
 
 
 
@@ -368,6 +320,8 @@ export class FusionEngine {
         .join("-");
 
     }
+
+
 
 
 
@@ -419,5 +373,6 @@ export class FusionEngine {
         );
 
     }
+
 
 }
