@@ -48,6 +48,7 @@ export class FusionEngine {
 
 
 
+
     addSpot(
         spot: FusionSpot
     ): void {
@@ -74,11 +75,9 @@ export class FusionEngine {
 
 
 
-            const source =
-                spot.sources[0];
-
-
-            if (source) {
+            for (
+                const source of spot.sources
+            ) {
 
 
                 if (
@@ -119,7 +118,6 @@ export class FusionEngine {
                     const spotter of spot.spotters
                 ) {
 
-
                     if (
                         !existing.spotters.includes(
                             spotter
@@ -148,7 +146,6 @@ export class FusionEngine {
                 for (
                     const comment of spot.comments
                 ) {
-
 
                     if (
                         !existing.comments.includes(
@@ -180,10 +177,6 @@ export class FusionEngine {
 
 
 
-        /*
-            New spot
-        */
-
 
         if (
             spot.confidence === undefined
@@ -199,6 +192,7 @@ export class FusionEngine {
             key,
             spot
         );
+
 
 
         this.enrichGeo(
@@ -222,22 +216,52 @@ export class FusionEngine {
             );
 
 
+
         if (!location) {
+
             return;
+
         }
 
-console.log(
-    "GEO OK:",
-    spot.call,
-    location
-);
 
 
 
+        if (
+            location.country
+        ) {
+
+            spot.country =
+                location.country;
+
+        }
 
 
 
-        if (location.locator) {
+        if (
+            location.countryCode
+        ) {
+
+            spot.countryCode =
+                location.countryCode;
+
+        }
+
+
+
+        if (
+            location.continent
+        ) {
+
+            spot.continent =
+                location.continent;
+
+        }
+
+
+
+        if (
+            location.locator
+        ) {
 
             spot.locator =
                 location.locator;
@@ -265,6 +289,7 @@ console.log(
                 location.longitude;
 
         }
+
 
 
 
@@ -317,9 +342,7 @@ console.log(
 
 
         return Array.from(
-
             this.spots.values()
-
         );
 
     }

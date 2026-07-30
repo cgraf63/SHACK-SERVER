@@ -13,6 +13,12 @@ import {
 } from "./qrz.service.js";
 
 
+import {
+    CallsignResolverService
+} from "./callsign-resolver.service.js";
+
+
+
 export class GeoEnrichmentService {
 
 
@@ -20,8 +26,15 @@ export class GeoEnrichmentService {
         new GeoCacheService();
 
 
+
     private qrz =
         new QRZService();
+
+
+
+    private resolver =
+        new CallsignResolverService();
+
 
 
 
@@ -30,8 +43,17 @@ export class GeoEnrichmentService {
     ): Promise<DxLocation | null> {
 
 
+        const normalized =
+            call
+                .toUpperCase()
+                .trim();
+
+
+
         const cached =
-            this.cache.get(call);
+            this.cache.get(
+                normalized
+            );
 
 
         if (cached) {
@@ -41,20 +63,91 @@ export class GeoEnrichmentService {
         }
 
 
-        const location =
-            await this.qrz.lookup(call);
+
+        let location: DxLocation = {
 
 
-        if (location) {
+            call: normalized,
+
+
+            updated:
+                Date.now()
+
+        };
+
+
+
+        const callsignInfo =
+            this.resolver.resolve(
+                normalized
+            );
+
+
+
+        if (callsignInfo) {
+
+
+            location.country =
+                callsignInfo.country;
+
+
+            location.countryCode =
+                callsignInfo.countryCode;
+
+
+            location.continent =
+                callsignInfo.continent;
+
+        }
+
+
+
+        const qrzLocation =
+            await this.qrz.lookup(
+                normalized
+            );
+
+
+
+        if (qrzLocation) {
+
+
+            location = {
+
+                ...location,
+
+                ...qrzLocation,
+
+                call: normalized,
+
+                updated:
+                    Date.now()
+
+            };
+
+        }
+
+
+
+        if (
+            location.country ||
+            location.locator ||
+            location.latitude !== undefined
+        ) {
+
 
             this.cache.set(
                 location
             );
 
+
+            return location;
+
         }
 
 
-        return location;
+
+        return null;
 
     }
 
