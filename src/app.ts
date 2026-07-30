@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import indexRouter from './routes/index.js';
 import propagationRouter from './routes/propagation.js';
 import spotsRouter from './routes/spots.js';
-
+import stationRouter from './routes/station.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -76,6 +76,10 @@ app.use(
     spotsRouter
 );
 
-
+// Station Information
+app.use(
+    '/api/station',
+    stationRouter
+);
 
 export default app;
