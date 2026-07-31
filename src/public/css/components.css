@@ -306,6 +306,70 @@
 
 }
 
+/* =========================================
+   LIVE SPOT FILTERS
+========================================= */
+
+.spot-filters {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin:12px 0;
+
+}
+
+
+
+.spot-filters input,
+.spot-filters select {
+
+    background:var(--panel);
+
+    border:1px solid var(--border);
+
+    color:#cccccc;
+
+    border-radius:6px;
+
+    height:32px;
+
+    padding:0 10px;
+
+    font-size:13px;
+
+}
+
+
+
+.spot-filters input {
+
+    flex:1;
+
+    width:100px;
+
+}
+
+
+
+.spot-filters select {
+
+    min-width:130px;
+
+}
+
+
+
+.spot-filters input::placeholder {
+
+    color:#888;
+
+}
+
+
 
 
 .card-header {
@@ -615,4 +679,4 @@ img.flag {
     margin-right: 5px;
 }
 
-}
+
