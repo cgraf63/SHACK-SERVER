@@ -55,7 +55,7 @@ async function updateClusterStatus() {
                 ${name}
 
                 <span class="cluster-status">
-                    Connected
+                      ${source.status === "Active" ? "Connected" : "No data"}
                 </span>
 
             `;
