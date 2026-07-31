@@ -72,7 +72,16 @@ export class FusionEngine {
 
             existing.lastSeen =
                 spot.lastSeen;
+if (
+    existing.latitude === undefined ||
+    existing.longitude === undefined
+) {
 
+    this.enrichGeo(
+        existing
+    );
+
+}
 
             for (
                 const source of spot.sources
@@ -154,6 +163,13 @@ export class FusionEngine {
             await this.geo.enrich(
                 spot.call
             );
+
+console.log(
+    "GEO LOOKUP RESULT",
+    spot.call,
+    location
+);
+
 
 
         if (!location) {
@@ -267,7 +283,14 @@ export class FusionEngine {
                     dx
                 );
 
-
+console.log(
+    "GEO STORED",
+    spot.call,
+    spot.latitude,
+    spot.longitude,
+    spot.distance,
+    spot.azimuth
+);
 
             console.log(
                 "GEO FINAL",
