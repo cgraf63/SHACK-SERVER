@@ -9,8 +9,6 @@ import {
     DXSpiderConnector
 } from "./dxspider.connector.js";
 
-
-
 import {
     DXSummitConnector
 } from "./dxsummit.connector.js";
@@ -23,7 +21,9 @@ import {
     FusionEngine
 } from "../fusion/fusion-engine.js";
 
-
+import {
+    SourceStatusService
+} from "./source-status.service.js";
 
 
 
@@ -45,14 +45,13 @@ export class SourceManager {
         HolyClusterConnector[] = [];
 
 
+        constructor(
 
+    private fusionEngine: FusionEngine,
+    private sourceStatus: SourceStatusService
 
+) {}
 
-    constructor(
-
-        private fusionEngine: FusionEngine
-
-    ) {}
 
 
 
@@ -135,7 +134,8 @@ export class SourceManager {
 
                         source,
 
-                        this.fusionEngine
+                        this.fusionEngine,
+			this.sourceStatus
 
                     );
 
@@ -181,7 +181,9 @@ export class SourceManager {
 
                         source,
 
-                        this.fusionEngine
+                        this.fusionEngine,
+			this.sourceStatus
+
 
                     );
 
@@ -223,7 +225,8 @@ export class SourceManager {
 
             source,
 
-            this.fusionEngine
+            this.fusionEngine,
+	    this.sourceStatus
 
         );
 

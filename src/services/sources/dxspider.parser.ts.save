@@ -1,7 +1,4 @@
-import {
-    ClusterSource
-} from "./sources.config.js";
-
+cc
 import {
     SourceStatusService
 } from "./source-status.service.js";
@@ -10,9 +7,12 @@ import {
     FusionEngine
 } from "../fusion/fusion-engine.js";
 
+
 import {
     SpotNormalizer
 } from "../fusion/spot-normalizer.js";
+
+
 
 
 
@@ -29,8 +29,8 @@ export class DXSpiderParser {
 
 	private source: ClusterSource,
         private fusionEngine: FusionEngine,
-	private sourceName: string,
-	private sourceStatus: SourceStatusService
+	private sourceName: string
+	 private sourceStatus: SourceStatusService
 
     ) {}
 

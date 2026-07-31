@@ -1,4 +1,7 @@
 import {
+    SourceStatusService
+} from "./source-status.service.js";
+import {
     ClusterSource
 } from "./sources.config.js";
 
@@ -28,12 +31,11 @@ export class DXSummitConnector {
 
     constructor(
 
-        private source: ClusterSource,
+    private source: ClusterSource,
+    private fusionEngine: FusionEngine,
+    private sourceStatus: SourceStatusService
 
-        private fusionEngine: FusionEngine
-
-    ) {}
-
+) {}
 
 
 
@@ -146,60 +148,60 @@ export class DXSummitConnector {
 
 
 
-                if (
-                    spot
-                ) {
+              
+
+if (
+    spot
+) {
 
 
-                    console.log(
-                        "DX Summit normalized:",
-                        spot
-                    );
+    console.log(
+        "DX Summit normalized:",
+        spot
+    );
 
 
-                    this.fusionEngine.addSpot(
-                        spot
-                    );
+    this.sourceStatus.touch(
+        "DX Summit"
+    );
 
 
-                    count++;
-
-                }
-
-
-            }
+    this.fusionEngine.addSpot(
+        spot
+    );
 
 
-
-            console.log(
-                `DX Summit processed ${count} spots`
-            );
-
-
-        }
-        catch(error) {
-
-
-            console.error(
-                "DX Summit error",
-                error
-            );
-
-
-        }
-
+   
+        count++;
 
     }
 
+ }   // <-- Ende for (const raw of data)
+
+    
+    console.log(
+        `DX Summit processed ${count} spots`
+    );
 
 
+    }
+    catch(error) {
 
+        console.error(
+            "DX Summit fetch failed:",
+            error
+        );
 
+    }
 
-
+}
 
 
     private extractSnr(
+
+
+
+
         info: string | undefined
     ): number | undefined {
 

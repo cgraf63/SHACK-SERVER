@@ -1,16 +1,20 @@
-import "dotenv/config";
 import app from './app.js';
 
+import {
+    SourceStatusService
+} from "./services/sources/source-status.service.js";
 
 import {
     fusionEngine
 } from './services/fusion/fusion-instance.js';
 
-
 import {
     SourceManager
 } from './services/sources/source-manager.js';
 
+
+const sourceStatus =
+    new SourceStatusService();
 
 
 const PORT =
@@ -25,13 +29,23 @@ const PORT =
 
 const sourceManager =
     new SourceManager(
-        fusionEngine
+        fusionEngine,
+        sourceStatus
     );
 
 
 sourceManager.start();
 
+app.get(
+    "/api/source-status",
+    (req, res) => {
 
+        res.json(
+            sourceStatus.getStatus()
+        );
+
+    }
+);
 
 
 

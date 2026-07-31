@@ -1,4 +1,7 @@
 import {
+    SourceStatusService
+} from "./source-status.service.js";
+import {
     ClusterSource
 } from "./sources.config.js";
 
@@ -29,14 +32,13 @@ export class HolyClusterConnector {
 
 
 
-    constructor(
+   constructor(
 
-        private source: ClusterSource,
+    private source: ClusterSource,
+    private fusionEngine: FusionEngine,
+    private sourceStatus: SourceStatusService
 
-        private fusionEngine: FusionEngine
-
-    ) {}
-
+) {}
 
 
 
@@ -145,47 +147,43 @@ export class HolyClusterConnector {
 
 
 
-                        if (
-                            spot
-                        ) {
+  if (spot) {
+
+    console.log(
+        "HolyCluster normalized:",
+        spot
+    );
+
+    this.sourceStatus.touch(
+        "HolyCluster"
+    );
+
+    this.fusionEngine.addSpot(
+        spot
+    );
+
+}   // <-- Ende if(spot)
 
 
-                            console.log(
-                                "HolyCluster normalized:",
-                                spot
-                            );
+// danach weiter mit socket.on(...)
+
+    
+  }   // Ende for                           
+
+        }
+        catch(error) {
+
+            console.error(
+                "HolyCluster parse error",
+                error
+            );
+
+        }       
 
 
+        }
 
-                            this.fusionEngine.addSpot(
-                                spot
-                            );
-
-
-                        }
-
-
-                    }
-
-
-
-                }
-                catch(error) {
-
-
-                    console.error(
-                        "HolyCluster parse error",
-                        error
-                    );
-
-
-                }
-
-
-            }
-        );
-
-
+    );
 
 
 

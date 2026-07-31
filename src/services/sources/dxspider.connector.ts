@@ -1,3 +1,9 @@
+import {
+    ClusterSource
+} from "./sources.config.js";
+import {
+    SourceStatusService
+} from "./source-status.service.js";
 import net from "node:net";
 
 
@@ -10,29 +16,6 @@ import {
 import {
     DXSpiderParser
 } from "./dxspider.parser.js";
-
-
-
-
-export interface DXSpiderConfig {
-
-    name: string;
-
-    host: string;
-
-    port: number;
-
-    callsign: string;
-
-    password?: string;
-
-    reconnect?: boolean;
-
-    reconnectDelay?: number;
-
-}
-
-
 
 
 
@@ -49,21 +32,26 @@ export class DXSpiderConnector {
 
     constructor(
 
-        private config: DXSpiderConfig,
+        private config: ClusterSource,
 
-        fusionEngine: FusionEngine
+        fusionEngine: FusionEngine,
+ 	sourceStatus: SourceStatusService
 
     ) {
 
 
         this.parser =
-            new DXSpiderParser(
+    new DXSpiderParser(
 
-                fusionEngine,
+        this.config,
 
-                config.name
+        fusionEngine,
 
-            );
+        config.name,
+
+        sourceStatus
+
+    );
 
 
     }
