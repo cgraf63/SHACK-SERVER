@@ -4,7 +4,7 @@ console.log("LIVE SPOTS JS LOADED");
 let currentSpots = [];
 
 
-let sortField = "age";
+let sortField = "confidence";
 
 
 let sortDirection = "desc";
