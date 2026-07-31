@@ -47,3 +47,36 @@ window.addEventListener(
 
 // Fallback falls Komponenten bereits geladen wurden
 loadStationInfo();
+
+
+function updateUTCClock() {
+
+    const clock =
+        document.getElementById(
+            "utcClock"
+        );
+
+
+    if (!clock) {
+
+        return;
+
+    }
+
+
+    clock.textContent =
+        new Date()
+            .toISOString()
+            .substring(11,19)
+            + " UTC";
+
+}
+
+
+updateUTCClock();
+
+
+setInterval(
+    updateUTCClock,
+    1000
+);

@@ -1,5 +1,5 @@
 let liveSpotsTimer = null;
-
+console.log("LIVE SPOTS JS LOADED");
 
 let currentSpots = [];
 
@@ -182,10 +182,19 @@ function renderLiveSpots() {
             [...currentSpots]
         );
 
+console.log(
+    "RENDER SPOTS",
+    currentSpots.length,
+    sorted.length,
+    sorted[0]
+);
 
 
-    sorted.forEach(
-        spot => {
+    sorted
+        .slice(0, 15)
+        .forEach(
+            spot => {    
+
 
 
             const row =
@@ -420,6 +429,8 @@ function setupSpotSorting() {
 
 function startLiveSpotsUpdater() {
 
+console.log("START LIVE SPOTS");
+
 
     setupSpotSorting();
 
@@ -467,3 +478,14 @@ window.addEventListener(
     startLiveSpotsUpdater
 
 );
+// fallback: 
+
+// fallback
+setTimeout(
+    () => {
+        startLiveSpotsUpdater();
+    },
+    500
+);
+
+
