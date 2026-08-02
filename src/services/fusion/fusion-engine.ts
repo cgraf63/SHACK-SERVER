@@ -1,3 +1,4 @@
+
 import {
     FusionSpot
 } from "./spot.model.js";
@@ -46,8 +47,7 @@ export class FusionEngine {
     private shack =
         new ShackLocationService();
 
-
-
+   
 
     addSpot(
         spot: FusionSpot
@@ -67,21 +67,23 @@ export class FusionEngine {
 
 
 
-        if (existing) {
+                    if (existing) {
 
 
             existing.lastSeen =
                 spot.lastSeen;
-if (
-    existing.latitude === undefined ||
-    existing.longitude === undefined
-) {
 
-    this.enrichGeo(
-        existing
-    );
 
-}
+            if (
+                existing.locator === undefined &&
+                spot.locator !== undefined
+            ) {
+
+                existing.locator =
+                    spot.locator;
+
+            }
+
 
             for (
                 const source of spot.sources
@@ -102,7 +104,6 @@ if (
             }
 
 
-
             if (
                 spot.snr !== undefined
             ) {
@@ -113,6 +114,17 @@ if (
             }
 
 
+            if (
+                existing.latitude === undefined ||
+                existing.longitude === undefined
+            ) {
+
+                this.enrichGeo(
+                    existing
+                );
+
+            }
+
 
             existing.confidence =
                 this.calculateConfidence(
@@ -122,8 +134,9 @@ if (
 
             return;
 
-        }
+        } 
 
+      
 
 
         if (
@@ -142,6 +155,11 @@ if (
         );
 
 
+
+
+
+
+
         this.enrichGeo(
             spot
         );
@@ -158,27 +176,29 @@ if (
         spot: FusionSpot
     ): Promise<void> {
 
-
+console.log(
+    "FUSION ENRICH CALL",
+    {
+        call: spot.call,
+        locator: spot.locator,
+        lat: spot.latitude,
+        lon: spot.longitude
+    }
+);
         const location =
             await this.geo.enrich(
-                spot.call
+                spot.call,
+		spot.locator
             );
-
-console.log(
-    "GEO LOOKUP RESULT",
-    spot.call,
-    location
-);
-
-
 
         if (!location) {
 
-            return;
-
+        return    
         }
 
 
+     
+           
 
         if (
             location.country
@@ -208,7 +228,6 @@ console.log(
                 location.continent;
 
         }
-
 
 
         if (
@@ -283,23 +302,11 @@ console.log(
                     dx
                 );
 
-console.log(
-    "GEO STORED",
-    spot.call,
-    spot.latitude,
-    spot.longitude,
-    spot.distance,
-    spot.azimuth
-);
 
-            console.log(
-                "GEO FINAL",
-                spot.call,
-                spot.latitude,
-                spot.longitude,
-                spot.distance,
-                spot.azimuth
-            );
+
+
+
+     
 
         }
 
@@ -310,21 +317,13 @@ console.log(
 
 
 
+getSpots(): FusionSpot[] {
 
-    getSpots(): FusionSpot[] {
+    return Array.from(
+        this.spots.values()
+    );
 
-
-        return Array.from(
-            this.spots.values()
-        );
-
-    }
-
-
-
-
-
-
+}
 
     private createKey(
         spot: FusionSpot

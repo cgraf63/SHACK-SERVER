@@ -66,4 +66,73 @@ export class MaidenheadService {
 
     }
 
+    coordinatesToLocator(
+        latitude: number,
+        longitude: number
+    ): string {
+
+        let lon =
+            longitude + 180;
+
+        let lat =
+            latitude + 90;
+
+
+        const fieldLon =
+            Math.floor(
+                lon / 20
+            );
+
+        const fieldLat =
+            Math.floor(
+                lat / 10
+            );
+
+
+        lon =
+            lon % 20;
+
+        lat =
+            lat % 10;
+
+
+        const squareLon =
+            Math.floor(
+                lon / 2
+            );
+
+        const squareLat =
+            Math.floor(
+                lat / 1
+            );
+
+
+        lon =
+            (lon % 2) * 60;
+
+        lat =
+            (lat % 1) * 60;
+
+
+        const subLon =
+            Math.floor(
+                lon / 5
+            );
+
+        const subLat =
+            Math.floor(
+                lat / 2.5
+            );
+
+
+        return (
+            String.fromCharCode(65 + fieldLon) +
+            String.fromCharCode(65 + fieldLat) +
+            squareLon +
+            squareLat +
+            String.fromCharCode(97 + subLon) +
+            String.fromCharCode(97 + subLat)
+        );
+    }
+
 }

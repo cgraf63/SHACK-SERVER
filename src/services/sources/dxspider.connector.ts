@@ -114,6 +114,11 @@ export class DXSpiderConnector {
                 const text =
                     data.toString();
 
+console.log(
+    "DXSPIDER RAW:",
+    text
+);
+
 
 
                 this.parser.parse(

@@ -1,4 +1,8 @@
 import {
+    MaidenheadService
+} from "./maidenhead.service.js";
+
+import {
     DxLocation
 } from "./geo.model.js";
 
@@ -24,6 +28,9 @@ export class GeoEnrichmentService {
 
     private cache =
         new GeoCacheService();
+
+private maidenhead =
+    new MaidenheadService();
 
 
 
@@ -111,16 +118,22 @@ private normalizeCall(
 
 
 
-    async enrich(
-        call: string
-    ): Promise<DxLocation | null> {
+      async enrich(
+          call: string,
+          locator?: string
+      ): Promise<DxLocation | null> {
 
 
-console.log(
-    "GEO LOOKUP:",
-    call
-);
+      console.log(
+          "GEO ENRICH INPUT",
+          call,
+          locator
+      );
 
+  console.log(
+      "GEO LOOKUP:",
+      call
+  );
 
         const normalized =
     this.normalizeCall(
@@ -157,6 +170,29 @@ console.log(
                 Date.now()
 
         };
+
+if (
+    locator
+) {
+
+    location.locator =
+        locator;
+
+const coordinates =
+    this.maidenhead.locatorToCoordinates(
+        locator
+    );
+
+if (coordinates) {
+
+    location.latitude =
+        coordinates.latitude;
+
+    location.longitude =
+        coordinates.longitude;
+
+}
+}
 
 
 
@@ -217,7 +253,19 @@ console.log(
 
         }
 
+if (
+    !location.locator &&
+    location.latitude !== undefined &&
+    location.longitude !== undefined
+) {
 
+    location.locator =
+        this.maidenhead.coordinatesToLocator(
+            location.latitude,
+            location.longitude
+        );
+
+}
 
         if (
             location.country ||
@@ -231,14 +279,22 @@ console.log(
             );
 
 
-            return location;
+if (
+    typeof location.latitude !== "number" ||
+    typeof location.longitude !== "number"
+) {
+    return null;
+}
+
+
+return location;
 
         }
-
-
 
         return null;
 
     }
 
 }
+
+

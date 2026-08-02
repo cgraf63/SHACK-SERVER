@@ -49,6 +49,19 @@ export interface Spot {
 export async function getSpots(): Promise<Spot[]> {
 
 
+console.log(
+    "API SPOT CHECK",
+    fusionEngine.getSpots()
+        .filter(s => s.call === "YT7ZZ")
+        .map(s => ({
+            call: s.call,
+            distance: s.distance,
+            azimuth: s.azimuth,
+            locator: s.locator
+        }))
+);
+
+
     return fusionEngine
         .getSpots()
         .map(

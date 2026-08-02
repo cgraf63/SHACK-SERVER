@@ -10,29 +10,47 @@ export class SpotNormalizer {
             return null;
         }
 
-        const frequency = Number(raw.frequency);
+        let frequency = Number(raw.frequency);
+
+if (frequency < 1000) {
+    frequency = frequency * 1000;
+}
 
         const mode = this.detectMode(
             raw.mode,
             frequency
         );
 
+
+console.log(
+    "NORMALIZER LOCATOR",
+    raw.call,
+    raw.locator
+);
+
+
         return {
-            call: raw.call.toUpperCase().trim(),
-            frequency,
-            band: this.getBand(frequency),
-            mode,
-            sources: [source],
-            firstSeen: Date.now(),
-            lastSeen: Date.now(),
-            confidence: this.calculateConfidence(mode),
-            snr: raw.snr,
-            country: raw.country,
-            dxcc: raw.dxcc,
-            continent: raw.continent,
-            flag: this.getFlag(raw.call),
-            countryCode: this.getCountryCode(raw.call)
-        };
+    call: raw.call.toUpperCase().trim(),
+    frequency,
+    band: this.getBand(frequency),
+    mode,
+    sources: [source],
+    firstSeen: Date.now(),
+    lastSeen: Date.now(),
+    confidence: this.calculateConfidence(mode),
+    snr: raw.snr,
+    country: raw.country,
+    dxcc: raw.dxcc,
+    continent: raw.continent,
+    flag: this.getFlag(raw.call),
+    countryCode: this.getCountryCode(raw.call),
+
+    locator: raw.locator,
+    latitude: raw.latitude,
+    longitude: raw.longitude,
+    distance: raw.distance,
+    azimuth: raw.azimuth
+};
     }
 
     private detectMode(mode: string | undefined, frequency: number): string {
@@ -137,7 +155,8 @@ export class SpotNormalizer {
                 return codes[key] ?? "";
             }
         }
-
-        return "";
+return "";
+  
     }
 }
+
