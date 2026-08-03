@@ -1,3 +1,6 @@
+import {
+    countryCodeToFlag
+} from "../geo/flag.util.js";
 
 import {
     FusionSpot
@@ -49,10 +52,9 @@ export class FusionEngine {
 
    
 
-    addSpot(
-        spot: FusionSpot
-    ): void {
-
+    async addSpot(
+    spot: FusionSpot
+): Promise<void> {
 
         const key =
             this.createKey(
@@ -72,7 +74,28 @@ export class FusionEngine {
 
             existing.lastSeen =
                 spot.lastSeen;
+if (spot.country) {
+    existing.country =
+        spot.country;
+}
 
+
+if (spot.countryCode) {
+    existing.countryCode =
+        spot.countryCode;
+}
+
+
+if (spot.flag) {
+    existing.flag =
+        spot.flag;
+}
+
+
+if (spot.continent) {
+    existing.continent =
+        spot.continent;
+}
 
             if (
                 existing.locator === undefined &&
@@ -114,16 +137,17 @@ export class FusionEngine {
             }
 
 
-            if (
-                existing.latitude === undefined ||
-                existing.longitude === undefined
-            ) {
+           if (
+    existing.latitude === undefined ||
+    existing.longitude === undefined ||
+    existing.countryCode === undefined
+) {
 
-                this.enrichGeo(
-                    existing
-                );
+    await this.enrichGeo(
+        existing
+    );
 
-            }
+}
 
 
             existing.confidence =
@@ -147,22 +171,17 @@ export class FusionEngine {
 
         }
 
+await this.enrichGeo(
+    spot
+);
 
 
-        this.spots.set(
-            key,
-            spot
-        );
+this.spots.set(
+    key,
+    spot
+);
 
 
-
-
-
-
-
-        this.enrichGeo(
-            spot
-        );
 
     }
 
@@ -211,13 +230,19 @@ console.log(
 
 
         if (
+    location.countryCode
+) {
+
+    spot.countryCode =
+        location.countryCode;
+
+
+    spot.flag =
+        countryCodeToFlag(
             location.countryCode
-        ) {
+        );
 
-            spot.countryCode =
-                location.countryCode;
-
-        }
+}
 
 
         if (
@@ -247,6 +272,18 @@ console.log(
 
             spot.latitude =
                 location.latitude;
+
+console.log(
+    "FUSION ENRICH RESULT",
+    {
+        call: spot.call,
+        country: spot.country,
+        countryCode: spot.countryCode,
+        flag: spot.flag,
+        continent: spot.continent
+    }
+);
+
 
         }
 

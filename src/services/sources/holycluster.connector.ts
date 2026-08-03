@@ -83,7 +83,7 @@ export class HolyClusterConnector {
 
         socket.on(
             "message",
-            (data: WebSocket.Data) => {
+            async (data: WebSocket.Data) => {
 
 
                 try {
@@ -158,7 +158,7 @@ export class HolyClusterConnector {
         "HolyCluster"
     );
 
-    this.fusionEngine.addSpot(
+    await this.fusionEngine.addSpot(
         spot
     );
 

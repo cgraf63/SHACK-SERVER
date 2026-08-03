@@ -74,49 +74,89 @@ private normalizeCall(
         "B"
     ];
 
+// HB9ABC/P, MW7KOD/M, etc.
+if (
+    second &&
+    suffixes.includes(second)
+) {
 
-    // HB9ABC/P, MW7KOD/M, etc.
-    if (
-        second &&
-        suffixes.includes(second)
-    ) {
-
-        return first;
-
-    }
-
-
-    // EA8/HB9ABC, F/G4XYZ
-    if (
-        second &&
-        second.match(/[0-9]/)
-    ) {
-
-        return second;
-
-    }
-
-
-    // W1AW/7, W1AW/KH6
-    if (
-        second &&
-        second.length <= 3
-    ) {
-
-        return first;
-
-    }
-
-
-    return upper;
+    return first;
 
 }
 
 
+// EA8/HB9ABC, F/G4XYZ
+if (
+    second &&
+    second.match(/[0-9]/)
+) {
+
+    return second;
+
+}
+
+
+// W1AW/7, W1AW/KH6
+if (
+    second &&
+    second.length <= 3
+) {
+
+    return first;
+
+}
+
+
+// Standard Prefix Extraktion
+const match =
+    upper.match(/^[A-Z]+/);
+
+if (match) {
+
+    return match[0];
+
+}
+
+return upper;
 
 
 
+}
 
+
+    private extractDXCCPrefix(
+        call: string
+    ): string {
+
+        const upper =
+            call
+                .toUpperCase()
+                .trim();
+
+
+        const parts =
+            upper.split("/");
+
+
+        /*
+           DXCC override:
+           9M2/KM2D
+           EA8/HB9ABC
+        */
+
+        if (
+            parts.length > 1 &&
+            parts[0]?.match(/[0-9]/)
+        ) {
+
+            return parts[0];
+
+        }
+
+
+        return upper;
+
+    }
 
       async enrich(
           call: string,
@@ -192,16 +232,19 @@ if (coordinates) {
         coordinates.longitude;
 
 }
+
 }
+        
 
+const dxccPrefix =
+    this.extractDXCCPrefix(
+        call
+    );
 
-
-        const callsignInfo =
-            this.resolver.resolve(
-                normalized
-            );
-
-
+const callsignInfo =
+    this.resolver.resolve(
+        dxccPrefix
+    );
 
         if (callsignInfo) {
 
@@ -235,23 +278,44 @@ if (coordinates) {
         );
 
 
+
+
+
+
         if (qrzLocation) {
 
+    location = {
 
-            location = {
+        ...location,
 
-                ...location,
+        ...qrzLocation,
 
-                ...qrzLocation,
+        call: normalized,
 
-                call: normalized,
+        updated:
+            Date.now()
 
-                updated:
-                    Date.now()
+    };
 
-            };
 
-        }
+    if (!location.countryCode && qrzLocation.countryCode) {
+        location.countryCode =
+            qrzLocation.countryCode;
+    }
+
+
+    if (!location.country && qrzLocation.country) {
+        location.country =
+            qrzLocation.country;
+    }
+
+
+    if (!location.continent && qrzLocation.continent) {
+        location.continent =
+            qrzLocation.continent;
+    }
+
+}
 
 if (
     !location.locator &&

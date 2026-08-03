@@ -166,7 +166,7 @@ if (
     );
 
 
-    this.fusionEngine.addSpot(
+    await this.fusionEngine.addSpot(
         spot
     );
 

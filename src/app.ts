@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
+import priorityDxRouter from './routes/priority-dx.js';
 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,6 +33,12 @@ app.use(cors());
 
 
 app.use(express.json());
+
+app.use(
+    '/api/priority-dx',
+    priorityDxRouter
+);
+
 
 
 app.use(express.urlencoded({

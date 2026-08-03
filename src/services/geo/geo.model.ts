@@ -8,6 +8,8 @@ export interface DxLocation {
 
     continent?: string;
 
+    dxcc?: number;
+
     locator?: string;
 
     latitude?: number;

@@ -40,7 +40,7 @@ export class DXSpiderParser {
 
 
 
-    parse(data: string) {
+    async parse(data: string) {
 
 
         const lines =
@@ -94,7 +94,7 @@ console.log(
     spot
 );
 
-    this.fusionEngine.addSpot(
+    await this.fusionEngine.addSpot(
         spot
     );
 
@@ -168,26 +168,8 @@ console.log(
 );
 
 
-const locatorMatch =
-    comment.match(
-        /[A-R]{2}\d{2}[A-X]{0,2}/ig
-    );
-
 const locator =
-    locatorMatch
-        ? locatorMatch[0].toUpperCase()
-        : undefined;
-
-console.log(
-    "DXSPIDER LOCATOR DEBUG",
-    call,
-    "MATCH:",
-    locatorMatch,
-    "LOCATOR:",
-    locator,
-    "COMMENT:",
-    comment
-);
+    undefined;
 
 console.log(
     "LOCATOR DEBUG:",

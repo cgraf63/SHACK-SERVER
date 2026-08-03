@@ -42,9 +42,7 @@ console.log(
     country: raw.country,
     dxcc: raw.dxcc,
     continent: raw.continent,
-    flag: this.getFlag(raw.call),
-    countryCode: this.getCountryCode(raw.call),
-
+    
     locator: raw.locator,
     latitude: raw.latitude,
     longitude: raw.longitude,

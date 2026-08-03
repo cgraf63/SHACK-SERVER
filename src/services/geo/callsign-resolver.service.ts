@@ -1,3 +1,7 @@
+import fs from "fs";
+import path from "path";
+
+
 export interface CallsignInfo {
 
     call: string;
@@ -8,6 +12,8 @@ export interface CallsignInfo {
 
     continent: string;
 
+    dxcc?: number;
+
 }
 
 
@@ -15,97 +21,146 @@ export interface CallsignInfo {
 export class CallsignResolverService {
 
 
-    private database: Record<string, CallsignInfo> = {
+    private database: Record<string, CallsignInfo> = {};
 
 
-        "HB": {
-            call: "",
-            country: "Switzerland",
-            countryCode: "ch",
-            continent: "EU"
-        },
+
+    constructor() {
+
+        this.loadDatabase();
+
+    }
 
 
-        "DL": {
-            call: "",
-            country: "Germany",
-            countryCode: "de",
-            continent: "EU"
-        },
+
+    private loadDatabase(): void {
 
 
-        "F": {
-            call: "",
-            country: "France",
-            countryCode: "fr",
-            continent: "EU"
-        },
+        const file =
+            path.join(
+                process.cwd(),
+                "src/services/geo/data/callsignprefixes.csv"
+            );
 
 
-        "G": {
-            call: "",
-            country: "United Kingdom",
-            countryCode: "gb",
-            continent: "EU"
-        },
+        if (!fs.existsSync(file)) {
 
+            console.error(
+                "DXCC CSV NOT FOUND:",
+                file
+            );
 
-        "I": {
-            call: "",
-            country: "Italy",
-            countryCode: "it",
-            continent: "EU"
-        },
+            return;
 
-
-        "K": {
-            call: "",
-            country: "United States",
-            countryCode: "us",
-            continent: "NA"
-        },
-
-
-        "N": {
-            call: "",
-            country: "United States",
-            countryCode: "us",
-            continent: "NA"
-        },
-
-
-        "W": {
-            call: "",
-            country: "United States",
-            countryCode: "us",
-            continent: "NA"
-        },
-
-
-        "VE": {
-            call: "",
-            country: "Canada",
-            countryCode: "ca",
-            continent: "NA"
-        },
-
-
-        "JA": {
-            call: "",
-            country: "Japan",
-            countryCode: "jp",
-            continent: "AS"
-        },
-
-
-        "VK": {
-            call: "",
-            country: "Australia",
-            countryCode: "au",
-            continent: "OC"
         }
 
-    };
+
+
+        const data =
+            fs.readFileSync(
+                file,
+                "utf8"
+            );
+
+
+
+        const lines =
+            data.split(/\r?\n/);
+
+
+
+        for (
+            let i = 1;
+            i < lines.length;
+            i++
+        ) {
+
+
+           const line =
+    lines[i]?.trim();
+
+	            if (!line) {
+
+        	        continue;
+
+            }
+
+
+
+            const parts =
+    line.split(",");
+
+
+const prefix =
+    parts[0]?.trim().toUpperCase();
+
+
+const country =
+    parts[1]?.trim();
+
+
+const countryCode =
+    parts[3]?.trim().toLowerCase();
+
+
+const continent =
+    parts[4]?.trim();
+
+
+if (
+    !prefix ||
+    !country ||
+    !countryCode
+) {
+    continue;
+}
+
+
+         
+
+        
+
+
+
+
+
+            if (
+                !prefix ||
+                !countryCode
+            ) {
+
+                continue;
+
+            }
+
+
+
+            this.database[prefix] = {
+
+                call: "",
+
+                country,
+
+                countryCode,
+		continent: continent ?? ""
+
+            };
+
+
+        }
+
+
+
+        console.log(
+            "DXCC DATABASE LOADED:",
+            Object.keys(
+                this.database
+            ).length
+        );
+
+
+    }
+
 
 
 
@@ -114,12 +169,16 @@ export class CallsignResolverService {
     ): CallsignInfo | null {
 
 
+
         const normalized =
             call
                 .toUpperCase()
                 .trim();
 
-
+console.log(
+    "DEBUG RESOLVE INPUT",
+    normalized
+);
 
         const prefixes =
             Object.keys(
@@ -147,34 +206,52 @@ export class CallsignResolverService {
                 const info =
                     this.database[prefix];
 
+		if (!info) {
+ 		   continue;
+}
 
-                if (!info) {
+                console.log(
+    "RESOLVER HIT",
+    {
+        input: normalized,
+        prefix,
+        country: info.country,
+        countryCode: info.countryCode,
+        continent: info.continent
+    }
+);
 
-                    continue;
 
-                }
+              return {
 
+    call: normalized,
 
-                return {
+    country: info.country,
 
-                    call: normalized,
+    countryCode: info.countryCode,
 
-                    country: info.country,
+    continent: info.continent
 
-                    countryCode: info.countryCode,
+};
 
-                    continent: info.continent
-
-                };
 
             }
+
 
         }
 
 
 
+        console.log(
+            "RESOLVER MISS",
+            normalized
+        );
+
+
         return null;
 
+
     }
+
 
 }
