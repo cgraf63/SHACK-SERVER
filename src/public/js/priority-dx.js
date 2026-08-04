@@ -59,9 +59,15 @@ async function updatePriorityDX() {
 
                 div.innerHTML = `
                     <strong>
-                        ${spot.flag ?? "🌐"}
-                        ${spot.call}
-                    </strong>
+    ${
+        spot.countryCode
+        ?
+        `<img src="/assets/flags/${spot.countryCode}.svg" class="flag">`
+        :
+        "🌐"
+    }
+    ${spot.call}
+</strong>
                     ${freq} MHz ${spot.mode}
                     <br>
                     ${spot.distance} km
@@ -102,8 +108,7 @@ function startPriorityDX() {
 
 }
 
-
-document.addEventListener(
-    "DOMContentLoaded",
-    startPriorityDX
+setTimeout(
+    startPriorityDX,
+    1000
 );
