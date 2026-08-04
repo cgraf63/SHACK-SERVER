@@ -182,13 +182,6 @@ function renderLiveSpots() {
             [...currentSpots]
         );
 
-console.log(
-    "RENDER SPOTS",
-    currentSpots.length,
-    sorted.length,
-    sorted[0]
-);
-
 
     sorted
         .slice(0, 15)
@@ -304,7 +297,95 @@ console.log(
 }
 
 
+function updateDxOpportunity() {
 
+    const element =
+        document.getElementById(
+            "dx-opportunity-value"
+        );
+
+    if (!element) {
+        return;
+    }
+
+
+    const dx =
+    [...currentSpots]
+        .filter(
+            spot =>
+                spot.distance &&
+                spot.mode !== "UNKNOWN" &&
+                parseInt(spot.age) < 300
+        )
+        .sort(
+            (a,b) =>
+                b.distance - a.distance
+        )[0];
+console.log(
+    "TOP DX:",
+    [...currentSpots]
+        .filter(
+            s =>
+                s.distance &&
+                s.mode !== "UNKNOWN"
+        )
+        .sort(
+            (a,b) =>
+                b.distance - a.distance
+        )
+        .slice(0,10)
+        .map(s => ({
+    call: s.call,
+    distance: s.distance,
+    mode: s.mode,
+    age: s.age,
+    flag: s.flag,
+    countryCode: s.countryCode,
+    frequency: s.frequency
+}))
+);
+
+    if (!dx) {
+
+        element.textContent =
+            "No DX data";
+
+        return;
+    }
+
+
+    const mhz =
+        dx.frequency
+            ? (
+                Number(dx.frequency) / 1000
+              ).toFixed(3)
+              + " MHz"
+            : "";
+
+
+    const mode =
+    dx.mode !== "UNKNOWN"
+        ? " " + dx.mode
+        : "";
+
+
+console.log(
+    "DX OBJECT JSON",
+    JSON.stringify(dx, null, 2)
+);
+
+element.innerHTML =
+    `
+    ${
+        dx.countryCode
+            ? `<img class="dx-flag" src="/assets/flags/${dx.countryCode}.svg">`
+            : ""
+    }
+    ${dx.call} on ${mhz}${mode}
+    `;
+
+
+}
 
 
 
@@ -336,7 +417,7 @@ async function updateLiveSpots() {
             await response.json();
 
 
-
+	updateDxOpportunity();
         renderLiveSpots();
 
 
@@ -458,7 +539,7 @@ console.log("START LIVE SPOTS");
 
             updateLiveSpots,
 
-            10000
+            15000
 
         );
 

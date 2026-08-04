@@ -265,6 +265,14 @@
 
 
 
+.dx-flag {
+    width: 24px;
+    height: 18px;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+
 .cluster-item {
 
     display:flex;

@@ -99,6 +99,8 @@ console.log(
         const flags: Record<string,string> = {
 
     // Europe
+    by:"🇧🇾",
+    ru:"🇷🇺",
     de:"🇩🇪",
     ch:"🇨🇭",
     fr:"🇫🇷",
@@ -126,7 +128,7 @@ console.log(
     is:"🇮🇸",
     ie:"🇮🇪",
     ua:"🇺🇦",
-    by:"🇧🇾",
+   
     lt:"🇱🇹",
     lv:"🇱🇻",
     ee:"🇪🇪",
@@ -228,7 +230,19 @@ console.log(
     ws:"🇼🇸",
     to:"🇹🇴",
     vu:"🇻🇺",
-    sb:"🇸🇧"
+    sb:"🇸🇧",
+   
+    
+    
+    EK:"am",
+    ge:"🇬🇪",
+    az:"🇦🇿",
+    kz:"🇰🇿",
+    kg:"🇰🇬",
+    uz:"🇺🇿",
+    tj:"🇹🇯",
+    tm:"🇹🇲",
+    md:"🇲🇩",
 
 };
 
@@ -244,6 +258,45 @@ console.log(
 //
 //These are all the callsign prefixes. Hard coded I know
         const codes: Record<string,string> = {
+
+"VJ":"au",
+ER:"md",
+EZ:"tm",
+EY:"tj",
+UK:"uz",
+EX:"kg",
+UN:"kz",
+UP:"kz",
+UQ:"kz",
+"4J":"az",
+"4K":"az",
+
+"4L":"ge",
+EK:"am",
+ES:"ee",
+// Belarus
+EU:"by",
+EV:"by",
+EW:"by",
+//Lettland
+YL:"lv",
+//Littauen
+LY:"lt",
+
+
+//Ukraine
+UR:"ua",
+UT:"ua",
+UU:"ua",
+UV:"ua",
+UW:"ua",
+UX:"ua",
+UY:"ua",
+UZ:"ua",
+EM:"ua",
+EN:"ua",
+EO:"ua",
+
 
     // Germany
     DA:"de",
@@ -279,8 +332,14 @@ console.log(
     I:"it",
 
     // Spain
-    EA:"es",
-
+EA:"es",
+EB:"es",
+EC:"es",
+ED:"es",
+EE:"es",
+EF:"es",
+EG:"es",
+EH:"es",
     // Portugal
     CT:"pt",
 
@@ -347,25 +406,6 @@ console.log(
     // Switzerland special
     "HB0":"li",
 
-    // Ukraine
-    UR:"ua",
-    UT:"ua",
-    UX:"ua",
-
-    // Belarus
-    EU:"by",
-    EV:"by",
-    EW:"by",
-
-    // Lithuania
-    LY:"lt",
-
-    // Latvia
-    YL:"lv",
-
-    // Estonia
-    ES:"ee",
-
     // Serbia
     YU:"rs",
 
@@ -378,7 +418,11 @@ console.log(
     // North Macedonia
     "Z3":"mk",
 
-    // North America
+    
+//Russland
+    R:"ru",
+	
+// North America
 
     // United States
     K:"us",
@@ -478,6 +522,7 @@ console.log(
     PV:"br",
     PW:"br",
     PX:"br",
+    PY:"br",
 
     // Argentina
     LU:"ar",
