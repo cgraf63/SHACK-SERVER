@@ -80,13 +80,7 @@ main {
     grid-row:span 2;
 
 
-#live-spots {
-
-    grid-column:2;
-
-    grid-row:span 3;
-
-}}
+}
 
 
 
@@ -101,3 +95,12 @@ main {
 
 }
 
+
+
+#recommendations {
+
+
+    grid-column:2;
+
+
+}
