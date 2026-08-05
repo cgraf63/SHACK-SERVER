@@ -1,4 +1,3 @@
-
 import {
     FusionSpot
 } from "./spot.model.js";
@@ -176,15 +175,6 @@ export class FusionEngine {
         spot: FusionSpot
     ): Promise<void> {
 
-console.log(
-    "FUSION ENRICH CALL",
-    {
-        call: spot.call,
-        locator: spot.locator,
-        lat: spot.latitude,
-        lon: spot.longitude
-    }
-);
         const location =
             await this.geo.enrich(
                 spot.call,
@@ -302,20 +292,48 @@ console.log(
                     dx
                 );
 
+  } //Ende if latitude
+
+} //ende enrichGeo()
+
+getBandActivity() {
+
+    const bands:
+        Record<string, number> = {};
 
 
+    const now =
+        Date.now();
 
 
-     
+    for (const spot of this.spots.values()) {
 
+
+        const age =
+            now - spot.lastSeen;
+
+
+        if (
+            age >
+            10 * 60 * 1000
+        ) {
+            continue;
         }
 
+
+       
+
+
+        bands[spot.band] =
+    (bands[spot.band] ?? 0) + 1;
     }
 
 
+    return bands;
 
-
-
+}
+     
+   
 
 getSpots(): FusionSpot[] {
 

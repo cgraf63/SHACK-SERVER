@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
+import bestBandRouter from './routes/best-band.js';
 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,6 +27,12 @@ const app = express();
 /*
     Middleware
 */
+
+app.use(
+    '/api/best-band',
+    bestBandRouter
+);
+
 
 app.use(compression());
 
