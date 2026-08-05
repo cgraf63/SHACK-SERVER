@@ -11,6 +11,7 @@ import indexRouter from './routes/index.js';
 import propagationRouter from './routes/propagation.js';
 import spotsRouter from './routes/spots.js';
 import stationRouter from './routes/station.js';
+import systemStatusRouter from './routes/system-status.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -84,3 +85,11 @@ app.use(
 );
 
 export default app;
+
+
+
+// System Status
+app.use(
+    '/api/system-status',
+    systemStatusRouter
+);

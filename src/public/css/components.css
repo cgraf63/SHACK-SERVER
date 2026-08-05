@@ -713,3 +713,38 @@ img.flag {
 }
 
 
+/* =========================================
+   SYSTEM STATUS SIDEBAR
+========================================= */
+
+.system-status {
+
+    margin-top:15px;
+
+    padding:10px;
+
+    background:#08131b;
+
+    border-radius:8px;
+
+    font-size:12px;
+
+}
+
+
+.system-status h3 {
+
+    margin:0 0 8px 0;
+
+    font-size:12px;
+
+    color:var(--cyan);
+
+}
+
+
+.status-line {
+
+    line-height:1.5;
+
+}
