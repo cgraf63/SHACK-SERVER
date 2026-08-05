@@ -75,12 +75,12 @@
 
 
 /* =========================================
-   PROPAGATION
+   PROPAGATION & STATION
 ========================================= */
 
 .propagation-bar {
 
-    height:90px;
+    height:100px;
 
     min-height:90px;
 
@@ -145,7 +145,31 @@
 
 }
 
+.station-inline {
 
+    white-space:nowrap;
+
+    border-left:1px solid var(--panel-border);
+
+    padding-left:20px;
+
+}
+
+
+.station-title {
+
+    font-size:11px;
+
+    color:var(--text-muted);
+
+}
+
+
+#station-inline-content {
+
+    font-size:13px;
+
+}
 
 .band-section {
 

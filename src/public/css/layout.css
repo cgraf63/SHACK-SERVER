@@ -101,3 +101,23 @@ main {
 
 }
 
+.left-column {
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+}
+
+
+.right-column {
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+}

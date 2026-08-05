@@ -26,6 +26,11 @@ async function loadComponents() {
 
 
     await loadComponent(
+        "system-status",
+        "system-status.html"
+    );
+
+    await loadComponent(
         "header",
         "header.html"
     );
