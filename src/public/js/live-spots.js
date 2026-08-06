@@ -660,41 +660,39 @@ function updateDxOpportunity() {
     }
 
 
-    const dx =
-    [...currentSpots]
-        .filter(
-            spot =>
-                spot.distance &&
-                spot.mode !== "UNKNOWN" &&
-                parseInt(spot.age) < 900
-        )
-        .sort(
-            (a,b) =>
-                b.distance - a.distance
-        )[0];
 console.log(
-    "TOP DX:",
+    "TOP DISTANCE SPOTS:",
     [...currentSpots]
         .filter(
-            s =>
-                s.distance &&
-                s.mode !== "UNKNOWN"
+            s => s.distance !== undefined
         )
         .sort(
             (a,b) =>
                 b.distance - a.distance
         )
         .slice(0,10)
-        .map(s => ({
-    call: s.call,
-    distance: s.distance,
-    mode: s.mode,
-    age: s.age,
-    flag: s.flag,
-    countryCode: s.countryCode,
-    frequency: s.frequency
-}))
+        .map(
+            s => ({
+                call: s.call,
+                distance: s.distance,
+                frequency: s.frequency,
+                mode: s.mode,
+                age: s.age
+            })
+        )
 );
+
+
+    const dx =
+    [...currentSpots]
+        .filter(
+            spot =>
+                spot.distance !== undefined
+        )
+        .sort(
+            (a,b) =>
+                b.distance - a.distance
+        )[0];
 
     if (!dx) {
 
