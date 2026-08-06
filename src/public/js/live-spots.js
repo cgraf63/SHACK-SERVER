@@ -3,11 +3,12 @@ console.log("LIVE SPOTS JS LOADED");
 
 let currentSpots = [];
 
+let selectedMode = "ALL";
 
-let sortField = "confidence";
+let sortField = "age";
 
 
-let sortDirection = "desc";
+let sortDirection = "asc";
 
 
 
@@ -94,7 +95,89 @@ function sortSpots(spots) {
         }
     );
 
+
+} 
+
+function filterSpots(spots) {
+
+    return spots.filter(
+        spot =>
+            selectedMode === "ALL" ||
+            spot.mode === selectedMode
+    );
+
 }
+
+function updateModeFilter(spots) {
+
+    const select =
+        document.getElementById(
+            "modeFilter"
+        );
+
+
+    if (!select) {
+        return;
+    }
+
+
+    const current =
+        select.value;
+
+
+    const modes =
+        [
+            ...new Set(
+                spots
+                    .map(
+                        s => s.mode
+                    )
+                    .filter(
+                        m =>
+                            m &&
+                            m !== "UNKNOWN"
+                    )
+            )
+        ]
+        .sort();
+
+
+    select.innerHTML =
+        `
+        <option value="">
+            ALL MODES
+        </option>
+        `;
+
+
+    modes.forEach(
+        mode => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                mode;
+
+            option.textContent =
+                mode;
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    select.value =
+        current;
+
+}
+
 
 
 
@@ -177,10 +260,16 @@ function renderLiveSpots() {
 
 
 
+    const filtered =
+    filterSpots(
+        [...currentSpots]
+    );
+
+
     const sorted =
         sortSpots(
-            [...currentSpots]
-        );
+            filtered
+    );
 
 
     sorted
@@ -315,7 +404,7 @@ function updateDxOpportunity() {
             spot =>
                 spot.distance &&
                 spot.mode !== "UNKNOWN" &&
-                parseInt(spot.age) < 300
+                parseInt(spot.age) < 900
         )
         .sort(
             (a,b) =>
@@ -414,12 +503,17 @@ async function updateLiveSpots() {
 
 
         currentSpots =
-            await response.json();
+    await response.json();
 
 
-	updateDxOpportunity();
-        renderLiveSpots();
+updateModeFilter(
+    currentSpots
+);
 
+
+updateDxOpportunity();
+
+renderLiveSpots();
 
     }
     catch(error) {
@@ -504,17 +598,44 @@ function setupSpotSorting() {
 
 
 
+function setupSpotFilters() {
 
+    const mode =
+        document.getElementById(
+            "modeFilter"
+        );
+
+
+    if (!mode) {
+
+        return;
+
+    }
+
+
+    mode.addEventListener(
+        "change",
+        () => {
+
+            selectedMode =
+                mode.value ||
+                "ALL";
+
+
+            renderLiveSpots();
+
+        }
+    );
+
+}
 
 
 
 function startLiveSpotsUpdater() {
 
-console.log("START LIVE SPOTS");
-
 
     setupSpotSorting();
-
+    setupSpotFilters();
 
     updateLiveSpots();
 
