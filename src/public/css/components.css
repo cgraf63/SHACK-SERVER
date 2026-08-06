@@ -348,11 +348,9 @@
 
     align-items:center;
 
-    gap:10px;
+    gap:18px;
 
-    margin:12px 0;
-    
-    margin-top:5px;
+    flex-wrap:nowrap;
 }
 
 
@@ -404,6 +402,49 @@
 
 
 
+
+/////////////////////////////////////////////////////////
+/ Spot-Actions 
+/////////////////////////////////////////////////////////
+
+
+.spot-actions {
+
+    display:flex;
+
+    gap:8px;
+
+    align-items:center;
+
+}
+
+
+.spot-btn {
+
+    background:transparent;
+
+    border:none;
+
+    padding:0;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+    opacity:0.75;
+
+    transition:0.2s;
+
+}
+
+
+.spot-btn:hover {
+
+    opacity:1;
+
+    transform:scale(1.25);
+
+}
 
 .card-header {
 

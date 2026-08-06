@@ -7,6 +7,7 @@ let selectedMode = "ALL";
 let selectedBand = "ALL";
 let selectedCountry = "ALL";
 let selectedSource = "ALL";
+let selectedConfidence = 0;
 
 let sortField = "age";
 
@@ -135,6 +136,13 @@ function filterSpots(spots) {
                 !selectedSource ||
                 selectedSource === "ALL" ||
                 spot.source.includes(selectedSource)
+            )
+
+            &&
+
+            (
+                selectedConfidence === 0 ||
+                spot.confidence >= selectedConfidence
             )
 
     );
@@ -597,9 +605,29 @@ function renderLiveSpots() {
 
 
 
-                <td>
-                    👀 ☆
-                </td>
+                <td class="spot-actions">
+
+    <button
+        class="spot-btn"
+        title="View details">
+        👀
+    </button>
+
+
+    <button
+        class="spot-btn"
+        title="Add to favorites">
+        ⭐
+    </button>
+
+
+    <button
+        class="spot-btn tune-btn"
+        title="Tune radio">
+        🎯
+    </button>
+
+</td>
 
 
             `;
@@ -847,6 +875,32 @@ function setupSpotSorting() {
 
 
 function setupSpotFilters() {
+
+
+const confidence =
+    document.getElementById(
+        "confidenceFilter"
+    );
+
+
+if (confidence) {
+
+    confidence.addEventListener(
+        "change",
+        () => {
+
+            selectedConfidence =
+                Number(
+                    confidence.value
+                ) || 0;
+
+
+            renderLiveSpots();
+
+        }
+    );
+
+}
 
 
 const source =
