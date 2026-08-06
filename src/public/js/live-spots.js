@@ -515,7 +515,7 @@ function renderLiveSpots() {
 
 
     sorted
-        .slice(0, 15)
+        .slice(0, 22)
         .forEach(
             spot => {    
 

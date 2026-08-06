@@ -494,14 +494,16 @@
 
 .live-table td {
 
-    padding:8px;
+    padding:4px 8px;
 
     border-bottom:1px solid var(--border);
 
     font-size:14px;
 
-}
+    line-height:1.1;
 
+    border-collapse:collapse;
+}
 
 
 .live-table .frequency {
