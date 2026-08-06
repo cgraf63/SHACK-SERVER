@@ -4,6 +4,9 @@ console.log("LIVE SPOTS JS LOADED");
 let currentSpots = [];
 
 let selectedMode = "ALL";
+let selectedBand = "ALL";
+let selectedCountry = "ALL";
+let selectedSource = "ALL";
 
 let sortField = "age";
 
@@ -98,12 +101,42 @@ function sortSpots(spots) {
 
 } 
 
+
 function filterSpots(spots) {
 
     return spots.filter(
         spot =>
-            selectedMode === "ALL" ||
-            spot.mode === selectedMode
+
+            (
+                !selectedMode ||
+                selectedMode === "ALL" ||
+                spot.mode === selectedMode
+            )
+
+            &&
+
+            (
+                !selectedBand ||
+                selectedBand === "ALL" ||
+                spot.band === selectedBand
+            )
+
+            &&
+
+            (
+                !selectedCountry ||
+                selectedCountry === "ALL" ||
+                spot.countryCode === selectedCountry
+            )
+
+            &&
+
+            (
+                !selectedSource ||
+                selectedSource === "ALL" ||
+                spot.source.includes(selectedSource)
+            )
+
     );
 
 }
@@ -180,9 +213,210 @@ function updateModeFilter(spots) {
 
 
 
+function updateBandFilter(spots) {
+
+    const select =
+        document.getElementById(
+            "bandFilter"
+        );
 
 
+    if (!select) {
+        return;
+    }
 
+
+    const current =
+        select.value;
+
+
+    const bands =
+        [
+            ...new Set(
+                spots
+                    .map(
+                        s => s.band
+                    )
+                    .filter(
+                        b => b
+                    )
+            )
+        ]
+        .sort();
+
+
+    select.innerHTML =
+        `
+        <option value="">
+            ALL BANDS
+        </option>
+        `;
+
+
+    bands.forEach(
+        band => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                band;
+
+            option.textContent =
+                band;
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    select.value =
+        current;
+
+}
+
+
+function updateCountryFilter(spots) {
+
+    const select =
+        document.getElementById(
+            "countryFilter"
+        );
+
+
+    if (!select) {
+        return;
+    }
+
+
+    const current =
+        select.value;
+
+
+    const countries =
+        [
+            ...new Set(
+                spots
+                    .map(
+                        s => s.countryCode
+                    )
+                    .filter(
+                        c => c
+                    )
+            )
+        ]
+        .sort();
+
+
+    select.innerHTML =
+        `
+        <option value="">
+            ALL COUNTRIES
+        </option>
+        `;
+
+
+    countries.forEach(
+        country => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                country;
+
+            option.textContent =
+                country.toUpperCase();
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    select.value =
+        current;
+
+}
+
+
+function updateSourceFilter(spots) {
+
+    const select =
+        document.getElementById(
+            "sourceFilter"
+        );
+
+
+    if (!select) {
+        return;
+    }
+
+
+    const current =
+        select.value;
+
+
+    const sources =
+        [
+            ...new Set(
+                spots
+                    .flatMap(
+                        s =>
+                            s.source
+                                .split(", ")
+                    )
+                    .filter(
+                        s => s
+                    )
+            )
+        ]
+        .sort();
+
+
+    select.innerHTML =
+        `
+        <option value="">
+            ALL SOURCES
+        </option>
+        `;
+
+
+    sources.forEach(
+        source => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                source;
+
+            option.textContent =
+                source;
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    select.value =
+        current;
+
+}
 
 function updateSortIcons() {
 
@@ -505,8 +739,22 @@ async function updateLiveSpots() {
         currentSpots =
     await response.json();
 
+// Filter Functions
+
+updateBandFilter(
+    currentSpots
+);
 
 updateModeFilter(
+    currentSpots
+);
+
+updateCountryFilter(
+    currentSpots
+);
+
+
+updateSourceFilter(
     currentSpots
 );
 
@@ -599,6 +847,55 @@ function setupSpotSorting() {
 
 
 function setupSpotFilters() {
+
+
+const source =
+    document.getElementById(
+        "sourceFilter"
+    );
+
+
+if (source) {
+
+    source.addEventListener(
+        "change",
+        () => {
+
+            selectedSource =
+                source.value ||
+                "ALL";
+
+            renderLiveSpots();
+
+        }
+    );
+
+}
+
+const country =
+    document.getElementById(
+        "countryFilter"
+    );
+
+
+if (country) {
+
+    country.addEventListener(
+        "change",
+        () => {
+
+            selectedCountry =
+                country.value ||
+                "ALL";
+
+            renderLiveSpots();
+
+        }
+    );
+
+}
+
+
 
     const mode =
         document.getElementById(

@@ -13,6 +13,8 @@ export interface Spot {
     frequency: string;
 
 
+    band: string;
+
     mode: string;
 
 
@@ -79,6 +81,8 @@ console.log(
                         spot.frequency
                     ),
 
+		band:
+		    spot.band,
 
 
                 mode:
