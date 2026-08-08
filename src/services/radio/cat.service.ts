@@ -294,7 +294,88 @@ if (pcMatch) {
     }
 
 
+setFrequency(frequency: number): void {
 
+    if (!this.port.isOpen) {
+
+        console.error(
+            "CAT not connected"
+        );
+
+        return;
+
+    }
+
+    const value =
+        Math.round(frequency)
+            .toString()
+            .padStart(11, "0");
+
+    const command =
+        `FA${value};`;
+
+    console.log(
+        "CAT TX:",
+        command
+    );
+
+    this.port.write(
+        command
+    );
+
+}
+
+
+setMode(mode: string): void {
+
+    if (!this.port.isOpen) {
+
+        console.error(
+            "CAT not connected"
+        );
+
+        return;
+
+    }
+
+    const modes: Record<string, string> = {
+
+        LSB: "1",
+        USB: "2",
+        CW: "3",
+        FM: "4",
+        AM: "5",
+        "CW-R": "7"
+
+    };
+
+    const code =
+        modes[mode.toUpperCase()];
+
+    if (!code) {
+
+        console.error(
+            "Unsupported CAT mode:",
+            mode
+        );
+
+        return;
+
+    }
+
+    const command =
+        `MDP${code};`;
+
+    console.log(
+        "CAT TX:",
+        command
+    );
+
+    this.port.write(
+        command
+    );
+
+}
 
     getFrequency(): number {
 
