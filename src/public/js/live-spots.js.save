@@ -1,3 +1,8 @@
+
+
+
+
+
 let liveSpotsTimer = null;
 console.log("LIVE SPOTS JS LOADED");
 
@@ -873,59 +878,6 @@ function setupSpotSorting() {
 
 
 function setupSpotFilters() {
-
-
-const resetView =
-    document.getElementById(
-        "resetView"
-    );
-
-
-if (resetView) {
-
-    resetView.addEventListener(
-        "click",
-        () => {
-
-            selectedMode = "ALL";
-            selectedBand = "ALL";
-            selectedCountry = "ALL";
-            selectedSource = "ALL";
-            selectedConfidence = 0;
-
-
-            document.getElementById(
-                "modeFilter"
-            ).value = "";
-
-
-            document.getElementById(
-                "bandFilter"
-            ).value = "";
-
-
-            document.getElementById(
-                "countryFilter"
-            ).value = "";
-
-
-            document.getElementById(
-                "sourceFilter"
-            ).value = "";
-
-
-            document.getElementById(
-                "confidenceFilter"
-            ).value = "";
-
-
-            updateLiveSpots();
-
-        }
-    );
-
-}
-
 
 
 const confidence =

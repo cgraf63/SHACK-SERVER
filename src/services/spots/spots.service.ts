@@ -65,9 +65,18 @@ console.log(
 
 
     return fusionEngine
-        .getSpots()
-        .map(
-
+    .getSpots()
+    .filter(
+        spot =>
+            (
+                Date.now()
+                -
+                spot.lastSeen
+            )
+            <
+            30 * 60 * 1000
+    )
+    .map(
             spot => ({
 
 

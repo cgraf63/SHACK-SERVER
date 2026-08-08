@@ -105,7 +105,7 @@
 
     display:flex;
 
-    align-items:center;
+    align-items:flex-start;
 
     gap:25px;
 
@@ -146,31 +146,55 @@
 }
 
 .station-inline {
-
-    white-space:nowrap;
-
-    border-left:1px solid var(--panel-border);
-
-    padding-left:20px;
-
+    white-space: nowrap;
+    border-left: 1px solid var(--panel-border);
+    padding-left: 20px;
+    align-self: flex-start;
+    margin-top: -25px;
 }
-
 
 .station-title {
-
-    font-size:11px;
-
-    color:var(--text-muted);
-
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cyan);
+    margin-bottom: 5px;
 }
-
 
 #station-inline-content {
-
-    font-size:13px;
-
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
 }
 
+#station-inline-content strong {
+    font-size: 15px;
+    color: var(--text);
+}
+
+.station-radio-data {
+    color: var(--text);
+}
+
+.cat-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text);
+}
+
+.cat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00ff3c;
+    display: inline-block;
+}
+
+
+
+
+  
 .band-section {
 
     width:600px;
@@ -525,6 +549,34 @@
 .live-table .confidence {
 
     color:#9cff00;
+
+}
+
+
+.reset-button {
+
+    background: transparent;
+
+    border: 1px solid var(--border);
+
+    color: var(--text);
+
+    padding: 5px 12px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+}
+
+
+.reset-button:hover {
+
+    color: cyan;
+
+    border-color: cyan;
 
 }
 

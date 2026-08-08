@@ -3,6 +3,9 @@ import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
 import bestBandRouter from './routes/best-band.js';
+import radioRouter from "./routes/radio.js";
+
+
 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,6 +36,11 @@ app.use(
     bestBandRouter
 );
 
+
+app.use(
+    "/api",
+    radioRouter
+);
 
 app.use(compression());
 

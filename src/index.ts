@@ -1,6 +1,10 @@
 import app from './app.js';
 
 import {
+    CatService
+} from "./services/radio/cat.service.js";
+
+import {
     SourceStatusService
 } from "./services/sources/source-status.service.js";
 
@@ -11,6 +15,15 @@ import {
 import {
     SourceManager
 } from './services/sources/source-manager.js';
+
+
+import {
+    catService
+} from "./services/radio/cat-instance.js";
+
+
+catService.start();
+
 
 
 const sourceStatus =
