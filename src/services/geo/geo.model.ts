@@ -2,6 +2,8 @@ export interface DxLocation {
 
     call: string;
 
+    name?: string;
+
     country?: string;
 
     countryCode?: string;
@@ -13,6 +15,12 @@ export interface DxLocation {
     latitude?: number;
 
     longitude?: number;
+
+    ituZone?: number;
+
+    cqZone?: number;
+
+    dxcc?: number;
 
     updated: number;
 

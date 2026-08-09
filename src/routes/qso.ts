@@ -1,9 +1,11 @@
 import { Router } from "express";
 import { qsoService } from "../services/qso/qso-instance.js";
+import { QRZService } from "../services/geo/qrz.service.js";
 
 const router = Router();
 
-
+const qrzService =
+    new QRZService();
 /*
     Create QSO
 */
@@ -18,21 +20,32 @@ router.post(
                 qso_date,
                 time_on_utc,
                 time_off_utc,
+
                 call,
+
                 frequency,
                 band,
                 mode,
+
                 rst_sent,
                 rst_rcvd,
+
                 my_callsign,
                 my_grid,
                 operator_name,
+
                 name,
-                qth,
+                country,
                 dx_grid,
+
+                itu_zone,
+                cq_zone,
+
                 notes,
+
                 spot_source,
                 spot_id
+
             } = req.body;
 
 
@@ -156,59 +169,99 @@ router.post(
                             ? time_off_utc
                             : null,
 
+
                     call:
-                        call.trim().toUpperCase(),
+                        call
+                            .trim()
+                            .toUpperCase(),
+
 
                     frequency,
 
-                    band,
+
+                    band:
+                        band
+                            .trim(),
+
 
                     mode:
-                        mode.trim().toUpperCase(),
+                        mode
+                            .trim()
+                            .toUpperCase(),
+
 
                     rst_sent:
                         typeof rst_sent === "string"
-                            ? rst_sent
+                            ? rst_sent.trim()
                             : "59",
+
 
                     rst_rcvd:
                         typeof rst_rcvd === "string"
-                            ? rst_rcvd
+                            ? rst_rcvd.trim()
                             : "59",
 
+
                     my_callsign:
-                        my_callsign.trim().toUpperCase(),
+                        my_callsign
+                            .trim()
+                            .toUpperCase(),
+
 
                     my_grid:
-                        my_grid.trim().toUpperCase(),
+                        my_grid
+                            .trim()
+                            .toUpperCase(),
+
 
                     operator_name:
-                        operator_name.trim(),
+                        operator_name
+                            .trim(),
+
 
                     name:
                         typeof name === "string"
                             ? name.trim()
                             : null,
 
-                    qth:
-                        typeof qth === "string"
-                            ? qth.trim()
+
+                    country:
+                        typeof country === "string"
+                            ? country.trim()
                             : null,
+
 
                     dx_grid:
                         typeof dx_grid === "string"
-                            ? dx_grid.trim().toUpperCase()
+                            ? dx_grid
+                                .trim()
+                                .toUpperCase()
                             : null,
+
+
+                    itu_zone:
+                        Number.isInteger(itu_zone)
+                            ? itu_zone
+                            : null,
+
+
+                    cq_zone:
+                        Number.isInteger(cq_zone)
+                            ? cq_zone
+                            : null,
+
 
                     notes:
                         typeof notes === "string"
                             ? notes.trim()
                             : null,
 
+
                     spot_source:
                         typeof spot_source === "string"
                             ? spot_source
                             : null,
+
 
                     spot_id:
                         typeof spot_id === "string"
@@ -223,7 +276,9 @@ router.post(
                 qso
             });
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.error(
                 "QSO create failed:",
@@ -253,13 +308,21 @@ router.get(
             const qsos =
                 qsoService.getAllQso();
 
+
             return res.json({
+
                 success: true,
-                count: qsos.length,
+
+                count:
+                    qsos.length,
+
                 qsos
+
             });
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.error(
                 "QSO list failed:",
@@ -272,6 +335,73 @@ router.get(
 
         }
 
+    }
+);
+
+/*
+    QRZ lookup for QSO dialog
+*/
+
+router.get(
+    "/qrz/:call",
+    async (req, res) => {
+
+        const call =
+            String(
+                req.params.call || ""
+            )
+            .trim()
+            .toUpperCase();
+
+
+        if (!call) {
+
+            return res.status(400).json({
+                error:
+                    "Invalid callsign"
+            });
+
+        }
+
+
+        try {
+
+            const result =
+                await qrzService.lookup(
+                    call
+                );
+
+
+            if (!result) {
+
+                return res.status(404).json({
+                    error:
+                        "QRZ callsign not found"
+                });
+
+            }
+
+
+            return res.json({
+                success: true,
+                qrz: result
+            });
+
+
+        }
+        catch (error) {
+
+            console.error(
+                "QRZ lookup route failed:",
+                error
+            );
+
+
+            return res.status(500).json({
+                error:
+                    "QRZ lookup failed"
+            });
+        }
     }
 );
 
@@ -318,11 +448,16 @@ router.get(
 
 
             return res.json({
+
                 success: true,
+
                 qso
+
             });
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.error(
                 "QSO load failed:",
@@ -384,7 +519,9 @@ router.delete(
                 success: true
             });
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.error(
                 "QSO delete failed:",
