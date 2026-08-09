@@ -4,7 +4,6 @@ import { catService } from "../services/radio/cat-instance.js";
 const router =
     Router();
 
-
 router.get(
     "/radio",
     (req, res) => {
@@ -74,6 +73,7 @@ router.post(
         const allowedModes = [
             "LSB",
             "USB",
+            "SSB",
             "CW",
             "CW-R",
             "AM",
@@ -113,8 +113,16 @@ router.post(
         );
 
 
-        catService.setMode(
-            normalizedMode
+        setTimeout(
+            () => {
+
+                catService.setMode(
+                    normalizedMode,
+                    frequency
+                );
+
+            },
+            300
         );
 
 

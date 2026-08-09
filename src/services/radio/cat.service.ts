@@ -325,8 +325,12 @@ setFrequency(frequency: number): void {
 
 }
 
-
-setMode(mode: string): void {
+///////////////////
+//////////////////
+setMode(
+    mode: string,
+    frequency: number
+): void {
 
     if (!this.port.isOpen) {
 
@@ -337,6 +341,34 @@ setMode(mode: string): void {
         return;
 
     }
+
+
+    let normalizedMode =
+        mode.toUpperCase();
+
+
+    /*
+        SSB handling:
+
+        < 10 MHz  -> LSB
+        >= 10 MHz -> USB
+
+        The spot itself supplies "SSB".
+        We only translate it to the
+        corresponding RGO ONE CAT mode.
+    */
+
+    if (
+        normalizedMode === "SSB"
+    ) {
+
+        normalizedMode =
+            frequency < 10000000
+            ? "LSB"
+            : "USB";
+
+    }
+
 
     const modes: Record<string, string> = {
 
@@ -349,8 +381,10 @@ setMode(mode: string): void {
 
     };
 
+
     const code =
-        modes[mode.toUpperCase()];
+        modes[normalizedMode];
+
 
     if (!code) {
 
@@ -363,13 +397,16 @@ setMode(mode: string): void {
 
     }
 
+
     const command =
-        `MDP${code};`;
+        `MD${code};`;
+
 
     console.log(
         "CAT TX:",
         command
     );
+
 
     this.port.write(
         command
@@ -377,32 +414,24 @@ setMode(mode: string): void {
 
 }
 
-    getFrequency(): number {
+getFrequency(): number {
+
+    return this.frequency;
+
+}
 
 
-        return this.frequency;
+getMode(): string {
+
+    return this.mode;
+
+}
 
 
-    }
+getPower(): number {
 
+    return this.power;
 
-
-
-    getMode(): string {
-
-
-        return this.mode;
-
-
-    }
-
- getPower(): number {
-
-        return this.power;
-
-    }
-
-
-
+}
 
 }

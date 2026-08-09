@@ -638,6 +638,208 @@ function renderLiveSpots() {
                 row
             );
 
+table.appendChild(
+    row
+);
+
+
+const tuneButton =
+    row.querySelector(
+        ".tune-btn"
+    );
+
+
+if (tuneButton) {
+
+    tuneButton.addEventListener(
+        "click",
+        async () => {
+
+            // FT8 vorerst nicht tunen
+            if (
+                !spot.mode ||
+                spot.mode === "FT8"
+            ) {
+
+                console.log(
+                    "Radio tune skipped:",
+                    spot.mode
+                );
+
+                return;
+            }
+
+
+            const frequencyKHz =
+                Number(
+                    spot.frequency
+                );
+
+
+            if (
+                !Number.isFinite(
+                    frequencyKHz
+                )
+            ) {
+
+                console.error(
+                    "Invalid spot frequency:",
+                    spot.frequency
+                );
+
+                return;
+            }
+
+
+            const frequencyHz =
+                Math.round(
+                    frequencyKHz * 1000
+                );
+
+function mapSpotModeToRgo(
+    mode,
+    frequencyHz
+) {
+
+    const normalized =
+        mode.toUpperCase();
+
+    if (
+        normalized === "SSB"
+    ) {
+
+        if (
+            frequencyHz < 10000000
+        ) {
+
+            return "LSB";
+
+        }
+
+        return "USB";
+
+    }
+
+    if (
+        normalized === "CW"
+    ) {
+
+        return "CW";
+
+    }
+
+    if (
+        normalized === "CW-R"
+    ) {
+
+        return "CW-R";
+
+    }
+
+    if (
+        normalized === "AM"
+    ) {
+
+        return "AM";
+
+    }
+
+    if (
+        normalized === "FM"
+    ) {
+
+        return "FM";
+
+    }
+
+    return null;
+
+}
+
+            const mode =
+    mapSpotModeToRgo(
+        spot.mode,
+        frequencyHz
+    );
+
+if (!mode) {
+
+    console.log(
+        "Radio tune skipped:",
+        spot.mode
+    );
+
+    return;
+
+}
+
+            console.log(
+                "TUNING RADIO:",
+                frequencyHz,
+                mode
+            );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/radio/tune",
+                        {
+                            method:
+                                "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    frequency:
+                                        frequencyHz,
+
+                                    mode:
+                                        mode
+                                })
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    console.error(
+                        "Radio tune failed:",
+                        result
+                    );
+
+                    return;
+                }
+
+
+                console.log(
+                    "Radio tuned:",
+                    result
+                );
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Radio tune request failed:",
+                    error
+                );
+
+            }
+
+        }
+    );
+
+}
 
         }
     );
