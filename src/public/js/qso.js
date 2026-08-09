@@ -33,17 +33,39 @@ async function openQsoDialog(
 
     activeQsoStation =
         station || {};
+    let stationConfig = {};
+
+    try {
+
+        const response =
+            await fetch("/api/station");
+
+        if (response.ok) {
+
+            stationConfig =
+                await response.json();
+
+        }
+
+    }
+    catch (error) {
+
+        console.warn(
+            "Station config lookup failed:",
+            error
+        );
+
+    }
+
 
 
 const qrzCall =
-    (
-        activeQsoSpot.call ||
-        activeQsoStation.callsign ||
-        activeQsoStation.call ||
-        ""
+    String(
+        activeQsoSpot.call || ""
     )
     .trim()
     .toUpperCase();
+
 
 if (qrzCall) {
 
@@ -608,8 +630,7 @@ console.log(
                             id="qso-my-callsign"
                             type="text"
                             value="${escapeQsoHtml(
-                                activeQsoStation.callsign ||
-                                activeQsoStation.my_callsign ||
+                                stationConfig.callsign ||
                                 ""
                             )}">
 
@@ -626,49 +647,13 @@ console.log(
                             id="qso-my-grid"
                             type="text"
                             value="${escapeQsoHtml(
-                                activeQsoStation.my_grid ||
+                                stationConfig.locator ||
                                 ""
                             )}">
 
                     </div>
 
 
-                    <div class="qso-field">
-
-                        <label>
-                            OPERATOR
-                        </label>
-
-                        <input
-                            id="qso-operator"
-                            type="text"
-                            value="${escapeQsoHtml(
-                                activeQsoStation.name ||
-                                activeQsoStation.operator_name ||
-                                ""
-                            )}">
-
-                    </div>
-
-
-                </div>
-
-
-                <!-- SOURCE -->
-
-                <div class="qso-source">
-
-                    <span>
-                        SPOT SOURCE
-                    </span>
-
-                    <strong>
-                        ${escapeQsoHtml(
-                            spot.source || "--"
-                        )}
-                    </strong>
-
-                </div>
 
 
             </div>
@@ -1016,14 +1001,9 @@ async function saveQso() {
                 .trim()
                 .toUpperCase() || "",
 
-        operator_name:
-            document
-                .getElementById(
-                    "qso-operator"
-                )
-                ?.value
-                .trim() || "",
-
+                operator_name:
+            stationConfig.name ||
+            "",
 
         name:
             document
