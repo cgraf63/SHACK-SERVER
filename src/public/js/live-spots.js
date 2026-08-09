@@ -100,7 +100,7 @@ function sortSpots(spots) {
     );
 
 
-} 
+}
 
 
 function filterSpots(spots) {
@@ -426,6 +426,11 @@ function updateSourceFilter(spots) {
 
 }
 
+
+
+
+
+
 function updateSortIcons() {
 
 
@@ -481,6 +486,68 @@ function updateSortIcons() {
 
 
 
+
+function mapSpotModeToRgo(
+    mode,
+    frequencyHz
+) {
+
+    const normalized =
+        String(mode || "").toUpperCase();
+
+    if (
+        normalized === "SSB"
+    ) {
+
+        if (
+            frequencyHz < 10000000
+        ) {
+
+            return "LSB";
+
+        }
+
+        return "USB";
+
+    }
+
+    if (
+        normalized === "CW"
+    ) {
+
+        return "CW";
+
+    }
+
+    if (
+        normalized === "CW-R"
+    ) {
+
+        return "CW-R";
+
+    }
+
+    if (
+        normalized === "AM"
+    ) {
+
+        return "AM";
+
+    }
+
+    if (
+        normalized === "FM"
+    ) {
+
+        return "FM";
+
+    }
+
+    return null;
+
+}
+
+
 function renderLiveSpots() {
 
 
@@ -517,7 +584,7 @@ function renderLiveSpots() {
     sorted
         .slice(0, 22)
         .forEach(
-            spot => {    
+            spot => {
 
 
 
@@ -627,6 +694,14 @@ function renderLiveSpots() {
         🎯
     </button>
 
+<button
+    class="spot-btn qso-btn"
+    title="Log QSO">
+    📝
+</button>
+
+
+
 </td>
 
 
@@ -638,208 +713,256 @@ function renderLiveSpots() {
                 row
             );
 
-table.appendChild(
-    row
-);
 
+            /*
+                QSO button
 
-const tuneButton =
-    row.querySelector(
-        ".tune-btn"
-    );
+                The complete live-spot object is frozen at the
+                exact moment of the click. The UTC timestamp is
+                generated here and therefore represents the
+                actual moment the operator selected the spot.
+            */
 
-
-if (tuneButton) {
-
-    tuneButton.addEventListener(
-        "click",
-        async () => {
-
-            // FT8 vorerst nicht tunen
-            if (
-                !spot.mode ||
-                spot.mode === "FT8"
-            ) {
-
-                console.log(
-                    "Radio tune skipped:",
-                    spot.mode
-                );
-
-                return;
-            }
-
-
-            const frequencyKHz =
-                Number(
-                    spot.frequency
+            const qsoButton =
+                row.querySelector(
+                    ".qso-btn"
                 );
 
 
-            if (
-                !Number.isFinite(
-                    frequencyKHz
-                )
-            ) {
+            if (qsoButton) {
 
-                console.error(
-                    "Invalid spot frequency:",
-                    spot.frequency
-                );
+                qsoButton.addEventListener(
+                    "click",
+                    async () => {
 
-                return;
-            }
+                        console.log(
+                            "OPEN QSO:",
+                            spot
+                        );
 
 
-            const frequencyHz =
-                Math.round(
-                    frequencyKHz * 1000
-                );
+                        const qsoSpot = {
 
-function mapSpotModeToRgo(
-    mode,
-    frequencyHz
-) {
+                            ...spot,
 
-    const normalized =
-        mode.toUpperCase();
+                            qsoTimeUtc:
+                                new Date().toISOString()
 
-    if (
-        normalized === "SSB"
-    ) {
-
-        if (
-            frequencyHz < 10000000
-        ) {
-
-            return "LSB";
-
-        }
-
-        return "USB";
-
-    }
-
-    if (
-        normalized === "CW"
-    ) {
-
-        return "CW";
-
-    }
-
-    if (
-        normalized === "CW-R"
-    ) {
-
-        return "CW-R";
-
-    }
-
-    if (
-        normalized === "AM"
-    ) {
-
-        return "AM";
-
-    }
-
-    if (
-        normalized === "FM"
-    ) {
-
-        return "FM";
-
-    }
-
-    return null;
-
-}
-
-            const mode =
-    mapSpotModeToRgo(
-        spot.mode,
-        frequencyHz
-    );
-
-if (!mode) {
-
-    console.log(
-        "Radio tune skipped:",
-        spot.mode
-    );
-
-    return;
-
-}
-
-            console.log(
-                "TUNING RADIO:",
-                frequencyHz,
-                mode
-            );
+                        };
 
 
-            try {
+                        /*
+                            Load the station data so the QSO
+                            dialog receives the current station
+                            callsign and locator (e.g. HB9ISO / JN36FL).
+                        */
 
-                const response =
-                    await fetch(
-                        "/api/radio/tune",
-                        {
-                            method:
-                                "POST",
+                        let station = null;
 
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
 
-                            body:
-                                JSON.stringify({
-                                    frequency:
-                                        frequencyHz,
+                        try {
 
-                                    mode:
-                                        mode
-                                })
+                            const response =
+                                await fetch(
+                                    "/api/station"
+                                );
+
+
+                            if (!response.ok) {
+
+                                throw new Error(
+                                    `Station API failed: HTTP ${response.status}`
+                                );
+
+                            }
+
+
+                            station =
+                                await response.json();
+
+
                         }
-                    );
+                        catch (error) {
+
+                            console.error(
+                                "Station data loading failed:",
+                                error
+                            );
+
+                            return;
+
+                        }
 
 
-                const result =
-                    await response.json();
+                        if (
+                            typeof openQsoDialog !==
+                            "function"
+                        ) {
+
+                            console.error(
+                                "openQsoDialog() is not available."
+                            );
+
+                            return;
+
+                        }
 
 
-                if (!response.ok) {
+                        openQsoDialog(
+                            qsoSpot,
+                            station
+                        );
 
-                    console.error(
-                        "Radio tune failed:",
-                        result
-                    );
-
-                    return;
-                }
-
-
-                console.log(
-                    "Radio tuned:",
-                    result
+                    }
                 );
 
             }
-            catch (error) {
 
-                console.error(
-                    "Radio tune request failed:",
-                    error
+
+            /*
+                Tune button
+            */
+
+            const tuneButton =
+                row.querySelector(
+                    ".tune-btn"
+                );
+
+
+            if (tuneButton) {
+
+                tuneButton.addEventListener(
+                    "click",
+                    async () => {
+
+                        // FT8 vorerst nicht tunen
+                        if (
+                            !spot.mode ||
+                            spot.mode === "FT8"
+                        ) {
+
+                            console.log(
+                                "Radio tune skipped:",
+                                spot.mode
+                            );
+
+                            return;
+                        }
+
+
+                        const frequencyKHz =
+                            Number(
+                                spot.frequency
+                            );
+
+
+                        if (
+                            !Number.isFinite(
+                                frequencyKHz
+                            )
+                        ) {
+
+                            console.error(
+                                "Invalid spot frequency:",
+                                spot.frequency
+                            );
+
+                            return;
+                        }
+
+
+                        const frequencyHz =
+                            Math.round(
+                                frequencyKHz * 1000
+                            );
+
+
+                        const mode =
+                            mapSpotModeToRgo(
+                                spot.mode,
+                                frequencyHz
+                            );
+
+
+                        if (!mode) {
+
+                            console.log(
+                                "Radio tune skipped:",
+                                spot.mode
+                            );
+
+                            return;
+
+                        }
+
+
+                        console.log(
+                            "TUNING RADIO:",
+                            frequencyHz,
+                            mode
+                        );
+
+
+                        try {
+
+                            const response =
+                                await fetch(
+                                    "/api/radio/tune",
+                                    {
+                                        method:
+                                            "POST",
+
+                                        headers: {
+                                            "Content-Type":
+                                                "application/json"
+                                        },
+
+                                        body:
+                                            JSON.stringify({
+                                                frequency:
+                                                    frequencyHz,
+
+                                                mode:
+                                                    mode
+                                            })
+                                    }
+                                );
+
+
+                            const result =
+                                await response.json();
+
+
+                            if (!response.ok) {
+
+                                console.error(
+                                    "Radio tune failed:",
+                                    result
+                                );
+
+                                return;
+                            }
+
+
+                            console.log(
+                                "Radio tuned:",
+                                result
+                            );
+
+                        }
+                        catch (error) {
+
+                            console.error(
+                                "Radio tune request failed:",
+                                error
+                            );
+
+                        }
+
+                    }
                 );
 
             }
-
-        }
-    );
-
-}
 
         }
     );
@@ -1284,7 +1407,7 @@ window.addEventListener(
     startLiveSpotsUpdater
 
 );
-// fallback: 
+// fallback:
 
 // fallback
 setTimeout(
@@ -1293,5 +1416,3 @@ setTimeout(
     },
     500
 );
-
-

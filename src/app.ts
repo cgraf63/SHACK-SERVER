@@ -4,7 +4,7 @@ import compression from 'compression';
 import cors from 'cors';
 import bestBandRouter from './routes/best-band.js';
 import radioRouter from "./routes/radio.js";
-
+import qsoRouter from "./routes/qso.js";
 
 
 import path from 'node:path';
@@ -54,7 +54,10 @@ app.use(
 );
 
 
-
+app.use(
+    "/api/qso",
+    qsoRouter
+);
 
 /*
     Static Frontend
