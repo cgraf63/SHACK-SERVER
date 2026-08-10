@@ -3,6 +3,11 @@ import {
 } from "../fusion/fusion-instance.js";
 
 
+import {
+sotaPotaService
+} from "../activities/sota-pota-instance.js";
+
+
 
 export interface Spot {
 
@@ -41,7 +46,7 @@ export interface Spot {
 
     azimuth: number | undefined;
 
-
+    activity: "SOTA" | "POTA" | undefined;
 }
 
 
@@ -145,7 +150,14 @@ console.log(
 
 
                 azimuth:
-                    spot.azimuth
+                    spot.azimuth,
+
+activity:
+    sotaPotaService.isPota(spot.call)
+        ? "POTA"
+        : sotaPotaService.isSota(spot.call)
+            ? "SOTA"
+            : undefined
 
 
             })

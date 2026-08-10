@@ -22,9 +22,14 @@ import {
 } from "./services/radio/cat-instance.js";
 
 
+import {
+    sotaPotaService
+} from "./services/activities/sota-pota-instance.js";
+
 catService.start();
 
 
+sotaPotaService.start();
 
 const sourceStatus =
     new SourceStatusService();

@@ -610,9 +610,17 @@ function renderLiveSpots() {
                         ""
                     }
 
-                    <span>
-                        ${spot.call}
-                    </span>
+                   
+		<span>
+    ${
+        spot.activity === "POTA"
+            ? `<span style="color:#00c853; font-size:12px; margin-right:5px;">▲</span>`
+            : spot.activity === "SOTA"
+                ? `<span style="color:white; font-size:12px; margin-right:5px;">▲</span>`
+                : ""
+    }
+    ${spot.call}
+</span>
 
                 </td>
 

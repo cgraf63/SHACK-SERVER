@@ -22,6 +22,7 @@ export interface FusionSpot {
 
     mode: string;
 
+    activityType?: "SOTA" | "POTA";
 
 
     /*
