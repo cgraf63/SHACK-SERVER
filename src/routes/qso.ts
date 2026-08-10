@@ -36,6 +36,7 @@ router.post(
 
                 name,
                 country,
+                country_code,
                 dx_grid,
 
                 itu_zone,
@@ -229,6 +230,12 @@ router.post(
                         typeof country === "string"
                             ? country.trim()
                             : null,
+
+
+country_code:
+    typeof country_code === "string"
+        ? country_code.trim().toLowerCase()
+        : null,
 
 
                     dx_grid:
@@ -473,6 +480,198 @@ router.get(
     }
 );
 
+
+/*
+    Update QSO
+*/
+
+router.put(
+    "/:id",
+    (req, res) => {
+
+        const id =
+            Number(
+                req.params.id
+            );
+
+        if (
+            !Number.isInteger(id) ||
+            id <= 0
+        ) {
+
+            return res.status(400).json({
+                error: "Invalid QSO ID"
+            });
+
+        }
+
+        try {
+
+            const existing =
+                qsoService.getQso(id);
+
+            if (!existing) {
+
+                return res.status(404).json({
+                    error: "QSO not found"
+                });
+
+            }
+
+            const {
+                qso_date,
+                time_on_utc,
+                time_off_utc,
+                call,
+                frequency,
+                band,
+                mode,
+                rst_sent,
+                rst_rcvd,
+                my_callsign,
+                my_grid,
+                operator_name,
+                name,
+                country,
+                country_code,
+                dx_grid,
+                itu_zone,
+                cq_zone,
+                notes,
+                spot_source,
+                spot_id
+            } = req.body;
+
+            const updated =
+                qsoService.updateQso(
+                    id,
+                    {
+                        qso_date,
+                        time_on_utc,
+                        time_off_utc:
+                            typeof time_off_utc === "string"
+                                ? time_off_utc
+                                : null,
+
+                        call:
+                            String(call || "")
+                                .trim()
+                                .toUpperCase(),
+
+                        frequency,
+
+                        band:
+                            String(band || "")
+                                .trim(),
+
+                        mode:
+                            String(mode || "")
+                                .trim()
+                                .toUpperCase(),
+
+                        rst_sent:
+                            typeof rst_sent === "string"
+                                ? rst_sent.trim()
+                                : "59",
+
+                        rst_rcvd:
+                            typeof rst_rcvd === "string"
+                                ? rst_rcvd.trim()
+                                : "59",
+
+                        my_callsign:
+                            String(my_callsign || "")
+                                .trim()
+                                .toUpperCase(),
+
+                        my_grid:
+                            String(my_grid || "")
+                                .trim()
+                                .toUpperCase(),
+
+                        operator_name:
+                            String(operator_name || "")
+                                .trim(),
+
+                        name:
+                            typeof name === "string"
+                                ? name.trim()
+                                : null,
+
+                        country:
+                            typeof country === "string"
+                                ? country.trim()
+                                : null,
+
+country_code:
+    typeof country_code === "string"
+        ? country_code.trim().toLowerCase()
+        : null,
+
+
+
+                        dx_grid:
+                            typeof dx_grid === "string"
+                                ? dx_grid.trim().toUpperCase()
+                                : null,
+
+                        itu_zone:
+                            Number.isInteger(itu_zone)
+                                ? itu_zone
+                                : null,
+
+                        cq_zone:
+                            Number.isInteger(cq_zone)
+                                ? cq_zone
+                                : null,
+
+                        notes:
+                            typeof notes === "string"
+                                ? notes.trim()
+                                : null,
+
+                        spot_source:
+                            typeof spot_source === "string"
+                                ? spot_source
+                                : null,
+
+                        spot_id:
+                            typeof spot_id === "string"
+                                ? spot_id
+                                : null
+                    }
+                );
+
+            if (!updated) {
+
+                return res.status(404).json({
+                    error: "QSO not found"
+                });
+
+            }
+
+            return res.json({
+                success: true,
+                qso:
+                    qsoService.getQso(id)
+            });
+
+        }
+        catch (error) {
+
+            console.error(
+                "QSO update failed:",
+                error
+            );
+
+            return res.status(500).json({
+                error: "Failed to update QSO"
+            });
+
+        }
+
+    }
+);
 
 /*
     Delete QSO

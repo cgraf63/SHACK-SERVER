@@ -1002,8 +1002,9 @@ async function saveQso() {
                 .toUpperCase() || "",
 
                 operator_name:
-            stationConfig.name ||
-            "",
+    activeQsoStation?.name ||
+    activeQsoStation?.operator_name ||
+    "",
 
         name:
             document
@@ -1020,6 +1021,11 @@ async function saveQso() {
                 )
                 ?.value
                 .trim() || "",
+
+country_code:
+    activeQsoSpot.countryCode ||
+    null,
+
 
         dx_grid:
             document

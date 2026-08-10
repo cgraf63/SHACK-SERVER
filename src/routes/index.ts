@@ -11,4 +11,16 @@ router.get('/', (_req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
+
+router.get('/qso-log', (_req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '..',
+            'public',
+            'qso-log.html'
+        )
+    );
+});
+
 export default router;

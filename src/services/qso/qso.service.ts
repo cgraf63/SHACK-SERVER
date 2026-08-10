@@ -3,6 +3,7 @@ import path from "node:path";
 import fs from "node:fs";
 
 export interface QsoRecord {
+
     id?: number;
 
     qso_date: string;
@@ -24,6 +25,7 @@ export interface QsoRecord {
 
     name?: string | null;
     country?: string | null;
+    country_code?: string | null;
     dx_grid?: string | null;
 
     itu_zone?: number | null;
@@ -35,6 +37,7 @@ export interface QsoRecord {
     spot_id?: string | null;
 
     created_at?: string;
+
 }
 
 
@@ -108,6 +111,7 @@ export class QsoService {
                 name TEXT,
                 qth TEXT,
                 country TEXT,
+                country_code TEXT,
                 dx_grid TEXT,
 
                 itu_zone INTEGER,
@@ -127,7 +131,7 @@ export class QsoService {
             Database migration.
 
             Existing installations may already have
-            the qso table without the new fields.
+            the qso table without the newer fields.
         */
 
         const columns =
@@ -140,11 +144,16 @@ export class QsoService {
 
         const columnNames =
             columns.map(
-                column => column.name
+                column =>
+                    column.name
             );
 
 
-        if (!columnNames.includes("country")) {
+        if (
+            !columnNames.includes(
+                "country"
+            )
+        ) {
 
             this.db.exec(`
                 ALTER TABLE qso
@@ -154,7 +163,25 @@ export class QsoService {
         }
 
 
-        if (!columnNames.includes("itu_zone")) {
+        if (
+            !columnNames.includes(
+                "country_code"
+            )
+        ) {
+
+            this.db.exec(`
+                ALTER TABLE qso
+                ADD COLUMN country_code TEXT
+            `);
+
+        }
+
+
+        if (
+            !columnNames.includes(
+                "itu_zone"
+            )
+        ) {
 
             this.db.exec(`
                 ALTER TABLE qso
@@ -164,7 +191,11 @@ export class QsoService {
         }
 
 
-        if (!columnNames.includes("cq_zone")) {
+        if (
+            !columnNames.includes(
+                "cq_zone"
+            )
+        ) {
 
             this.db.exec(`
                 ALTER TABLE qso
@@ -225,6 +256,7 @@ export class QsoService {
 
                     name,
                     country,
+                    country_code,
                     dx_grid,
 
                     itu_zone,
@@ -261,6 +293,7 @@ export class QsoService {
                     ?,
                     ?,
                     ?,
+                    ?,
 
                     ?,
                     ?,
@@ -283,7 +316,8 @@ export class QsoService {
 
                 qso.time_on_utc,
 
-                qso.time_off_utc ?? null,
+                qso.time_off_utc ??
+                    null,
 
 
                 qso.call,
@@ -296,9 +330,11 @@ export class QsoService {
                 qso.mode,
 
 
-                qso.rst_sent || "59",
+                qso.rst_sent ||
+                    "59",
 
-                qso.rst_rcvd || "59",
+                qso.rst_rcvd ||
+                    "59",
 
 
                 qso.my_callsign,
@@ -308,24 +344,35 @@ export class QsoService {
                 qso.operator_name,
 
 
-                qso.name ?? null,
+                qso.name ??
+                    null,
 
-                qso.country ?? null,
+                qso.country ??
+                    null,
 
-                qso.dx_grid ?? null,
+                qso.country_code ??
+                    null,
 
-
-                qso.itu_zone ?? null,
-
-                qso.cq_zone ?? null,
-
-
-                qso.notes ?? null,
+                qso.dx_grid ??
+                    null,
 
 
-                qso.spot_source ?? null,
+                qso.itu_zone ??
+                    null,
 
-                qso.spot_id ?? null,
+                qso.cq_zone ??
+                    null,
+
+
+                qso.notes ??
+                    null,
+
+
+                qso.spot_source ??
+                    null,
+
+                qso.spot_id ??
+                    null,
 
 
                 createdAt
@@ -349,7 +396,90 @@ export class QsoService {
 
     }
 
+updateQso(
+    id: number,
+    qso: QsoRecord
+): boolean {
 
+    const statement =
+        this.db.prepare(`
+            UPDATE qso
+            SET
+                qso_date = ?,
+                time_on_utc = ?,
+                time_off_utc = ?,
+
+                call = ?,
+
+                frequency = ?,
+                band = ?,
+                mode = ?,
+
+                rst_sent = ?,
+                rst_rcvd = ?,
+
+                my_callsign = ?,
+                my_grid = ?,
+                operator_name = ?,
+
+                name = ?,
+                country = ?,
+                country_code = ?,
+                dx_grid = ?,
+
+                itu_zone = ?,
+                cq_zone = ?,
+
+                notes = ?,
+
+                spot_source = ?,
+                spot_id = ?
+
+            WHERE id = ?
+        `);
+
+
+    const result =
+        statement.run(
+
+            qso.qso_date,
+            qso.time_on_utc,
+            qso.time_off_utc ?? null,
+
+            qso.call,
+
+            qso.frequency,
+            qso.band,
+            qso.mode,
+
+            qso.rst_sent || "59",
+            qso.rst_rcvd || "59",
+
+            qso.my_callsign,
+            qso.my_grid,
+            qso.operator_name,
+
+            qso.name ?? null,
+            qso.country ?? null,
+            qso.country_code ?? null,
+            qso.dx_grid ?? null,
+
+            qso.itu_zone ?? null,
+            qso.cq_zone ?? null,
+
+            qso.notes ?? null,
+
+            qso.spot_source ?? null,
+            qso.spot_id ?? null,
+
+            id
+
+        );
+
+
+    return result.changes > 0;
+
+}
     getQso(
         id: number
     ): QsoRecord | null {
@@ -390,10 +520,13 @@ export class QsoService {
                     time_on_utc DESC
             `);
 
+const rows =
+	statement.all();
 
-        return statement.all() as unknown as QsoRecord[];
+            return rows as unknown as QsoRecord[];
 
-    }
+
+   }
 
 
     deleteQso(
