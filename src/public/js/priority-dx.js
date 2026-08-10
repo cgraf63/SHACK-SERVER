@@ -1,5 +1,3 @@
-let priorityDxTimer = null;
-
 
 async function updatePriorityDX() {
 
@@ -15,16 +13,10 @@ async function updatePriorityDX() {
 
     try {
 
-        const response =
-            await fetch("/api/spots");
-
-
-        const spots =
-            await response.json();
-
+        
 
         const dx =
-            [...spots]
+            [...currentSpots]
                 .filter(
                     spot =>
                         spot.distance !== undefined &&
@@ -95,20 +87,4 @@ async function updatePriorityDX() {
 
 
 
-function startPriorityDX() {
 
-    updatePriorityDX();
-
-
-    priorityDxTimer =
-        setInterval(
-            updatePriorityDX,
-            15000
-        );
-
-}
-
-setTimeout(
-    startPriorityDX,
-    1000
-);

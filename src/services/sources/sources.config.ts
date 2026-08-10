@@ -65,7 +65,9 @@ export const clusterSources: ClusterSource[] = [
 
         type: "dxspider",
 
-        host: "spider.hb9on.net",
+        host: "193.108.55.24",
+       // IP eingetragen da node bei dns ipv6 bevorzugt welches von hb9on nicht akzeptiert wird
+
 
         port: 8000,
 

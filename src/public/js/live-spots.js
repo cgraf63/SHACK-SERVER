@@ -1114,6 +1114,8 @@ updateDxOpportunity();
 
 renderLiveSpots();
 
+updatePriorityDX();
+
     }
     catch(error) {
 
