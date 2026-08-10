@@ -12,43 +12,28 @@ sotaPotaService
 export interface Spot {
 
 
+    
+
     call: string;
-
-
     frequency: string;
-
-
     band: string;
-
     mode: string;
-
-
     source: string;
-
-
     age: string;
-
-
     confidence: number;
-
-
     snr: number;
-
-
     flag: string | undefined;
-
-
     countryCode: string | undefined;
-
-
     distance: number | undefined;
-
-
     azimuth: number | undefined;
+    locator: string | undefined;
 
-    activity: "SOTA" | "POTA" | undefined;
+    activity:
+        "SOTA"
+        | "POTA"
+        | undefined;
+
 }
-
 
 
 
@@ -151,6 +136,9 @@ console.log(
 
                 azimuth:
                     spot.azimuth,
+
+locator:
+    spot.locator,
 
 activity:
     sotaPotaService.isPota(spot.call)

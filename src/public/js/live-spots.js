@@ -683,8 +683,10 @@ function renderLiveSpots() {
                 <td class="spot-actions">
 
     <button
-        class="spot-btn"
-        title="View details">
+        class="spot-btn details-btn"
+	data-action="details"
+	data-call="${spot.call}"
+	title="View details">
         👀
     </button>
 
@@ -720,6 +722,37 @@ function renderLiveSpots() {
             table.appendChild(
                 row
             );
+
+
+/*
+    View details button
+*/
+
+const detailsButton =
+    row.querySelector(
+        ".details-btn"
+    );
+
+if (detailsButton) {
+
+    detailsButton.addEventListener(
+        "click",
+        () => {
+
+            console.log(
+                "VIEW DETAILS:",
+                spot
+            );
+
+            showSpotDetails(
+                spot
+            );
+
+        }
+    );
+
+}
+
 
 
             /*
@@ -1426,3 +1459,348 @@ setTimeout(
     },
     500
 );
+
+
+
+
+async function showSpotDetails(spot) {
+
+    const activity =
+        spot.activity === "POTA"
+            ? `<span style="color:#00c853;">▲ POTA</span>`
+            : spot.activity === "SOTA"
+                ? `<span style="color:white;">▲ SOTA</span>`
+                : "";
+
+    const flag =
+    spot.countryCode
+        ? `<img
+                class="dx-flag"
+                src="/assets/flags/${spot.countryCode}.svg"
+                style="width:20px; height:14px; vertical-align:middle;"
+           >`
+        : "";
+
+    const distance =
+        spot.distance !== undefined
+            ? `${spot.distance.toLocaleString("de-CH")} km`
+            : "—";
+
+    const azimuth =
+        spot.azimuth !== undefined
+            ? `${spot.azimuth}°`
+            : "—";
+
+    const frequency =
+        Number(spot.frequency)
+            .toLocaleString("de-CH");
+
+    const overlay =
+        document.createElement("div");
+
+    overlay.id =
+        "spot-details-overlay";
+
+    overlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.65);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+
+    overlay.innerHTML = `
+
+        <div
+            id="spot-details-dialog"
+            style="
+                position: relative;
+                width: 90vw;
+                max-width: 1100px;
+                background: #0b151e;
+                border-radius: 10px;
+                padding: 18px;
+                box-shadow: 0 10px 40px rgba(0,0,0,.6);
+            "
+        >
+
+            <button
+                id="spot-details-close"
+                type="button"
+                style="
+                    position:absolute;
+                    right:12px;
+                    top:8px;
+                    background:none;
+                    border:none;
+                    color:white;
+                    font-size:20px;
+                    cursor:pointer;
+                "
+            >✕</button>
+
+
+            <div
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:22px;
+                    padding-right:35px;
+                    font-size:16px;
+                    white-space:nowrap;
+                "
+            >
+
+                <span>
+                    ${flag}${spot.call}
+                </span>
+
+                <span>
+                    ${frequency} kHz
+                </span>
+
+                <span>
+                    ${spot.mode}
+                </span>
+
+                <span>
+                    ${distance}
+                </span>
+
+                <span>
+                    ${azimuth}
+                </span>
+
+                ${activity}
+
+            </div>
+
+
+            <div
+                <div
+    id="spot-details-map"
+    style="
+        margin-top:18px;
+        height:550px;
+        border-radius:6px;
+        overflow:hidden;
+    "
+></div>
+
+        </div>
+    `;
+
+    document.body.appendChild(
+        overlay
+    );
+
+
+const mapElement =
+    document.getElementById(
+        "spot-details-map"
+    );
+
+if (!mapElement) {
+    return;
+}
+
+const dxPosition =
+    maidenheadToLatLon(
+        spot.locator
+    );
+
+if (!dxPosition) {
+
+    mapElement.innerHTML =
+        "No valid DX locator";
+
+    return;
+}
+
+
+const map =
+    L.map(
+        mapElement
+    );
+
+
+L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+        maxZoom: 18,
+        attribution:
+            "&copy; OpenStreetMap contributors"
+    }
+).addTo(map);
+
+
+const dxMarker =
+    L.marker([
+        dxPosition.lat,
+        dxPosition.lon
+    ])
+    .addTo(map);
+
+dxMarker.bindPopup(
+    `<b>${spot.call}</b><br>${spot.locator}`
+);
+
+
+const points = [
+    [
+        dxPosition.lat,
+        dxPosition.lon
+    ]
+];
+
+
+try {
+
+    const response =
+        await fetch(
+            "/api/station"
+        );
+
+    if (response.ok) {
+
+        const station =
+            await response.json();
+
+        const qthPosition =
+            maidenheadToLatLon(
+                station.locator
+            );
+
+        if (qthPosition) {
+
+            const qthMarker =
+                L.marker([
+                    qthPosition.lat,
+                    qthPosition.lon
+                ])
+                .addTo(map);
+
+            qthMarker.bindPopup(
+                `<b>${station.callsign}</b><br>${station.locator}`
+            );
+
+
+            points.push([
+                qthPosition.lat,
+                qthPosition.lon
+            ]);
+
+
+            L.polyline(
+                [
+                    [
+                        qthPosition.lat,
+                        qthPosition.lon
+                    ],
+                    [
+                        dxPosition.lat,
+                        dxPosition.lon
+                    ]
+                ],
+                {
+                    weight: 2
+                }
+            ).addTo(map);
+
+        }
+
+    }
+
+}
+catch (error) {
+
+    console.error(
+        "Station data failed:",
+        error
+    );
+
+}
+
+
+map.fitBounds(
+    points,
+    {
+        padding: [
+            40,
+            40
+        ]
+    }
+);
+
+    const closeButton =
+        document.getElementById(
+            "spot-details-close"
+        );
+
+    closeButton?.addEventListener(
+        "click",
+        () => overlay.remove()
+    );
+
+
+    overlay.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target === overlay
+            ) {
+                overlay.remove();
+            }
+
+        }
+    );
+
+}
+
+
+function maidenheadToLatLon(locator) {
+
+    if (!locator || locator.length < 4) {
+        return null;
+    }
+
+    locator =
+        locator
+            .trim()
+            .toUpperCase();
+
+    const lon =
+        -180
+        + (locator.charCodeAt(0) - 65) * 20
+        + (locator.charCodeAt(2) - 48) * 2;
+
+    const lat =
+        -90
+        + (locator.charCodeAt(1) - 65) * 10
+        + (locator.charCodeAt(3) - 48);
+
+    let longitude = lon + 1;
+    let latitude = lat + 0.5;
+
+    if (locator.length >= 6) {
+
+        longitude +=
+            (locator.charCodeAt(4) - 65)
+            * (5 / 60);
+
+        latitude +=
+            (locator.charCodeAt(5) - 65)
+            * (2.5 / 60);
+
+        longitude += 2.5 / 60;
+        latitude += 1.25 / 60;
+    }
+
+    return {
+        lat: latitude,
+        lon: longitude
+    };
+}
