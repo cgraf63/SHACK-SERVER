@@ -5,7 +5,7 @@ import cors from 'cors';
 import bestBandRouter from './routes/best-band.js';
 import radioRouter from "./routes/radio.js";
 import qsoRouter from "./routes/qso.js";
-
+import systemRouter from './routes/system.js';
 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,6 +30,13 @@ const app = express();
 /*
     Middleware
 */
+
+
+app.use(
+    '/api/system',
+    systemRouter
+);
+
 
 app.use(compression());
 

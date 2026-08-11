@@ -1,6 +1,7 @@
 async function loadComponent(id, file) {
 
-    const element = document.getElementById(id);
+    const element =
+        document.getElementById(id);
 
     if (!element) return;
 
@@ -17,7 +18,6 @@ async function loadComponent(id, file) {
 
 
 async function loadComponents() {
-
 
     await loadComponent(
         "sidebar",
@@ -78,6 +78,22 @@ async function loadComponents() {
     );
 
 
+    /*
+        Initialize sidebar functionality
+    */
+
+    const sidebarScript =
+        document.createElement(
+            "script"
+        );
+
+    sidebarScript.src =
+        "js/sidebar.js";
+
+    document.body.appendChild(
+        sidebarScript
+    );
+
 }
 
 
@@ -85,7 +101,9 @@ async function loadComponents() {
 loadComponents().then(() => {
 
     window.dispatchEvent(
-        new Event("componentsLoaded")
+        new Event(
+            "componentsLoaded"
+        )
     );
 
 });

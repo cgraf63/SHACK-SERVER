@@ -945,3 +945,390 @@ img.flag {
     line-height:1.5;
 
 }
+
+
+/* =========================================
+   SIDEBAR NAVIGATION
+   ========================================= */
+
+.nav-section {
+    margin: 20px 12px 7px;
+
+    color: #b56cff;
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+}
+
+
+.sidebar nav a {
+    display: block;
+
+    padding: 9px 12px;
+    margin: 2px 0;
+
+    color: var(--text);
+
+    text-decoration: none;
+
+    border-radius: 6px;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+
+.sidebar nav a:hover {
+    color: #e06cff;
+
+    background:
+        rgba(181, 108, 255, 0.10);
+
+    text-decoration: none;
+}
+
+
+.sidebar nav a.active {
+    color: #b56cff;
+
+    background:
+        rgba(181, 108, 255, 0.14);
+
+    font-weight: 600;
+
+    text-decoration: none;
+}
+
+
+.nav-separator {
+    margin: 18px 12px 8px;
+
+    border-top:
+        1px solid var(--border);
+}
+
+
+.nav-shutdown {
+    color: #ff7070 !important;
+}
+
+
+.nav-shutdown:hover {
+    color: #ff9090 !important;
+
+    background:
+        rgba(255, 80, 80, 0.08) !important;
+}
+
+
+/* =========================================
+   SHUTDOWN DIALOG
+   ========================================= */
+
+.shutdown-modal {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    z-index: 10000;
+
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.shutdown-modal.visible {
+    display: flex;
+}
+
+.shutdown-dialog {
+    width: 360px;
+
+    padding: 24px;
+
+    background: #10151c;
+
+    border: 1px solid rgba(181, 108, 255, 0.45);
+    border-radius: 10px;
+
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+.shutdown-title {
+    color: #b56cff;
+
+    font-size: 18px;
+    font-weight: 600;
+
+    margin-bottom: 12px;
+}
+
+.shutdown-message {
+    color: var(--text);
+
+    font-size: 14px;
+    line-height: 1.5;
+
+    margin-bottom: 22px;
+}
+
+.shutdown-actions {
+    display: flex;
+
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.shutdown-actions button {
+    padding: 8px 16px;
+
+    border: 0;
+    border-radius: 6px;
+
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.shutdown-cancel {
+    color: var(--text);
+    background: #252b34;
+}
+
+.shutdown-cancel:hover {
+    background: #303743;
+}
+
+.shutdown-confirm {
+    color: white;
+    background: #d95757;
+}
+
+.shutdown-confirm:hover {
+    background: #ed6868;
+}
+
+/* =========================================
+   SHACK-SERVER ANIMATED LOGO
+   ========================================= */
+
+.shack-logo {
+
+    width: 190px;
+    height: auto;
+
+    display: block;
+
+    overflow: visible;
+
+}
+
+
+/* Network lines */
+
+.logo-link {
+
+    stroke: rgba(180, 190, 200, 0.28);
+
+    stroke-width: 2;
+
+    opacity: 0.7;
+
+    filter: none;
+
+}
+
+/* Nodes */
+.logo-node {
+
+    fill: currentColor;
+    stroke: currentColor;
+
+    stroke-width: 1.5;
+
+    opacity: 0.95;
+
+    transform-box: fill-box;
+    transform-origin: center;
+
+    filter: none;
+
+    animation:
+        logoNodePulse 4s infinite;
+
+}
+   
+/* Individual node colours */
+
+.node-1 {
+    stroke: #00c8ff;
+    animation-delay: 0s;
+}
+
+.node-2 {
+    stroke: #ff6500;
+    animation-delay: .5s;
+}
+
+.node-3 {
+    stroke: #ffc400;
+    animation-delay: 1s;
+}
+
+.node-4 {
+    stroke: #ffc400;
+    animation-delay: 1.5s;
+}
+
+.node-5 {
+    stroke: #00c8ff;
+    animation-delay: 2s;
+}
+
+.node-6 {
+    stroke: #b000ff;
+    animation-delay: 2.5s;
+}
+
+.node-7 {
+    stroke: #00e85a;
+    animation-delay: 3s;
+}
+
+.node-8 {
+    stroke: #00d9ff;
+    animation-delay: 3.5s;
+}
+
+
+/* Central node */
+
+.logo-core {
+D
+    fill: #ffb000;
+
+    stroke: #ffffff;
+
+    stroke-width: 2;
+
+    filter:
+        drop-shadow(
+            0 0 5px #ffb000
+        );
+
+    transform-box: fill-box;
+    transform-origin: center;
+
+    animation:
+        logoCorePulse 2s infinite;
+
+}
+
+
+/* Outer nodes light up sequentially */
+
+@keyframes logoNodePulse {
+
+    0%,
+    25%,
+    100% {
+
+        opacity: 0.95;
+
+        transform:
+            scale(1);
+
+        filter: none;
+
+    }
+
+    7% {
+
+        opacity: 1;
+
+        transform:
+            scale(1.18);
+
+        filter:
+            drop-shadow(
+                0 0 5px currentColor
+            )
+            drop-shadow(
+                0 0 12px currentColor
+            );
+
+    }
+
+    15% {
+
+        opacity: 1;
+
+        transform:
+            scale(1.05);
+
+        filter:
+            drop-shadow(
+                0 0 3px currentColor
+            );
+
+    }
+
+}
+  
+
+
+               
+/* Subtle connection pulse */
+
+@keyframes logoLinkPulse {
+
+    0%,
+    100% {
+
+        opacity: .25;
+
+    }
+
+    8% {
+
+        opacity: .8;
+
+    }
+
+    18% {
+
+        opacity: .35;
+
+    }
+
+}
+
+
+/* Central node */
+
+@keyframes logoCorePulse {
+
+    0%,
+    100% {
+
+        transform:
+            scale(1);
+
+        opacity: .85;
+
+    }
+
+    50% {
+
+        transform:
+            scale(1.25);
+
+        opacity: 1;
+
+    }
+
+}
