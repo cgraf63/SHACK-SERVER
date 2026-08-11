@@ -2,50 +2,16 @@
 
     <div class="brand">
 
-    <svg
-        class="shack-logo"
-        viewBox="0 0 360 220"
-        aria-label="SHACK-SERVER">
+        <img
+            src="assets/shack-server-logo.png"
+            class="logo"
+            alt="SHACK-SERVER">
 
-        <g class="logo-network">
+        <div class="brand-name">
+            SHACK-SERVER
+        </div>
 
-            <!-- connections -->
-            <line class="logo-link" x1="180" y1="110" x2="180" y2="25"/>
-            <line class="logo-link" x1="180" y1="110" x2="255" y2="55"/>
-            <line class="logo-link" x1="180" y1="110" x2="315" y2="110"/>
-            <line class="logo-link" x1="180" y1="110" x2="255" y2="165"/>
-            <line class="logo-link" x1="180" y1="110" x2="180" y2="195"/>
-            <line class="logo-link" x1="180" y1="110" x2="105" y2="165"/>
-            <line class="logo-link" x1="180" y1="110" x2="45" y2="110"/>
-            <line class="logo-link" x1="180" y1="110" x2="105" y2="55"/>
-
-            <!-- nodes -->
-            <circle class="logo-node node-1" cx="180" cy="25" r="9"/>
-            <circle class="logo-node node-2" cx="255" cy="55" r="9"/>
-            <circle class="logo-node node-3" cx="315" cy="110" r="9"/>
-            <circle class="logo-node node-4" cx="255" cy="165" r="9"/>
-            <circle class="logo-node node-5" cx="180" cy="195" r="9"/>
-            <circle class="logo-node node-6" cx="105" cy="165" r="9"/>
-            <circle class="logo-node node-7" cx="45" cy="110" r="9"/>
-            <circle class="logo-node node-8" cx="105" cy="55" r="9"/>
-
-            <!-- center -->
-            <circle
-                class="logo-core"
-                cx="180"
-                cy="110"
-                r="12"/>
-
-        </g>
-
-    </svg>
-
-
-    <div class="brand-name">
-        SHACK-SERVER
     </div>
-
-</div>
 
 
     <div id="system-status"></div>
@@ -91,70 +57,92 @@
 
         <a
             href="#"
-            id="restart-btn"
-            class="nav-restart">
-            ↻ Restart Server
-        </a>
-
-
-        <a
-            href="#"
             id="shutdown-btn"
             class="nav-shutdown">
             ⏻ Shutdown
         </a>
 
 
-        <!-- SYSTEM ACTION MODAL -->
-
-        <div
-            id="shutdown-modal"
-            class="shutdown-modal">
-
-            <div class="shutdown-dialog">
-
-
-                <div
-                    id="shutdown-title"
-                    class="shutdown-title">
-                    Shutdown SHACK-SERVER?
-                </div>
+        <a
+            href="#"
+            id="about-btn"
+            class="nav-about">
+            ◉ About
+        </a>
 
 
-                <div
-                    id="shutdown-message"
-                    class="shutdown-message">
-                    Are you sure you want to shut down the server?
-                </div>
+    </nav>
 
 
-                <div class="shutdown-actions">
+    <!-- Shutdown confirmation -->
+
+    <div
+        id="shutdown-modal"
+        class="shutdown-modal">
+
+        <div class="shutdown-dialog">
+
+            <div class="shutdown-title">
+                Shutdown SHACK-SERVER?
+            </div>
+
+            <div class="shutdown-message">
+                Are you sure you want to shut down the server?
+            </div>
+
+            <div class="shutdown-actions">
+
+                <button
+                    id="shutdown-cancel"
+                    class="shutdown-cancel"
+                    type="button">
+                    Cancel
+                </button>
 
 
-                    <button
-                        id="shutdown-cancel"
-                        class="shutdown-cancel"
-                        type="button">
-                        Cancel
-                    </button>
-
-
-                    <button
-                        id="shutdown-confirm"
-                        class="shutdown-confirm"
-                        type="button">
-                        Shutdown
-                    </button>
-
-
-                </div>
-
+                <button
+                    id="shutdown-confirm"
+                    class="shutdown-confirm"
+                    type="button">
+                    Shutdown
+                </button>
 
             </div>
 
         </div>
 
+    </div>
 
-    </nav>
+
+    <!-- About -->
+
+    <div
+        id="about-modal"
+        class="about-modal">
+
+        <div class="about-dialog">
+
+            <button
+                id="about-close"
+                class="about-close"
+                type="button"
+                aria-label="Close">
+                ×
+            </button>
+
+
+            <div class="about-logo-wrapper">
+
+                <img
+                    src="assets/shack-server-about.svg"
+                    class="about-logo"
+                    alt="SHACK-SERVER">
+
+            </div>
+
+        </div>
+
+    </div>
+
 
 </aside>

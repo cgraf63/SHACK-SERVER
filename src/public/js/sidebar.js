@@ -3,54 +3,50 @@ console.log("SIDEBAR JS LOADED");
 
 function setupSidebar() {
 
-    const restartButton =
-        document.getElementById(
-            "restart-btn"
-        );
+    /*
+        Shutdown elements
+    */
 
     const shutdownButton =
-        document.getElementById(
-            "shutdown-btn"
-        );
+        document.getElementById("shutdown-btn");
 
     const modal =
-        document.getElementById(
-            "shutdown-modal"
-        );
-
-    const title =
-        document.getElementById(
-            "shutdown-title"
-        );
-
-    const message =
-        document.getElementById(
-            "shutdown-message"
-        );
+        document.getElementById("shutdown-modal");
 
     const cancelButton =
-        document.getElementById(
-            "shutdown-cancel"
-        );
+        document.getElementById("shutdown-cancel");
 
     const confirmButton =
-        document.getElementById(
-            "shutdown-confirm"
-        );
+        document.getElementById("shutdown-confirm");
 
+
+    /*
+        About elements
+    */
+
+    const aboutButton =
+        document.getElementById("about-btn");
+
+    const aboutModal =
+        document.getElementById("about-modal");
+
+    const aboutClose =
+        document.getElementById("about-close");
+
+
+    /*
+        Check shutdown UI
+    */
 
     if (
-        !restartButton ||
         !shutdownButton ||
         !modal ||
-        !title ||
-        !message ||
         !cancelButton ||
         !confirmButton
     ) {
 
         console.warn(
-            "Sidebar system controls not found"
+            "Shutdown UI elements not found"
         );
 
         return;
@@ -58,77 +54,8 @@ function setupSidebar() {
     }
 
 
-    let systemAction =
-        "shutdown";
-
-
     /*
-        Open dialog
-    */
-
-    function openDialog(action) {
-
-        systemAction =
-            action;
-
-
-        if (action === "restart") {
-
-            title.textContent =
-                "Restart SHACK-SERVER?";
-
-            message.textContent =
-                "Are you sure you want to restart the server?";
-
-            confirmButton.textContent =
-                "Restart";
-
-        }
-        else {
-
-            title.textContent =
-                "Shutdown SHACK-SERVER?";
-
-            message.textContent =
-                "Are you sure you want to shut down the server?";
-
-            confirmButton.textContent =
-                "Shutdown";
-
-        }
-
-
-        confirmButton.disabled =
-            false;
-
-
-        modal.classList.add(
-            "visible"
-        );
-
-    }
-
-
-    /*
-        Restart
-    */
-
-    restartButton.addEventListener(
-        "click",
-        event => {
-
-            event.preventDefault();
-
-            openDialog(
-                "restart"
-            );
-
-        }
-    );
-
-
-    /*
-        Shutdown
+        Shutdown button
     */
 
     shutdownButton.addEventListener(
@@ -137,8 +64,8 @@ function setupSidebar() {
 
             event.preventDefault();
 
-            openDialog(
-                "shutdown"
+            modal.classList.add(
+                "visible"
             );
 
         }
@@ -146,7 +73,7 @@ function setupSidebar() {
 
 
     /*
-        Cancel
+        Shutdown cancel
     */
 
     cancelButton.addEventListener(
@@ -162,7 +89,8 @@ function setupSidebar() {
 
 
     /*
-        Click outside dialog
+        Close shutdown modal
+        when clicking outside dialog
     */
 
     modal.addEventListener(
@@ -184,7 +112,7 @@ function setupSidebar() {
 
 
     /*
-        Confirm
+        Shutdown confirmation
     */
 
     confirmButton.addEventListener(
@@ -194,35 +122,15 @@ function setupSidebar() {
             confirmButton.disabled =
                 true;
 
-
-            if (
-                systemAction ===
-                "restart"
-            ) {
-
-                confirmButton.textContent =
-                    "Restarting...";
-
-            }
-            else {
-
-                confirmButton.textContent =
-                    "Shutting down...";
-
-            }
-
-
-            const endpoint =
-                systemAction === "restart"
-                    ? "/api/system/restart"
-                    : "/api/system/shutdown";
+            confirmButton.textContent =
+                "Shutting down...";
 
 
             try {
 
                 const response =
                     await fetch(
-                        endpoint,
+                        "/api/system/shutdown",
                         {
                             method: "POST"
                         }
@@ -238,27 +146,14 @@ function setupSidebar() {
                 }
 
 
-                if (
-                    systemAction ===
-                    "restart"
-                ) {
-
-                    confirmButton.textContent =
-                        "Server restarting...";
-
-                }
-                else {
-
-                    confirmButton.textContent =
-                        "Server shutting down...";
-
-                }
+                confirmButton.textContent =
+                    "Server shutting down...";
 
             }
             catch (error) {
 
                 console.error(
-                    "System action failed:",
+                    "Shutdown failed:",
                     error
                 );
 
@@ -266,19 +161,97 @@ function setupSidebar() {
                 confirmButton.disabled =
                     false;
 
-
                 confirmButton.textContent =
-                    systemAction === "restart"
-                        ? "Restart"
-                        : "Shutdown";
+                    "Shutdown";
 
             }
 
         }
     );
 
+
+    /*
+        ABOUT
+    */
+
+    if (
+        aboutButton &&
+        aboutModal &&
+        aboutClose
+    ) {
+
+
+        /*
+            Open About
+        */
+
+        aboutButton.addEventListener(
+            "click",
+            event => {
+
+                event.preventDefault();
+
+                aboutModal.classList.add(
+                    "visible"
+                );
+
+            }
+        );
+
+
+        /*
+            Close About
+        */
+
+        aboutClose.addEventListener(
+            "click",
+            () => {
+
+                aboutModal.classList.remove(
+                    "visible"
+                );
+
+            }
+        );
+
+
+        /*
+            Close About
+            when clicking outside dialog
+        */
+
+        aboutModal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target === aboutModal
+                ) {
+
+                    aboutModal.classList.remove(
+                        "visible"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+    else {
+
+        console.warn(
+            "About UI elements not found"
+        );
+
+    }
+
 }
 
+
+/*
+    Components are loaded dynamically.
+*/
 
 window.addEventListener(
     "componentsLoaded",

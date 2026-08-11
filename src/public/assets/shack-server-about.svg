@@ -1,0 +1,666 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 900 700"
+    role="img"
+    aria-labelledby="title desc">
+
+    <title id="title">SHACK-SERVER</title>
+    <desc id="desc">
+        Animated neon network visualization for SHACK-SERVER
+    </desc>
+
+
+    <defs>
+
+        <!-- Background glow -->
+
+        <radialGradient
+            id="backgroundGlow"
+            cx="50%"
+            cy="42%"
+            r="60%">
+
+            <stop
+                offset="0"
+                stop-color="#101b2b"/>
+
+            <stop
+                offset=".55"
+                stop-color="#060b14"/>
+
+            <stop
+                offset="1"
+                stop-color="#020409"/>
+
+        </radialGradient>
+
+
+        <!-- Core -->
+
+        <radialGradient
+            id="coreGradient">
+
+            <stop
+                offset="0"
+                stop-color="#fff7b0"/>
+
+            <stop
+                offset=".25"
+                stop-color="#ffd000"/>
+
+            <stop
+                offset=".65"
+                stop-color="#ff8a00"/>
+
+            <stop
+                offset="1"
+                stop-color="#ff4d00"/>
+
+        </radialGradient>
+
+
+        <!-- Neon filters -->
+
+        <filter
+            id="cyanGlow"
+            x="-100%"
+            y="-100%"
+            width="300%"
+            height="300%">
+
+            <feGaussianBlur
+                stdDeviation="5"
+                result="blur"/>
+
+            <feMerge>
+
+                <feMergeNode
+                    in="blur"/>
+
+                <feMergeNode
+                    in="SourceGraphic"/>
+
+            </feMerge>
+
+        </filter>
+
+
+        <filter
+            id="orangeGlow"
+            x="-100%"
+            y="-100%"
+            width="300%"
+            height="300%">
+
+            <feGaussianBlur
+                stdDeviation="6"
+                result="blur"/>
+
+            <feMerge>
+
+                <feMergeNode
+                    in="blur"/>
+
+                <feMergeNode
+                    in="SourceGraphic"/>
+
+            </feMerge>
+
+        </filter>
+
+
+        <filter
+            id="coreGlow"
+            x="-150%"
+            y="-150%"
+            width="400%"
+            height="400%">
+
+            <feGaussianBlur
+                stdDeviation="10"
+                result="blur"/>
+
+            <feMerge>
+
+                <feMergeNode
+                    in="blur"/>
+
+                <feMergeNode
+                    in="SourceGraphic"/>
+
+            </feMerge>
+
+        </filter>
+
+
+        <!-- Moving energy -->
+
+        <linearGradient
+            id="energyGradient"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="0">
+
+            <stop
+                offset="0"
+                stop-color="transparent"/>
+
+            <stop
+                offset=".45"
+                stop-color="white"/>
+
+            <stop
+                offset=".55"
+                stop-color="white"/>
+
+            <stop
+                offset="1"
+                stop-color="transparent"/>
+
+        </linearGradient>
+
+
+    </defs>
+
+
+    <!-- Background -->
+
+    <rect
+        width="900"
+        height="700"
+        fill="url(#backgroundGlow)"/>
+
+
+    <!-- Decorative rings -->
+
+    <g
+        fill="none"
+        stroke="#163047"
+        opacity=".45">
+
+        <circle
+            cx="450"
+            cy="300"
+            r="205"/>
+
+        <circle
+            cx="450"
+            cy="300"
+            r="230"/>
+
+        <circle
+            cx="450"
+            cy="300"
+            r="255"/>
+
+    </g>
+
+
+    <!-- Rotating outer ring -->
+
+    <circle
+        cx="450"
+        cy="300"
+        r="245"
+        fill="none"
+        stroke="#00c8ff"
+        stroke-width="1"
+        stroke-dasharray="4 24"
+        opacity=".45">
+
+        <animateTransform
+            attributeName="transform"
+            type="rotate"
+            from="0 450 300"
+            to="360 450 300"
+            dur="24s"
+            repeatCount="indefinite"/>
+
+    </circle>
+
+
+    <!-- Network -->
+
+    <g
+        transform="translate(450 300)">
+
+        <!-- connections -->
+
+        <g
+            fill="none"
+            stroke-width="4"
+            stroke-linecap="round">
+
+            <line
+                class="connection c1"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="-180"
+                stroke="#00c8ff"/>
+
+            <line
+                class="connection c2"
+                x1="0"
+                y1="0"
+                x2="127"
+                y2="-127"
+                stroke="#ff6500"/>
+
+            <line
+                class="connection c3"
+                x1="0"
+                y1="0"
+                x2="180"
+                y2="0"
+                stroke="#ffc400"/>
+
+            <line
+                class="connection c4"
+                x1="0"
+                y1="0"
+                x2="127"
+                y2="127"
+                stroke="#00e85a"/>
+
+            <line
+                class="connection c5"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="180"
+                stroke="#00c8ff"/>
+
+            <line
+                class="connection c6"
+                x1="0"
+                y1="0"
+                x2="-127"
+                y2="127"
+                stroke="#b000ff"/>
+
+            <line
+                class="connection c7"
+                x1="0"
+                y1="0"
+                x2="-180"
+                y2="0"
+                stroke="#ffc400"/>
+
+            <line
+                class="connection c8"
+                x1="0"
+                y1="0"
+                x2="-127"
+                y2="-127"
+                stroke="#00c8ff"/>
+
+        </g>
+
+
+        <!-- travelling energy -->
+
+        <g
+            fill="white"
+            opacity=".9">
+
+            <circle
+                r="4"
+                filter="url(#cyanGlow)">
+
+                <animateMotion
+                    dur="2.8s"
+                    repeatCount="indefinite"
+                    path="M0,0 L0,-180"/>
+
+            </circle>
+
+
+            <circle
+                r="4"
+                filter="url(#orangeGlow)">
+
+                <animateMotion
+                    dur="2.8s"
+                    begin=".35s"
+                    repeatCount="indefinite"
+                    path="M0,0 L127,-127"/>
+
+            </circle>
+
+
+            <circle
+                r="4"
+                filter="url(#orangeGlow)">
+
+                <animateMotion
+                    dur="2.8s"
+                    begin=".7s"
+                    repeatCount="indefinite"
+                    path="M0,0 L180,0"/>
+
+            </circle>
+
+
+            <circle
+                r="4"
+                filter="url(#cyanGlow)">
+
+                <animateMotion
+                    dur="2.8s"
+                    begin="1.05s"
+                    repeatCount="indefinite"
+                    path="M0,0 L127,127"/>
+
+            </circle>
+
+
+            <circle
+                r="4"
+                filter="url(#cyanGlow)">
+
+                <animateMotion
+                    dur="2.8s"
+                    begin="1.4s"
+                    repeatCount="indefinite"
+                    path="M0,0 L0,180"/>
+
+            </circle>
+
+
+            <circle
+                r="4"
+                filter="url(#orangeGlow)">
+
+                <animateMotion
+                    dur="2.8s"
+                    begin="1.75s"
+                    repeatCount="indefinite"
+                    path="M0,0 L-127,127"/>
+
+            </circle>
+
+
+            <circle
+                r="4"
+                filter="url(#orangeGlow)">
+
+                <animateMotion
+                    dur="2.8s"
+                    begin="2.1s"
+                    repeatCount="indefinite"
+                    path="M0,0 L-180,0"/>
+
+            </circle>
+
+
+            <circle
+                r="4"
+                filter="url(#cyanGlow)">
+
+                <animateMotion
+                    dur="2.8s"
+                    begin="2.45s"
+                    repeatCount="indefinite"
+                    path="M0,0 L-127,-127"/>
+
+            </circle>
+
+        </g>
+
+
+        <!-- Nodes -->
+
+        <g>
+
+            <circle
+                cx="0"
+                cy="-180"
+                r="17"
+                fill="#00c8ff"
+                filter="url(#cyanGlow)"/>
+
+            <circle
+                cx="127"
+                cy="-127"
+                r="17"
+                fill="#ff6500"
+                filter="url(#orangeGlow)"/>
+
+            <circle
+                cx="180"
+                cy="0"
+                r="17"
+                fill="#ffc400"
+                filter="url(#orangeGlow)"/>
+
+            <circle
+                cx="127"
+                cy="127"
+                r="17"
+                fill="#00e85a"
+                filter="url(#cyanGlow)"/>
+
+            <circle
+                cx="0"
+                cy="180"
+                r="17"
+                fill="#00c8ff"
+                filter="url(#cyanGlow)"/>
+
+            <circle
+                cx="-127"
+                cy="127"
+                r="17"
+                fill="#b000ff"
+                filter="url(#orangeGlow)"/>
+
+            <circle
+                cx="-180"
+                cy="0"
+                r="17"
+                fill="#ffc400"
+                filter="url(#orangeGlow)"/>
+
+            <circle
+                cx="-127"
+                cy="-127"
+                r="17"
+                fill="#00c8ff"
+                filter="url(#cyanGlow)"/>
+
+        </g>
+
+
+        <!-- Node highlight pulses -->
+
+        <g
+            fill="none"
+            stroke="white"
+            stroke-width="2">
+
+            <circle
+                cx="0"
+                cy="-180"
+                r="17"
+                opacity="0">
+
+                <animate
+                    attributeName="r"
+                    values="17;29;17"
+                    dur="4s"
+                    repeatCount="indefinite"/>
+
+                <animate
+                    attributeName="opacity"
+                    values="0;.9;0"
+                    dur="4s"
+                    repeatCount="indefinite"/>
+
+            </circle>
+
+
+            <circle
+                cx="127"
+                cy="-127"
+                r="17"
+                opacity="0">
+
+                <animate
+                    attributeName="r"
+                    values="17;29;17"
+                    dur="4s"
+                    begin=".5s"
+                    repeatCount="indefinite"/>
+
+                <animate
+                    attributeName="opacity"
+                    values="0;.9;0"
+                    dur="4s"
+                    begin=".5s"
+                    repeatCount="indefinite"/>
+
+            </circle>
+
+
+            <circle
+                cx="180"
+                cy="0"
+                r="17"
+                opacity="0">
+
+                <animate
+                    attributeName="r"
+                    values="17;29;17"
+                    dur="4s"
+                    begin="1s"
+                    repeatCount="indefinite"/>
+
+                <animate
+                    attributeName="opacity"
+                    values="0;.9;0"
+                    dur="4s"
+                    begin="1s"
+                    repeatCount="indefinite"/>
+
+            </circle>
+
+
+            <circle
+                cx="127"
+                cy="127"
+                r="17"
+                opacity="0">
+
+                <animate
+                    attributeName="r"
+                    values="17;29;17"
+                    dur="4s"
+                    begin="1.5s"
+                    repeatCount="indefinite"/>
+
+                <animate
+                    attributeName="opacity"
+                    values="0;.9;0"
+                    dur="4s"
+                    begin="1.5s"
+                    repeatCount="indefinite"/>
+
+            </circle>
+
+        </g>
+
+
+        <!-- Core glow -->
+
+        <circle
+            r="42"
+            fill="#ff9d00"
+            opacity=".18"
+            filter="url(#coreGlow)"/>
+
+
+        <circle
+            r="31"
+            fill="url(#coreGradient)"
+            filter="url(#coreGlow)"/>
+
+
+        <circle
+            r="16"
+            fill="#fff4b0"/>
+
+
+        <circle
+            r="8"
+            fill="#ffffff"/>
+
+
+        <circle
+            r="48"
+            fill="none"
+            stroke="#ffb000"
+            stroke-width="2"
+            opacity=".7">
+
+            <animate
+                attributeName="r"
+                values="42;58;42"
+                dur="2.5s"
+                repeatCount="indefinite"/>
+
+            <animate
+                attributeName="opacity"
+                values=".7;0;.7"
+                dur="2.5s"
+                repeatCount="indefinite"/>
+
+        </circle>
+
+    </g>
+
+
+    <!-- Title -->
+
+    <text
+        x="450"
+        y="605"
+        text-anchor="middle"
+        fill="#ffffff"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="42"
+        font-weight="700"
+        letter-spacing="7">
+
+        SHACK-SERVER
+
+    </text>
+
+
+    <text
+        x="450"
+        y="640"
+        text-anchor="middle"
+        fill="#7e8da3"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="14"
+        letter-spacing="5">
+
+        CONNECT • MONITOR • CONTROL
+
+    </text>
+
+
+<text
+    x="450"
+    y="665"
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="11"
+    letter-spacing="2"
+    fill="#6f7f91">
+    © 2026, Christoph Graf HB9ISO
+</text>
+
+</svg>
