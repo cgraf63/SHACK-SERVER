@@ -413,6 +413,445 @@ router.get(
 );
 
 
+
+/*
+    ADIF Import
+*/
+
+router.post(
+    "/import-adif",
+    (req, res) => {
+
+        try {
+
+            const adif =
+                req.body?.adif;
+
+
+            if (
+                typeof adif !== "string" ||
+                !adif.trim()
+            ) {
+
+                return res.status(400).json({
+                    error: "Invalid ADIF data"
+                });
+
+            }
+
+
+            const records:
+                Record<string, string>[] = [];
+
+
+            const recordMatches =
+                adif.split(
+                    /<EOR\s*>/i
+                );
+
+
+            for (const rawRecord of recordMatches) {
+
+                const record =
+                    rawRecord.trim();
+
+
+                if (!record) {
+                    continue;
+                }
+
+
+                const fields:
+                    Record<string, string> = {};
+
+
+                const regex =
+                    /<([^:>]+):(\d+)(?::[^>]*)?>([\s\S]*?)/gi;
+
+
+                let match:
+                    RegExpExecArray | null;
+
+
+                while (
+                    (match = regex.exec(record)) !== null
+                ) {
+
+                    const field =
+                        match[1]?.trim()
+                            .toUpperCase() || "";
+
+
+                    const length =
+                        Number(match[2] || 0);
+
+
+                    const value =
+                        (match[3] || "")
+                            .substring(0, length)
+                            .trim();
+
+
+                    fields[field] =
+                        value;
+
+                }
+
+
+                if (
+                    Object.keys(fields).length
+                ) {
+
+                    records.push(fields);
+
+                }
+
+            }
+
+
+            const existing =
+                qsoService.getAllQso();
+
+
+            const existingKeys =
+                new Set(
+                    existing.map(
+                        qso =>
+                            [
+                                qso.qso_date,
+                                qso.time_on_utc,
+                                qso.call
+                                    .trim()
+                                    .toUpperCase(),
+                                String(qso.frequency),
+                                qso.mode
+                                    .trim()
+                                    .toUpperCase()
+                            ].join("|")
+                    )
+                );
+
+
+            let imported = 0;
+            let duplicates = 0;
+            let skipped = 0;
+
+
+            for (const fields of records) {
+
+                const qsoDate =
+                    fields.QSO_DATE || "";
+
+
+                const timeOn =
+                    fields.TIME_ON || "";
+
+
+                const timeOff =
+                    fields.TIME_OFF || null;
+
+
+                const call =
+                    (
+                        fields.CALL || ""
+                    )
+                    .trim()
+                    .toUpperCase();
+
+
+                const freqMHz =
+                    Number(
+                        fields.FREQ || ""
+                    );
+
+
+                const frequency =
+                    Number.isFinite(freqMHz)
+                        ? Math.round(
+                            freqMHz * 1000000
+                        )
+                        : NaN;
+
+
+                const band =
+                    (
+                        fields.BAND || ""
+                    ).trim();
+
+
+                const mode =
+                    (
+                        fields.MODE || ""
+                    )
+                    .trim()
+                    .toUpperCase();
+
+
+                if (
+                    !qsoDate ||
+                    !timeOn ||
+                    !call ||
+                    !Number.isFinite(frequency) ||
+                    !band ||
+                    !mode
+                ) {
+
+                    skipped++;
+                    continue;
+
+                }
+
+
+                const myCallsign =
+                    (
+                        fields.STATION_CALLSIGN ||
+                        fields.MY_CALLSIGN ||
+                        ""
+                    )
+                    .trim()
+                    .toUpperCase();
+
+
+                const myGrid =
+                    (
+                        fields.MY_GRIDSQUARE ||
+                        ""
+                    )
+                    .trim()
+                    .toUpperCase();
+
+
+                const operatorName =
+                    (
+                        fields.OPERATOR ||
+                        myCallsign ||
+                        ""
+                    )
+                    .trim();
+
+
+                if (
+                    !myCallsign ||
+                    !myGrid ||
+                    !operatorName
+                ) {
+
+                    skipped++;
+                    continue;
+
+                }
+
+
+                const rstSent =
+                    (
+                        fields.RST_SENT ||
+                        "59"
+                    ).trim();
+
+
+                const rstRcvd =
+                    (
+                        fields.RST_RCVD ||
+                        "59"
+                    ).trim();
+
+
+                const name =
+                    fields.NAME?.trim() ||
+                    null;
+
+
+                const country =
+                    fields.COUNTRY?.trim() ||
+                    null;
+
+
+                const dxGrid =
+                    fields.GRIDSQUARE
+                        ?.trim()
+                        .toUpperCase() ||
+                    null;
+
+
+                const ituZone =
+                    fields.ITUZ
+                        ? Number(fields.ITUZ)
+                        : null;
+
+
+                const cqZone =
+                    fields.CQZ
+                        ? Number(fields.CQZ)
+                        : null;
+
+
+                const notes =
+                    fields.COMMENT?.trim() ||
+                    null;
+
+
+                const key =
+                    [
+                        qsoDate,
+                        timeOn,
+                        call,
+                        String(frequency),
+                        mode
+                    ].join("|");
+
+
+                if (
+                    existingKeys.has(key)
+                ) {
+
+                    duplicates++;
+                    continue;
+
+                }
+
+
+                qsoService.createQso({
+
+                    qso_date:
+                        qsoDate,
+
+                    time_on_utc:
+                        timeOn,
+
+                    time_off_utc:
+                        timeOff,
+
+                    call,
+
+                    frequency,
+
+                    band,
+
+                    mode,
+
+                    rst_sent:
+                        rstSent,
+
+                    rst_rcvd:
+                        rstRcvd,
+
+                    my_callsign:
+                        myCallsign,
+
+                    my_grid:
+                        myGrid,
+
+                    operator_name:
+                        operatorName,
+
+                    name,
+
+                    country,
+
+                    country_code:
+                        null,
+
+                    dx_grid:
+                        dxGrid,
+
+                    itu_zone:
+                        Number.isInteger(
+                            ituZone
+                        )
+                            ? ituZone
+                            : null,
+
+                    cq_zone:
+                        Number.isInteger(
+                            cqZone
+                        )
+                            ? cqZone
+                            : null,
+
+                    notes,
+
+                    spot_source:
+                        "ADIF",
+
+                    spot_id:
+                        null
+
+                });
+
+
+                existingKeys.add(key);
+
+                imported++;
+
+            }
+
+
+            return res.json({
+
+                success: true,
+
+                read:
+                    records.length,
+
+                imported,
+
+                duplicates,
+
+                skipped
+
+            });
+
+        }
+        catch (error) {
+
+            console.error(
+                "ADIF import failed:",
+                error
+            );
+
+
+            return res.status(500).json({
+                error: "Failed to import ADIF"
+            });
+
+        }
+
+    }
+);
+
+/*
+    Get worked status
+*/
+
+router.get(
+    "/worked",
+    (_req, res) => {
+
+        try {
+
+            const worked =
+                qsoService.getWorkedStatus();
+
+            return res.json(
+                worked
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Worked status failed:",
+                error
+            );
+
+            return res.status(500).json({
+                error: "Failed to get worked status"
+            });
+
+        }
+
+    }
+);
 /*
     Get QSO by ID
 */

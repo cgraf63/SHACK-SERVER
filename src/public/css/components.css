@@ -470,6 +470,108 @@
 
 }
 
+
+.worked-help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 16px;
+    height: 16px;
+
+    margin-left: 5px;
+
+    border: 1px solid #777;
+    border-radius: 50%;
+
+    background: transparent;
+    color: #ccc;
+
+    font-size: 11px;
+    font-weight: bold;
+
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.worked-help-btn:hover {
+    color: white;
+    border-color: white;
+}
+
+
+
+.worked-indicator {
+    display: inline-block;
+    font-size: 30px;
+    position: relative;
+    top: 3px;
+}
+
+/* Station auf diesem Band bereits gearbeitet */
+.worked-station-band {
+    color: #00c853;
+}
+
+/* Land auf diesem Band bereits gearbeitet */
+.worked-country-band {
+    color: #ffd54f;
+}
+
+/* Station bereits gearbeitet, anderes Band */
+.worked-station {
+    color: #174ee6;
+}
+
+/* Land bereits gearbeitet, anderes Band */
+.worked-country {
+    color: #9c6ade;
+}
+
+/* Weder Station noch Land gearbeitet */
+.worked-new {
+    color: #e8e8e8;
+}
+
+
+
+#worked-help-popup {
+    position: fixed;
+    z-index: 9999;
+
+    padding: 10px 14px;
+
+    background: var(--card-bg, #1e1e1e);
+    border: 1px solid var(--border, #555);
+    border-radius: 6px;
+
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.worked-help-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    height: 22px;
+}
+
+.worked-help-dot {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.worked-help-green  { color: #00c853; }
+.worked-help-yellow { color: #ffd54f; }
+.worked-help-blue   { color: #174ea6; }
+.worked-help-purple { color: #9c6ade; }
+.worked-help-new    { color: #e8e8e8; }
+
+
+
 .card-header {
 
     display:flex;

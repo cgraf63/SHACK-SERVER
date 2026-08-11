@@ -507,7 +507,103 @@ updateQso(
 
     }
 
+getWorkedStatus() {
 
+    const statement =
+        this.db.prepare(`
+            SELECT
+                call,
+                band,
+                country_code
+            FROM qso
+        `);
+
+    const rows =
+        statement.all() as unknown as QsoRecord[];
+
+
+    const calls =
+        new Set<string>();
+
+    const callsOnBand =
+        new Set<string>();
+
+    const countries =
+        new Set<string>();
+
+    const countriesOnBand =
+        new Set<string>();
+
+
+    for (const qso of rows) {
+
+        const call =
+            String(qso.call || "")
+                .trim()
+                .toUpperCase();
+
+        const band =
+            String(qso.band || "")
+                .trim()
+                .toUpperCase();
+
+        const country =
+            String(qso.country_code || "")
+                .trim()
+                .toLowerCase();
+
+
+        if (call) {
+
+            calls.add(call);
+
+        }
+
+
+        if (call && band) {
+
+            callsOnBand.add(
+                `${call}|${band}`
+            );
+
+        }
+
+
+        if (country) {
+
+            countries.add(country);
+
+        }
+
+
+        if (country && band) {
+
+            countriesOnBand.add(
+                `${country}|${band}`
+            );
+
+        }
+
+    }
+
+
+    return {
+
+        calls:
+            [...calls],
+
+        callsOnBand:
+            [...callsOnBand],
+
+        countries:
+            [...countries],
+
+        countriesOnBand:
+            [...countriesOnBand]
+
+    };
+
+}
     getAllQso(): QsoRecord[] {
 
         const statement =

@@ -1545,110 +1545,7 @@ if (country) {
 
 }
 
-function setupWorkedHelp() {
 
-    const button =
-        document.getElementById(
-            "worked-help-btn"
-        );
-
-    if (!button) {
-        return;
-    }
-
-    if (button.dataset.helpReady === "1") {
-        return;
-    }
-
-    button.dataset.helpReady = "1";
-
-    button.addEventListener(
-        "click",
-        (event) => {
-
-            event.stopPropagation();
-
-            const existing =
-                document.getElementById(
-                    "worked-help-popup"
-                );
-
-            if (existing) {
-                existing.remove();
-                return;
-            }
-
-            const popup =
-                document.createElement(
-                    "div"
-                );
-
-            popup.id =
-                "worked-help-popup";
-
-            popup.innerHTML = `
-                <div class="worked-help-row">
-                    <span class="worked-help-dot worked-help-green">●</span>
-                    <span>Station + Band</span>
-                </div>
-
-                <div class="worked-help-row">
-                    <span class="worked-help-dot worked-help-yellow">●</span>
-                    <span>Land + Band</span>
-                </div>
-
-                <div class="worked-help-row">
-                    <span class="worked-help-dot worked-help-blue">●</span>
-                    <span>Station bereits gearbeitet</span>
-                </div>
-
-                <div class="worked-help-row">
-                    <span class="worked-help-dot worked-help-purple">●</span>
-                    <span>Land bereits gearbeitet</span>
-                </div>
-
-                <div class="worked-help-row">
-                    <span class="worked-help-dot worked-help-new">●</span>
-                    <span>Neu</span>
-                </div>
-            `;
-
-            document.body.appendChild(
-                popup
-            );
-
-            const rect =
-                button.getBoundingClientRect();
-
-            popup.style.left =
-                `${rect.left}px`;
-
-            popup.style.top =
-                `${rect.bottom + 6}px`;
-
-        }
-    );
-
-    document.addEventListener(
-        "click",
-        (event) => {
-
-            const popup =
-                document.getElementById(
-                    "worked-help-popup"
-                );
-
-            if (
-                popup &&
-                event.target !== button &&
-                !popup.contains(event.target)
-            ) {
-                popup.remove();
-            }
-
-        }
-    );
-}
 
 function startLiveSpotsUpdater() {
 
@@ -1656,9 +1553,6 @@ function startLiveSpotsUpdater() {
     setupSpotSorting();
   
     setupSpotFilters();
-
-    setupWorkedHelp();
-
 
     updateLiveSpots();
 

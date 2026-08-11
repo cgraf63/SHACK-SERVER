@@ -1,16 +1,20 @@
 let activeQsoSpot = null;
 let activeQsoStation = null;
-
+let editingQsoId = null;
 
 /*
     Open QSO dialog
 */
 async function openQsoDialog(
     spot,
-    station
+    station,
+    editQso = null
+
 ) {
 
 
+editingQsoId =
+    editQso?.id ?? null;
 
     const now =
         new Date();
@@ -268,7 +272,90 @@ console.log(
     const endTime =
         startTime; 
    
+/*
+    Form values
 
+    New QSO:
+    use current/spot values.
+
+    Edit QSO:
+    use existing database values.
+*/
+
+const formDate =
+    editQso?.qso_date ||
+    startDate;
+
+const formTimeOn =
+    editQso?.time_on_utc ||
+    startTime;
+
+const formTimeOff =
+    editQso?.time_off_utc ||
+    endTime;
+
+const formFrequencyKHz =
+    editQso
+        ? Number(editQso.frequency) / 1000
+        : Number(spot.frequency);
+
+const formBand =
+    editQso?.band ||
+    spot.band ||
+    "";
+
+const formMode =
+    editQso?.mode ||
+    spot.mode ||
+    "";
+
+const formRstSent =
+    editQso?.rst_sent ||
+    "59";
+
+const formRstRcvd =
+    editQso?.rst_rcvd ||
+    "59";
+
+const formName =
+    editQso
+        ? (editQso.name || "")
+        : dxName;
+
+const formCountry =
+    editQso
+        ? (editQso.country || "")
+        : dxCountry;
+
+const formDxGrid =
+    editQso
+        ? (editQso.dx_grid || "")
+        : dxGrid;
+
+const formItu =
+    editQso
+        ? (editQso.itu_zone ?? "")
+        : dxItu;
+
+const formCq =
+    editQso
+        ? (editQso.cq_zone ?? "")
+        : dxCq;
+
+const formNotes =
+    editQso
+        ? (editQso.notes || "")
+        : "";
+
+const formMyCallsign =
+    editQso?.my_callsign ||
+    stationConfig.callsign ||
+    "";
+
+const formMyGrid =
+    editQso?.my_grid ||
+    stationConfig.locator ||
+    "";
     /*
         Create dialog
     */
@@ -355,7 +442,7 @@ console.log(
                         <input
                             id="qso-date"
                             type="date"
-                            value="${startDate}">
+                            value="${formDate}" >
 
                     </div>
 
@@ -370,7 +457,7 @@ console.log(
                             id="qso-time-on"
                             type="time"
                             step="1"
-                            value="${startTime}">
+                            value="${formTimeOn}">
 
                     </div>
 
@@ -385,7 +472,7 @@ console.log(
                             id="qso-time-off"
                             type="time"
                             step="1"
-                            value="${endTime}">
+                            value="${formTimeOff}">
 
                     </div>
 
@@ -418,20 +505,18 @@ console.log(
                             id="qso-frequency"
                             type="number"
                             step="0.001"
-                            value="${
-                                Number.isFinite(
-                                    Number(
-                                        spot.frequency
-                                    )
-                                )
-                                ?
-                                Number(
-                                    spot.frequency
-                                ).toFixed(3)
-                                :
-                                ""
-                            }">
 
+/////////////////
+                            value="${
+    Number.isFinite(
+        formFrequencyKHz
+    )
+    ?
+    formFrequencyKHz.toFixed(3)
+    :
+    ""
+}"
+////////////////////////
                     </div>
 
 
@@ -445,8 +530,8 @@ console.log(
                             id="qso-band"
                             type="text"
                             value="${escapeQsoHtml(
-                                spot.band || ""
-                            )}">
+   				 formBand
+			)}"
 
                     </div>
 
@@ -461,8 +546,8 @@ console.log(
                             id="qso-mode"
                             type="text"
                             value="${escapeQsoHtml(
-                                spot.mode || ""
-                            )}">
+   				 formMode
+			)}"
 
                     </div>
 
@@ -520,8 +605,8 @@ console.log(
                             id="qso-name"
                             type="text"
                             value="${escapeQsoHtml(
-                                dxName
-                            )}"
+   				 formName
+)}"
                             autocomplete="off">
 
                     </div>
@@ -537,8 +622,8 @@ console.log(
                             id="qso-country"
                             type="text"
                             value="${escapeQsoHtml(
-                                dxCountry
-                            )}"
+   				 formCountry
+)}"
                             autocomplete="off">
 
                     </div>
@@ -554,8 +639,8 @@ console.log(
                             id="qso-dx-grid"
                             type="text"
                             value="${escapeQsoHtml(
-                                dxGrid
-                            )}"
+    formDxGrid
+)}"
                             maxlength="8"
                             autocomplete="off">
 
@@ -572,8 +657,9 @@ console.log(
                             id="qso-itu"
                             type="number"
                             value="${escapeQsoHtml(
-                                dxItu
-                            )}">
+    formItu
+)}"
+                            >
 
                     </div>
 
@@ -587,9 +673,9 @@ console.log(
                         <input
                             id="qso-cq"
                             type="number"
-                            value="${escapeQsoHtml(
-                                dxCq
-                            )}">
+                           value="${escapeQsoHtml(
+    formCq
+)}" >
 
                     </div>
 
@@ -600,9 +686,11 @@ console.log(
                             NOTES
                         </label>
 
-                        <textarea
-                            id="qso-notes"
-                            rows="3"></textarea>
+                       <textarea
+    id="qso-notes"
+    rows="3">${escapeQsoHtml(
+        formNotes
+    )}</textarea>
 
                     </div>
 

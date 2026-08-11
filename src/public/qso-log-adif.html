@@ -16,68 +16,15 @@ body { min-height:100vh !important; box-sizing:border-box !important; overflow-x
 main { max-width:none !important; }
 .qso-log-page { display:block !important; width:100% !important; min-width:0 !important; max-width:none !important; margin:0 !important; padding:30px 40px !important; box-sizing:border-box !important; }
 .qso-log-header { display:flex !important; width:100% !important; align-items:center !important; justify-content:space-between !important; gap:30px; margin:0 0 25px 0 !important; box-sizing:border-box; }
-
-    .qso-log-brand {
-
-        display: flex;
-        align-items: center;
-        gap: 10px;
-
-    }
-
-
-    .qso-log-brand img {
-
-        width: 42px;
-        height: 42px;
-
-        object-fit: contain;
-
-        display: block;
-
-    }
-
-
 .qso-log-title { display:flex; flex-direction:column; }
 .qso-log-header h1 { margin:0 !important; font-size:28px; line-height:1.2; color:#ff4fd8; }
 .qso-log-count { margin-top:5px; color:#8fa3b2; font-size:14px; }
-
-    .qso-log-tools {
-
-        display: flex;
-        align-items: center;
-        gap: 10px;
-
-    }
-
-
-    .qso-log-export {
-
-        padding: 10px 14px;
-
-        border: 1px solid #344754;
-        border-radius: 6px;
-
-        background: #101c25;
-        color: #9fb1bd;
-
-        cursor: pointer;
-
-        font-size: 13px;
-        font-weight: 600;
-
-    }
-
-
-    .qso-log-export:hover {
-
-        border-color: #607d8b;
-        color: white;
-
-    }
-
-
 .qso-log-search { width:280px !important; min-width:220px; padding:10px 13px; border:1px solid #344754; border-radius:6px; background:#101c25; color:white; outline:none; box-sizing:border-box; }
+.qso-log-tools { display:flex; align-items:center; gap:10px; }
+.qso-log-export { padding:10px 14px; border:1px solid #344754; border-radius:6px; background:#101c25; color:#d7e2e8; cursor:pointer; font-size:13px; font-weight:600; white-space:nowrap; }
+.qso-log-export:hover { border-color:#607d8b; background:#162630; }
+.qso-log-export:active { transform:translateY(1px); }
+
 .qso-log-search::placeholder { color:#71838f; }
 .qso-log-search:focus { border-color:#607d8b; }
 .qso-log-table-wrapper { display:block !important; width:100% !important; min-width:0 !important; max-width:none !important; overflow-x:auto !important; overflow-y:hidden; box-sizing:border-box; }
@@ -122,6 +69,8 @@ main { max-width:none !important; }
 @media (max-width:800px) {
  .qso-log-page { padding:20px !important; }
  .qso-log-header { align-items:flex-start !important; flex-direction:column !important; }
+ .qso-log-tools { width:100%; flex-direction:column; align-items:stretch; }
+ .qso-log-export { width:100%; }
  .qso-log-search { width:100% !important; min-width:0; }
  .qso-form-grid { grid-template-columns:1fr; }
  .qso-field-wide { grid-column:auto; }
@@ -134,63 +83,27 @@ main { max-width:none !important; }
 <section class="qso-log-page">
 <div class="qso-log-header">
 <div class="qso-log-title">
-<div class="qso-log-brand">
-
-                    <img
-                        src="/images/qso-logo.png"
-                        alt=""
-                    >
-
-                    <h1>
-                        QSO LOG
-                    </h1>
-
-                </div>
+<h1>QSO LOG</h1>
 <div id="qso-log-count" class="qso-log-count">Loading...</div>
 </div>
-
-            <div class="qso-log-adif-tools">
-
-                <button
-                    id="qso-log-import-adif"
-                    class="qso-log-export"
-                    type="button"
-                >
-                    IMPORT ADIF
-                </button>
-
-                <button
-                    id="qso-log-export-adif"
-                    class="qso-log-export"
-                    type="button"
-                >
-                    EXPORT ADIF
-                </button>
-
-                <input
-                    id="qso-log-import-file"
-                    type="file"
-                    accept=".adi,.adif"
-                    style="display:none"
-                >
-
-            </div>
-
+<div class="qso-log-tools">
+<button id="qso-log-export-adif" class="qso-log-export" type="button" title="Export QSO log as ADIF">EXPORT ADIF</button>
 <input id="qso-log-search" class="qso-log-search" type="search" placeholder="Search callsign, country..." autocomplete="off">
+</div>
 </div>
 <div class="qso-log-table-wrapper">
 <table class="qso-log-table">
 <thead><tr>
 <th data-sort="qso_date">Date</th>
-<th data-sort="time_on_utc">Time</th>
+<th>Time</th>
 <th data-sort="call">Call</th>
 <th data-sort="name">Name</th>
 <th data-sort="band">Band</th>
 <th data-sort="mode">Mode</th>
 <th data-sort="frequency">Frequency</th>
-<th data-sort="rst_sent">RST</th>
+<th>RST</th>
 <th data-sort="country">Country</th>
-<th data-sort="dx_grid">DX Grid</th>
+<th>DX Grid</th>
 <th class="no-sort">Actions</th>
 </tr></thead>
 <tbody id="qso-log-body"><tr><td colspan="11" class="qso-log-empty">Loading QSOs...</td></tr></tbody>
@@ -232,7 +145,16 @@ function renderQsoLog() {
             .some(value => String(value).toLowerCase().includes(searchText));
     });
 
-    filtered.sort((a,b) => compareValues(a[sortField], b[sortField]) * (sortDirection === "asc" ? 1 : -1));
+    filtered.sort((a, b) =>
+        compareValues(
+            a[sortField],
+            b[sortField],
+            sortField,
+            a,
+            b
+        ) *
+        (sortDirection === "asc" ? 1 : -1)
+    );
     count.textContent = `${filtered.length} von ${qsoRecords.length} QSOs`;
 
     if (!filtered.length) {
@@ -265,11 +187,110 @@ function renderQsoLog() {
     updateSortHeaders();
 }
 
-function compareValues(a,b) {
-    if (a === null || a === undefined) a = "";
-    if (b === null || b === undefined) b = "";
-    if (typeof a === "number" && typeof b === "number") return a - b;
-    return String(a).localeCompare(String(b), "de", {numeric:true, sensitivity:"base"});
+function compareValues(a, b, field, recordA, recordB) {
+
+    /*
+        Date:
+        sort by date + UTC time so QSOs on the same
+        date remain in chronological order.
+    */
+    if (field === "qso_date") {
+
+        const dateTimeA =
+            `${recordA.qso_date || ""} ${recordA.time_on_utc || ""}`;
+
+        const dateTimeB =
+            `${recordB.qso_date || ""} ${recordB.time_on_utc || ""}`;
+
+        return dateTimeA.localeCompare(
+            dateTimeB,
+            "en",
+            { sensitivity: "base" }
+        );
+    }
+
+    /*
+        Band:
+        use the normal amateur-radio band order
+        instead of alphabetical order.
+    */
+    if (field === "band") {
+
+        const bandOrder = {
+            "160m": 1,
+            "80m": 2,
+            "60m": 3,
+            "40m": 4,
+            "30m": 5,
+            "20m": 6,
+            "17m": 7,
+            "15m": 8,
+            "12m": 9,
+            "10m": 10,
+            "6m": 11,
+            "4m": 12,
+            "2m": 13,
+            "70cm": 14,
+            "23cm": 15
+        };
+
+        const keyA = String(a ?? "").trim().toLowerCase();
+        const keyB = String(b ?? "").trim().toLowerCase();
+
+        const orderA =
+            bandOrder[keyA] ?? 999;
+
+        const orderB =
+            bandOrder[keyB] ?? 999;
+
+        if (orderA !== orderB) {
+            return orderA - orderB;
+        }
+
+        return keyA.localeCompare(
+            keyB,
+            "de",
+            { sensitivity: "base" }
+        );
+    }
+
+    /*
+        Frequency:
+        always numeric.
+    */
+    if (field === "frequency") {
+
+        const numberA = Number(a);
+        const numberB = Number(b);
+
+        if (Number.isFinite(numberA) && Number.isFinite(numberB)) {
+            return numberA - numberB;
+        }
+
+        if (Number.isFinite(numberA)) return -1;
+        if (Number.isFinite(numberB)) return 1;
+
+        return 0;
+    }
+
+    /*
+        Text fields:
+        Call, Name, Mode, Country.
+    */
+    const valueA =
+        String(a ?? "");
+
+    const valueB =
+        String(b ?? "");
+
+    return valueA.localeCompare(
+        valueB,
+        "de",
+        {
+            numeric: true,
+            sensitivity: "base"
+        }
+    );
 }
 
 function updateSortHeaders() {
@@ -434,423 +455,86 @@ document.querySelectorAll(".qso-log-table th[data-sort]").forEach(th=>{
 });
 document.addEventListener("keydown",event=>{ if(event.key==="Escape") closeEditQsoDialog(); });
 
-
-/*
-============================================================
-ADIF EXPORT
-============================================================
-*/
-
-function adifField(
-    name,
-    value
-) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-
-        return "";
-
-    }
-
-    const text =
-        String(value);
-
-    return (
-        `<${name}:${text.length}>${text}`
-    );
-
+function adifField(name, value) {
+    if (value === null || value === undefined || value === "") return "";
+    const stringValue = String(value);
+    return `<${name}:${stringValue.length}>${stringValue}`;
 }
 
+function adifDate(value) {
+    return String(value || "").replaceAll("-", "").substring(0, 8);
+}
 
-function exportQsoAdif() {
+function adifTime(value) {
+    return String(value || "").replaceAll(":", "").substring(0, 6);
+}
 
-    if (!qsoRecords.length) {
+function buildAdif(qsos) {
+    let output =
+        "ADIF Export from SHACK-SERVER\n" +
+        "<ADIF_VER:5>3.1.4\n" +
+        "<PROGRAMID:12>SHACK-SERVER\n" +
+        "<EOH>\n\n";
 
-        alert(
-            "No QSOs to export."
-        );
+    qsos.forEach(qso => {
+        output += adifField("QSO_DATE", adifDate(qso.qso_date));
+        output += adifField("TIME_ON", adifTime(qso.time_on_utc));
+        output += adifField("TIME_OFF", adifTime(qso.time_off_utc));
 
+        output += adifField("CALL", qso.call);
+        output += adifField("BAND", qso.band);
+        output += adifField("MODE", qso.mode);
+
+        if (Number.isFinite(Number(qso.frequency))) {
+            output += adifField("FREQ", (Number(qso.frequency) / 1000000).toFixed(6));
+        }
+
+        output += adifField("RST_SENT", qso.rst_sent);
+        output += adifField("RST_RCVD", qso.rst_rcvd);
+        output += adifField("NAME", qso.name);
+        output += adifField("COUNTRY", qso.country);
+        output += adifField("GRIDSQUARE", qso.dx_grid);
+        output += adifField("ITUZ", qso.itu_zone);
+        output += adifField("CQZ", qso.cq_zone);
+        output += adifField("MY_CALLSIGN", qso.my_callsign);
+        output += adifField("MY_GRIDSQUARE", qso.my_grid);
+        output += adifField("OPERATOR", qso.operator_name);
+        output += adifField("COMMENT", qso.notes);
+        output += "<EOR>\n\n";
+    });
+
+    return output;
+}
+
+function exportAdif() {
+    if (!Array.isArray(qsoRecords) || !qsoRecords.length) {
+        alert("There are no QSOs to export.");
         return;
-
     }
 
+    const blob = new Blob(
+        [buildAdif(qsoRecords)],
+        { type: "application/octet-stream" }
+    );
 
-    let adif =
-`ADIF Export from SHACK-SERVER
-<ADIF_VER:5>3.1.4
-<PROGRAMID:12>SHACK-SERVER
-<EOH>
-
-`;
-
-
-    adif +=
-        qsoRecords
-            .map(
-                qso => {
-
-                    let record = "";
-
-
-                    record +=
-                        adifField(
-                            "QSO_DATE",
-                            String(
-                                qso.qso_date || ""
-                            ).replaceAll(
-                                "-",
-                                ""
-                            )
-                        );
-
-
-                    record +=
-                        adifField(
-                            "TIME_ON",
-                            String(
-                                qso.time_on_utc || ""
-                            ).replaceAll(
-                                ":",
-                                ""
-                            )
-                        );
-
-
-                    record +=
-                        adifField(
-                            "TIME_OFF",
-                            String(
-                                qso.time_off_utc || ""
-                            ).replaceAll(
-                                ":",
-                                ""
-                            )
-                        );
-
-
-                    record +=
-                        adifField(
-                            "CALL",
-                            qso.call
-                        );
-
-
-                    record +=
-                        adifField(
-                            "BAND",
-                            qso.band
-                        );
-
-
-                    if (
-                        Number.isFinite(
-                            Number(qso.frequency)
-                        )
-                    ) {
-
-                        record +=
-                            adifField(
-                                "FREQ",
-                                (
-                                    Number(
-                                        qso.frequency
-                                    ) / 1000000
-                                ).toFixed(6)
-                            );
-
-                    }
-
-
-                    record +=
-                        adifField(
-                            "MODE",
-                            qso.mode
-                        );
-
-
-                    record +=
-                        adifField(
-                            "RST_SENT",
-                            qso.rst_sent
-                        );
-
-
-                    record +=
-                        adifField(
-                            "RST_RCVD",
-                            qso.rst_rcvd
-                        );
-
-
-                    record +=
-                        adifField(
-                            "NAME",
-                            qso.name
-                        );
-
-
-                    record +=
-                        adifField(
-                            "COUNTRY",
-                            qso.country
-                        );
-
-
-                    record +=
-                        adifField(
-                            "GRIDSQUARE",
-                            qso.dx_grid
-                        );
-
-
-                    record +=
-                        adifField(
-                            "ITUZ",
-                            qso.itu_zone
-                        );
-
-
-                    record +=
-                        adifField(
-                            "CQZ",
-                            qso.cq_zone
-                        );
-
-
-                    record +=
-                        adifField(
-                            "MY_CALLSIGN",
-                            qso.my_callsign
-                        );
-
-
-                    record +=
-                        adifField(
-                            "MY_GRIDSQUARE",
-                            qso.my_grid
-                        );
-
-
-                    record +=
-                        adifField(
-                            "OPERATOR",
-                            qso.operator_name
-                        );
-
-
-                    record +=
-                        adifField(
-                            "COMMENT",
-                            qso.notes
-                        );
-
-
-                    record +=
-                        "<EOR>\n\n";
-
-
-                    return record;
-
-                }
-            )
-            .join("");
-
-
-    const blob =
-        new Blob(
-            [adif],
-            {
-                type:
-                    "application/octet-stream"
-            }
-        );
-
-
-    const url =
-        URL.createObjectURL(
-            blob
-        );
-
-
-    const link =
-        document.createElement(
-            "a"
-        );
-
-
-    const stamp =
-        new Date()
-            .toISOString()
-            .replaceAll(
-                "-",
-                ""
-            )
-            .replaceAll(
-                ":",
-                ""
-            )
-            .replace(
-                "T",
-                "_"
-            )
-            .substring(
-                0,
-                15
-            );
-
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const stamp = new Date().toISOString()
+        .replaceAll("-", "")
+        .replaceAll(":", "")
+        .substring(0, 15);
 
     link.href = url;
-
-    link.download =
-        `SHACK-SERVER-QSO-${stamp}.adi`;
-
-
-    document.body.appendChild(
-        link
-    );
-
-
+    link.download = `SHACK-SERVER-QSO-${stamp}.adi`;
+    document.body.appendChild(link);
     link.click();
-
-
     link.remove();
-
-
-    URL.revokeObjectURL(
-        url
-    );
-
+    URL.revokeObjectURL(url);
 }
 
-
 document
-    .getElementById(
-        "qso-log-export-adif"
-    )
-    ?.addEventListener(
-        "click",
-        exportQsoAdif
-    );
-
-
-/*
-    ADIF IMPORT
-*/
-
-document
-    .getElementById(
-        "qso-log-import-adif"
-    )
-    ?.addEventListener(
-        "click",
-        () => {
-
-            document
-                .getElementById(
-                    "qso-log-import-file"
-                )
-                ?.click();
-
-        }
-    );
-
-
-document
-    .getElementById(
-        "qso-log-import-file"
-    )
-    ?.addEventListener(
-        "change",
-        async event => {
-
-            const file =
-                event.target.files?.[0];
-
-            if (!file) {
-                return;
-            }
-
-
-            try {
-
-                const content =
-                    await file.text();
-
-
-                const response =
-                    await fetch(
-                        "/api/qso/import-adif",
-                        {
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body:
-                                JSON.stringify({
-                                    adif: content
-                                })
-                        }
-                    );
-
-
-                const result =
-                    await response.json();
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        result.error ||
-                        `HTTP ${response.status}`
-                    );
-
-                }
-
-
-                alert(
-                    "ADIF IMPORT\n\n" +
-                    "Gelesen: " +
-                    (result.read ?? 0) +
-                    "\nImportiert: " +
-                    (result.imported ?? 0) +
-                    "\nBereits vorhanden: " +
-                    (result.duplicates ?? 0)
-                );
-
-
-                await loadQsoLog();
-
-            }
-            catch (error) {
-
-                console.error(
-                    "ADIF import:",
-                    error
-                );
-
-
-                alert(
-                    "ADIF Import fehlgeschlagen:\n\n" +
-                    error.message
-                );
-
-            }
-            finally {
-
-                event.target.value = "";
-
-            }
-
-        }
-    );
-
+    .getElementById("qso-log-export-adif")
+    ?.addEventListener("click", exportAdif);
 
 loadQsoLog();
 </script>
