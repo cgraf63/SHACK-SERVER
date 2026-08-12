@@ -35,7 +35,10 @@ async function updateSystemStatus() {
         ).textContent =
             data.temperature ?? "--";
 
-
+document.getElementById(
+    "server-model"
+).textContent =
+    data.model ?? "--";
 
         document.getElementById(
             "server-ip"

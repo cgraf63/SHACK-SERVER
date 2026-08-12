@@ -34,7 +34,24 @@ function getCpuTemperature() {
 
 }
 
+function getDeviceModel() {
 
+    try {
+
+        return fs.readFileSync(
+            "/sys/firmware/devicetree/base/model",
+            "utf8"
+        ).replace(/\0/g, "").trim();
+
+    }
+
+    catch {
+
+        return null;
+
+    }
+
+}
 
 async function getDiskUsage() {
 
@@ -162,6 +179,9 @@ router.get("/", async (_req, res) => {
 
         temperature:
             getCpuTemperature(),
+
+	model:
+    	    getDeviceModel(),
 
 
         ip:
