@@ -685,6 +685,48 @@ function mapSpotModeToRgo(
 
 }
 
+function setupSpotSorting() {
+
+    document
+        .querySelectorAll("th[data-sort]")
+        .forEach(
+            th => {
+
+                th.addEventListener(
+                    "click",
+                    () => {
+
+                        const field =
+                            th.dataset.sort;
+
+                        if (
+                            sortField === field
+                        ) {
+
+                            sortDirection =
+                                sortDirection === "asc"
+                                    ? "desc"
+                                    : "asc";
+
+                        }
+                        else {
+
+                            sortField = field;
+
+                            sortDirection =
+                                "asc";
+
+                        }
+
+                        renderLiveSpots();
+
+                    }
+                );
+
+            }
+        );
+
+}
 
 function renderLiveSpots() {
 
@@ -1324,64 +1366,6 @@ updatePriorityDX();
 
 
 
-function setupSpotSorting() {
-
-
-    document
-        .querySelectorAll(
-            "th[data-sort]"
-        )
-        .forEach(
-            th => {
-
-
-                th.addEventListener(
-                    "click",
-                    () => {
-
-
-                        const field =
-                            th.dataset.sort;
-
-
-
-                        if (
-                            sortField === field
-                        ) {
-
-                            sortDirection =
-                                sortDirection === "asc"
-                                ?
-                                "desc"
-                                :
-                                "asc";
-
-                        }
-                        else {
-
-                            sortField =
-                                field;
-
-
-                            sortDirection =
-                                "asc";
-
-                        }
-
-
-
-                        renderLiveSpots();
-
-
-                    }
-                );
-
-
-            }
-        );
-
-
-}
 
 
 

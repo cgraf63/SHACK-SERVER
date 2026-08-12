@@ -1,0 +1,261 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 400 400"
+    width="400"
+    height="400">
+
+    <defs>
+
+        <filter id="softGlow">
+            <feGaussianBlur
+                stdDeviation="3"
+                result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+
+    </defs>
+
+
+    <!-- Network connections -->
+
+    <g
+        fill="none"
+        stroke="#69727d"
+        stroke-width="3"
+        opacity="0.45">
+
+        <line x1="200" y1="200" x2="200" y2="55"/>
+        <line x1="200" y1="200" x2="310" y2="105"/>
+        <line x1="200" y1="200" x2="345" y2="200"/>
+        <line x1="200" y1="200" x2="310" y2="295"/>
+        <line x1="200" y1="200" x2="200" y2="345"/>
+        <line x1="200" y1="200" x2="90" y2="295"/>
+        <line x1="200" y1="200" x2="55" y2="200"/>
+        <line x1="200" y1="200" x2="90" y2="105"/>
+
+    </g>
+
+
+    <!-- Outer nodes -->
+
+    <g
+        stroke-width="2"
+        filter="url(#softGlow)">
+
+        <circle
+            class="node node1"
+            cx="200"
+            cy="55"
+            r="18"
+            fill="#00c8ff"
+            stroke="#00c8ff"/>
+
+        <circle
+            class="node node2"
+            cx="310"
+            cy="105"
+            r="18"
+            fill="#ff6500"
+            stroke="#ff6500"/>
+
+        <circle
+            class="node node3"
+            cx="345"
+            cy="200"
+            r="18"
+            fill="#ffc400"
+            stroke="#ffc400"/>
+
+        <circle
+            class="node node4"
+            cx="310"
+            cy="295"
+            r="18"
+            fill="#ffc400"
+            stroke="#ffc400"/>
+
+        <circle
+            class="node node5"
+            cx="200"
+            cy="345"
+            r="18"
+            fill="#00c8ff"
+            stroke="#00c8ff"/>
+
+        <circle
+            class="node node6"
+            cx="90"
+            cy="295"
+            r="18"
+            fill="#b000ff"
+            stroke="#b000ff"/>
+
+        <circle
+            class="node node7"
+            cx="55"
+            cy="200"
+            r="18"
+            fill="#00e85a"
+            stroke="#00e85a"/>
+
+        <circle
+            class="node node8"
+            cx="90"
+            cy="105"
+            r="18"
+            fill="#00d9ff"
+            stroke="#00d9ff"/>
+
+    </g>
+
+
+    <!-- Central node -->
+
+    <circle
+        class="core"
+        cx="200"
+        cy="200"
+        r="30"
+        fill="#ffb000"
+        stroke="#ffffff"
+        stroke-width="3"/>
+
+
+    <style>
+
+        .node {
+
+            transform-box: fill-box;
+            transform-origin: center;
+
+            animation:
+                nodePulse 4s infinite;
+
+        }
+
+
+        .node1 {
+            animation-delay: 0s;
+        }
+
+        .node2 {
+            animation-delay: .5s;
+        }
+
+        .node3 {
+            animation-delay: 1s;
+        }
+
+        .node4 {
+            animation-delay: 1.5s;
+        }
+
+        .node5 {
+            animation-delay: 2s;
+        }
+
+        .node6 {
+            animation-delay: 2.5s;
+        }
+
+        .node7 {
+            animation-delay: 3s;
+        }
+
+        .node8 {
+            animation-delay: 3.5s;
+        }
+
+
+        @keyframes nodePulse {
+
+            0%,
+            25%,
+            100% {
+
+                opacity: .72;
+
+                transform:
+                    scale(1);
+
+                filter:
+                    none;
+
+            }
+
+
+            7% {
+
+                opacity: 1;
+
+                transform:
+                    scale(1.15);
+
+                filter:
+                    drop-shadow(
+                        0 0 4px currentColor
+                    )
+                    drop-shadow(
+                        0 0 8px currentColor
+                    );
+
+            }
+
+
+            15% {
+
+                opacity: .9;
+
+                transform:
+                    scale(1.04);
+
+                filter:
+                    drop-shadow(
+                        0 0 3px currentColor
+                    );
+
+            }
+
+        }
+
+
+        .core {
+
+            transform-box: fill-box;
+            transform-origin: center;
+
+            animation:
+                corePulse 2.5s infinite;
+
+        }
+
+
+        @keyframes corePulse {
+
+            0%,
+            100% {
+
+                transform:
+                    scale(1);
+
+                opacity: .85;
+
+            }
+
+            50% {
+
+                transform:
+                    scale(1.12);
+
+                opacity: 1;
+
+            }
+
+        }
+
+    </style>
+
+</svg>

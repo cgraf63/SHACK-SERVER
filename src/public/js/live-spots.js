@@ -166,53 +166,97 @@ let sortDirection = "asc";
 
 function sortSpots(spots) {
 
+    const numericFields = new Set([
+        "frequency",
+        "distance",
+        "azimuth",
+        "age",
+        "confidence"
+    ]);
+
 
     return spots.sort(
         (a, b) => {
 
-
             let valueA =
                 a[sortField];
-
 
             let valueB =
                 b[sortField];
 
 
+            /*
+                Numeric fields
+            */
 
             if (
-                valueA === undefined
-            ) {
-
-                valueA = 0;
-
-            }
-
-
-
-            if (
-                valueB === undefined
-            ) {
-
-                valueB = 0;
-
-            }
-
-
-
-            if (
-                typeof valueA === "string"
+                numericFields.has(sortField)
             ) {
 
                 valueA =
-                    valueA.toLowerCase();
-
+                    Number(
+                        String(
+                            valueA ?? ""
+                        ).replace(
+                            /[^0-9.-]/g,
+                            ""
+                        )
+                    );
 
                 valueB =
-                    valueB.toLowerCase();
+                    Number(
+                        String(
+                            valueB ?? ""
+                        ).replace(
+                            /[^0-9.-]/g,
+                            ""
+                        )
+                    );
+
+
+                if (
+                    !Number.isFinite(valueA)
+                ) {
+
+                    valueA =
+                        sortDirection === "asc"
+                            ? Infinity
+                            : -Infinity;
+
+                }
+
+
+                if (
+                    !Number.isFinite(valueB)
+                ) {
+
+                    valueB =
+                        sortDirection === "asc"
+                            ? Infinity
+                            : -Infinity;
+
+                }
 
             }
 
+
+            /*
+                Text fields
+            */
+
+            else {
+
+                valueA =
+                    String(
+                        valueA ?? ""
+                    ).toLowerCase();
+
+                valueB =
+                    String(
+                        valueB ?? ""
+                    ).toLowerCase();
+
+            }
 
 
             if (
@@ -226,7 +270,6 @@ function sortSpots(spots) {
             }
 
 
-
             if (
                 valueA > valueB
             ) {
@@ -238,16 +281,12 @@ function sortSpots(spots) {
             }
 
 
-
             return 0;
-
 
         }
     );
 
-
 }
-
 
 function filterSpots(spots) {
 
@@ -685,6 +724,68 @@ function mapSpotModeToRgo(
 
 }
 
+function setupSpotSorting() {
+
+    if (
+        window.liveSpotSortingInitialized
+    ) {
+        return;
+    }
+
+    window.liveSpotSortingInitialized = true;
+
+
+    document.addEventListener(
+        "click",
+        event => {
+
+            const th =
+                event.target.closest(
+                    "th[data-sort]"
+                );
+
+
+            if (!th) {
+                return;
+            }
+
+
+            const field =
+                th.dataset.sort;
+
+
+            if (!field) {
+                return;
+            }
+
+
+            if (
+                sortField === field
+            ) {
+
+                sortDirection =
+                    sortDirection === "asc"
+                        ? "desc"
+                        : "asc";
+
+            }
+            else {
+
+                sortField =
+                    field;
+
+                sortDirection =
+                    "asc";
+
+            }
+
+
+            renderLiveSpots();
+
+        }
+    );
+
+}
 
 function renderLiveSpots() {
 
@@ -1324,64 +1425,6 @@ updatePriorityDX();
 
 
 
-function setupSpotSorting() {
-
-
-    document
-        .querySelectorAll(
-            "th[data-sort]"
-        )
-        .forEach(
-            th => {
-
-
-                th.addEventListener(
-                    "click",
-                    () => {
-
-
-                        const field =
-                            th.dataset.sort;
-
-
-
-                        if (
-                            sortField === field
-                        ) {
-
-                            sortDirection =
-                                sortDirection === "asc"
-                                ?
-                                "desc"
-                                :
-                                "asc";
-
-                        }
-                        else {
-
-                            sortField =
-                                field;
-
-
-                            sortDirection =
-                                "asc";
-
-                        }
-
-
-
-                        renderLiveSpots();
-
-
-                    }
-                );
-
-
-            }
-        );
-
-
-}
 
 
 
