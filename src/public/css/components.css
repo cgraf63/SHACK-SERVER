@@ -479,7 +479,7 @@
     width: 16px;
     height: 16px;
 
-    margin-left: 5px;
+    margin-right: 6px;
 
     border: 1px solid #777;
     border-radius: 50%;
@@ -506,6 +506,7 @@
     font-size: 30px;
     position: relative;
     top: 3px;
+    margin-right: 7px;
 }
 
 /* Station auf diesem Band bereits gearbeitet */

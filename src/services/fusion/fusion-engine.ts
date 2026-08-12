@@ -296,6 +296,56 @@ export class FusionEngine {
 
 } //ende enrichGeo()
 
+    refreshShackLocation(): void {
+
+        const shack =
+            this.shack.getCoordinates();
+
+
+        for (
+            const spot of this.spots.values()
+        ) {
+
+            if (
+                typeof spot.latitude !== "number" ||
+                typeof spot.longitude !== "number"
+            ) {
+
+                continue;
+
+            }
+
+
+            const dx = {
+
+                latitude:
+                    spot.latitude,
+
+                longitude:
+                    spot.longitude
+
+            };
+
+
+            spot.distance =
+                this.distance.distanceKm(
+                    shack,
+                    dx
+                );
+
+
+            spot.azimuth =
+                this.bearing.bearing(
+                    shack,
+                    dx
+                );
+
+        }
+
+    }
+
+
+
 getBandActivity() {
 
     const bands:

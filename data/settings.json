@@ -1,0 +1,11 @@
+{
+    "callsign": "HB9ISO",
+    "operatorName": "Hugo",
+    "locator": "jn36fl",
+    "club": "HB9OM",
+    "sources": {
+        "dxspider": true,
+        "holycluster": true,
+        "dxsummit": true
+    }
+}

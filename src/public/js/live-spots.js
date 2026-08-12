@@ -836,36 +836,49 @@ function renderLiveSpots() {
 
 
             row.innerHTML = `
+               
 
 
-                <td class="call-cell">
+ 
+<td class="call-cell">
 
-                    ${
-                        spot.countryCode
-                        ?
-                        `<img
-                            src="/assets/flags/${spot.countryCode}.svg"
-                            class="flag">`
-                        :
-                        ""
-                    }
-
-                   
-		<span>
     ${
-        spot.activity === "POTA"
-            ? `<span style="color:#00c853; font-size:12px; margin-right:5px;">▲</span>`
-            : spot.activity === "SOTA"
-                ? `<span style="color:white; font-size:12px; margin-right:5px;">▲</span>`
-                : ""
+        worked === "station-band"
+            ? `<span class="worked-indicator worked-station-band" title="Station auf diesem Band gearbeitet">●</span>`
+            : worked === "country-band"
+                ? `<span class="worked-indicator worked-country-band" title="Land auf diesem Band gearbeitet">●</span>`
+                : worked === "station"
+                    ? `<span class="worked-indicator worked-station" title="Station bereits gearbeitet">●</span>`
+                    : worked === "country"
+                        ? `<span class="worked-indicator worked-country" title="Land bereits gearbeitet">●</span>`
+                        : `<span class="worked-indicator worked-new" title="Noch nicht gearbeitet">●</span>`
     }
-    ${spot.call}
-</span>
 
-                </td>
+    ${
+        spot.countryCode
+        ?
+        `<img
+            src="/assets/flags/${spot.countryCode}.svg"
+            class="flag">`
+        :
+        ""
+    }
+
+    <span>
+        ${
+            spot.activity === "POTA"
+                ? `<span style="color:#00c853; font-size:12px; margin-right:5px;">▲</span>`
+                : spot.activity === "SOTA"
+                    ? `<span style="color:white; font-size:12px; margin-right:5px;">▲</span>`
+                    : ""
+        }
+        ${spot.call}
+    </span>
+
+</td>
 
 
-
+ 
                 <td class="frequency">
                     ${spot.frequency}
                 </td>
@@ -929,17 +942,6 @@ function renderLiveSpots() {
 	title="View details">
         👀
     </button>
-
-${worked === "station-band"
-    ? `<span class="worked-indicator worked-station-band" title="Station auf diesem Band gearbeitet">●</span>`
-    : worked === "country-band"
-        ? `<span class="worked-indicator worked-country-band" title="Land auf diesem Band gearbeitet">●</span>`
-        : worked === "station"
-            ? `<span class="worked-indicator worked-station" title="Station bereits gearbeitet">●</span>`
-            : worked === "country"
-                ? `<span class="worked-indicator worked-country" title="Land bereits gearbeitet">●</span>`
-                : `<span class="worked-indicator worked-new" title="Noch nicht gearbeitet">●</span>`
-}
 
     <button
         class="spot-btn tune-btn"

@@ -58,135 +58,116 @@ export class DXSpiderConnector {
 
 
 
-
-
-
     connect() {
 
+    console.log(
+        `Connecting ${this.config.name}...`
+    );
 
-        console.log(
-            `Connecting ${this.config.name}...`
+
+    if (
+        this.config.host === undefined ||
+        this.config.port === undefined
+    ) {
+
+        console.error(
+            `${this.config.name}: DXSpider host or port is missing`
         );
 
-
-
-        this.socket =
-            new net.Socket();
-
-
-
-
-        this.socket.connect(
-
-            this.config.port,
-
-            this.config.host,
-
-            () => {
-
-
-                console.log(
-
-                    `${this.config.name} connected`
-
-                );
-
-
-                this.login();
-
-
-            }
-
-        );
-
-
-
-
-
-
-        this.socket.on(
-
-            "data",
-
-            data => {
-
-
-                const text =
-                    data.toString();
-
-console.log(
-    "DXSPIDER RAW:",
-    text
-);
-
-
-
-                this.parser.parse(
-                    text
-                );
-
-
-            }
-
-        );
-
-
-
-
-
-
-
-        this.socket.on(
-
-            "close",
-
-            () => {
-
-
-                console.log(
-
-                    `${this.config.name} disconnected`
-
-                );
-
-
-            }
-
-        );
-
-
-
-
-
-
-        this.socket.on(
-
-            "error",
-
-            error => {
-
-
-                console.error(
-
-                    `${this.config.name}:`,
-                    error.message
-
-                );
-
-
-            }
-
-        );
-
-
-
+        return;
     }
 
 
+    this.socket =
+        new net.Socket();
 
 
+    this.socket.connect(
+
+        this.config.port,
+
+        this.config.host,
+
+        () => {
+
+            console.log(
+
+                `${this.config.name} connected`
+
+            );
 
 
+            this.login();
+
+        }
+
+    );
+
+
+    this.socket.on(
+
+        "data",
+
+        data => {
+
+            const text =
+                data.toString();
+
+
+            console.log(
+                "DXSPIDER RAW:",
+                text
+            );
+
+
+            this.parser.parse(
+                text
+            );
+
+        }
+
+    );
+
+
+    this.socket.on(
+
+        "close",
+
+        () => {
+
+            console.log(
+
+                `${this.config.name} disconnected`
+
+            );
+
+        }
+
+    );
+
+
+    this.socket.on(
+
+        "error",
+
+        error => {
+
+            console.error(
+
+                `${this.config.name}:`,
+                error.message
+
+            );
+
+        }
+
+    );
+
+}
+           
+
+
+                        
 
 
     private login() {

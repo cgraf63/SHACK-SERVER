@@ -1,34 +1,62 @@
 import { Router } from "express";
 
 import {
-    operator
-} from "../config/operator.config.js";
-
-import {
-    shackLocation
-} from "../config/location.config.js";
+    SettingsService
+} from "../services/settings/settings.service.js";
 
 
 const router = Router();
 
 
-router.get("/", (_req, res) => {
+const settingsService =
+    new SettingsService();
 
-    res.json({
 
-        station: shackLocation.name,
+router.get(
+    "/",
+    (_req, res) => {
 
-        callsign: operator.callsign,
+        const settings =
+            settingsService.get();
 
-        name: operator.name,
 
-        club: operator.club,
+        res.set(
+            "Cache-Control",
+            "no-store, no-cache, must-revalidate, proxy-revalidate"
+        );
 
-        locator: shackLocation.locator
+        res.set(
+            "Pragma",
+            "no-cache"
+        );
 
-    });
+        res.set(
+            "Expires",
+            "0"
+        );
 
-});
+
+        res.json({
+
+            station:
+                settings.club || "SHACK-SERVER",
+
+            callsign:
+                settings.callsign,
+
+            name:
+                settings.operatorName,
+
+            club:
+                settings.club,
+
+            locator:
+                settings.locator
+
+        });
+
+    }
+);
 
 
 export default router;

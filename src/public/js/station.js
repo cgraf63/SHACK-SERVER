@@ -3,31 +3,60 @@ async function loadStationInfo() {
     try {
 
         const response =
-            await fetch('/api/station');
+            await fetch(
+                "/api/settings?_=" + Date.now(),
+                {
+                    cache: "no-store"
+                }
+            );
 
-        const station =
+        if (!response.ok) {
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+        }
+
+        const settings =
             await response.json();
 
         const operator =
-            document.getElementById("operator");
+            document.getElementById(
+                "operator"
+            );
 
         const locator =
-            document.getElementById("locator");
+            document.getElementById(
+                "locator"
+            );
 
-        console.log("Station data:", station);
-        console.log("Operator element:", operator);
+        console.log(
+            "Settings data:",
+            settings
+        );
+
+        console.log(
+            "Operator element:",
+            operator
+        );
+
 
         if (operator) {
+
             operator.textContent =
-                `${station.callsign}, ${station.name}`;
+                `${settings.callsign ?? ""}, ${settings.operatorName ?? ""}`;
+
         }
+
 
         if (locator) {
+
             locator.textContent =
-                `📍 ${station.locator}`;
+                `📍 ${settings.locator ?? ""}`;
+
         }
 
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error(
             "Station info loading failed:",
@@ -177,5 +206,11 @@ setInterval(
 // Radio-Daten regelmässig aktualisieren
 setInterval(
     loadRadioInfo,
+    2000
+);
+
+// Station/Settings regelmässig aktualisieren
+setInterval(
+    loadStationInfo,
     2000
 );

@@ -1,39 +1,74 @@
 import {
+    settingsService
+} from "../settings/settings.service.js";
+
+import {
     shackLocation
 } from "../../config/location.config.js";
 
-
 import {
-    Coordinates
+    Coordinates,
+    MaidenheadService
 } from "./maidenhead.service.js";
 
 
 export class ShackLocationService {
 
+    private maidenhead =
+        new MaidenheadService();
+
 
     getCoordinates(): Coordinates {
 
+        const settings =
+            settingsService.get();
 
-        return {
+try {
 
-            latitude:
-                shackLocation.latitude,
+    const coordinates =
+        this.maidenhead.locatorToCoordinates(
+            settings.locator
+        );
 
-            longitude:
-                shackLocation.longitude
+    if (coordinates) {
 
-        };
+        return coordinates;
 
     }
 
+    throw new Error(
+        `Invalid locator: ${settings.locator}`
+    );
+
+}
+catch (error) {
+
+    console.error(
+        "Invalid shack locator:",
+        settings.locator,
+        error
+    );
+
+    return {
+
+        latitude:
+            shackLocation.latitude,
+
+        longitude:
+            shackLocation.longitude
+
+    };
+
+}
+
+    }
 
 
     getLocator(): string {
 
-        return shackLocation.locator;
+        return settingsService.get().locator;
 
     }
-
 
 
     getName(): string {
