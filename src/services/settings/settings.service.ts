@@ -21,7 +21,12 @@ const SETTINGS_FILE =
 export class SettingsService {
 
 
-    private settings: ShackSettings;
+    private settings:
+        ShackSettings;
+
+
+    private onUpdateCallback:
+        (() => void) | undefined;
 
 
     constructor() {
@@ -35,11 +40,20 @@ export class SettingsService {
     get(): ShackSettings {
 
         return {
+
             ...this.settings,
 
             sources: {
                 ...this.settings.sources
-            }
+            },
+
+            dxspiders:
+                this.settings.dxspiders.map(
+                    spider => ({
+                        ...spider
+                    })
+                )
+
         };
 
     }
@@ -49,13 +63,21 @@ export class SettingsService {
         settings: ShackSettings
     ): ShackSettings {
 
+
         this.settings = {
 
             ...settings,
 
             sources: {
                 ...settings.sources
-            }
+            },
+
+            dxspiders:
+                settings.dxspiders.map(
+                    spider => ({
+                        ...spider
+                    })
+            )
 
         };
 
@@ -63,12 +85,33 @@ export class SettingsService {
         this.save();
 
 
+        if (
+            this.onUpdateCallback
+        ) {
+
+            this.onUpdateCallback();
+
+        }
+
+
         return this.get();
 
     }
 
 
-    private load(): ShackSettings {
+    onUpdate(
+        callback: () => void
+    ): void {
+
+        this.onUpdateCallback =
+            callback;
+
+    }
+
+
+    private load():
+        ShackSettings {
+
 
         try {
 
@@ -78,6 +121,7 @@ export class SettingsService {
                 )
             ) {
 
+
                 const data =
                     fs.readFileSync(
                         SETTINGS_FILE,
@@ -86,7 +130,9 @@ export class SettingsService {
 
 
                 const parsed =
-                    JSON.parse(data);
+                    JSON.parse(
+                        data
+                    );
 
 
                 return {
@@ -95,13 +141,25 @@ export class SettingsService {
 
                     ...parsed,
 
+
                     sources: {
 
                         ...shackSettings.sources,
 
                         ...(parsed.sources ?? {})
 
-                    }
+                    },
+
+
+                    dxspiders:
+
+                        Array.isArray(
+                            parsed.dxspiders
+                        )
+
+                            ? parsed.dxspiders
+
+                            : shackSettings.dxspiders
 
                 };
 
@@ -109,6 +167,7 @@ export class SettingsService {
 
         }
         catch (error) {
+
 
             console.error(
                 "Failed to load settings:",
@@ -119,11 +178,20 @@ export class SettingsService {
 
 
         return {
+
             ...shackSettings,
 
             sources: {
                 ...shackSettings.sources
-            }
+            },
+
+            dxspiders:
+                shackSettings.dxspiders.map(
+                    spider => ({
+                        ...spider
+                    })
+                )
+
         };
 
     }
@@ -131,7 +199,9 @@ export class SettingsService {
 
     private save(): void {
 
+
         try {
+
 
             fs.mkdirSync(
                 DATA_DIR,
@@ -157,6 +227,7 @@ export class SettingsService {
 
         }
         catch (error) {
+
 
             console.error(
                 "Failed to save settings:",

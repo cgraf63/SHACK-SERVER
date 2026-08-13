@@ -14,6 +14,9 @@ import {
 } from "../services/fusion/fusion-instance.js";
 
 
+import {
+    sourceManager
+} from "../services/sources/source-manager-instance.js";
 
 const router = Router();
 
@@ -76,12 +79,17 @@ router.put(
 
 
             const updated =
-                settingsService.update(
-                    settings
-                );
+    settingsService.update(
+        settings
+    );
 
 
-	fusionEngine.refreshShackLocation();
+fusionEngine.refreshShackLocation();
+
+
+sourceManager.restart();
+
+
 
             res.set(
                 "Cache-Control",

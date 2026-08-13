@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>SHACK-SERVER - Settings</title>
+
+    <link
+        rel="stylesheet"
+        href="/style.css">
+
+    <style>
+
+        .settings-page {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px;
+        }
+
+        .settings-section {
+            margin-bottom: 30px;
+        }
+
+        .settings-section h2 {
+            margin-bottom: 20px;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 14px 20px;
+            align-items: center;
+        }
+
+        .settings-grid label {
+            font-weight: 600;
+        }
+
+        .settings-grid input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 9px 12px;
+        }
+
+        .source-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .source-row input {
+            width: 18px;
+            height: 18px;
+        }
+
+        .settings-actions {
+            margin-top: 30px;
+        }
+
+        .settings-save {
+            padding: 10px 24px;
+            cursor: pointer;
+        }
+
+        .settings-message {
+            margin-top: 15px;
+            min-height: 20px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="settings-page">
+
+
+    <h1>SHACK-SERVER Settings</h1>
+
+
+    <div class="settings-section">
+
+        <h2>Station</h2>
+
+
+        <div class="settings-grid">
+
+            <label for="callsign">
+                Callsign
+            </label>
+
+            <input
+                id="callsign"
+                type="text">
+
+
+            <label for="operatorName">
+                Operator
+            </label>
+
+            <input
+                id="operatorName"
+                type="text">
+
+
+            <label for="locator">
+                QTH Locator
+            </label>
+
+            <input
+                id="locator"
+                type="text">
+
+
+            <label for="club">
+                Club
+            </label>
+
+            <input
+                id="club"
+                type="text">
+
+        </div>
+
+    </div>
+
+
+    <div class="settings-section">
+
+
+<div class="settings-section">
+
+    <h2>DX Sources</h2>
+
+
+    <div class="source-row">
+
+        <input
+            id="source-holycluster"
+            type="checkbox">
+
+        <label for="source-holycluster">
+            HolyCluster
+        </label>
+
+    </div>
+
+
+    <div class="source-row">
+
+        <input
+            id="source-dxsummit"
+            type="checkbox">
+
+        <label for="source-dxsummit">
+            DX Summit
+        </label>
+
+    </div>
+
+
+    <h3>DXSpider</h3>
+
+
+    <div id="dxspider-list">
+    </div>
+
+
+    <button
+        id="add-dxspider"
+        type="button"
+        class="settings-save">
+
+        + Add DXSpider
+
+    </button>
+
+</div>
+
+      
+
+    <div class="settings-actions">
+
+        <button
+            id="save-settings"
+            class="settings-save"
+            type="button">
+
+            Save Settings
+
+        </button>
+
+
+        <div
+            id="settings-message"
+            class="settings-message">
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+async function loadSettings() {
+
+    try {
+
+        const response =
+    await fetch(
+        "/api/settings?_=" + Date.now(),
+        {
+            cache: "no-store"
+        }
+    );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to load settings"
+            );
+
+        }
+
+
+        const settings =
+            await response.json();
+
+
+        document.getElementById(
+            "callsign"
+        ).value =
+            settings.callsign ?? "";
+
+
+        document.getElementById(
+            "operatorName"
+        ).value =
+            settings.operatorName ?? "";
+
+
+        document.getElementById(
+            "locator"
+        ).value =
+            settings.locator ?? "";
+
+
+        document.getElementById(
+            "club"
+        ).value =
+            settings.club ?? "";
+
+
+        document.getElementById(
+            "source-dxspider"
+        ).checked =
+            settings.sources?.dxspider ?? false;
+
+
+        document.getElementById(
+            "source-holycluster"
+        ).checked =
+            settings.sources?.holycluster ?? false;
+
+
+        document.getElementById(
+            "source-dxsummit"
+        ).checked =
+            settings.sources?.dxsummit ?? false;
+
+    }
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+        showMessage(
+            "Failed to load settings"
+        );
+
+    }
+
+}
+
+
+async function saveSettings() {
+
+    const settings = {
+
+        callsign:
+            document.getElementById(
+                "callsign"
+            ).value.trim(),
+
+        operatorName:
+            document.getElementById(
+                "operatorName"
+            ).value.trim(),
+
+        locator:
+            document.getElementById(
+                "locator"
+            ).value.trim(),
+
+        club:
+            document.getElementById(
+                "club"
+            ).value.trim(),
+
+        sources: {
+
+            dxspider:
+                document.getElementById(
+                    "source-dxspider"
+                ).checked,
+
+            holycluster:
+                document.getElementById(
+                    "source-holycluster"
+                ).checked,
+
+            dxsummit:
+                document.getElementById(
+                    "source-dxsummit"
+                ).checked
+
+        }
+
+    };
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/settings",
+                {
+
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(
+                            settings
+                        )
+
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to save settings"
+            );
+
+        }
+
+
+        await response.json();
+
+
+        showMessage(
+            "Settings saved."
+        );
+
+    }
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+        showMessage(
+            "Failed to save settings."
+        );
+
+    }
+
+}
+
+
+function showMessage(message) {
+
+    document.getElementById(
+        "settings-message"
+    ).textContent =
+        message;
+
+}
+
+
+document.getElementById(
+    "save-settings"
+).addEventListener(
+    "click",
+    saveSettings
+);
+
+
+loadSettings();
+
+</script>
+
+
+</body>
+
+</html>

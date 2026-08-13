@@ -1,3 +1,18 @@
+export interface DxSpiderSettings {
+
+    name: string;
+
+    host: string;
+
+    port: number;
+
+    password?: string;
+
+    enabled: boolean;
+
+}
+
+
 export interface ShackSettings {
 
     callsign: string;
@@ -17,6 +32,8 @@ export interface ShackSettings {
         dxsummit: boolean;
 
     };
+
+    dxspiders: DxSpiderSettings[];
 
 }
 
@@ -39,6 +56,26 @@ export const shackSettings: ShackSettings = {
 
         dxsummit: true
 
-    }
+    },
+
+    dxspiders: [
+
+        {
+            name: "HB9ON-8",
+            host: "193.108.55.24",
+            port: 8000,
+            password: "",
+            enabled: true
+        },
+
+        {
+            name: "HB9IAC-8",
+            host: "dxc.iapc.ch",
+            port: 8000,
+            password: "",
+            enabled: true
+        }
+
+    ]
 
 };

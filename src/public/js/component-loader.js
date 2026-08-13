@@ -19,9 +19,27 @@ async function loadComponent(id, file) {
 
 async function loadComponents() {
 
+    /*
+        Sidebar
+    */
+
     await loadComponent(
         "sidebar",
         "sidebar.html"
+    );
+
+
+    /*
+        Settings modal content
+
+        Must be loaded AFTER sidebar
+        because #settings-content
+        is inside sidebar.html.
+    */
+
+    await loadComponent(
+        "settings-content",
+        "settings-modal.html"
     );
 
 
@@ -29,6 +47,7 @@ async function loadComponents() {
         "system-status",
         "system-status.html"
     );
+
 
     await loadComponent(
         "header",
@@ -92,6 +111,23 @@ async function loadComponents() {
 
     document.body.appendChild(
         sidebarScript
+    );
+
+
+    /*
+        Initialize settings modal
+    */
+
+    const settingsScript =
+        document.createElement(
+            "script"
+        );
+
+    settingsScript.src =
+        "js/settings-modal.js";
+
+    document.body.appendChild(
+        settingsScript
     );
 
 }

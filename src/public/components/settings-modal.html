@@ -1,0 +1,182 @@
+<div class="settings-header">
+
+    <div class="settings-title">
+        ⚙ Settings
+    </div>
+
+</div>
+
+
+<div class="settings-content">
+
+
+    <!-- =========================
+         STATION
+         ========================= -->
+
+    <section class="settings-section">
+
+        <h2>Station</h2>
+
+        <div class="settings-grid">
+
+            <label for="callsign">
+                Callsign
+            </label>
+
+            <input
+                id="callsign"
+                type="text">
+
+
+            <label for="operatorName">
+                Operator
+            </label>
+
+            <input
+                id="operatorName"
+                type="text">
+
+
+            <label for="locator">
+                QTH Locator
+            </label>
+
+            <input
+                id="locator"
+                type="text">
+
+
+            <label for="club">
+                Club
+            </label>
+
+            <input
+                id="club"
+                type="text">
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         DX SOURCES
+         ========================= -->
+
+    <section class="settings-section">
+
+        <h2>DX Sources</h2>
+
+
+        <!-- DXSpider master switch -->
+
+        <div class="source-master-row">
+
+            <label class="source-switch">
+
+                <input
+                    id="source-dxspider"
+                    type="checkbox">
+
+                <span>
+                    DXSpider
+                </span>
+
+            </label>
+
+        </div>
+
+
+        <!-- DXSpider instances -->
+
+        <div
+            id="dxspider-list"
+            class="dxspider-list">
+        </div>
+
+
+        <button
+            id="add-dxspider"
+            class="settings-secondary-button"
+            type="button">
+
+            + Add DXSpider
+
+        </button>
+
+
+        <!-- HolyCluster -->
+
+        <div class="source-master-row">
+
+            <label class="source-switch">
+
+                <input
+                    id="source-holycluster"
+                    type="checkbox">
+
+                <span>
+                    HolyCluster
+                </span>
+
+            </label>
+
+        </div>
+
+
+        <!-- DX Summit -->
+
+        <div class="source-master-row">
+
+            <label class="source-switch">
+
+                <input
+                    id="source-dxsummit"
+                    type="checkbox">
+
+                <span>
+                    DX Summit
+                </span>
+
+            </label>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         ACTIONS
+         ========================= -->
+
+    <div class="settings-actions">
+
+        <button
+            id="save-settings"
+            class="settings-save"
+            type="button">
+
+            Save Settings
+
+        </button>
+
+
+        <button
+            id="settings-cancel"
+            class="settings-cancel"
+            type="button">
+
+            Cancel
+
+        </button>
+
+
+        <div
+            id="settings-message"
+            class="settings-message">
+        </div>
+
+    </div>
+
+</div>

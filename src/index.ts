@@ -5,17 +5,13 @@ import {
 } from "./services/radio/cat.service.js";
 
 import {
-    SourceStatusService
-} from "./services/sources/source-status.service.js";
-
-import {
     fusionEngine
 } from './services/fusion/fusion-instance.js';
 
 import {
-    SourceManager
-} from './services/sources/source-manager.js';
-
+    sourceManager,
+    sourceStatus
+} from "./services/sources/source-manager-instance.js";
 
 import {
     catService
@@ -31,9 +27,6 @@ catService.start();
 
 sotaPotaService.start();
 
-const sourceStatus =
-    new SourceStatusService();
-
 
 const PORT =
     Number(process.env.PORT) || 3000;
@@ -43,16 +36,16 @@ const PORT =
 /*
     Start data sources
 */
+app.get(
+    "/api/source-status",
+    (req, res) => {
 
+        res.json(
+            sourceStatus.getStatus()
+        );
 
-const sourceManager =
-    new SourceManager(
-        fusionEngine,
-        sourceStatus
-    );
-
-
-sourceManager.start();
+    }
+);
 
 app.get(
     "/api/source-status",

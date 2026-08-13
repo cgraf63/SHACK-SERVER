@@ -1,4 +1,10 @@
-import { operator } from "../../config/operator.config.js";
+import {
+    ShackSettings
+} from "../../config/settings.config.js";
+
+import {
+    operator
+} from "../../config/operator.config.js";
 
 
 export interface ClusterSource {
@@ -25,78 +31,133 @@ export interface ClusterSource {
     reconnectDelay: number;
 
     interval?: number;
+
 }
 
 
-export const clusterSources: ClusterSource[] = [
+export function createClusterSources(
+    settings: ShackSettings
+): ClusterSource[] {
 
-    {
-        name: "HB9ON-8",
-
-        type: "dxspider",
-
-        host: "193.108.55.24",
-
-        port: 8000,
-
-        callsign: operator.callsign,
-
-        password: "",
-
-        enabled: true,
-
-        reconnect: true,
-
-        reconnectDelay: 30
-    },
+    const sources: ClusterSource[] = [];
 
 
-    {
-        name: "HB9IAC-8",
+    /*
+        DXSpider
+    */
 
-        type: "dxspider",
+    if (
+        settings.sources.dxspider
+    ) {
 
-        host: "dxc.iapc.ch",
+        for (
+            const dx of settings.dxspiders
+        ) {
 
-        port: 8000,
-
-        callsign: operator.callsign,
-
-        password: "",
-
-        enabled: true,
-
-        reconnect: true,
-
-        reconnectDelay: 30
-    },
+            if (!dx.enabled) {
+                continue;
+            }
 
 
-    {
-        name: "HolyCluster",
+            sources.push({
 
-        type: "holycluster",
+                name:
+                    dx.name,
 
-        enabled: true,
+                type:
+                    "dxspider",
 
-        reconnect: true,
+                host:
+                    dx.host,
 
-        reconnectDelay: 30
-    },
+                port:
+                    dx.port,
 
+                callsign:
+                    settings.callsign,
 
-    {
-        name: "DX Summit",
+                password:
+                    dx.password ?? "",
 
-        type: "dxsummit",
+                enabled:
+                    true,
 
-        enabled: true,
+                reconnect:
+                    true,
 
-        reconnect: false,
+                reconnectDelay:
+                    30
 
-        reconnectDelay: 0,
+            });
 
-        interval: 60
+        }
+
     }
 
-];
+
+    /*
+        HolyCluster
+    */
+
+    if (
+        settings.sources.holycluster
+    ) {
+
+        sources.push({
+
+            name:
+                "HolyCluster",
+
+            type:
+                "holycluster",
+
+            enabled:
+                true,
+
+            reconnect:
+                true,
+
+            reconnectDelay:
+                30
+
+        });
+
+    }
+
+
+    /*
+        DX Summit
+    */
+
+    if (
+        settings.sources.dxsummit
+    ) {
+
+        sources.push({
+
+            name:
+                "DX Summit",
+
+            type:
+                "dxsummit",
+
+            enabled:
+                true,
+
+            reconnect:
+                false,
+
+            reconnectDelay:
+                0,
+
+            interval:
+                60
+
+        });
+
+    }
+
+
+    return sources;
+
+}
