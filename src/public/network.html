@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Network - SHACK-SERVER</title>
+
+    <link
+        rel="icon"
+        type="image/x-icon"
+        href="/favicon.ico">
+
+    <link
+        rel="stylesheet"
+        href="/css/variables.css">
+
+    <link
+        rel="stylesheet"
+        href="/css/theme.css">
+
+    <link
+        rel="stylesheet"
+        href="/css/layout.css">
+
+    <link
+        rel="stylesheet"
+        href="/css/components.css">
+
+    <link
+        rel="stylesheet"
+        href="/css/network.css">
+
+
+    <style>
+
+/* =========================================================
+   NETWORK
+   ========================================================= */
+
+html,
+body {
+
+    width: 100%;
+    min-width: 100%;
+
+    margin: 0;
+    padding: 0;
+
+}
+
+
+body {
+
+    min-height: 100vh;
+
+    overflow-x: auto;
+
+}
+
+
+*,
+*::before,
+*::after {
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.network-page {
+
+    width: 100%;
+
+    min-height: 100vh;
+
+    padding: 30px 40px;
+
+    background: #050d13;
+
+    color: #ffffff;
+
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.network-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    width: 100%;
+
+    margin-bottom: 25px;
+
+}
+
+
+.network-title {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+}
+
+
+.network-title h1 {
+
+    margin: 0;
+
+    color: #ff4fd8;
+
+    font-size: 28px;
+
+    line-height: 1.2;
+
+}
+
+
+.network-icon {
+
+    font-size: 27px;
+
+}
+
+
+.network-updated {
+
+    margin-top: 6px;
+
+    color: #8fa3b2;
+
+    font-size: 13px;
+
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.network-card {
+
+    width: 100%;
+
+    margin-bottom: 20px;
+
+    padding: 20px;
+
+    background: #0b151e;
+
+    border: 1px solid #24343f;
+
+    border-radius: 8px;
+
+}
+
+
+.network-card-title {
+
+    margin-bottom: 18px;
+
+    color: #ff4fd8;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    letter-spacing: .08em;
+
+}
+
+
+.network-card-title-row {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+}
+
+
+/* =========================================================
+   STATUS GRID
+   ========================================================= */
+
+.network-status-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
+
+    gap: 10px;
+
+}
+
+
+.network-stat {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    min-width: 0;
+
+    padding: 14px;
+
+    background: #101c25;
+
+    border: 1px solid #24343f;
+
+    border-radius: 6px;
+
+}
+
+
+.network-stat span {
+
+    color: #8fa3b2;
+
+    font-size: 12px;
+
+}
+
+
+.network-stat strong {
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    word-break: break-word;
+
+}
+
+
+.network-stat strong.connected {
+
+    color: #39d98a;
+
+}
+
+
+/* =========================================================
+   WIFI
+   ========================================================= */
+
+.network-wifi-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+
+    gap: 10px;
+
+}
+
+
+.network-wifi-item {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    padding: 14px;
+
+    background: #101c25;
+
+    border: 1px solid #24343f;
+
+    border-radius: 6px;
+
+}
+
+
+.network-wifi-item span {
+
+    color: #8fa3b2;
+
+    font-size: 12px;
+
+}
+
+
+.network-wifi-item strong {
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    word-break: break-word;
+
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.network-table-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+}
+
+
+.network-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 13px;
+
+}
+
+
+.network-table th {
+
+    padding: 11px 12px;
+
+    background: #101c25;
+
+    border: 1px solid #24343f;
+
+    color: #8fa3b2;
+
+    text-align: left;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    letter-spacing: .04em;
+
+    white-space: nowrap;
+
+}
+
+
+.network-table td {
+
+    padding: 11px 12px;
+
+    background: #0b151e;
+
+    border: 1px solid #24343f;
+
+    color: #ffffff;
+
+    vertical-align: middle;
+
+}
+
+
+.network-table tr:hover td {
+
+    background: #101c25;
+
+}
+
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+.network-state {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+}
+
+
+.network-state-dot {
+
+    width: 8px;
+    height: 8px;
+
+    flex: 0 0 auto;
+
+    border-radius: 50%;
+
+    background: #39d98a;
+
+    box-shadow:
+        0 0 7px
+        rgba(57,217,138,.65);
+
+}
+
+
+.network-state-dot.inactive {
+
+    background: #71838f;
+
+    box-shadow: none;
+
+}
+
+
+.network-state-dot.warning {
+
+    background: #ffb347;
+
+    box-shadow:
+        0 0 7px
+        rgba(255,179,71,.5);
+
+}
+
+
+/* =========================================================
+   WIFI SIGNAL
+   ========================================================= */
+
+.network-signal {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+}
+
+
+.network-signal-value {
+
+    color: #ffffff;
+
+}
+
+
+.network-signal-good {
+
+    color: #39d98a;
+
+}
+
+
+.network-signal-warning {
+
+    color: #ffb347;
+
+}
+
+
+/* =========================================================
+   SCAN BUTTON
+   ========================================================= */
+
+.network-button {
+
+    padding: 9px 14px;
+
+    border: 1px solid #344754;
+
+    border-radius: 6px;
+
+    background: #101c25;
+
+    color: #d7e0e5;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+}
+
+
+.network-button:hover {
+
+    border-color: #607d8b;
+
+    color: #ffffff;
+
+}
+
+
+.network-button:disabled {
+
+    opacity: .5;
+
+    cursor: default;
+
+}
+
+
+/* =========================================================
+   MESSAGE
+   ========================================================= */
+
+.network-message {
+
+    min-height: 20px;
+
+    margin-top: 12px;
+
+    color: #8fa3b2;
+
+    font-size: 12px;
+
+}
+
+
+/* =========================================================
+   EMPTY
+   ========================================================= */
+
+.network-empty {
+
+    padding: 15px 0;
+
+    color: #71838f;
+
+    font-size: 13px;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .network-status-grid {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+    }
+
+
+    .network-wifi-grid {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+    }
+
+}
+
+
+@media (max-width: 900px) {
+
+    .network-page {
+
+        padding: 20px;
+
+    }
+
+
+    .network-status-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .network-wifi-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     APPLICATION
+     ========================================================= -->
+
+<div id="app">
+
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside
+        id="sidebar"
+        class="sidebar">
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main>
+
+
+        <div class="network-page">
+
+
+            <!-- =============================================
+                 HEADER
+                 ============================================= -->
+
+            <div class="network-header">
+
+                <div>
+
+                    <div class="network-title">
+
+                        <span class="network-icon">
+                            ⌁
+                        </span>
+
+                        <h1>
+                            NETWORK
+                        </h1>
+
+                    </div>
+
+
+                    <div
+                        id="network-updated"
+                        class="network-updated">
+
+                        Updated --
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 NETWORK STATUS
+                 ============================================= -->
+
+            <section class="network-card">
+
+
+                <div class="network-card-title">
+
+                    NETWORK STATUS
+
+                </div>
+
+
+                <div
+                    id="network-status"
+                    class="network-status-grid">
+
+
+                    <div class="network-stat">
+
+                        <span>
+                            Status
+                        </span>
+
+                        <strong id="network-status-value">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-stat">
+
+                        <span>
+                            NetworkManager
+                        </span>
+
+                        <strong id="network-manager">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-stat">
+
+                        <span>
+                            Interface
+                        </span>
+
+                        <strong id="network-interface">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-stat">
+
+                        <span>
+                            Connection
+                        </span>
+
+                        <strong id="network-connection">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-stat">
+
+                        <span>
+                            IPv4
+                        </span>
+
+                        <strong id="network-ipv4">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-stat">
+
+                        <span>
+                            Gateway
+                        </span>
+
+                        <strong id="network-gateway">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-stat">
+
+                        <span>
+                            DNS
+                        </span>
+
+                        <strong id="network-dns">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-stat">
+
+                        <span>
+                            Hostname
+                        </span>
+
+                        <strong id="network-hostname">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+            <!-- =============================================
+                 WIFI
+                 ============================================= -->
+
+            <section class="network-card">
+
+
+                <div class="network-card-title">
+
+                    WIFI
+
+                </div>
+
+
+                <div
+                    id="wifi-info"
+                    class="network-wifi-grid">
+
+
+                    <div class="network-wifi-item">
+
+                        <span>
+                            SSID
+                        </span>
+
+                        <strong id="wifi-ssid">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-wifi-item">
+
+                        <span>
+                            BSSID
+                        </span>
+
+                        <strong id="wifi-bssid">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-wifi-item">
+
+                        <span>
+                            Signal
+                        </span>
+
+                        <strong id="wifi-signal">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-wifi-item">
+
+                        <span>
+                            Channel
+                        </span>
+
+                        <strong id="wifi-channel">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-wifi-item">
+
+                        <span>
+                            Frequency
+                        </span>
+
+                        <strong id="wifi-frequency">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="network-wifi-item">
+
+                        <span>
+                            Security
+                        </span>
+
+                        <strong id="wifi-security">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+            <!-- =============================================
+                 LOWER GRID
+                 ============================================= -->
+
+            <div class="network-grid">
+
+
+                <!-- =========================================
+                     NETWORK INTERFACES
+                     ========================================= -->
+
+                <section class="network-card">
+
+
+                    <div class="network-card-title">
+
+                        NETWORK INTERFACES
+
+                    </div>
+
+
+                    <div
+                        class="network-table-wrapper">
+
+
+                        <table class="network-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Interface
+                                    </th>
+
+                                    <th>
+                                        Type
+                                    </th>
+
+                                    <th>
+                                        State
+                                    </th>
+
+                                    <th>
+                                        Connection
+                                    </th>
+
+                                    <th>
+                                        Addresses
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody
+                                id="network-interfaces">
+
+                                <tr>
+
+                                    <td colspan="5">
+                                        Loading...
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+
+                    </div>
+
+
+                </section>
+
+
+                <!-- =========================================
+                     AVAILABLE WIFI
+                     ========================================= -->
+
+                <section class="network-card">
+
+
+                    <div
+                        class="network-card-title-row">
+
+
+                        <div class="network-card-title">
+
+                            AVAILABLE WIFI NETWORKS
+
+                        </div>
+
+
+                        <button
+                            id="wifi-scan-btn"
+                            class="network-button"
+                            type="button">
+
+                            Scan
+
+                        </button>
+
+
+                    </div>
+
+
+                    <div
+                        id="wifi-scan-message"
+                        class="network-message">
+                    </div>
+
+
+                    <div
+                        class="network-table-wrapper">
+
+
+                        <table class="network-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        SSID
+                                    </th>
+
+                                    <th>
+                                        Signal
+                                    </th>
+
+                                    <th>
+                                        Channel
+                                    </th>
+
+                                    <th>
+                                        Frequency
+                                    </th>
+
+                                    <th>
+                                        Security
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody
+                                id="wifi-networks">
+
+                                <tr>
+
+                                    <td colspan="5">
+                                        No scan results
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+
+                    </div>
+
+
+                </section>
+
+
+            </div>
+
+
+        </div>
+
+
+    </main>
+
+
+</div>
+
+
+<!-- =========================================================
+     COMPONENT LOADER
+     ========================================================= -->
+
+<script
+    src="/js/component-loader.js">
+</script>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        await loadComponents();
+
+    }
+);
+
+</script>
+
+
+<!-- =========================================================
+     NETWORK
+     ========================================================= -->
+
+<script
+    src="/js/network.js">
+</script>
+
+
+</body>
+
+</html>

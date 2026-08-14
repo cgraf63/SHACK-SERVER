@@ -10,7 +10,7 @@ import qsoRouter from "./routes/qso.js";
 import systemRouter from "./routes/system.js";
 import diagnosticsRouter from "./routes/diagnostics.js";
 import settingsRouter from "./routes/settings.js";
-
+import networkRouter from "./routes/network.js";
 import indexRouter from "./routes/index.js";
 import propagationRouter from "./routes/propagation.js";
 import spotsRouter from "./routes/spots.js";
@@ -35,6 +35,11 @@ const app =
 /*
     Middleware
 */
+
+app.use(
+    "/api/network",
+    networkRouter
+);
 
 
 app.use(

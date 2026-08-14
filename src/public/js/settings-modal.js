@@ -38,6 +38,11 @@ function openSettings() {
 
     loadSettings();
 
+const locator =
+    document.getElementById(
+        "settings-locator"
+    );
+
 }
 
 
@@ -469,7 +474,7 @@ async function saveSettings() {
 
         locator:
             document.getElementById(
-                "locator"
+                "settings-locator"
             ).value.trim(),
 
         club:

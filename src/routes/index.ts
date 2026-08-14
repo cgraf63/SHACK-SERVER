@@ -24,6 +24,18 @@ router.get('/qso-log', (_req, res) => {
 });
 
 
+
+router.get('/network', (_req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '..',
+            'public',
+            'network.html'
+        )
+    );
+});
+
 router.get('/diagnostics', (_req, res) => {
     res.sendFile(
         path.join(

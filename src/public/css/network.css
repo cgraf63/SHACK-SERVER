@@ -1,0 +1,429 @@
+/* =========================================================
+   NETWORK PAGE
+   SHACK-SERVER
+   ========================================================= */
+
+.network-page {
+
+    padding: 30px 40px;
+
+    color: #ffffff;
+
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.network-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 25px;
+
+}
+
+
+.network-header h1 {
+
+    margin: 0;
+
+    font-size: 28px;
+
+    line-height: 1.2;
+
+    color: #ff4fd8;
+
+}
+
+
+.network-icon {
+
+    display: inline-block;
+
+    margin-right: 8px;
+
+    font-size: 26px;
+
+}
+
+
+.network-updated {
+
+    margin-top: 6px;
+
+    color: #8fa3b2;
+
+    font-size: 13px;
+
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.network-card {
+
+    margin-bottom: 20px;
+
+    padding: 20px;
+
+    background: #0b151e;
+
+    border: 1px solid #24343f;
+
+    border-radius: 8px;
+
+}
+
+
+.network-card-title {
+
+    margin-bottom: 18px;
+
+    color: #9fb1bd;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    letter-spacing: .08em;
+
+}
+
+
+.network-card-title-row {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+}
+
+
+/* =========================================================
+   STATUS GRID
+   ========================================================= */
+
+.network-status-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 1px;
+
+    background: #24343f;
+
+    border: 1px solid #24343f;
+
+    border-radius: 6px;
+
+    overflow: hidden;
+
+}
+
+
+.network-stat {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    min-width: 0;
+
+    padding: 15px;
+
+    background: #101c25;
+
+}
+
+
+.network-stat span {
+
+    color: #71838f;
+
+    font-size: 12px;
+
+}
+
+
+.network-stat strong {
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    font-weight: 500;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+.network-status-value {
+
+    color: #57d98c !important;
+
+}
+
+
+/* =========================================================
+   WIFI STATUS
+   ========================================================= */
+
+.wifi-status {
+
+    margin-bottom: 15px;
+
+}
+
+
+.wifi-status-indicator {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: #9fb1bd;
+
+    font-size: 13px;
+
+}
+
+
+.wifi-indicator {
+
+    color: #57d98c;
+
+    font-size: 14px;
+
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.network-table-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+}
+
+
+.network-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    background: #0b151e;
+
+}
+
+
+.network-table th {
+
+    padding: 12px 14px;
+
+    text-align: left;
+
+    color: #9fb1bd;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    border-bottom: 1px solid #344754;
+
+}
+
+
+.network-table td {
+
+    padding: 12px 14px;
+
+    color: #d7e0e5;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+
+    border-bottom: 1px solid #24343f;
+
+}
+
+
+.network-table tbody tr:hover {
+
+    background: rgba(255, 255, 255, .04);
+
+}
+
+
+.network-empty {
+
+    padding: 30px !important;
+
+    text-align: center;
+
+    color: #71838f !important;
+
+}
+
+
+/* =========================================================
+   INTERFACE STATES
+   ========================================================= */
+
+.network-state-connected {
+
+    color: #57d98c !important;
+
+}
+
+
+.network-state-disconnected {
+
+    color: #ff8b8b !important;
+
+}
+
+
+.network-state-unavailable {
+
+    color: #71838f !important;
+
+}
+
+
+/* =========================================================
+   BUTTON
+   ========================================================= */
+
+.network-button {
+
+    padding: 8px 14px;
+
+    border: 1px solid #344754;
+
+    border-radius: 6px;
+
+    background: #101c25;
+
+    color: #9fb1bd;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+}
+
+
+.network-button:hover {
+
+    border-color: #607d8b;
+
+    color: #ffffff;
+
+}
+
+
+.network-button:disabled {
+
+    opacity: .5;
+
+    cursor: default;
+
+}
+
+
+/* =========================================================
+   MESSAGE
+   ========================================================= */
+
+.network-message {
+
+    margin-top: 12px;
+
+    color: #71838f;
+
+    font-size: 12px;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .network-status-grid {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .network-page {
+
+        padding: 20px;
+
+    }
+
+
+    .network-status-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .network-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+
+    .network-card {
+
+        padding: 15px;
+
+    }
+
+}
