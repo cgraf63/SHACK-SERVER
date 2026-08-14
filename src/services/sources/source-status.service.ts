@@ -18,21 +18,38 @@ export class SourceStatusService {
 
     getStatus() {
 
-    return Array.from(
-        this.lastSeen.entries()
-    )
-    .map(
-        ([name,time]) => ({
+        return Array.from(
+            this.lastSeen.entries()
+        )
+        .map(
+            ([name, time]) => {
 
-            name,
+                const age =
+                    Date.now() - time;
 
-            status:
-                Date.now() - time < 300000
-                ? "Active"
-                : "No data"
 
-        })
-    );
+                return {
 
-}
+                    name,
+
+                    status:
+                        age < 300000
+                        ? "Active"
+                        : "No data",
+
+                    lastSeen:
+                        time,
+
+                    ageSeconds:
+                        Math.floor(
+                            age / 1000
+                        )
+
+                };
+
+            }
+        );
+
+    }
+
 }

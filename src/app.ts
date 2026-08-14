@@ -8,6 +8,7 @@ import bestBandRouter from "./routes/best-band.js";
 import radioRouter from "./routes/radio.js";
 import qsoRouter from "./routes/qso.js";
 import systemRouter from "./routes/system.js";
+import diagnosticsRouter from "./routes/diagnostics.js";
 import settingsRouter from "./routes/settings.js";
 
 import indexRouter from "./routes/index.js";
@@ -133,6 +134,12 @@ app.use(
     systemStatusRouter
 );
 
+
+// Diagnostics
+app.use(
+    "/api/diagnostics",
+    diagnosticsRouter
+);
 
 /*
     Static Frontend

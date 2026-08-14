@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Diagnostics – SHACK-SERVER</title>
+
+    <link
+        rel="icon"
+        type="image/x-icon"
+        href="/favicon.ico">
+
+    <link
+        rel="stylesheet"
+        href="/css/variables.css">
+
+    <link
+        rel="stylesheet"
+        href="/css/theme.css">
+
+    <link
+        rel="stylesheet"
+        href="/css/layout.css">
+
+    <link
+        rel="stylesheet"
+        href="/css/components.css">
+
+
+    <style>
+
+/* =========================================================
+   DIAGNOSTICS
+   ========================================================= */
+
+html,
+body {
+
+    width: 100%;
+    min-width: 100%;
+
+    margin: 0;
+    padding: 0;
+
+}
+
+
+body {
+
+    min-height: 100vh;
+
+    overflow-x: auto;
+
+}
+
+
+*,
+*::before,
+*::after {
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.diagnostics-page {
+
+    width: 100%;
+
+    min-height: 100vh;
+
+    padding: 30px 40px;
+
+    background: #050d13;
+
+    color: #ffffff;
+
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.diagnostics-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    width: 100%;
+
+    margin-bottom: 25px;
+
+}
+
+
+.diagnostics-title {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+}
+
+
+.diagnostics-title h1 {
+
+    margin: 0;
+
+    color: #ff4fd8;
+
+    font-size: 28px;
+
+    line-height: 1.2;
+
+}
+
+
+.diagnostics-icon {
+
+    font-size: 27px;
+
+}
+
+
+.diagnostics-updated {
+
+    margin-top: 6px;
+
+    color: #8fa3b2;
+
+    font-size: 13px;
+
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.diagnostics-card {
+
+    width: 100%;
+
+    margin-bottom: 20px;
+
+    padding: 20px;
+
+    background: #0b151e;
+
+    border: 1px solid #24343f;
+
+    border-radius: 8px;
+
+}
+
+
+.diagnostics-card-title {
+
+    margin-bottom: 18px;
+
+    color: #ff4fd8;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    letter-spacing: .08em;
+
+}
+
+
+/* =========================================================
+   DX SOURCES
+   ========================================================= */
+
+.source-list {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(260px, 1fr)
+        );
+
+    gap: 12px;
+
+}
+
+
+.source-item {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 13px 15px;
+
+    background: #101c25;
+
+    border: 1px solid #24343f;
+
+    border-radius: 6px;
+
+}
+
+
+.source-name {
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+}
+
+
+.source-status {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    font-size: 12px;
+
+}
+
+
+.source-dot {
+
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background: #39d98a;
+
+    box-shadow:
+        0 0 7px
+        rgba(57,217,138,.65);
+
+}
+
+
+.source-dot.inactive {
+
+    background: #ffb347;
+
+    box-shadow:
+        0 0 7px
+        rgba(255,179,71,.5);
+
+}
+
+
+.source-age {
+
+    margin-left: 10px;
+
+    color: #71838f;
+
+    font-size: 11px;
+
+}
+
+
+/* =========================================================
+   LOWER GRID
+   ========================================================= */
+
+.diagnostics-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 20px;
+
+}
+
+
+/* =========================================================
+   STATISTICS
+   ========================================================= */
+
+.diagnostics-stats {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(130px, 1fr)
+        );
+
+    gap: 10px;
+
+}
+
+
+.diagnostics-stat {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    padding: 14px;
+
+    background: #101c25;
+
+    border: 1px solid #24343f;
+
+    border-radius: 6px;
+
+}
+
+
+.diagnostics-stat span {
+
+    color: #8fa3b2;
+
+    font-size: 12px;
+
+}
+
+
+.diagnostics-stat strong {
+
+    color: #ffffff;
+
+    font-size: 22px;
+
+    font-weight: 600;
+
+}
+
+
+/* =========================================================
+   GEO
+   ========================================================= */
+
+.geo-list {
+
+    margin-top: 15px;
+
+}
+
+
+.geo-empty {
+
+    color: #71838f;
+
+    font-size: 13px;
+
+}
+
+
+.geo-item {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 9px 12px;
+
+    margin-bottom: 6px;
+
+    background: #101c25;
+
+    border: 1px solid #24343f;
+
+    border-radius: 5px;
+
+}
+
+
+.geo-call {
+
+    font-weight: 600;
+
+}
+
+
+.geo-attempts {
+
+    color: #ffb347;
+
+    font-size: 12px;
+
+}
+
+
+/* =========================================================
+   SYSTEM ACTIONS
+   ========================================================= */
+
+.system-card {
+
+    margin-top: 0;
+
+}
+
+
+.system-actions {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+}
+
+
+.diagnostics-button {
+
+    padding: 10px 16px;
+
+    border: 1px solid #344754;
+
+    border-radius: 6px;
+
+    background: #101c25;
+
+    color: #d7e0e5;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+}
+
+
+.diagnostics-button:hover {
+
+    border-color: #607d8b;
+
+    color: #ffffff;
+
+}
+
+
+.diagnostics-button.danger {
+
+    background: #401b22;
+
+    border-color: #7d2632;
+
+    color: #ff8b96;
+
+}
+
+
+.diagnostics-button.danger:hover {
+
+    background: #5a202a;
+
+    border-color: #a83a48;
+
+    color: #ffffff;
+
+}
+
+
+.system-message {
+
+    min-height: 20px;
+
+    margin-top: 14px;
+
+    color: #8fa3b2;
+
+    font-size: 13px;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .diagnostics-page {
+
+        padding: 20px;
+
+    }
+
+
+    .diagnostics-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .diagnostics-page {
+
+        padding: 15px;
+
+    }
+
+
+    .diagnostics-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+
+    .source-list {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .diagnostics-stats {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+    }
+
+
+    .system-actions {
+
+        flex-direction: column;
+
+    }
+
+
+    .diagnostics-button {
+
+        width: 100%;
+
+    }
+
+}
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div id="app">
+
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <div id="sidebar"></div>
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main>
+
+
+        <section class="diagnostics-page">
+
+
+            <!-- HEADER -->
+
+            <header class="diagnostics-header">
+
+                <div>
+
+                    <div class="diagnostics-title">
+
+                        <span class="diagnostics-icon">
+                            ⚙
+                        </span>
+
+                        <h1>
+                            DIAGNOSTICS
+                        </h1>
+
+                    </div>
+
+
+                    <div
+                        id="diagnostics-updated"
+                        class="diagnostics-updated">
+
+                        Waiting for data...
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- =================================================
+                 DX SOURCES
+                 ================================================= -->
+
+            <section class="diagnostics-card">
+
+                <div class="diagnostics-card-title">
+                    DX SOURCES
+                </div>
+
+
+                <div
+                    id="source-list"
+                    class="source-list">
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 FUSION + GEO
+                 ================================================= -->
+
+            <div class="diagnostics-grid">
+
+
+                <!-- FUSION -->
+
+                <section class="diagnostics-card">
+
+                    <div class="diagnostics-card-title">
+                        FUSION ENGINE
+                    </div>
+
+
+                    <div class="diagnostics-stats">
+
+
+                        <div class="diagnostics-stat">
+
+                            <span>
+                                Total spots
+                            </span>
+
+                            <strong id="fusion-total">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div class="diagnostics-stat">
+
+                            <span>
+                                Under 10 min
+                            </span>
+
+                            <strong id="fusion-under10">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div class="diagnostics-stat">
+
+                            <span>
+                                Under 30 min
+                            </span>
+
+                            <strong id="fusion-under30">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div class="diagnostics-stat">
+
+                            <span>
+                                Unique calls
+                            </span>
+
+                            <strong id="fusion-calls">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div class="diagnostics-stat">
+
+                            <span>
+                                Sources
+                            </span>
+
+                            <strong id="fusion-sources">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                    </div>
+
+                </section>
+
+
+                <!-- GEO -->
+
+                <section class="diagnostics-card">
+
+                    <div class="diagnostics-card-title">
+                        GEO ENRICHMENT
+                    </div>
+
+
+                    <div class="diagnostics-stats">
+
+
+                        <div class="diagnostics-stat">
+
+                            <span>
+                                Failed attempts
+                            </span>
+
+                            <strong id="geo-failed">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div
+                        id="geo-list"
+                        class="geo-list">
+                    </div>
+
+                </section>
+
+
+            </div>
+
+
+            <!-- =================================================
+                 SYSTEM ACTIONS
+                 ================================================= -->
+
+            <section class="diagnostics-card system-card">
+
+                <div class="diagnostics-card-title">
+                    SYSTEM ACTIONS
+                </div>
+
+
+                <div class="system-actions">
+
+
+                    <button
+                        id="restart-server"
+                        type="button"
+                        class="diagnostics-button">
+
+                        Restart SHACK-SERVER
+
+                    </button>
+
+
+                    <button
+                        id="reboot-system"
+                        type="button"
+                        class="diagnostics-button">
+
+                        Reboot
+
+                    </button>
+
+
+                    <button
+                        id="shutdown-system"
+                        type="button"
+                        class="diagnostics-button danger">
+
+                        Shutdown
+
+                    </button>
+
+
+                </div>
+
+
+                <div
+                    id="system-message"
+                    class="system-message">
+                </div>
+
+            </section>
+
+
+        </section>
+
+
+    </main>
+
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
+<script
+    src="/js/component-loader.js">
+</script>
+
+<script
+    src="/js/sidebar.js">
+</script>
+
+<script
+    src="/js/diagnostics.js">
+</script>
+
+
+</body>
+
+</html>

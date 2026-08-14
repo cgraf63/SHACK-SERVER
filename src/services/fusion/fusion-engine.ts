@@ -383,7 +383,19 @@ getBandActivity() {
 
 }
      
-   
+getGeoDiagnostics() {
+
+    return {
+
+        failed:
+            this.geo.getFailedEnrichmentCount(),
+
+        calls:
+            this.geo.getFailedEnrichment()
+
+    };
+
+}   
 
 getSpots(): FusionSpot[] {
 

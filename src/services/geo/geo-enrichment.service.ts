@@ -6,21 +6,17 @@ import {
     DxLocation
 } from "./geo.model.js";
 
-
 import {
     GeoCacheService
 } from "./geo-cache.service.js";
-
 
 import {
     QRZService
 } from "./qrz.service.js";
 
-
 import {
     CallsignResolverService
 } from "./callsign-resolver.service.js";
-
 
 
 export class GeoEnrichmentService {
@@ -29,116 +25,121 @@ export class GeoEnrichmentService {
     private cache =
         new GeoCacheService();
 
-private maidenhead =
-    new MaidenheadService();
 
+    private maidenhead =
+        new MaidenheadService();
 
 
     private qrz =
         new QRZService();
 
 
-
     private resolver =
         new CallsignResolverService();
 
 
+    /*
+        Diagnostics
 
-private normalizeCall(
-    call: string
-): string {
+        Store failed enrichment attempts.
+    */
 
-    const upper =
-        call
-            .toUpperCase()
-            .trim();
-
-
-    const parts =
-        upper.split("/");
+    private failedEnrichment =
+        new Map<string, number>();
 
 
-    const first =
-        parts[0] ?? "";
+    private normalizeCall(
+        call: string
+    ): string {
+
+        const upper =
+            call
+                .toUpperCase()
+                .trim();
 
 
-    const second =
-        parts[1];
+        const parts =
+            upper.split("/");
 
 
-    const suffixes = [
-        "P",
-        "M",
-        "MM",
-        "AM",
-        "B"
-    ];
+        const first =
+            parts[0] ?? "";
 
 
-    // HB9ABC/P, MW7KOD/M, etc.
-    if (
-        second &&
-        suffixes.includes(second)
-    ) {
+        const second =
+            parts[1];
 
-        return first;
+
+        const suffixes = [
+            "P",
+            "M",
+            "MM",
+            "AM",
+            "B"
+        ];
+
+
+        // HB9ABC/P, MW7KOD/M, etc.
+        if (
+            second &&
+            suffixes.includes(second)
+        ) {
+
+            return first;
+
+        }
+
+
+        // EA8/HB9ABC, F/G4XYZ
+        if (
+            second &&
+            second.match(/[0-9]/)
+        ) {
+
+            return second;
+
+        }
+
+
+        // W1AW/7, W1AW/KH6
+        if (
+            second &&
+            second.length <= 3
+        ) {
+
+            return first;
+
+        }
+
+
+        return upper;
 
     }
 
 
-    // EA8/HB9ABC, F/G4XYZ
-    if (
-        second &&
-        second.match(/[0-9]/)
-    ) {
-
-        return second;
-
-    }
+    async enrich(
+        call: string,
+        locator?: string
+    ): Promise<DxLocation | null> {
 
 
-    // W1AW/7, W1AW/KH6
-    if (
-        second &&
-        second.length <= 3
-    ) {
-
-        return first;
-
-    }
+        console.log(
+            "GEO ENRICH INPUT",
+            call,
+            locator
+        );
 
 
-    return upper;
+        console.log(
+            "GEO LOOKUP:",
+            call
+        );
 
-}
-
-
-
-
-
-
-
-      async enrich(
-          call: string,
-          locator?: string
-      ): Promise<DxLocation | null> {
-
-
-      console.log(
-          "GEO ENRICH INPUT",
-          call,
-          locator
-      );
-
-  console.log(
-      "GEO LOOKUP:",
-      call
-  );
 
         const normalized =
-    this.normalizeCall(
-        call
-    );
+            this.normalizeCall(
+                call
+            );
 
 
         const cached =
@@ -148,52 +149,54 @@ private normalizeCall(
 
 
         if (
-    cached &&
-    (
-        cached.latitude !== undefined &&
-        cached.longitude !== undefined
-    )
-) {
+            cached &&
+            (
+                cached.latitude !== undefined &&
+                cached.longitude !== undefined
+            )
+        ) {
 
-    return cached;
+            return cached;
 
-}
+        }
 
 
         let location: DxLocation = {
 
-
-            call: normalized,
-
+            call:
+                normalized,
 
             updated:
                 Date.now()
 
         };
 
-if (
-    locator
-) {
 
-    location.locator =
-        locator;
+        if (
+            locator
+        ) {
 
-const coordinates =
-    this.maidenhead.locatorToCoordinates(
-        locator
-    );
+            location.locator =
+                locator;
 
-if (coordinates) {
 
-    location.latitude =
-        coordinates.latitude;
+            const coordinates =
+                this.maidenhead.locatorToCoordinates(
+                    locator
+                );
 
-    location.longitude =
-        coordinates.longitude;
 
-}
-}
+            if (coordinates) {
 
+                location.latitude =
+                    coordinates.latitude;
+
+                location.longitude =
+                    coordinates.longitude;
+
+            }
+
+        }
 
 
         const callsignInfo =
@@ -202,24 +205,18 @@ if (coordinates) {
             );
 
 
-
         if (callsignInfo) {
-
 
             location.country =
                 callsignInfo.country;
 
-
             location.countryCode =
                 callsignInfo.countryCode;
-
 
             location.continent =
                 callsignInfo.continent;
 
         }
-
-
 
 
         const qrzLocation =
@@ -237,14 +234,14 @@ if (coordinates) {
 
         if (qrzLocation) {
 
-
             location = {
 
                 ...location,
 
                 ...qrzLocation,
 
-                call: normalized,
+                call:
+                    normalized,
 
                 updated:
                     Date.now()
@@ -253,19 +250,21 @@ if (coordinates) {
 
         }
 
-if (
-    !location.locator &&
-    location.latitude !== undefined &&
-    location.longitude !== undefined
-) {
 
-    location.locator =
-        this.maidenhead.coordinatesToLocator(
-            location.latitude,
-            location.longitude
-        );
+        if (
+            !location.locator &&
+            location.latitude !== undefined &&
+            location.longitude !== undefined
+        ) {
 
-}
+            location.locator =
+                this.maidenhead.coordinatesToLocator(
+                    location.latitude,
+                    location.longitude
+                );
+
+        }
+
 
         if (
             location.country ||
@@ -273,28 +272,103 @@ if (
             location.latitude !== undefined
         ) {
 
-
             this.cache.set(
                 location
             );
 
 
-if (
-    typeof location.latitude !== "number" ||
-    typeof location.longitude !== "number"
-) {
-    return null;
-}
+            if (
+                typeof location.latitude !== "number" ||
+                typeof location.longitude !== "number"
+            ) {
+
+                this.recordFailedEnrichment(
+                    normalized
+                );
+
+                return null;
+
+            }
 
 
-return location;
+            return location;
 
         }
+
+
+        /*
+            No usable location information.
+            Record failed enrichment attempt.
+        */
+
+        this.recordFailedEnrichment(
+            normalized
+        );
+
 
         return null;
 
     }
 
+
+    /*
+        Record a failed enrichment attempt.
+    */
+
+    private recordFailedEnrichment(
+        call: string
+    ): void {
+
+        const count =
+            this.failedEnrichment.get(
+                call
+            ) ?? 0;
+
+
+        this.failedEnrichment.set(
+            call,
+            count + 1
+        );
+
+    }
+
+
+    /*
+        Return failed enrichment information
+        for Diagnostics.
+    */
+
+    getFailedEnrichment(): Array<{
+        call: string;
+        attempts: number;
+    }> {
+
+        return Array.from(
+            this.failedEnrichment.entries()
+        )
+        .map(
+            ([call, attempts]) => ({
+                call,
+                attempts
+            })
+        )
+        .sort(
+            (a, b) =>
+                b.attempts - a.attempts
+        );
+
+    }
+
+
+    /*
+        Number of different calls which
+        failed enrichment.
+    */
+
+    getFailedEnrichmentCount(): number {
+
+        return this.failedEnrichment.size;
+
+    }
+
 }
-
-
