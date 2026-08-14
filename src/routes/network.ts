@@ -421,34 +421,49 @@ router.get(
              * and includes IPv4 and IPv6.
              */
 
-            const interfaces =
-                Object.entries(
-                    os.networkInterfaces()
+            const nodeInterfaces =
+    os.networkInterfaces();
+
+
+const interfaces =
+    devices.map(
+        device => ({
+
+            name:
+                device.device,
+
+            type:
+                device.type,
+
+            state:
+                device.state,
+
+            connection:
+                device.connection,
+
+            addresses:
+                (
+                    nodeInterfaces[
+                        device.device
+                    ] || []
                 )
                 .map(
-                    ([name, entries]) => ({
+                    entry => ({
 
-                        name,
+                        address:
+                            entry.address,
 
-                        addresses:
-                            (entries || [])
-                                .map(
-                                    entry => ({
+                        family:
+                            entry.family,
 
-                                        address:
-                                            entry.address,
-
-                                        family:
-                                            entry.family,
-
-                                        internal:
-                                            entry.internal
-
-                                    })
-                                )
+                        internal:
+                            entry.internal
 
                     })
-                );
+                )
+
+        })
+    );                
 
 
             /*

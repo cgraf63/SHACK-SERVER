@@ -319,6 +319,9 @@ function updateNetwork(data) {
 /* =========================================================
    INTERFACES
    ========================================================= */
+/* =========================================================
+   INTERFACES
+   ========================================================= */
 
 function updateInterfaces(
     interfaces
@@ -326,7 +329,7 @@ function updateInterfaces(
 
     const container =
         document.getElementById(
-            "interface-list"
+            "network-interfaces"
         );
 
 
@@ -337,7 +340,10 @@ function updateInterfaces(
     }
 
 
-    if (!interfaces.length) {
+    if (
+        !Array.isArray(interfaces) ||
+        !interfaces.length
+    ) {
 
         container.innerHTML = `
 
@@ -364,6 +370,12 @@ function updateInterfaces(
         interfaces.map(
             iface => {
 
+                /*
+                 * =========================
+                 * ADDRESSES
+                 * =========================
+                 */
+
                 const addresses =
                     Array.isArray(
                         iface.addresses
@@ -372,121 +384,206 @@ function updateInterfaces(
                         : [];
 
 
-                const addressText =
+                const ipv4 =
                     addresses
+                        .filter(
+                            address =>
+                                address.family === "IPv4"
+                        )
                         .map(
                             address =>
                                 address.address
+                        );
+
+
+                const ipv6 =
+                    addresses
+                        .filter(
+                            address =>
+                                address.family === "IPv6"
                         )
-                        .join(", ");
+                        .map(
+                            address =>
+                                address.address
+                        );
 
 
                 /*
-                    Determine state.
+                 * =========================
+                 * BASIC DATA
+                 * =========================
+                 *
+                 * These values now come
+                 * directly from /api/network.
+                 */
 
-                    The /api/network endpoint
-                    currently provides interface
-                    addresses but not a state/type
-                    field for each interface.
-
-                    Therefore we derive the
-                    information where possible.
-                */
-
-                let type =
+                const type =
+                    iface.type ||
                     "—";
 
 
-                if (
-                    iface.name === "lo"
-                ) {
-
-                    type =
-                        "loopback";
-
-                }
-                else if (
-                    iface.name.startsWith(
-                        "wl"
-                    )
-                ) {
-
-                    type =
-                        "wifi";
-
-                }
-                else if (
-                    iface.name.startsWith(
-                        "eth"
-                    )
-                ) {
-
-                    type =
-                        "ethernet";
-
-                }
-                else if (
-                    iface.name.startsWith(
-                        "br"
-                    )
-                ) {
-
-                    type =
-                        "bridge";
-
-                }
-                else if (
-                    iface.name.startsWith(
-                        "docker"
-                    )
-                ) {
-
-                    type =
-                        "docker";
-
-                }
-
-
                 const state =
-                    addresses.length
-                        ? "configured"
-                        : "inactive";
+                    iface.state ||
+                    "—";
 
 
-                const stateClass =
-                    addresses.length
-                        ? "network-state-connected"
-                        : "network-state-unavailable";
+                const connection =
+                    iface.connection ||
+                    "—";
 
+
+                /*
+                 * =========================
+                 * STATE CLASS
+                 * =========================
+                 */
+
+                let stateClass =
+                    "network-state";
+
+
+                if (
+                    state === "connected" ||
+                    state === "connected (externally)"
+                ) {
+
+                    stateClass +=
+                        " connected";
+
+                }
+                else if (
+                    state === "disconnected" ||
+                    state === "unavailable"
+                ) {
+
+                    stateClass +=
+                        " inactive";
+
+                }
+                else {
+
+                    stateClass +=
+                        " warning";
+
+                }
+
+
+                /*
+                 * =========================
+                 * STATE DISPLAY
+                 * =========================
+                 */
+
+                const stateText =
+                    state ===
+                        "connected (externally)"
+                        ? "connected"
+                        : state;
+
+
+                /*
+                 * =========================
+                 * ADDRESSES DISPLAY
+                 * =========================
+                 */
+
+                let addressText =
+                    "";
+
+
+                if (ipv4.length) {
+
+                    addressText +=
+                        ipv4.join(", ");
+
+                }
+
+
+                if (ipv6.length) {
+
+                    if (addressText) {
+
+                        addressText +=
+                            "<br>";
+
+                    }
+
+
+                    addressText +=
+                        ipv6.join(", ");
+
+                }
+
+
+                if (!addressText) {
+
+                    addressText =
+                        "—";
+
+                }
+
+
+                /*
+                 * =========================
+                 * RENDER ROW
+                 * =========================
+                 */
 
                 return `
 
                     <tr>
 
                         <td>
+
                             <strong>
                                 ${escapeHtml(
                                     iface.name || "—"
                                 )}
                             </strong>
+
                         </td>
+
 
                         <td>
-                            ${escapeHtml(type)}
-                        </td>
 
-                        <td class="${stateClass}">
-                            ${escapeHtml(state)}
-                        </td>
-
-                        <td>
-                            —
-                        </td>
-
-                        <td>
                             ${escapeHtml(
-                                addressText || "—"
+                                type
                             )}
+
+                        </td>
+
+
+                        <td>
+
+                            <span
+                                class="${stateClass}">
+
+                                <span
+                                    class="network-state-dot">
+                                </span>
+
+                                ${escapeHtml(
+                                    stateText
+                                )}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            ${escapeHtml(
+                                connection
+                            )}
+
+                        </td>
+
+
+                        <td>
+
+                            ${addressText}
+
                         </td>
 
                     </tr>
@@ -498,9 +595,7 @@ function updateInterfaces(
         .join("");
 
 }
-
-
-/* =========================================================
+/* ========================================================
    HELPER
    ========================================================= */
 
