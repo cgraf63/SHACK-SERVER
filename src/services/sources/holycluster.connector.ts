@@ -130,6 +130,8 @@ export class HolyClusterConnector {
                                         raw.mode,
 
 
+				    comment:
+					raw.comment,
                                     snr:
                                         this.extractSnr(
                                             raw.comment

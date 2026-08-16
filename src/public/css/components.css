@@ -639,6 +639,15 @@
 
 }
 
+.live-table .comment-cell {
+    width: 240px
+    max-width: 240px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #cccccc;
+}
+
 
 
 .live-table .source {

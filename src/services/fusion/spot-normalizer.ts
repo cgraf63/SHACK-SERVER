@@ -40,6 +40,15 @@ console.log(
     lastSeen: Date.now(),
     confidence: this.calculateConfidence(mode),
     snr: raw.snr,
+
+...(raw.comment
+        ? {
+            comments: [raw.comment]
+        }
+        : {}),
+
+
+
     country: raw.country,
     dxcc: raw.dxcc,
     continent: raw.continent,
@@ -500,7 +509,9 @@ private detectMode(
 
     private getBand(frequency: number): string {
         const mhz = frequency / 1000;
-
+        if (mhz >= 430 && mhz <= 440) return "70cm";
+ 	if (mhz >= 144 && mhz <= 146) return "2m";
+	if (mhz >= 70 && mhz < 71) return "4m";
         if (mhz >= 50) return "6m";
         if (mhz >= 28) return "10m";
         if (mhz >= 26.5) return "11m";

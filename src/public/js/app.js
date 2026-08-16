@@ -50,15 +50,14 @@ async function updateClusterStatus() {
 
             item.innerHTML = `
 
-                <span class="status-online"></span>
+    <span class="status-online"></span>
 
-                ${name}
+    <span class="cluster-name">
+        ${name}
+    </span>
 
-                <span class="cluster-status">
-                      ${source.status === "Active" ? "Connected" : "No data"}
-                </span>
-
-            `;
+`;
+            
 
 
             container.appendChild(item);

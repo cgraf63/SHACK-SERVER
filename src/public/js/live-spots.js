@@ -835,11 +835,13 @@ function renderLiveSpots() {
 
 
 
-            row.innerHTML = `
+      
                
+            row.innerHTML = `
 
 
- 
+
+
 <td class="call-cell">
 
     ${
@@ -878,7 +880,7 @@ function renderLiveSpots() {
 </td>
 
 
- 
+
                 <td class="frequency">
                     ${spot.frequency}
                 </td>
@@ -887,6 +889,17 @@ function renderLiveSpots() {
 
                 <td>
                     ${spot.mode}
+                </td>
+
+
+
+                <td class="comment-cell">
+                    ${
+                        Array.isArray(spot.comments)
+                        && spot.comments.length
+                            ? spot.comments[0]
+                            : "-"
+                    }
                 </td>
 
 
@@ -918,6 +931,12 @@ function renderLiveSpots() {
                 <td class="source">
                     ${spot.source}
                 </td>
+
+  
+
+
+
+       
 
 
 

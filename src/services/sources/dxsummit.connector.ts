@@ -135,6 +135,8 @@ export class DXSummitConnector {
                                 raw.info,
 
 
+			    comment:
+    				raw.info,
                             snr:
                                 this.extractSnr(
                                     raw.info

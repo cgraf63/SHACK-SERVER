@@ -160,7 +160,9 @@ const match =
 
 const comment =
     (match[3] ?? "")
+        .replace(/[\x00-\x1F\x7F]/g, "")
         .trim();
+
 
 console.log(
     "DXSPIDER COMMENT:",

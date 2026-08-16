@@ -27,6 +27,8 @@ export interface Spot {
     distance: number | undefined;
     azimuth: number | undefined;
     locator: string | undefined;
+    comments: string[] | undefined;
+
 
     activity:
         "SOTA"
@@ -139,6 +141,9 @@ console.log(
 
 locator:
     spot.locator,
+
+comments:
+    spot.comments,
 
 activity:
     sotaPotaService.isPota(spot.call)
