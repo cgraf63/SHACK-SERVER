@@ -43,11 +43,19 @@ async function loadComponents() {
     );
 
 
+    /*
+        System status
+    */
+
     await loadComponent(
         "system-status",
         "system-status.html"
     );
 
+
+    /*
+        Header
+    */
 
     await loadComponent(
         "header",
@@ -55,11 +63,19 @@ async function loadComponents() {
     );
 
 
+    /*
+        Command strip
+    */
+
     await loadComponent(
         "command-strip",
         "command-strip.html"
     );
 
+
+    /*
+        Propagation
+    */
 
     await loadComponent(
         "propagation",
@@ -67,11 +83,19 @@ async function loadComponents() {
     );
 
 
+    /*
+        Cluster connections
+    */
+
     await loadComponent(
         "cluster-connections",
         "cluster-connections.html"
     );
 
+
+    /*
+        Live spots
+    */
 
     await loadComponent(
         "live-spots",
@@ -79,17 +103,29 @@ async function loadComponents() {
     );
 
 
+    /*
+        Station status
+    */
+
     await loadComponent(
         "station-status",
         "station-status.html"
     );
 
 
+    /*
+        Priority DX
+    */
+
     await loadComponent(
         "priority-dx",
         "priority-dx.html"
     );
 
+
+    /*
+        Recommendations
+    */
 
     await loadComponent(
         "recommendations",

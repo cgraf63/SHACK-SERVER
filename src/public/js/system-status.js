@@ -11,10 +11,14 @@ function formatUptime(seconds) {
             (seconds % 86400) / 3600
         );
 
-    return `${days}d ${hours}h`;
+    const minutes =
+        Math.floor(
+            (seconds % 3600) / 60
+        );
+
+    return `${days}d ${hours}h ${minutes}m`;
 
 }
-
 
 
 async function updateSystemStatus() {
@@ -22,80 +26,165 @@ async function updateSystemStatus() {
     try {
 
         const response =
-            await fetch("/api/system-status");
+            await fetch(
+                "/api/system-status",
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
+        }
 
 
         const data =
             await response.json();
 
 
-
-        document.getElementById(
-            "cpu-temp"
-        ).textContent =
-            data.temperature ?? "--";
-
-document.getElementById(
-    "server-model"
-).textContent =
-    data.model ?? "--";
-
-        document.getElementById(
-            "server-ip"
-        ).textContent =
-            data.ip ?? "--";
-
-        const ramUsed =
-            100 -
-            (
-                data.memory.free /
-                data.memory.total *
-                100
+        const serverState =
+            document.getElementById(
+                "server-state"
             );
 
-document.getElementById(
-    "uptime"
-).textContent =
-    formatUptime(data.uptime);
+        const serverModel =
+            document.getElementById(
+                "server-model"
+            );
+
+        const cpuTemp =
+            document.getElementById(
+                "cpu-temp"
+            );
+
+        const serverIp =
+            document.getElementById(
+                "server-ip"
+            );
+
+        const uptime =
+            document.getElementById(
+                "uptime"
+            );
+
+        const ramUsage =
+            document.getElementById(
+                "ram-usage"
+            );
+
+        const diskUsage =
+            document.getElementById(
+                "disk-usage"
+            );
+
+        const dockerStatus =
+            document.getElementById(
+                "docker-status"
+            );
+
+        const dbStatus =
+            document.getElementById(
+                "db-status"
+            );
 
 
-        document.getElementById(
-            "ram-usage"
-        ).textContent =
-            Math.round(ramUsed) + "%";
+        if (serverState) {
 
-document.getElementById(
-    "disk-usage"
-).textContent =
-    data.disk
-        ? data.disk.percent
-        : "--";
+            serverState.textContent =
+                "Online";
 
-        document.getElementById(
-            "server-state"
-        ).textContent =
-            "Online";
-document.getElementById(
-    "disk-usage"
-).textContent =
-    data.disk
-        ? data.disk.percent
-        : "--";
+        }
 
 
-document.getElementById(
-    "docker-status"
-).textContent =
-    data.docker ?? "--";
+        if (serverModel) {
+
+            serverModel.textContent =
+                data.model ?? "--";
+
+        }
 
 
-document.getElementById(
-    "db-status"
-).textContent =
-    data.sqlite ?? "--";
+        if (cpuTemp) {
+
+            cpuTemp.textContent =
+                data.temperature ?? "--";
+
+        }
+
+
+        if (serverIp) {
+
+            serverIp.textContent =
+                data.ip ?? "--";
+
+        }
+
+
+        if (uptime) {
+
+            uptime.textContent =
+                formatUptime(
+                    data.uptime ?? 0
+                );
+
+        }
+
+
+        if (
+            ramUsage &&
+            data.memory &&
+            data.memory.total
+        ) {
+
+            const ramUsed =
+                100 -
+                (
+                    data.memory.free /
+                    data.memory.total *
+                    100
+                );
+
+            ramUsage.textContent =
+                Math.round(
+                    ramUsed
+                ) + "%";
+
+        }
+
+
+        if (diskUsage) {
+
+            diskUsage.textContent =
+                data.disk
+                    ? data.disk.percent
+                    : "--";
+
+        }
+
+
+        if (dockerStatus) {
+
+            dockerStatus.textContent =
+                data.docker ?? "--";
+
+        }
+
+
+        if (dbStatus) {
+
+            dbStatus.textContent =
+                data.sqlite ?? "--";
+
+        }
+
     }
 
-    catch(error) {
+    catch (error) {
 
         console.error(
             "System status failed:",
@@ -103,18 +192,33 @@ document.getElementById(
         );
 
 
-        document.getElementById(
-            "server-state"
-        ).textContent =
-            "Offline";
+        const serverState =
+            document.getElementById(
+                "server-state"
+            );
+
+        if (serverState) {
+
+            serverState.textContent =
+                "Offline";
+
+        }
 
     }
 
 }
 
 
-
 function startSystemStatus() {
+
+    if (systemStatusTimer) {
+
+        clearInterval(
+            systemStatusTimer
+        );
+
+    }
+
 
     updateSystemStatus();
 
@@ -128,27 +232,14 @@ function startSystemStatus() {
 }
 
 
-
-window.addEventListener(
-    "componentsLoaded",
-    startSystemStatus
-);
-
-
-function startSystemStatus() {
-
-    updateSystemStatus();
-
-
-    systemStatusTimer =
-        setInterval(
-            updateSystemStatus,
-            15000
-        );
-
-}
-
-
+/*
+ * Components are loaded by
+ * component-loader.js.
+ *
+ * Start only after the sidebar
+ * and system-status component
+ * actually exist in the DOM.
+ */
 
 window.addEventListener(
     "componentsLoaded",
