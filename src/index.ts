@@ -22,6 +22,9 @@ import {
     sotaPotaService
 } from "./services/activities/sota-pota-instance.js";
 
+
+import "./services/telnet/telnet-server.js";
+
 catService.start();
 
 
