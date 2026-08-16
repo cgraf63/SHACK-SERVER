@@ -427,3 +427,227 @@
     }
 
 }
+/* =========================================================
+   COMPACT NETWORK PAGE
+   ========================================================= */
+
+.network-page {
+
+    padding: 16px 22px;
+
+}
+
+
+.network-header {
+
+    margin-bottom: 12px;
+
+}
+
+
+.network-title h1 {
+
+    font-size: 23px;
+
+}
+
+
+.network-icon {
+
+    font-size: 22px;
+
+}
+
+
+.network-card {
+
+    margin-bottom: 12px;
+
+    padding: 14px;
+
+}
+
+
+.network-card-title {
+
+    margin-bottom: 10px;
+
+}
+
+
+.network-status-grid {
+
+    gap: 6px;
+
+}
+
+
+.network-stat {
+
+    gap: 4px;
+
+    padding: 10px 12px;
+
+}
+
+
+.network-stat span {
+
+    font-size: 11px;
+
+}
+
+
+.network-stat strong {
+
+    font-size: 13px;
+
+}
+
+
+.network-table th,
+.network-table td {
+
+    padding: 8px 10px;
+
+}
+
+
+/* =========================================================
+   WIFI NETWORK LIST
+   ========================================================= */
+
+.wifi-networks {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+}
+
+
+.wifi-network-row {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(180px, 1fr)
+        70px
+        70px
+        90px;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 7px 10px;
+
+    background: #101c25;
+
+    border: 1px solid #24343f;
+
+    border-radius: 5px;
+
+}
+
+
+.wifi-network-main {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    min-width: 0;
+
+}
+
+
+.wifi-network-main strong {
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+.wifi-network-main span {
+
+    color: #71838f;
+
+    font-size: 11px;
+
+    white-space: nowrap;
+
+}
+
+
+.wifi-network-signal {
+
+    color: #57d98c;
+
+    font-size: 12px;
+
+    text-align: right;
+
+}
+
+
+.wifi-network-security {
+
+    color: #9fb1bd;
+
+    font-size: 11px;
+
+    text-align: center;
+
+}
+
+
+.wifi-network-row .network-button {
+
+    padding: 5px 9px;
+
+    font-size: 11px;
+
+}
+
+
+.wifi-empty {
+
+    padding: 12px;
+
+    color: #71838f;
+
+    font-size: 12px;
+
+    text-align: center;
+
+}
+
+
+@media (max-width: 700px) {
+
+    .wifi-network-row {
+
+        grid-template-columns:
+            1fr
+            auto
+            auto
+            auto;
+
+    }
+
+}

@@ -112,7 +112,7 @@ async function loadSettings() {
 
         const locator =
             document.getElementById(
-                "locator"
+                "settings-locator"
             );
 
         const club =

@@ -4,24 +4,33 @@ import os from "os";
 
 const router = Router();
 
-
 function execCommand(
     command: string
 ): Promise<string> {
 
     return new Promise(
-        (resolve) => {
+        (resolve, reject) => {
 
             exec(
                 command,
                 {
-                    timeout: 5000
+                    timeout: 10000
                 },
-                (error, stdout) => {
+                (
+                    error,
+                    stdout,
+                    stderr
+                ) => {
 
                     if (error) {
 
-                        resolve("");
+                        reject(
+                            new Error(
+                                stderr?.trim()
+                                ||
+                                error.message
+                            )
+                        );
 
                         return;
 
@@ -38,8 +47,6 @@ function execCommand(
     );
 
 }
-
-
 /*
  * Remove nmcli field prefix.
  *
@@ -51,6 +58,21 @@ function execCommand(
  *
  * 192.168.1.128/24
  */
+
+
+function shellEscape(
+    value: string
+): string {
+
+    return "'" +
+        value.replace(
+            /'/g,
+            "'\\''"
+        ) +
+        "'";
+
+}
+
 function cleanNmcliValue(
     value: string
 ): string {
@@ -163,7 +185,454 @@ function parseNmcliLine(
     return fields;
 
 }
+/*
+ * =========================================================
+ * WiFi CONNECT
+ * =========================================================
+ */
 
+router.post(
+    "/wifi-connect",
+    async (req, res) => {
+
+        try {
+
+            const ssid =
+                String(
+                    req.body?.ssid || ""
+                ).trim();
+
+
+            const password =
+                String(
+                    req.body?.password || ""
+                );
+
+
+            if (!ssid) {
+
+                res.status(400).json({
+
+                    error:
+                        "SSID is required"
+
+                });
+
+                return;
+
+            }
+
+
+            /*
+             * If no password is supplied,
+             * try an open network.
+             */
+
+            let command;
+
+
+            if (password) {
+
+                command =
+                    `nmcli device wifi connect ${shellEscape(ssid)} password ${shellEscape(password)}`;
+
+            }
+            else {
+
+                command =
+                    `nmcli device wifi connect ${shellEscape(ssid)}`;
+
+            }
+
+
+            const output =
+                await execCommand(
+                    command
+                );
+
+
+            if (!output) {
+
+                res.status(500).json({
+
+                    error:
+                        "WiFi connection failed"
+
+                });
+
+                return;
+
+            }
+
+
+            res.json({
+
+                success:
+                    true,
+
+                message:
+                    output
+
+            });
+
+        }
+        catch (error) {
+
+            console.error(
+                "WiFi connect error:",
+                error
+            );
+
+
+            res.status(500).json({
+
+                error:
+                    "WiFi connection failed"
+
+            });
+
+        }
+
+    }
+);
+
+/*
+ * =========================================================
+ * WiFi SCAN
+ * =========================================================
+ */
+router.get(
+    "/wifi-scan",
+    async (_req, res) => {
+
+        try {
+
+            /*
+             * Find the active WiFi interface.
+             */
+
+            const deviceOutput =
+                await execCommand(
+                    "nmcli -t -f DEVICE,TYPE,STATE device"
+                );
+
+
+            const wifiDevice =
+                deviceOutput
+                    .split("\n")
+                    .map(
+                        line =>
+                            parseNmcliLine(line)
+                    )
+                    .find(
+                        parts =>
+                            parts[1] === "wifi"
+                    );
+
+
+            if (!wifiDevice) {
+
+                res.status(404).json({
+                    error:
+                        "No WiFi interface found"
+                });
+
+                return;
+
+            }
+
+
+            const device =
+    wifiDevice[0];
+
+if (!device) {
+
+    res.status(404).json({
+        error:
+            "No WiFi interface found"
+    });
+
+    return;
+
+}
+
+            /*
+             * Force a real WiFi rescan.
+             *
+             * The extra timeout is intentional because
+             * a real WiFi scan can take several seconds.
+             */
+
+            await execCommand(
+                `nmcli -t -f SSID,BSSID,CHAN,FREQ,SIGNAL,SECURITY device wifi list --rescan yes`
+            );
+
+
+            /*
+             * Give NetworkManager a short moment to
+             * populate the scan results.
+             */
+
+            await new Promise(
+                resolve =>
+                    setTimeout(
+                        resolve,
+                        1500
+                    )
+            );
+
+
+            /*
+             * Read the fresh scan results.
+             */
+
+            const wifiOutput =
+                await execCommand(
+                    `nmcli -t -f IN-USE,SSID,BSSID,CHAN,FREQ,SIGNAL,SECURITY device wifi list ifname ${shellEscape(device)}`
+                );
+
+
+            const networks =
+                wifiOutput
+                    .split("\n")
+                    .filter(Boolean)
+                    .map(
+                        line => {
+
+                            const fields =
+                                parseNmcliLine(
+                                    line
+                                );
+
+
+                            return {
+
+                                inUse:
+                                    fields[0] === "*",
+
+                                ssid:
+                                    fields[1] || "",
+
+                                bssid:
+                                    fields[2] || "",
+
+                                channel:
+                                    Number(
+                                        fields[3] || 0
+                                    ),
+
+                                frequency:
+                                    fields[4] || "",
+
+                                signal:
+                                    Number(
+                                        fields[5] || 0
+                                    ),
+
+                                security:
+                                    fields
+                                        .slice(6)
+                                        .join(":") || ""
+
+                            };
+
+                        }
+                    );
+
+
+            res.json(
+                networks
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "WiFi scan error:",
+                error
+            );
+
+
+            res.status(500).json({
+
+                error:
+                    "WiFi scan failed"
+
+            });
+
+        }
+
+    }
+);
+
+
+
+
+
+router.get(
+    "/wifi/scan",
+    async (_req, res) => {
+
+        try {
+
+            const output =
+                await execCommand(
+                    "nmcli -t -f SSID,BSSID,CHAN,FREQ,SIGNAL,SECURITY device wifi list --rescan yes"
+                );
+
+            const networks =
+                output
+                    ? output
+                        .split("\n")
+                        .filter(Boolean)
+                        .map(line => {
+
+                            const fields =
+                                parseNmcliLine(line);
+
+                            return {
+
+                                ssid:
+                                    fields[0] || "",
+
+                                bssid:
+                                    fields[1] || "",
+
+                                channel:
+                                    fields[2] || "",
+
+                                frequency:
+                                    fields[3] || "",
+
+                                signal:
+                                    Number(
+                                        fields[4] || 0
+                                    ),
+
+                                security:
+                                    fields
+                                        .slice(5)
+                                        .join(":") || ""
+
+                            };
+
+                        })
+                        .filter(
+                            network =>
+                                network.ssid.length > 0
+                        )
+                    : [];
+
+
+            res.json(networks);
+
+        }
+        catch (error) {
+
+            console.error(
+                "WiFi scan error:",
+                error
+            );
+
+            res.status(500).json({
+                error: "WiFi scan failed"
+            });
+
+        }
+
+    }
+);
+
+
+/*
+ * =========================================================
+ * WIFI CONNECT
+ * =========================================================
+ */
+
+router.post(
+    "/wifi/connect",
+    async (req, res) => {
+
+        try {
+
+            const {
+                ssid,
+                password
+            } = req.body;
+
+
+            if (
+                !ssid ||
+                typeof ssid !== "string"
+            ) {
+
+                res.status(400).json({
+                    error: "SSID required"
+                });
+
+                return;
+
+            }
+
+
+            /*
+             * Escape shell characters.
+             */
+
+            const escapedSsid =
+                ssid.replace(
+                    /(["\\$`])/g,
+                    "\\$1"
+                );
+
+
+            if (
+                password &&
+                typeof password === "string"
+            ) {
+
+                const escapedPassword =
+                    password.replace(
+                        /(["\\$`])/g,
+                        "\\$1"
+                    );
+
+
+                await execCommand(
+                    `nmcli device wifi connect "${escapedSsid}" password "${escapedPassword}"`
+                );
+
+            }
+            else {
+
+                await execCommand(
+                    `nmcli device wifi connect "${escapedSsid}"`
+                );
+
+            }
+
+
+            res.json({
+                success: true
+            });
+
+        }
+        catch (error) {
+
+            console.error(
+                "WiFi connect error:",
+                error
+            );
+
+            res.status(500).json({
+                error: "WiFi connection failed"
+            });
+
+        }
+
+    }
+);
 
 router.get(
     "/",
@@ -250,6 +719,9 @@ router.get(
                             device.type === "ethernet"
                         )
                 );
+
+
+
 
 
             /*
@@ -425,6 +897,161 @@ router.get(
     os.networkInterfaces();
 
 
+router.post(
+    "/wifi/scan",
+    async (_req, res) => {
+
+        try {
+
+            await execCommand(
+                "nmcli device wifi rescan"
+            );
+
+            const output =
+                await execCommand(
+                    "nmcli -t -f SSID,BSSID,CHAN,FREQ,SIGNAL,SECURITY device wifi list"
+                );
+
+            const networks =
+                output
+                    ? output
+                        .split("\n")
+                        .filter(Boolean)
+                        .map(line => {
+
+                            const fields =
+                                parseNmcliLine(line);
+
+                            return {
+                                ssid: fields[0] || "",
+                                bssid: fields[1] || "",
+                                channel: fields[2] || "",
+                                frequency: fields[3] || "",
+                                signal: Number(fields[4] || 0),
+                                security:
+                                    fields
+                                        .slice(5)
+                                        .join(":") || ""
+                            };
+
+                        })
+                        .filter(network => network.ssid)
+                    : [];
+
+            res.json({
+                networks
+            });
+
+        }
+        catch (error) {
+
+            console.error(
+                "WiFi scan error:",
+                error
+            );
+
+            res.status(500).json({
+                error: "WiFi scan failed"
+            });
+
+        }
+
+    }
+);
+
+
+router.post(
+    "/wifi/connect",
+    async (req, res) => {
+
+        try {
+
+            const ssid =
+                String(
+                    req.body?.ssid || ""
+                ).trim();
+
+            const password =
+                String(
+                    req.body?.password || ""
+                );
+
+            if (!ssid) {
+
+                res.status(400).json({
+                    error: "SSID required"
+                });
+
+                return;
+
+            }
+
+            /*
+             * nmcli connection.
+             *
+             * --ask wird bewusst nicht verwendet,
+             * da der Prozess ohne interaktive Eingabe
+             * laufen muss.
+             */
+
+            let command;
+
+            if (password) {
+
+                command =
+                    `nmcli device wifi connect ${JSON.stringify(ssid)} password ${JSON.stringify(password)}`;
+
+            }
+            else {
+
+                command =
+                    `nmcli device wifi connect ${JSON.stringify(ssid)}`;
+
+            }
+
+            const result =
+                await execCommand(
+                    command
+                );
+
+            if (!result) {
+
+                /*
+                 * execCommand liefert momentan bei
+                 * Fehlern ebenfalls "". Das bestehende
+                 * Verhalten behalten wir zunächst bei.
+                 */
+
+                res.status(500).json({
+                    error: "WiFi connection failed"
+                });
+
+                return;
+
+            }
+
+            res.json({
+                success: true,
+                message: result
+            });
+
+        }
+        catch (error) {
+
+            console.error(
+                "WiFi connect error:",
+                error
+            );
+
+            res.status(500).json({
+                error: "WiFi connection failed"
+            });
+
+        }
+
+    }
+);
+
 const interfaces =
     devices.map(
         device => ({
@@ -463,7 +1090,7 @@ const interfaces =
                 )
 
         })
-    );                
+    );
 
 
             /*
