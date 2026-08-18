@@ -204,15 +204,13 @@ body {
 }
 
 
-.source-row {
+.source-item {
 
     display: flex;
 
     align-items: center;
 
     justify-content: space-between;
-
-    min-width: 0;
 
     padding: 13px 15px;
 
@@ -227,61 +225,11 @@ body {
 
 .source-name {
 
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-
-    min-width: 0;
-
     color: #ffffff;
 
     font-size: 14px;
 
     font-weight: 600;
-
-}
-
-
-.source-indicator {
-
-    flex: 0 0 auto;
-
-    width: 9px;
-
-    height: 9px;
-
-    border-radius: 50%;
-
-}
-
-
-.source-indicator.active {
-
-    background: #39d98a;
-
-    box-shadow:
-        0 0 7px
-        rgba(57,217,138,.65);
-
-}
-
-
-.source-indicator.silent {
-
-    background: #ffb347;
-
-    box-shadow:
-        0 0 7px
-        rgba(255,179,71,.5);
-
-}
-
-
-.source-indicator.inactive {
-
-    background: #71838f;
 
 }
 
@@ -294,50 +242,45 @@ body {
 
     gap: 7px;
 
-    margin-left: 10px;
-
-    white-space: nowrap;
-
     font-size: 12px;
 
 }
 
 
-.status-active {
+.source-dot {
 
-    color: #39d98a;
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background: #39d98a;
+
+    box-shadow:
+        0 0 7px
+        rgba(57,217,138,.65);
 
 }
 
 
-.status-silent {
+.source-dot.inactive {
 
-    color: #ffb347;
+    background: #ffb347;
 
-}
-
-
-.status-inactive {
-
-    color: #8fa3b2;
+    box-shadow:
+        0 0 7px
+        rgba(255,179,71,.5);
 
 }
 
 
 .source-age {
 
+    margin-left: 10px;
+
     color: #71838f;
 
     font-size: 11px;
-
-}
-
-
-.geo-empty {
-
-    color: #71838f;
-
-    font-size: 13px;
 
 }
 
@@ -430,6 +373,15 @@ body {
 }
 
 
+.geo-empty {
+
+    color: #71838f;
+
+    font-size: 13px;
+
+}
+
+
 .geo-item {
 
     display: flex;
@@ -463,132 +415,6 @@ body {
     color: #ffb347;
 
     font-size: 12px;
-
-}
-
-
-/* =========================================================
-   SYSTEM LOG
-   ========================================================= */
-
-.system-log-card {
-
-    margin-bottom: 20px;
-
-}
-
-
-.system-log {
-
-    width: 100%;
-
-    max-height: 360px;
-
-    overflow-y: auto;
-
-    overflow-x: hidden;
-
-    padding: 8px 0;
-
-    background: #050d13;
-
-    border: 1px solid #24343f;
-
-    border-radius: 6px;
-
-    font-family:
-        Consolas,
-        "Courier New",
-        monospace;
-
-    font-size: 12px;
-
-}
-
-
-.system-log-row {
-
-    display: grid;
-
-    grid-template-columns:
-        90px
-        100px
-        70px
-        minmax(0, 1fr);
-
-    gap: 10px;
-
-    align-items: center;
-
-    min-height: 23px;
-
-    padding: 2px 12px;
-
-}
-
-
-.system-log-row:hover {
-
-    background: #101c25;
-
-}
-
-
-.system-log-time {
-
-    color: #d7e0e5;
-
-    white-space: nowrap;
-
-}
-
-
-.system-log-source {
-
-    color: #ffffff;
-
-    font-weight: 600;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-
-}
-
-
-.system-log-level {
-
-    color: #ffb347;
-
-    font-weight: 600;
-
-    white-space: nowrap;
-
-}
-
-
-.system-log-message {
-
-    color: #d7e0e5;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-
-}
-
-
-.system-log-empty {
-
-    padding: 15px;
-
-    color: #71838f;
-
-    text-align: center;
 
 }
 
@@ -679,6 +505,27 @@ body {
 
 }
 
+<!-- =========================================================
+     SYSTEM LOG
+     ========================================================= -->
+
+<div class="diagnostics-card system-log-card">
+
+    <div class="diagnostics-card-title">
+        SYSTEM LOG
+    </div>
+
+    <div id="system-log"
+         class="system-log">
+
+        <div class="system-log-empty">
+            No log entries
+        </div>
+
+    </div>
+
+</div>
+
 
 /* =========================================================
    RESPONSIVE
@@ -696,19 +543,6 @@ body {
     .diagnostics-grid {
 
         grid-template-columns: 1fr;
-
-    }
-
-
-    .system-log-row {
-
-        grid-template-columns:
-            80px
-            90px
-            65px
-            minmax(0, 1fr);
-
-        gap: 7px;
 
     }
 
@@ -764,25 +598,6 @@ body {
 
     }
 
-
-    .system-log-row {
-
-        grid-template-columns:
-            65px
-            70px
-            55px
-            minmax(0, 1fr);
-
-        gap: 5px;
-
-        padding-left: 8px;
-
-        padding-right: 8px;
-
-        font-size: 10px;
-
-    }
-
 }
 
     </style>
@@ -813,9 +628,7 @@ body {
         <section class="diagnostics-page">
 
 
-            <!-- =================================================
-                 HEADER
-                 ================================================= -->
+            <!-- HEADER -->
 
             <header class="diagnostics-header">
 
@@ -966,6 +779,7 @@ body {
 
                     <div class="diagnostics-stats">
 
+
                         <div class="diagnostics-stat">
 
                             <span>
@@ -977,6 +791,7 @@ body {
                             </strong>
 
                         </div>
+
 
                     </div>
 
@@ -990,30 +805,6 @@ body {
 
 
             </div>
-
-
-            <!-- =================================================
-                 SYSTEM LOG
-                 ================================================= -->
-
-            <section class="diagnostics-card system-log-card">
-
-                <div class="diagnostics-card-title">
-                    SYSTEM LOG
-                </div>
-
-
-                <div
-                    id="system-log"
-                    class="system-log">
-
-                    <div class="system-log-empty">
-                        No log entries
-                    </div>
-
-                </div>
-
-            </section>
 
 
             <!-- =================================================
@@ -1088,7 +879,6 @@ body {
     src="/js/component-loader.js">
 </script>
 
-
 <script
     src="/js/system-status.js">
 </script>
@@ -1097,7 +887,6 @@ body {
 <script
     src="/js/sidebar.js">
 </script>
-
 
 <script
     src="/js/diagnostics.js">

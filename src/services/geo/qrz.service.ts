@@ -12,6 +12,10 @@ import {
     qrzConfig
 } from "../../config/qrz.config.js";
 
+import {
+    systemLog
+} from "../diagnostics/system-log.service.js";
+
 
 export class QRZService {
 
@@ -47,8 +51,10 @@ export class QRZService {
             !qrzConfig.password
         ) {
 
-            console.log(
-                "QRZ credentials missing"
+            systemLog.error(
+                "QRZ",
+                "QRZ",
+                "Credentials missing"
             );
 
             return null;
@@ -93,22 +99,30 @@ export class QRZService {
 
             if (!cs) {
 
+                systemLog.warn(
+                    "QRZ",
+                    "QRZ",
+                    `Callsign not found: ${normalizedCall}`
+                );
+
+
                 console.log(
                     "QRZ RESULT:",
                     normalizedCall,
                     null
                 );
 
+
                 return null;
             }
 
 
             /*
-                QRZ name
-
-                Prefer name_fmt when available.
-                Otherwise combine first + last name.
-            */
+             * QRZ name
+             *
+             * Prefer name_fmt when available.
+             * Otherwise combine first + last name.
+             */
 
             const qrzName =
                 cs.name_fmt ||
@@ -123,126 +137,128 @@ export class QRZService {
                     )
                     .join(" ")
                     .trim();
-/////////////////
+
 
             const result: DxLocation = {
 
-    call:
-        cs.call ??
-        normalizedCall,
+                call:
+                    cs.call ??
+                    normalizedCall,
 
-    updated:
-        Date.now()
-};
+                updated:
+                    Date.now()
 
-
-if (qrzName) {
-
-    result.name =
-        qrzName;
-
-}
+            };
 
 
-if (cs.land) {
+            if (qrzName) {
 
-    result.country =
-        cs.land;
+                result.name =
+                    qrzName;
 
-}
-else if (cs.country) {
-
-    result.country =
-        cs.country;
-
-}
+            }
 
 
-if (cs.grid) {
+            if (cs.land) {
 
-    result.locator =
-        cs.grid;
+                result.country =
+                    cs.land;
 
-}
+            }
+            else if (cs.country) {
 
+                result.country =
+                    cs.country;
 
-const ituZone =
-    this.toNumber(
-        cs.ituzone
-    );
-
-if (
-    ituZone !== undefined
-) {
-
-    result.ituZone =
-        ituZone;
-
-}
+            }
 
 
-const cqZone =
-    this.toNumber(
-        cs.cqzone
-    );
+            if (cs.grid) {
 
-if (
-    cqZone !== undefined
-) {
+                result.locator =
+                    cs.grid;
 
-    result.cqZone =
-        cqZone;
-
-}
+            }
 
 
-const dxcc =
-    this.toNumber(
-        cs.dxcc
-    );
-
-if (
-    dxcc !== undefined
-) {
-
-    result.dxcc =
-        dxcc;
-
-}
+            const ituZone =
+                this.toNumber(
+                    cs.ituzone
+                );
 
 
-const latitude =
-    this.toNumber(
-        cs.lat
-    );
+            if (
+                ituZone !== undefined
+            ) {
 
-if (
-    latitude !== undefined
-) {
+                result.ituZone =
+                    ituZone;
 
-    result.latitude =
-        latitude;
-
-}
+            }
 
 
-const longitude =
-    this.toNumber(
-        cs.lon
-    );
+            const cqZone =
+                this.toNumber(
+                    cs.cqzone
+                );
 
-if (
-    longitude !== undefined
-) {
 
-    result.longitude =
-        longitude;
+            if (
+                cqZone !== undefined
+            ) {
 
-}
-          
-       
-               
+                result.cqZone =
+                    cqZone;
 
+            }
+
+
+            const dxcc =
+                this.toNumber(
+                    cs.dxcc
+                );
+
+
+            if (
+                dxcc !== undefined
+            ) {
+
+                result.dxcc =
+                    dxcc;
+
+            }
+
+
+            const latitude =
+                this.toNumber(
+                    cs.lat
+                );
+
+
+            if (
+                latitude !== undefined
+            ) {
+
+                result.latitude =
+                    latitude;
+
+            }
+
+
+            const longitude =
+                this.toNumber(
+                    cs.lon
+                );
+
+
+            if (
+                longitude !== undefined
+            ) {
+
+                result.longitude =
+                    longitude;
+
+            }
 
 
             console.log(
@@ -258,14 +274,29 @@ if (
         }
         catch (error) {
 
+            const message =
+                this.getErrorMessage(
+                    error
+                );
+
+
+            systemLog.error(
+                "QRZ",
+                "QRZ",
+                `Lookup ${normalizedCall}: ${message}`
+            );
+
+
             console.error(
                 "QRZ lookup failed:",
                 normalizedCall,
                 error
             );
 
+
             return null;
         }
+
     }
 
 
@@ -278,7 +309,9 @@ if (
             value === null ||
             value === ""
         ) {
+
             return undefined;
+
         }
 
 
@@ -289,6 +322,7 @@ if (
         return Number.isFinite(number)
             ? number
             : undefined;
+
     }
 
 
@@ -307,6 +341,7 @@ if (
         ) {
 
             return this.sessionKey;
+
         }
 
 
@@ -343,11 +378,20 @@ if (
                 !session?.Key
             ) {
 
+                systemLog.error(
+                    "QRZ",
+                    "QRZ",
+                    "Session failed: no session key returned"
+                );
+
+
                 console.error(
                     "QRZ session failed"
                 );
 
+
                 return null;
+
             }
 
 
@@ -358,19 +402,103 @@ if (
                 Date.now();
 
 
+            systemLog.info(
+                "QRZ",
+                "QRZ",
+                "Session established"
+            );
+
+
             return this.sessionKey;
 
 
         }
         catch (error) {
 
+            const message =
+                this.getErrorMessage(
+                    error
+                );
+
+
+            systemLog.error(
+                "QRZ",
+                "QRZ",
+                `Session error: ${message}`
+            );
+
+
             console.error(
                 "QRZ session error:",
                 error
             );
 
-            return null;
-        }
-    }
-}
 
+            return null;
+
+        }
+
+    }
+
+
+    private getErrorMessage(
+        error: unknown
+    ): string {
+
+        if (
+            axios.isAxiosError(error)
+        ) {
+
+            if (
+                error.response
+            ) {
+
+                return `HTTP ${error.response.status}`;
+
+            }
+
+
+            if (
+                error.code ===
+                "ECONNABORTED"
+            ) {
+
+                return "Timeout";
+
+            }
+
+
+            if (
+                error.code
+            ) {
+
+                return error.code;
+
+            }
+
+
+            if (
+                error.message
+            ) {
+
+                return error.message;
+
+            }
+
+        }
+
+
+        if (
+            error instanceof Error
+        ) {
+
+            return error.message;
+
+        }
+
+
+        return "Unknown error";
+
+    }
+
+}

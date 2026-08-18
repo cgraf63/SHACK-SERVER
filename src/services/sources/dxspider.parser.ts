@@ -15,7 +15,6 @@ import {
 } from "../fusion/spot-normalizer.js";
 
 
-
 export class DXSpiderParser {
 
 
@@ -23,21 +22,14 @@ export class DXSpiderParser {
         new SpotNormalizer();
 
 
-
-
     constructor(
 
-	private source: ClusterSource,
+        private source: ClusterSource,
         private fusionEngine: FusionEngine,
-	private sourceName: string,
-	private sourceStatus: SourceStatusService
+        private sourceName: string,
+        private sourceStatus: SourceStatusService
 
     ) {}
-
-
-
-
-
 
 
     parse(data: string) {
@@ -47,30 +39,28 @@ export class DXSpiderParser {
             data.split("\n");
 
 
-
         for (const line of lines) {
 
 
             const raw =
-  		  this.parseLine(line);
+                this.parseLine(line);
 
 
-console.log(
-    "AFTER PARSELINE:",
-    raw
-);
+            console.log(
+                "AFTER PARSELINE:",
+                raw
+            );
 
 
-		if (!raw)
-		continue;
-console.log(
-    "DXSPIDER RAW BEFORE NORMALIZE",
-    raw?.call,
-    raw?.locator
-);
+            if (!raw)
+                continue;
 
-if (!raw)
-    continue;
+
+            console.log(
+                "DXSPIDER RAW BEFORE NORMALIZE",
+                raw?.call,
+                raw?.locator
+            );
 
 
             const spot =
@@ -83,155 +73,154 @@ if (!raw)
                 );
 
 
-	if (spot) {
+            if (spot) {
 
-    this.sourceStatus.touch(
-        this.sourceName
-    );
+                this.sourceStatus.touch(
+                    this.sourceName
+                );
 
-console.log(
-    "DXSPIDER PARSED:",
-    spot
-);
 
-    this.fusionEngine.addSpot(
-        spot
-    );
+                console.log(
+                    "DXSPIDER PARSED:",
+                    spot
+                );
 
-}
-            
-            
 
+                this.fusionEngine.addSpot(
+                    spot
+                );
+
+            }
 
         }
 
     }
 
 
+    private parseLine(line: string) {
 
 
+        if (
+            !line.includes("DX de")
+        ) {
+
+            return null;
+
+        }
 
 
+        const match =
+            line.match(
+                /DX de .*?:\s+(\d+(?:\.\d+)?)\s+(\S+)\s*(.*)/i
+            );
 
 
+        if (!match) {
 
-  private parseLine(line:string) {
+            return null;
+
+        }
 
 
-    if (
-        !line.includes("DX de")
-    ) {
-        return null;
+        let frequency =
+            Number(match[1]);
+
+
+        /*
+           DXSpider Frequenzen kommen teilweise
+           als kHz ohne Dezimalpunkt:
+
+           144267.1 -> 144.2671
+           50313.8  -> 50.3138
+           28074.0  -> 28.0740
+        */
+
+        if (frequency > 1000) {
+
+            frequency =
+                frequency / 1000;
+
+        }
+
+
+        const call =
+            match[2];
+
+
+        const comment =
+            (match[3] ?? "")
+                .replace(/[\x00-\x1F\x7F]/g, "")
+                .trim();
+
+
+        console.log(
+            "DXSPIDER COMMENT:",
+            comment
+        );
+
+
+        const locatorMatch =
+            comment.match(
+                /[A-R]{2}\d{2}[A-X]{0,2}/ig
+            );
+
+
+        const locator =
+            locatorMatch
+                ? locatorMatch[0].toUpperCase()
+                : undefined;
+
+
+        console.log(
+            "DXSPIDER LOCATOR DEBUG",
+            call,
+            "MATCH:",
+            locatorMatch,
+            "LOCATOR:",
+            locator,
+            "COMMENT:",
+            comment
+        );
+
+
+        console.log(
+            "LOCATOR DEBUG:",
+            comment,
+            "=>",
+            locator
+        );
+
+
+        console.log(
+            "DXSPIDER PARSER OUTPUT",
+            call,
+            locator
+        );
+
+
+        return {
+
+            frequency,
+
+            call,
+
+            mode:
+                this.detectMode(
+                    comment
+                ),
+
+            comment,
+
+            locator
+
+        };
+
     }
-
-const match =
-    line.match(
-        /DX de .*?:\s+(\d+(?:\.\d+)?)\s+(\S+)\s*(.*)/i
-    );
-
-    if (!match) {
-        return null;
-    }
-
-
-    let frequency =
-        Number(match[1]);
-
-
-    /*
-       DXSpider Frequenzen kommen teilweise
-       als kHz ohne Dezimalpunkt:
-       
-       144267.1 -> 144.2671
-       50313.8  -> 50.3138
-       28074.0  -> 28.0740
-    */
-
-    if (frequency > 1000) {
-
-        frequency =
-            frequency / 1000;
-
-    }
-
-
-    const call =
-    match[2];
-
-const comment =
-    (match[3] ?? "")
-        .replace(/[\x00-\x1F\x7F]/g, "")
-        .trim();
-
-
-console.log(
-    "DXSPIDER COMMENT:",
-    comment
-);
-
-
-const locatorMatch =
-    comment.match(
-        /[A-R]{2}\d{2}[A-X]{0,2}/ig
-    );
-
-const locator =
-    locatorMatch
-        ? locatorMatch[0].toUpperCase()
-        : undefined;
-
-console.log(
-    "DXSPIDER LOCATOR DEBUG",
-    call,
-    "MATCH:",
-    locatorMatch,
-    "LOCATOR:",
-    locator,
-    "COMMENT:",
-    comment
-);
-
-console.log(
-    "LOCATOR DEBUG:",
-    comment,
-    "=>",
-    locator
-);
-console.log(
-    "DXSPIDER PARSER OUTPUT",
-    call,
-    locator
-);
-
-    return {
-
-        frequency,
-
-        call,
-
-        mode:
-            this.detectMode(
-                comment
-            ),
-
-
-        comment,
-	locator
-
-    };
-
-}
-
-
-
-
-  
-
 
 
     private detectMode(
-        text:string
-    ):string {
+        text: string
+    ): string {
 
 
         const modes = [
@@ -247,18 +236,16 @@ console.log(
         ];
 
 
-
         const upper =
             text.toUpperCase();
 
 
-
-        for(
+        for (
             const mode of modes
         ) {
 
 
-            if(
+            if (
                 upper.includes(mode)
             ) {
 
@@ -269,10 +256,8 @@ console.log(
         }
 
 
-
         return "UNKNOWN";
 
     }
-
 
 }

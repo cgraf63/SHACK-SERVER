@@ -6,20 +6,29 @@
 const DIAGNOSTICS_INTERVAL = 5000;
 
 
+/*
+ * Load diagnostics
+ */
+
 async function loadDiagnostics() {
 
     try {
 
         const response =
-            await fetch("/api/diagnostics", {
-                cache: "no-store"
-            });
+            await fetch(
+                "/api/diagnostics",
+                {
+                    cache: "no-store"
+                }
+            );
 
 
         if (!response.ok) {
+
             throw new Error(
                 `HTTP ${response.status}`
             );
+
         }
 
 
@@ -31,8 +40,8 @@ async function loadDiagnostics() {
             data
         );
 
-
     }
+
     catch (error) {
 
         console.error(
@@ -81,6 +90,9 @@ function updateDiagnostics(
         data.geo || {}
     );
 
+ updateSystemLog(
+        data.logs || []
+    );
 
     const updated =
         document.getElementById(
@@ -100,8 +112,93 @@ function updateDiagnostics(
 
 
 /*
- * DX Sources
+ * Source Health
+ *
+ * Active
+ *   Source delivered data recently.
+ *
+ * Silent
+ *   Source is known, but no data was
+ *   received for the configured timeout.
+ *
+ * Unknown
+ *   No usable status information.
  */
+
+/*
+ * System Log
+ */
+
+function updateSystemLog(
+    logs
+) {
+
+    const container =
+        document.getElementById(
+            "system-log"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    if (
+        !Array.isArray(logs) ||
+        !logs.length
+    ) {
+
+        container.innerHTML =
+            '<div class="system-log-empty">' +
+            'No log entries' +
+            '</div>';
+
+        return;
+
+    }
+
+    const visibleLogs =
+        logs.slice(-20);
+
+    container.innerHTML =
+        visibleLogs
+            .map(
+                entry => `
+
+                    <div class="system-log-row">
+
+                        <span class="system-log-time">
+                            ${escapeHtml(
+                                entry.time || ""
+                            )}
+                        </span>
+
+                        <span class="system-log-source">
+                            ${escapeHtml(
+                                entry.source || ""
+                            )}
+                        </span>
+
+                        <span class="system-log-level">
+                            ${escapeHtml(
+                                entry.level || ""
+                            )}
+                        </span>
+
+                        <span class="system-log-message">
+                            ${escapeHtml(
+                                entry.message || ""
+                            )}
+                        </span>
+
+                    </div>
+
+                `
+            )
+            .join("");
+
+}
+
+
 
 function updateSources(
     sources
@@ -118,11 +215,14 @@ function updateSources(
     }
 
 
-    if (!sources.length) {
+    if (
+        !Array.isArray(sources) ||
+        !sources.length
+    ) {
 
         container.innerHTML =
-            '<div class="source-empty">' +
-            'No source data available' +
+            '<div class="geo-empty">' +
+            'No sources available' +
             '</div>';
 
         return;
@@ -135,9 +235,65 @@ function updateSources(
             .map(
                 source => {
 
-                    const active =
-                        source.status === "Active";
+                    const status =
+                        source.status || "Unknown";
 
+
+                    const active =
+                        status === "Active";
+
+
+                    const silent =
+                        status === "Silent";
+
+
+                    /*
+                     * Indicator
+                     */
+
+                    let indicatorClass =
+                        "inactive";
+
+
+                    if (active) {
+
+                        indicatorClass =
+                            "active";
+
+                    }
+                    else if (silent) {
+
+                        indicatorClass =
+                            "silent";
+
+                    }
+
+
+                    /*
+                     * Status text
+                     */
+
+                    let statusClass =
+                        "status-inactive";
+
+
+                    if (active) {
+
+                        statusClass =
+                            "status-active";
+
+                    }
+                    else if (silent) {
+
+                        statusClass =
+                            "status-silent";
+
+                    }
+
+
+                    /*
+                     * Age
+                     */
 
                     const age =
                         typeof source.ageSeconds === "number"
@@ -147,19 +303,34 @@ function updateSources(
                             : "";
 
 
+                    /*
+                     * Silent hint
+                     */
+
+                    const silentHint =
+                        silent
+                            ? "No data received recently"
+                            : "";
+
+
                     return `
 
-                        <div class="source-row">
+                        <div
+                            class="source-row"
+                            title="${escapeHtml(
+                                silentHint
+                            )}"
+                        >
 
                             <div class="source-name">
 
                                 <span
-                                    class="source-indicator ${active ? "active" : "inactive"}">
+                                    class="source-indicator ${indicatorClass}">
                                 </span>
 
                                 <span>
                                     ${escapeHtml(
-                                        source.name
+                                        source.name || ""
                                     )}
                                 </span>
 
@@ -169,10 +340,11 @@ function updateSources(
                             <div class="source-status">
 
                                 <span
-                                    class="${active ? "status-active" : "status-inactive"}">
+                                    class="${statusClass}"
+                                >
 
                                     ${escapeHtml(
-                                        source.status || "Unknown"
+                                        status
                                     )}
 
                                 </span>
@@ -180,9 +352,13 @@ function updateSources(
 
                                 ${
                                     age
-                                        ? `<span class="source-age">
-                                               ${age}
-                                           </span>`
+                                        ? `
+                                            <span
+                                                class="source-age"
+                                            >
+                                                ${age}
+                                            </span>
+                                          `
                                         : ""
                                 }
 
@@ -282,26 +458,45 @@ function updateGeo(
     }
 
 
+    /*
+     * Only show the last 10 failed
+     * lookup entries.
+     *
+     * The backend may contain many
+     * historical attempts, but the
+     * diagnostics display remains compact.
+     */
+
+    const visibleCalls =
+        calls.slice(-10);
+
+
     container.innerHTML =
-        calls
+        visibleCalls
             .map(
                 entry => `
 
                     <div class="geo-row">
 
                         <span class="geo-call">
+
                             ${escapeHtml(
                                 entry.call || ""
                             )}
+
                         </span>
 
+
                         <span class="geo-attempts">
+
                             ${entry.attempts || 0}
+
                             attempt${
                                 entry.attempts === 1
                                     ? ""
                                     : "s"
                             }
+
                         </span>
 
                     </div>
@@ -374,6 +569,7 @@ async function systemAction(
         }
 
     }
+
     catch (error) {
 
         console.error(
@@ -406,7 +602,9 @@ function restartServer() {
             "Restart SHACK-SERVER?"
         )
     ) {
+
         return;
+
     }
 
 
@@ -429,7 +627,9 @@ function rebootSystem() {
             "Reboot the complete system?"
         )
     ) {
+
         return;
+
     }
 
 
@@ -452,7 +652,9 @@ function shutdownSystem() {
             "Shutdown the complete system?"
         )
     ) {
+
         return;
+
     }
 
 
@@ -474,7 +676,9 @@ function setText(
 ) {
 
     const element =
-        document.getElementById(id);
+        document.getElementById(
+            id
+        );
 
 
     if (!element) {
@@ -490,6 +694,10 @@ function setText(
 
 }
 
+
+/*
+ * Format source age
+ */
 
 function formatAge(
     seconds
@@ -526,27 +734,36 @@ function formatAge(
 }
 
 
+/*
+ * HTML escaping
+ */
+
 function escapeHtml(
     value
 ) {
 
     return String(value)
+
         .replace(
             /&/g,
             "&amp;"
         )
+
         .replace(
             /</g,
             "&lt;"
         )
+
         .replace(
             />/g,
             "&gt;"
         )
+
         .replace(
             /"/g,
             "&quot;"
         )
+
         .replace(
             /'/g,
             "&#039;"

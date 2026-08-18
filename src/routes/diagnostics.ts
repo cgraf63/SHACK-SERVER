@@ -8,6 +8,10 @@ import {
     sourceStatus
 } from "../services/sources/source-manager-instance.js";
 
+import {
+    systemLog
+} from "../services/diagnostics/system-log.service.js";
+
 
 const router = Router();
 
@@ -78,6 +82,10 @@ router.get(
                 fusionEngine.getGeoDiagnostics();
 
 
+            
+
+      
+                
             res.json({
 
                 sources:
@@ -112,9 +120,14 @@ router.get(
                     calls:
                         geo.calls
 
-                }
+                },
+
+
+                logs:
+                    systemLog.getLast(20)
 
             });
+
 
         }
         catch (error) {
