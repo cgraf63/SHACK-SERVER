@@ -11,14 +11,12 @@ sotaPotaService
 
 export interface Spot {
 
-
-    
-
     call: string;
     frequency: string;
     band: string;
     mode: string;
     source: string;
+    sources: string[];
     age: string;
     confidence: number;
     snr: number;
@@ -96,7 +94,8 @@ console.log(
                         ", "
                     ),
 
-
+		sources:
+    			spot.sources,
 
                 age:
                     `${Math.floor(

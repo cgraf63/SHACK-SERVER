@@ -1368,7 +1368,92 @@ element.innerHTML =
 
 }
 
+function updateOpportunities() {
 
+    const items = [];
+
+    const newDxcc =
+        currentSpots.some(
+            spot =>
+                spot.countryCode &&
+                !workedStatus.countries.has(
+                    spot.countryCode.toLowerCase()
+                )
+        );
+
+    const newBand =
+        currentSpots.some(
+            spot =>
+                spot.countryCode &&
+                workedStatus.countries.has(
+                    spot.countryCode.toLowerCase()
+                ) &&
+                !workedStatus.countriesOnBand.has(
+                    `${spot.countryCode.toLowerCase()}|${String(spot.band || "").toUpperCase()}`
+                )
+        );
+
+    const activity =
+        currentSpots.some(
+            spot =>
+                spot.activity === "POTA" ||
+                spot.activity === "SOTA"
+        );
+
+    const multiCluster =
+        currentSpots.some(
+            spot =>
+                Array.isArray(spot.sources) &&
+                spot.sources.length >= 2
+        );
+
+    if (newDxcc) {
+        items.push("NEW DXCC");
+    }
+
+    if (newBand) {
+        items.push("NEW BAND");
+    }
+
+    if (activity) {
+        items.push("POTA/SOTA");
+    }
+
+    if (multiCluster) {
+        items.push("MULTI-CLUSTER");
+    }
+
+    const element =
+        document.getElementById(
+            "opportunities-value"
+        );
+
+    const title =
+        document.getElementById(
+            "opportunities-title"
+        );
+
+    if (!element || !title) {
+        return;
+    }
+
+    if (!items.length) {
+
+        title.textContent =
+            "NO OPPORTUNITIES";
+
+        element.textContent =
+            "Nothing requiring attention";
+
+        return;
+    }
+
+    title.textContent =
+        `${items.length} OPPORTUNIT${items.length === 1 ? "Y" : "IES"}`;
+
+    element.textContent =
+        items.join(" · ");
+}
 
 
 async function updateLiveSpots() {
@@ -1420,6 +1505,15 @@ updateSourceFilter(
 
 
 updateDxOpportunity();
+
+renderLiveSpots();
+
+updatePriorityDX();
+
+
+updateDxOpportunity();
+
+updateOpportunities();
 
 renderLiveSpots();
 

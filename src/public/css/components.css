@@ -598,9 +598,8 @@
 .live-table {
 
     width:100%;
-
     border-collapse:collapse;
-
+    // table-layout: fixed;
 }
 
 
@@ -640,7 +639,7 @@
 }
 
 .live-table .comment-cell {
-    width: 240px
+    width: 240px;
     max-width: 240px;
     white-space: nowrap;
     overflow: hidden;
