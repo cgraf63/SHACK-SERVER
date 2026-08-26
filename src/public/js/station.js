@@ -67,7 +67,6 @@ async function loadStationInfo() {
 
 }
 
-
 async function loadRadioInfo() {
 
     try {
@@ -75,78 +74,274 @@ async function loadRadioInfo() {
         const response =
             await fetch('/api/radio');
 
-        const radio =
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
+        }
+
+
+        const data =
             await response.json();
 
-        console.log("Radio data:", radio);
+
+        console.log(
+            "Radio data:",
+            data
+        );
 
 
-        const radioElement =
-            document.getElementById("station-radio");
+        const container =
+            document.getElementById(
+                "station-radios"
+            );
 
-        const catElement =
-            document.getElementById("station-cat");
 
-        const frequencyElement =
-            document.getElementById("station-frequency");
+        const statusElement =
+            document.getElementById(
+                "station-status"
+            );
 
-        const modeElement =
-            document.getElementById("station-mode");
 
-        const powerElement =
-            document.getElementById("station-power");
+        if (!container) {
 
-	const statusElement =
-    	      document.getElementById("station-status");
+            return;
 
-        if (radioElement) {
-            radioElement.textContent =
-                radio.radio || "--";
         }
 
 
-        if (catElement) {
-            catElement.textContent =
-                radio.connected
-                    ? "Connected"
-                    : "Disconnected";
+        container.innerHTML = "";
+
+
+        const radios =
+            data.radios || [];
+
+
+        if (
+            radios.length === 0
+        ) {
+
+            container.innerHTML = `
+                <div class="station-radio-placeholder">
+                    No radios configured
+                </div>
+            `;
+
+            return;
+
         }
 
 
-        if (frequencyElement) {
-            frequencyElement.textContent =
-                radio.frequency
-                    ? `${(radio.frequency / 1000000).toFixed(3)} MHz`
-                    : "--";
+        radios.forEach(
+            radio => {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "station-radio-card";
+
+
+                if (
+                    radio.active
+                ) {
+
+                    card.classList.add(
+                        "active"
+                    );
+
+                }
+
+
+                if (
+                    !radio.connected
+                ) {
+
+                    card.classList.add(
+                        "disconnected"
+                    );
+
+                }
+
+
+                const frequency =
+                    radio.frequency
+                        ? `${
+                            (
+                                radio.frequency /
+                                1000000
+                            ).toFixed(3)
+                        } MHz`
+                        : "---.--- MHz";
+
+
+                const mode =
+                    radio.mode ||
+                    "--";
+
+
+                const power =
+                    `${radio.power ?? 0} W`;
+
+
+                const connection =
+                    radio.connected
+                        ? "CAT Connected"
+                        : "CAT Disconnected";
+
+
+                card.innerHTML = `
+
+                    <div class="station-radio-name">
+
+                        📻
+                        ${radio.name}
+
+                    </div>
+
+
+                    <div class="station-radio-frequency">
+
+                        ${frequency}
+
+                    </div>
+
+
+                    <div class="station-radio-details">
+
+                        ${mode}
+                        ·
+                        ${power}
+
+                    </div>
+
+
+                    <div class="station-radio-connection">
+
+                        ${
+                            radio.connected
+                                ? "●"
+                                : "○"
+                        }
+
+                        ${connection}
+
+                    </div>
+
+                `;
+
+
+                card.addEventListener(
+                    "click",
+                    async () => {
+
+                        try {
+
+                            const response =
+                                await fetch(
+                                    "/api/radio/active",
+                                    {
+
+                                        method:
+                                            "POST",
+
+                                        headers: {
+
+                                            "Content-Type":
+                                                "application/json"
+
+                                        },
+
+                                        body:
+                                            JSON.stringify({
+
+                                                radioId:
+                                                    radio.id
+
+                                            })
+
+                                    }
+                                );
+
+
+                            if (
+                                !response.ok
+                            ) {
+
+                                throw new Error(
+                                    "Failed to select radio"
+                                );
+
+                            }
+
+
+                            console.log(
+                                "Active radio selected:",
+                                radio.id
+                            );
+
+
+                            loadRadioInfo();
+
+                        }
+                        catch (error) {
+
+                            console.error(
+                                "Radio selection failed:",
+                                error
+                            );
+
+                        }
+
+                    }
+                );
+
+
+                container.appendChild(
+                    card
+                );
+
+            }
+        );
+
+
+        if (statusElement) {
+
+            const activeRadio =
+                radios.find(
+                    radio =>
+                        radio.active
+                );
+
+
+            if (activeRadio) {
+
+                statusElement.textContent =
+                    `${activeRadio.name} active`;
+
+                statusElement.className =
+                    "status-ok";
+
+            }
+            else {
+
+                statusElement.textContent =
+                    "No active radio";
+
+                statusElement.className =
+                    "status-warning";
+
+            }
+
         }
 
-
-        if (modeElement) {
-            modeElement.textContent =
-                radio.mode || "--";
-        }
-
-
-        if (powerElement) {
-            powerElement.textContent =
-                `${radio.power ?? 0} W`;
-        }
-
-
-if (statusElement) {
-
-    statusElement.textContent =
-        radio.connected
-            ? "Radio connected"
-            : "Radio disconnected";
-
-    statusElement.className =
-        radio.connected
-            ? "status-ok"
-            : "status-warning";
-}
-
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error(
             "Radio info loading failed:",
@@ -156,7 +351,6 @@ if (statusElement) {
     }
 
 }
-
 
 // Station information
 window.addEventListener(

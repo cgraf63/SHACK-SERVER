@@ -13,7 +13,8 @@ export class CatService {
     private power = 0;
 
     constructor(
-        device: string
+        device: string,
+        baudRate: number
     ) {
 
 
@@ -22,7 +23,7 @@ export class CatService {
 
                 path: device,
 
-                baudRate: 9600,
+                baudRate: baudRate,
 
                 autoOpen: false
 

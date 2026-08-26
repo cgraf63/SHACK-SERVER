@@ -1,10 +1,6 @@
 import app from './app.js';
 
 import {
-    CatService
-} from "./services/radio/cat.service.js";
-
-import {
     fusionEngine
 } from './services/fusion/fusion-instance.js';
 
@@ -14,9 +10,8 @@ import {
 } from "./services/sources/source-manager-instance.js";
 
 import {
-    catService
-} from "./services/radio/cat-instance.js";
-
+    radioManager
+} from "./services/radio/radio-manager.js";
 
 import {
     sotaPotaService
@@ -25,7 +20,7 @@ import {
 
 import "./services/telnet/telnet-server.js";
 
-catService.start();
+radioManager.start();
 
 
 sotaPotaService.start();

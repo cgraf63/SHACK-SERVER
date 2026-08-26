@@ -1,35 +1,162 @@
 import { Router } from "express";
-import { catService } from "../services/radio/cat-instance.js";
+
+import {
+    radioManager
+} from "../services/radio/radio-manager.js";
+
 
 const router =
     Router();
+
 
 router.get(
     "/radio",
     (req, res) => {
 
+        const activeRadio =
+            radioManager.getActiveRadio();
+
+
+        const activeRadioId =
+            radioManager.getActiveRadioId();
+
+
+        if (!activeRadio) {
+
+            return res.status(503).json({
+
+                error:
+                    "No active radio"
+
+            });
+
+        }
+
+
+        const radios =
+            radioManager.getRadios();
+
+
+        const activeConfig =
+            radios.find(
+                radio =>
+                    radio.id ===
+                    activeRadioId
+            );
+
+
         res.json({
 
             radio:
-                "RGO ONE",
+                activeConfig?.name
+                ?? "Unknown",
+
+            activeRadioId:
+
+                activeRadioId,
+
 
             frequency:
-                catService.getFrequency(),
+
+                activeRadio
+                    .getFrequency(),
+
 
             mode:
-                catService.getMode(),
+
+                activeRadio
+                    .getMode(),
+
 
             power:
-                catService.getPower(),
+
+                activeRadio
+                    .getPower(),
+
 
             connected:
-                true
+
+                true,
+
+
+            radios:
+
+                radios
 
         });
 
     }
 );
 
+
+/*
+    Select active radio
+*/
+
+router.post(
+    "/radio/active",
+    (req, res) => {
+
+        const {
+            radioId
+        } = req.body;
+
+
+        if (
+            typeof radioId !== "string"
+        ) {
+
+            return res.status(400).json({
+
+                error:
+                    "Invalid radio ID"
+
+            });
+
+        }
+
+
+        const success =
+            radioManager.setActiveRadio(
+                radioId
+            );
+
+
+        if (!success) {
+
+            return res.status(404).json({
+
+                error:
+                    "Radio not found"
+
+            });
+
+        }
+
+
+        console.log(
+            "ACTIVE RADIO:",
+            radioId
+        );
+
+
+        return res.json({
+
+            success:
+                true,
+
+            activeRadioId:
+                radioId
+
+        });
+
+    }
+);
+
+
+/*
+    Tune active radio
+*/
 
 router.post(
     "/radio/tune",
@@ -39,6 +166,22 @@ router.post(
             frequency,
             mode
         } = req.body;
+
+
+        const activeRadio =
+            radioManager.getActiveRadio();
+
+
+        if (!activeRadio) {
+
+            return res.status(503).json({
+
+                error:
+                    "No active radio"
+
+            });
+
+        }
 
 
         if (
@@ -103,12 +246,13 @@ router.post(
 
         console.log(
             "RADIO TUNE:",
+            radioManager.getActiveRadioId(),
             frequency,
             normalizedMode
         );
 
 
-        catService.setFrequency(
+        activeRadio.setFrequency(
             frequency
         );
 
@@ -116,7 +260,7 @@ router.post(
         setTimeout(
             () => {
 
-                catService.setMode(
+                activeRadio.setMode(
                     normalizedMode,
                     frequency
                 );
@@ -130,6 +274,10 @@ router.post(
 
             success:
                 true,
+
+            radioId:
+                radioManager
+                    .getActiveRadioId(),
 
             frequency:
                 frequency,
