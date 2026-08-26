@@ -3,8 +3,6 @@ console.log("LIVE SPOTS JS LOADED");
 
 let currentSpots = [];
 
-let liveSpotOrder = [];
-
 let workedStatus = {
 
     calls: new Set(),
@@ -788,58 +786,6 @@ function setupSpotSorting() {
     );
 
 }
-
-
-function updateLiveSpotOrder(spots) {
-
-    const currentKeys =
-        new Set(
-            spots.map(
-                spot =>
-                    `${spot.call}|${spot.frequency}|${spot.mode}`
-            )
-        );
-
-
-    // Entfernte Spots aus der Historie entfernen
-
-    liveSpotOrder =
-        liveSpotOrder.filter(
-            key =>
-                currentKeys.has(key)
-        );
-
-
-    // Neue Spots feststellen
-
-    const knownKeys =
-        new Set(
-            liveSpotOrder
-        );
-
-
-    const newKeys =
-        spots
-            .map(
-                spot =>
-                    `${spot.call}|${spot.frequency}|${spot.mode}`
-            )
-            .filter(
-                key =>
-                    !knownKeys.has(key)
-            );
-
-
-    // Neue Spots ganz nach vorne
-
-    liveSpotOrder =
-        [
-            ...newKeys,
-            ...liveSpotOrder
-        ];
-
-}
-
 
 function renderLiveSpots() {
 
