@@ -16,6 +16,7 @@ export class RgoOneService
 
     private power = 0;
 
+
     constructor(
         device: string,
         baudRate: number
@@ -32,7 +33,6 @@ export class RgoOneService
                 autoOpen: false
 
             });
-
 
 
         this.port.on(
@@ -58,9 +58,7 @@ export class RgoOneService
             }
         );
 
-
     }
-
 
 
     start() {
@@ -89,15 +87,26 @@ export class RgoOneService
                 );
 
 
+                /*
+                    Radio status polling.
+
+                    Frequency
+                    Mode
+                    Power
+                */
 
                 setInterval(
                     () => {
 
+                        if (
+                            this.port.isOpen
+                        ) {
 
-                        this.port.write(
-                            "FA;MD;PC;"
-                        );
+                            this.port.write(
+                                "FA;MD;PC;"
+                            );
 
+                        }
 
                     },
                     2000
@@ -107,9 +116,7 @@ export class RgoOneService
             }
         );
 
-
     }
-
 
 
     private parseResponse(
@@ -121,9 +128,9 @@ export class RgoOneService
             Frequency
 
             Example:
+
             FA00028000000;
         */
-
 
         const faMatch =
             response.match(
@@ -162,6 +169,40 @@ export class RgoOneService
         }
 
 
+        /*
+            Power
+
+            Examples:
+
+            PC000;
+            PCP050;
+        */
+
+        const pcMatch =
+            response.match(
+                /PCP?(\d{3})/
+            );
+
+
+        if (
+            pcMatch
+        ) {
+
+
+            this.power =
+                Number(
+                    pcMatch[1]
+                );
+
+
+            console.log(
+                "CAT POWER:",
+                this.power,
+                "W"
+            );
+
+
+        }
 
 
         /*
@@ -181,29 +222,6 @@ export class RgoOneService
             7 = CW-R
         */
 
-const pcMatch =
-    response.match(
-        /PCP?(\d{3})/
-    );
-
-
-if (pcMatch) {
-
-    this.power =
-        Number(
-            pcMatch[1]
-        );
-
-
-    console.log(
-        "CAT POWER:",
-        this.power,
-        "W"
-    );
-
-}
-
-
         const mdMatch =
             response.match(
                 /MDP?(\d)/
@@ -219,7 +237,9 @@ if (pcMatch) {
                 mdMatch[1];
 
 
-            switch(code) {
+            switch (
+                code
+            ) {
 
 
                 case "1":
@@ -286,7 +306,6 @@ if (pcMatch) {
             }
 
 
-
             console.log(
                 "CAT MODE:",
                 this.mode
@@ -295,148 +314,199 @@ if (pcMatch) {
 
         }
 
-
     }
 
 
-setFrequency(frequency: number): void {
+    setFrequency(
+        frequency: number
+    ): void {
 
-    if (!this.port.isOpen) {
 
-        console.error(
-            "CAT not connected"
+        if (
+            !this.port.isOpen
+        ) {
+
+            console.error(
+                "CAT not connected"
+            );
+
+            return;
+
+        }
+
+
+        /*
+            Update local status immediately.
+
+            This allows /api/radio
+            to return the new frequency
+            without waiting for the next
+            CAT polling response.
+        */
+
+        this.frequency =
+            Math.round(
+                frequency
+            );
+
+
+        const value =
+            this.frequency
+                .toString()
+                .padStart(
+                    11,
+                    "0"
+                );
+
+
+        const command =
+            `FA${value};`;
+
+
+        console.log(
+            "CAT TX:",
+            command
         );
 
-        return;
 
-    }
-
-    const value =
-        Math.round(frequency)
-            .toString()
-            .padStart(11, "0");
-
-    const command =
-        `FA${value};`;
-
-    console.log(
-        "CAT TX:",
-        command
-    );
-
-    this.port.write(
-        command
-    );
-
-}
-
-///////////////////
-//////////////////
-setMode(
-    mode: string,
-    frequency: number
-): void {
-
-    if (!this.port.isOpen) {
-
-        console.error(
-            "CAT not connected"
+        this.port.write(
+            command
         );
 
-        return;
-
     }
 
 
-    let normalizedMode =
-        mode.toUpperCase();
+    setMode(
+        mode: string,
+        frequency: number
+    ): void {
 
 
-    /*
-        SSB handling:
+        if (
+            !this.port.isOpen
+        ) {
 
-        < 10 MHz  -> LSB
-        >= 10 MHz -> USB
+            console.error(
+                "CAT not connected"
+            );
 
-        The spot itself supplies "SSB".
-        We only translate it to the
-        corresponding RGO ONE CAT mode.
-    */
+            return;
 
-    if (
-        normalizedMode === "SSB"
-    ) {
-
-        normalizedMode =
-            frequency < 10000000
-            ? "LSB"
-            : "USB";
-
-    }
+        }
 
 
-    const modes: Record<string, string> = {
-
-        LSB: "1",
-        USB: "2",
-        CW: "3",
-        FM: "4",
-        AM: "5",
-        "CW-R": "7"
-
-    };
+        let normalizedMode =
+            mode.toUpperCase();
 
 
-    const code =
-        modes[normalizedMode];
+        /*
+            SSB handling.
+
+            Below 10 MHz -> LSB
+            10 MHz and above -> USB
+        */
+
+        if (
+            normalizedMode === "SSB"
+        ) {
+
+            normalizedMode =
+                frequency < 10000000
+                    ? "LSB"
+                    : "USB";
+
+        }
 
 
-    if (!code) {
+        /*
+            Update local mode immediately.
 
-        console.error(
-            "Unsupported CAT mode:",
-            mode
+            This allows the frontend
+            to display the new mode
+            without waiting for a CAT
+            response.
+        */
+
+        this.mode =
+            normalizedMode;
+
+
+        const modes:
+            Record<string, string> = {
+
+                LSB: "1",
+
+                USB: "2",
+
+                CW: "3",
+
+                FM: "4",
+
+                AM: "5",
+
+                "CW-R": "7"
+
+            };
+
+
+        const code =
+            modes[
+                normalizedMode
+            ];
+
+
+        if (
+            !code
+        ) {
+
+            console.error(
+                "Unsupported CAT mode:",
+                mode
+            );
+
+            return;
+
+        }
+
+
+        const command =
+            `MD${code};`;
+
+
+        console.log(
+            "CAT TX:",
+            command
         );
 
-        return;
+
+        this.port.write(
+            command
+        );
 
     }
 
 
-    const command =
-        `MD${code};`;
+    getFrequency():
+        number {
+
+        return this.frequency;
+
+    }
 
 
-    console.log(
-        "CAT TX:",
-        command
-    );
+    getMode():
+        string {
+
+        return this.mode;
+
+    }
 
 
-    this.port.write(
-        command
-    );
+    getPower():
+        number {
 
-}
+        return this.power;
 
-getFrequency(): number {
-
-    return this.frequency;
-
-}
-
-
-getMode(): string {
-
-    return this.mode;
-
-}
-
-
-getPower(): number {
-
-    return this.power;
-
-}
+    }
 
 }

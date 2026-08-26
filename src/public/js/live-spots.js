@@ -1017,10 +1017,13 @@ function renderLiveSpots() {
     </button>
 
     <button
-        class="spot-btn tune-btn"
-        title="Tune radio">
-        🎯
-    </button>
+    class="spot-btn tune-btn"
+    data-frequency="${spot.frequency}"
+    data-mode="${spot.mode}"
+    data-call="${spot.call}"
+    title="Tune radio">
+    🎯
+</button>
 
 <button
     class="spot-btn qso-btn"
@@ -1178,151 +1181,220 @@ if (detailsButton) {
             }
 
 
+      	/*
+    Tune button
+*/
+
+const tuneButton =
+    row.querySelector(
+        ".tune-btn"
+    );
+
+
+if (tuneButton) {
+
+    tuneButton.addEventListener(
+        "click",
+        async event => {
+
+            const button =
+                event.currentTarget;
+
+
+            const spotFrequency =
+                button.dataset.frequency;
+
+
+            const spotMode =
+                button.dataset.mode;
+
+
+            const spotCall =
+                button.dataset.call;
+
+
+            console.log(
+                "TUNE CLICK:",
+                {
+                    call:
+                        spotCall,
+
+                    frequency:
+                        spotFrequency,
+
+                    mode:
+                        spotMode
+                }
+            );
+
+
             /*
-                Tune button
+                FT8 vorerst nicht tunen
             */
 
-            const tuneButton =
-                row.querySelector(
-                    ".tune-btn"
+            if (
+                !spotMode ||
+                spotMode.toUpperCase() ===
+                    "FT8"
+            ) {
+
+                console.log(
+                    "Radio tune skipped:",
+                    spotMode
+                );
+
+                return;
+
+            }
+
+
+            const frequencyKHz =
+                Number(
+                    spotFrequency
                 );
 
 
-            if (tuneButton) {
+            if (
+                !Number.isFinite(
+                    frequencyKHz
+                )
+            ) {
 
-                tuneButton.addEventListener(
-                    "click",
-                    async () => {
+                console.error(
+                    "Invalid spot frequency:",
+                    spotFrequency
+                );
 
-                        // FT8 vorerst nicht tunen
-                        if (
-                            !spot.mode ||
-                            spot.mode === "FT8"
-                        ) {
+                return;
 
-                            console.log(
-                                "Radio tune skipped:",
-                                spot.mode
-                            );
-
-                            return;
-                        }
+            }
 
 
-                        const frequencyKHz =
-                            Number(
-                                spot.frequency
-                            );
+            const frequencyHz =
+                Math.round(
+                    frequencyKHz *
+                    1000
+                );
 
 
-                        if (
-                            !Number.isFinite(
-                                frequencyKHz
-                            )
-                        ) {
-
-                            console.error(
-                                "Invalid spot frequency:",
-                                spot.frequency
-                            );
-
-                            return;
-                        }
+            const mode =
+                mapSpotModeToRgo(
+                    spotMode,
+                    frequencyHz
+                );
 
 
-                        const frequencyHz =
-                            Math.round(
-                                frequencyKHz * 1000
-                            );
+            if (!mode) {
+
+                console.log(
+                    "Radio tune skipped:",
+                    spotMode
+                );
+
+                return;
+
+            }
 
 
-                        const mode =
-                            mapSpotModeToRgo(
-                                spot.mode,
-                                frequencyHz
-                            );
+            console.log(
+                "TUNING RADIO:",
+                {
+                    call:
+                        spotCall,
+
+                    frequencyKHz:
+                        frequencyKHz,
+
+                    frequencyHz:
+                        frequencyHz,
+
+                    mode:
+                        mode
+                }
+            );
 
 
-                        if (!mode) {
+            try {
 
-                            console.log(
-                                "Radio tune skipped:",
-                                spot.mode
-                            );
+                const response =
+                    await fetch(
+                        "/api/radio/tune",
+                        {
+                            method:
+                                "POST",
 
-                            return;
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
 
-                        }
-
-
-                        console.log(
-                            "TUNING RADIO:",
-                            frequencyHz,
-                            mode
-                        );
-
-
-                        try {
-
-                            const response =
-                                await fetch(
-                                    "/api/radio/tune",
+                            body:
+                                JSON.stringify(
                                     {
-                                        method:
-                                            "POST",
+                                        frequency:
+                                            frequencyHz,
 
-                                        headers: {
-                                            "Content-Type":
-                                                "application/json"
-                                        },
-
-                                        body:
-                                            JSON.stringify({
-                                                frequency:
-                                                    frequencyHz,
-
-                                                mode:
-                                                    mode
-                                            })
+                                        mode:
+                                            mode
                                     }
-                                );
-
-
-                            const result =
-                                await response.json();
-
-
-                            if (!response.ok) {
-
-                                console.error(
-                                    "Radio tune failed:",
-                                    result
-                                );
-
-                                return;
-                            }
-
-
-                            console.log(
-                                "Radio tuned:",
-                                result
-                            );
-
+                                )
                         }
-                        catch (error) {
+                    );
 
-                            console.error(
-                                "Radio tune request failed:",
-                                error
-                            );
 
-                        }
+                const result =
+                    await response.json();
 
-                    }
+
+                if (
+                    !response.ok
+                ) {
+
+                    console.error(
+                        "Radio tune failed:",
+                        result
+                    );
+
+                    return;
+
+                }
+
+
+                console.log(
+                    "Radio tuned:",
+                    result
+                );
+
+
+                /*
+                    Optional:
+                    Station-Anzeige sofort
+                    aktualisieren
+                */
+
+                if (
+                    typeof updateStationInline ===
+                    "function"
+                ) {
+
+                    updateStationInline();
+
+                }
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Radio tune request failed:",
+                    error
                 );
 
             }
 
+        }
+    );
+
+            }
         }
     );
 
@@ -1512,91 +1584,84 @@ function updateOpportunities() {
 
 async function updateLiveSpots() {
 
-
     try {
 
+        await loadWorkedStatus();
 
-	await loadWorkedStatus();
 
         const response =
-            await fetch('/api/spots');
-
+            await fetch(
+                '/api/spots'
+            );
 
 
         if (!response.ok) {
-
 
             throw new Error(
                 `HTTP ${response.status}`
             );
 
-
         }
 
 
-
         currentSpots =
-    await response.json();
-
-// Filter Functions
-
-updateBandFilter(
-    currentSpots
-);
-
-updateModeFilter(
-    currentSpots
-);
-
-updateCountryFilter(
-    currentSpots
-);
+            await response.json();
 
 
-updateSourceFilter(
-    currentSpots
-);
+        /*
+            Update filters
+        */
+
+        updateBandFilter(
+            currentSpots
+        );
 
 
-updateDxOpportunity();
-
-renderLiveSpots();
-
-updatePriorityDX();
+        updateModeFilter(
+            currentSpots
+        );
 
 
-updateDxOpportunity();
+        updateCountryFilter(
+            currentSpots
+        );
 
-updateOpportunities();
 
-renderLiveSpots();
+        updateSourceFilter(
+            currentSpots
+        );
 
-updatePriorityDX();
+
+        /*
+            Update dashboard elements
+        */
+
+        updateDxOpportunity();
+
+
+        updateOpportunities();
+
+
+        updatePriorityDX();
+
+
+        /*
+            Render live spots table
+        */
+
+        renderLiveSpots();
 
     }
-    catch(error) {
-
+    catch (error) {
 
         console.error(
             "Live spots update failed:",
             error
         );
 
-
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 function setupSpotFilters() {
 

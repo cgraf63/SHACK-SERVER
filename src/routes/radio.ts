@@ -253,21 +253,14 @@ router.post(
 
 
         activeRadio.setFrequency(
-            frequency
-        );
+    frequency
+);
 
 
-        setTimeout(
-            () => {
-
-                activeRadio.setMode(
-                    normalizedMode,
-                    frequency
-                );
-
-            },
-            300
-        );
+activeRadio.setMode(
+    normalizedMode,
+    frequency
+);
 
 
         return res.json({
