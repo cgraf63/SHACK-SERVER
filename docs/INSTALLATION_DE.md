@@ -1,6 +1,7 @@
 # SHACK-SERVER – Installationsanleitung
 
 ## 1. Übersicht
+===============
 
 SHACK-SERVER ist ein Node.js/TypeScript-Server für den Amateurfunkbetrieb mit REST-API, WebSocket-Unterstützung, DX-Cluster-Anbindungen, Geo-/QRZ-Anreicherung und Weboberfläche.
 
