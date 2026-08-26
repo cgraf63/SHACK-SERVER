@@ -1,11 +1,25 @@
+/*
+    Propagation update
+*/
+
 async function updatePropagation() {
 
     try {
 
         const response =
             await fetch(
-                '/api/propagation'
+                "/api/propagation"
             );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
+        }
+
 
         const data =
             await response.json();
@@ -13,24 +27,27 @@ async function updatePropagation() {
 
         const solarFlux =
             document.getElementById(
-                'solarFlux'
+                "solarFlux"
             );
+
 
         const aIndex =
             document.getElementById(
-                'aIndex'
+                "aIndex"
             );
+
 
         const kIndex =
             document.getElementById(
-                'kIndex'
+                "kIndex"
             );
 
 
         if (solarFlux) {
 
             solarFlux.textContent =
-                data.solarFlux;
+                data.solarFlux ??
+                "--";
 
         }
 
@@ -38,7 +55,8 @@ async function updatePropagation() {
         if (aIndex) {
 
             aIndex.textContent =
-                data.aIndex;
+                data.aIndex ??
+                "--";
 
         }
 
@@ -46,12 +64,17 @@ async function updatePropagation() {
         if (kIndex) {
 
             kIndex.textContent =
-                data.kIndex;
+                data.kIndex ??
+                "--";
 
         }
 
 
-        if (data.bands) {
+        if (
+            Array.isArray(
+                data.bands
+            )
+        ) {
 
             updateBandGraph(
                 data.bands
@@ -63,7 +86,7 @@ async function updatePropagation() {
     catch (error) {
 
         console.error(
-            'Propagation update failed:',
+            "Propagation update failed:",
             error
         );
 
@@ -73,14 +96,290 @@ async function updatePropagation() {
 
 
 
+/*
+    Update propagation bands
+
+    The API returns:
+
+    [
+        {
+            band: "6m",
+            score: 20,
+            condition: "Poor"
+        }
+    ]
+
+    We display narrow floating
+    horizontal lines with a vertical
+    position based on the score.
+*/
+
+function updateBandGraph(
+    bands
+) {
+
+    const graph =
+        document.getElementById(
+            "bandGraph"
+        );
+
+
+    if (!graph) {
+
+        return;
+
+    }
+
+
+    graph.innerHTML =
+        "";
+
+
+    const width =
+        600;
+
+
+    const height =
+        40;
+
+
+    const bandNames = [
+
+        "6m",
+        "10m",
+        "12m",
+        "15m",
+        "17m",
+        "20m",
+        "30m",
+        "40m",
+        "60m",
+        "80m"
+
+    ];
+
+
+    /*
+        Convert API array into
+        an easy lookup object
+    */
+
+    const bandScores =
+        {};
+
+
+    bands.forEach(
+        item => {
+
+            bandScores[
+                item.band
+            ] =
+                Number(
+                    item.score
+                );
+
+        }
+    );
+
+
+    const segmentWidth =
+        width /
+        bandNames.length;
+
+
+    /*
+        Horizontal line width
+
+        Approximately 30% narrower
+        than the previous version.
+    */
+
+    const lineWidth =
+        segmentWidth *
+        0.45;
+
+
+    const lineHeight =
+        3;
+
+
+    bandNames.forEach(
+        (
+            band,
+            index
+        ) => {
+
+            const value =
+                bandScores[
+                    band
+                ];
+
+
+            let normalized =
+                Number.isFinite(
+                    value
+                )
+                    ? value
+                    : 0;
+
+
+            normalized =
+                Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        normalized
+                    )
+                );
+
+
+            /*
+                Higher score =
+                higher floating line
+            */
+
+            const usableHeight =
+                height -
+                lineHeight;
+
+
+            const y =
+                usableHeight -
+                (
+                    normalized /
+                    100
+                ) *
+                usableHeight;
+
+
+            /*
+                Center the line
+                inside its segment
+            */
+
+            const x =
+                index *
+                segmentWidth +
+                (
+                    segmentWidth -
+                    lineWidth
+                ) /
+                2;
+
+
+            const rect =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "rect"
+                );
+
+
+            rect.setAttribute(
+                "x",
+                String(
+                    x
+                )
+            );
+
+
+            rect.setAttribute(
+                "y",
+                String(
+                    y
+                )
+            );
+
+
+            rect.setAttribute(
+                "width",
+                String(
+                    lineWidth
+                )
+            );
+
+
+            rect.setAttribute(
+                "height",
+                String(
+                    lineHeight
+                )
+            );
+
+
+            rect.setAttribute(
+                "rx",
+                "1.5"
+            );
+
+
+            /*
+                Colour according
+                to propagation score
+            */
+
+            if (
+                normalized >= 70
+            ) {
+
+                rect.setAttribute(
+                    "fill",
+                    "#27d17f"
+                );
+
+            }
+            else if (
+                normalized >= 40
+            ) {
+
+                rect.setAttribute(
+                    "fill",
+                    "#f0b429"
+                );
+
+            }
+            else {
+
+                rect.setAttribute(
+                    "fill",
+                    "#e05252"
+                );
+
+            }
+
+
+            graph.appendChild(
+                rect
+            );
+
+        }
+    );
+
+}
+
+
+
+/*
+    Update inline station status
+*/
+
 async function updateStationInline() {
 
     try {
 
         const response =
             await fetch(
-                '/api/radio'
+                "/api/radio"
             );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
+        }
+
 
         const data =
             await response.json();
@@ -88,7 +387,7 @@ async function updateStationInline() {
 
         const station =
             document.getElementById(
-                'station-inline-content'
+                "station-inline-content"
             );
 
 
@@ -100,10 +399,12 @@ async function updateStationInline() {
 
 
         const radios =
-            data.radios || [];
+            data.radios ||
+            [];
 
 
-        station.innerHTML = "";
+        station.innerHTML =
+            "";
 
 
         radios.forEach(
@@ -114,12 +415,15 @@ async function updateStationInline() {
                         ? `${(
                             radio.frequency /
                             1000000
-                        ).toFixed(3)} MHz`
-                        : '---.--- MHz';
+                        ).toFixed(
+                            3
+                        )} MHz`
+                        : "---.--- MHz";
 
 
                 const mode =
-                    radio.mode || '--';
+                    radio.mode ||
+                    "--";
 
 
                 const power =
@@ -128,18 +432,18 @@ async function updateStationInline() {
 
                 const connection =
                     radio.connected
-                        ? 'CAT Connected'
-                        : 'CAT Disconnected';
+                        ? "CAT Connected"
+                        : "CAT Disconnected";
 
 
                 const card =
                     document.createElement(
-                        'div'
+                        "div"
                     );
 
 
                 card.className =
-                    'station-inline-radio';
+                    "station-inline-radio";
 
 
                 if (
@@ -147,7 +451,7 @@ async function updateStationInline() {
                 ) {
 
                     card.classList.add(
-                        'active'
+                        "active"
                     );
 
                 }
@@ -158,7 +462,7 @@ async function updateStationInline() {
                 ) {
 
                     card.classList.add(
-                        'disconnected'
+                        "disconnected"
                     );
 
                 }
@@ -172,7 +476,6 @@ async function updateStationInline() {
 
                     </div>
 
-
                     <div class="station-inline-bottom">
 
                         <span class="station-inline-data">
@@ -184,7 +487,6 @@ async function updateStationInline() {
                             ${power}
 
                         </span>
-
 
                         <span class="station-inline-cat">
 
@@ -200,7 +502,7 @@ async function updateStationInline() {
 
 
                 card.addEventListener(
-                    'click',
+                    "click",
                     async () => {
 
                         if (
@@ -217,21 +519,26 @@ async function updateStationInline() {
 
                             const response =
                                 await fetch(
-                                    '/api/radio/active',
+                                    "/api/radio/active",
                                     {
 
-                                        method: 'POST',
+                                        method:
+                                            "POST",
 
                                         headers: {
-                                            'Content-Type':
-                                                'application/json'
+
+                                            "Content-Type":
+                                                "application/json"
+
                                         },
 
                                         body:
                                             JSON.stringify(
                                                 {
+
                                                     radioId:
                                                         radio.id
+
                                                 }
                                             )
 
@@ -256,7 +563,7 @@ async function updateStationInline() {
                         catch (error) {
 
                             console.error(
-                                'Active radio change failed:',
+                                "Active radio change failed:",
                                 error
                             );
 
@@ -273,11 +580,25 @@ async function updateStationInline() {
             }
         );
 
+
+        /*
+            Fallback
+        */
+
+        if (
+            radios.length === 0
+        ) {
+
+            station.textContent =
+                "Not configured";
+
+        }
+
     }
     catch (error) {
 
         console.error(
-            'Station inline update failed:',
+            "Station inline update failed:",
             error
         );
 
@@ -287,18 +608,61 @@ async function updateStationInline() {
 
 
 
+/*
+    Initialize after components
+    are dynamically loaded
+*/
+
+function initializePropagation() {
+
+    updatePropagation();
+
+    updateStationInline();
+
+}
+
+
+
+/*
+    Normal component loader event
+*/
+
 window.addEventListener(
     "componentsLoaded",
     () => {
 
-        updatePropagation();
-
-        updateStationInline();
+        initializePropagation();
 
     }
 );
 
 
-updatePropagation();
 
-updateStationInline();
+/*
+    Fallback.
+
+    If propagation.js is loaded
+    after the componentsLoaded event,
+    wait briefly and try again.
+*/
+
+setTimeout(
+    () => {
+
+        const propagation =
+            document.getElementById(
+                "solarFlux"
+            );
+
+
+        if (
+            propagation
+        ) {
+
+            initializePropagation();
+
+        }
+
+    },
+    500
+);
