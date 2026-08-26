@@ -3,52 +3,74 @@ async function updatePropagation() {
     try {
 
         const response =
-            await fetch('/api/propagation');
+            await fetch(
+                '/api/propagation'
+            );
 
         const data =
             await response.json();
 
+
         const solarFlux =
-            document.getElementById('solarFlux');
+            document.getElementById(
+                'solarFlux'
+            );
 
         const aIndex =
-            document.getElementById('aIndex');
+            document.getElementById(
+                'aIndex'
+            );
 
         const kIndex =
-            document.getElementById('kIndex');
+            document.getElementById(
+                'kIndex'
+            );
+
 
         if (solarFlux) {
+
             solarFlux.textContent =
                 data.solarFlux;
+
         }
+
 
         if (aIndex) {
+
             aIndex.textContent =
                 data.aIndex;
+
         }
+
 
         if (kIndex) {
+
             kIndex.textContent =
                 data.kIndex;
+
         }
 
+
         if (data.bands) {
+
             updateBandGraph(
                 data.bands
             );
+
         }
 
     }
     catch (error) {
 
         console.error(
-            "Propagation update failed:",
+            'Propagation update failed:',
             error
         );
 
     }
 
 }
+
 
 
 async function updateStationInline() {
@@ -56,52 +78,206 @@ async function updateStationInline() {
     try {
 
         const response =
-            await fetch('/api/radio');
+            await fetch(
+                '/api/radio'
+            );
 
-        const radio =
+        const data =
             await response.json();
+
 
         const station =
             document.getElementById(
                 'station-inline-content'
             );
 
+
         if (!station) {
+
             return;
+
         }
 
-        const frequency =
-            radio.frequency
-                ? `${(radio.frequency / 1000000).toFixed(3)} MHz`
-                : '--';
 
-        const mode =
-            radio.mode || '--';
+        const radios =
+            data.radios || [];
 
-        const power =
-            `${radio.power ?? 0} W`;
 
-        const connection =
-            radio.connected
-                ? 'CAT Connected'
-                : 'CAT Disconnected';
+        station.innerHTML = "";
 
-        station.innerHTML = `
-    <strong>${radio.radio || '--'}</strong>
-    <span class="station-radio-data">
-        ${frequency} · ${mode} · ${power}
-    </span>
-    <span class="cat-status">
-        <span class="cat-dot"></span>
-        ${connection}
-    </span>
-`;
+
+        radios.forEach(
+            radio => {
+
+                const frequency =
+                    radio.frequency
+                        ? `${(
+                            radio.frequency /
+                            1000000
+                        ).toFixed(3)} MHz`
+                        : '---.--- MHz';
+
+
+                const mode =
+                    radio.mode || '--';
+
+
+                const power =
+                    `${radio.power ?? 0} W`;
+
+
+                const connection =
+                    radio.connected
+                        ? 'CAT Connected'
+                        : 'CAT Disconnected';
+
+
+                const card =
+                    document.createElement(
+                        'div'
+                    );
+
+
+                card.className =
+                    'station-inline-radio';
+
+
+                if (
+                    radio.active
+                ) {
+
+                    card.classList.add(
+                        'active'
+                    );
+
+                }
+
+
+                if (
+                    !radio.connected
+                ) {
+
+                    card.classList.add(
+                        'disconnected'
+                    );
+
+                }
+
+
+                card.innerHTML = `
+
+                    <div class="station-inline-name">
+
+                        ${radio.name}
+
+                    </div>
+
+
+                    <div class="station-inline-bottom">
+
+                        <span class="station-inline-data">
+
+                            ${frequency}
+                            ·
+                            ${mode}
+                            ·
+                            ${power}
+
+                        </span>
+
+
+                        <span class="station-inline-cat">
+
+                            <span class="cat-dot"></span>
+
+                            ${connection}
+
+                        </span>
+
+                    </div>
+
+                `;
+
+
+                card.addEventListener(
+                    'click',
+                    async () => {
+
+                        if (
+                            radio.id ===
+                            data.activeRadioId
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        try {
+
+                            const response =
+                                await fetch(
+                                    '/api/radio/active',
+                                    {
+
+                                        method: 'POST',
+
+                                        headers: {
+                                            'Content-Type':
+                                                'application/json'
+                                        },
+
+                                        body:
+                                            JSON.stringify(
+                                                {
+                                                    radioId:
+                                                        radio.id
+                                                }
+                                            )
+
+                                    }
+                                );
+
+
+                            if (
+                                !response.ok
+                            ) {
+
+                                throw new Error(
+                                    `HTTP ${response.status}`
+                                );
+
+                            }
+
+
+                            updateStationInline();
+
+                        }
+                        catch (error) {
+
+                            console.error(
+                                'Active radio change failed:',
+                                error
+                            );
+
+                        }
+
+                    }
+                );
+
+
+                station.appendChild(
+                    card
+                );
+
+            }
+        );
 
     }
     catch (error) {
 
         console.error(
-            "Radio status update failed:",
+            'Station inline update failed:',
             error
         );
 
@@ -110,192 +286,19 @@ async function updateStationInline() {
 }
 
 
-function updateBandGraph(bands) {
-
-    const graph =
-        document.getElementById(
-            "bandGraph"
-        );
-
-    if (!graph) {
-
-        console.warn(
-            "bandGraph missing"
-        );
-
-        return;
-
-    }
-
-    graph.innerHTML = "";
-
-    const width = 600;
-    const height = 30;
-
-    const points = [];
-
-    bands.forEach(
-        (band, index) => {
-
-            const margin = 15;
-
-            const x =
-                margin +
-                (index / (bands.length - 1)) *
-                (width - (2 * margin));
-
-            const y =
-                35 -
-                (band.score / 100) * 25;
-
-            points.push({
-                x: x,
-                y: y,
-                score: band.score,
-                condition: band.condition
-            });
-
-        }
-    );
-
-
-    /*
-        Verbindungslinie
-    */
-
-    const line =
-        document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "polyline"
-        );
-
-    line.setAttribute(
-        "points",
-        points
-            .map(
-                p =>
-                    `${p.x},${p.y}`
-            )
-            .join(" ")
-    );
-
-    line.setAttribute(
-        "fill",
-        "none"
-    );
-
-    line.setAttribute(
-        "stroke",
-        "#00ffff"
-    );
-
-    line.setAttribute(
-        "stroke-width",
-        "1.5"
-    );
-
-    line.setAttribute(
-        "stroke-linecap",
-        "round"
-    );
-
-    line.setAttribute(
-        "stroke-linejoin",
-        "round"
-    );
-
-    graph.appendChild(line);
-
-
-    /*
-        Punkte
-    */
-
-    points.forEach(
-        p => {
-
-            const circle =
-                document.createElementNS(
-                    "http://www.w3.org/2000/svg",
-                    "circle"
-                );
-
-            circle.setAttribute(
-                "cx",
-                p.x
-            );
-
-            circle.setAttribute(
-                "cy",
-                p.y
-            );
-
-            circle.setAttribute(
-                "r",
-                "4"
-            );
-
-            circle.setAttribute(
-                "fill",
-                getBandColor(
-                    p.condition
-                )
-            );
-
-            circle.setAttribute(
-                "title",
-                `${p.condition} (${p.score})`
-            );
-
-            graph.appendChild(
-                circle
-            );
-
-        }
-    );
-
-}
-
-
-function getBandColor(condition) {
-
-    switch(condition) {
-
-        case "Excellent":
-            return "#7fff00";
-
-        case "Good":
-            return "#00ffff";
-
-        case "Fair":
-            return "#ffd000";
-
-        case "Poor":
-            return "#ff4040";
-
-        default:
-            return "#00ffff";
-
-    }
-
-}
-
 
 window.addEventListener(
     "componentsLoaded",
-    updatePropagation
+    () => {
+
+        updatePropagation();
+
+        updateStationInline();
+
+    }
 );
 
-window.addEventListener(
-    "componentsLoaded",
-    updateStationInline
-);
 
+updatePropagation();
 
 updateStationInline();
-
-
-setInterval(
-    updateStationInline,
-    2000
-);
