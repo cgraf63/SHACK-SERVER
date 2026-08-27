@@ -167,7 +167,7 @@
 
     align-items: stretch;
 
-    gap: 10px;
+    gap: 6px;
 
     font-size: 13px;
 
@@ -180,7 +180,7 @@
 
     min-width: 0;
 
-    padding: 8px 10px;
+    padding: 6px 8px;
 
     border: 1px solid
         rgba(255,255,255,0.08);
@@ -227,7 +227,7 @@
     color:
         var(--text-muted);
 
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 
     text-transform: uppercase;
 
@@ -252,11 +252,11 @@
 
     align-items: center;
 
-    gap: 5px;
+    gap: 3px;
 
-    margin-top: 4px;
+    margin-top: 0;
 
-    font-size: 12px;
+    font-size: 10px;
 
     color:
         var(--text);
@@ -280,13 +280,32 @@
 }
 
 .cat-dot {
-    width: 8px;
-    height: 8px;
+
+    width: 7px;
+
+    height: 7px;
+
     border-radius: 50%;
-    background: #00ff3c;
+
+    background: #e05252;
+
     display: inline-block;
+
 }
 
+
+.cat-dot.connected {
+
+    background: #00ff3c;
+
+}
+
+
+.cat-dot.disconnected {
+
+    background: #e05252;
+
+}
 
 
 

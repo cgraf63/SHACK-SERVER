@@ -57,6 +57,22 @@ export const radios:
 
     {
 
+        id: "ftx-1",
+
+        name: "YAESU FTX-1",
+
+        protocol: "yaesu",
+
+        device: "",
+
+        baudRate: 38400,
+
+        enabled: true
+
+    },
+
+    {
+
         id: "icom-705",
 
         name: "ICOM IC-705",

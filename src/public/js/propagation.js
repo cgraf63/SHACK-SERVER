@@ -430,7 +430,7 @@ async function updateStationInline() {
                     `${radio.power ?? 0} W`;
 
 
-                const connection =
+                const catStatus =
                     radio.connected
                         ? "CAT Connected"
                         : "CAT Disconnected";
@@ -467,38 +467,48 @@ async function updateStationInline() {
 
                 }
 
+card.innerHTML = `
 
-                card.innerHTML = `
+    <div class="station-inline-top">
 
-                    <div class="station-inline-name">
+        <span class="station-inline-name">
 
-                        ${radio.name}
+            ${radio.name}
 
-                    </div>
+        </span>
 
-                    <div class="station-inline-bottom">
+        <span class="station-inline-cat">
 
-                        <span class="station-inline-data">
+            <span
+    class="cat-dot ${
+        radio.connected
+            ? "connected"
+            : "disconnected"
+    }"
+></span>
 
-                            ${frequency}
-                            ·
-                            ${mode}
-                            ·
-                            ${power}
+CAT
 
-                        </span>
+        </span>
 
-                        <span class="station-inline-cat">
+    </div>
 
-                            <span class="cat-dot"></span>
 
-                            ${connection}
+    <div class="station-inline-bottom">
 
-                        </span>
+        <span class="station-inline-data">
 
-                    </div>
+            ${frequency}
+            ·
+            ${mode}
+            ·
+            ${power}
 
-                `;
+        </span>
+
+    </div>
+
+`;
 
 
                 card.addEventListener(
