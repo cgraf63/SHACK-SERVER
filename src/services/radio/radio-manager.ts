@@ -148,20 +148,28 @@ export class RadioManager {
 
 
 
-    start() {
+  start() {
 
+    console.log(
+        "RADIO MANAGER STARTING SERVICES:",
+        [...this.services.keys()]
+    );
 
-        for (
-            const service of
-            this.services.values()
-        ) {
+    for (
+        const [id, service] of
+        this.services.entries()
+    ) {
 
-            service.start();
+        console.log(
+            "STARTING RADIO SERVICE:",
+            id
+        );
 
-        }
+        service.start();
 
     }
 
+}
 
 
     getRadio(

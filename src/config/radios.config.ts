@@ -63,7 +63,8 @@ export const radios:
 
         protocol: "yaesu",
 
-        device: "",
+        device:  "/dev/serial/by-id/usb-Silicon_Labs_CP2105_Dual_USB_to_UART_Bridge_Controller_01D1A32D-if00-port0",
+
 
         baudRate: 38400,
 

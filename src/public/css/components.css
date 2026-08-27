@@ -176,9 +176,9 @@
 
 .station-inline-radio {
 
-    flex: 1;
+    flex: 0 0 230px;
 
-    min-width: 0;
+    min-width: 230px;
 
     padding: 6px 8px;
 
@@ -866,7 +866,7 @@
     grid-template-columns:
         repeat(
             auto-fit,
-            minmax(180px, 1fr)
+            230px
         );
 
     gap: 10px;
@@ -875,6 +875,12 @@
 
 
 .station-radio-card {
+
+ width: 230px !important;
+
+    min-width: 230px !important;
+
+
 
     min-height: 115px;
 
