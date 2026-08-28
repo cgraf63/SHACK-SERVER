@@ -37,14 +37,6 @@
         </a>
 
 
-
-        <a
-            href="#"
-            id="ft8-btn">
-            FT8
-        </a>
-
-
         <div class="nav-section">
             SYSTEM
         </div>
@@ -175,4 +167,6 @@
         </div>
 
     </div>
+
+
 </aside>

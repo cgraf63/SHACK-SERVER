@@ -208,10 +208,15 @@ export class IcomService
         ) {
 
             const value =
-                data[
-                    i
-                ];
+    data[
+        i
+    ];
 
+if (
+    value === undefined
+) {
+    continue;
+}
 
             const high =
                 (

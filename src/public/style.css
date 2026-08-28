@@ -164,3 +164,367 @@ header h1{
 }
 
 }
+
+
+/* =========================================================
+   FT8 LIVE DECODES
+   ========================================================= */
+
+.ft8-modal {
+
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 5000;
+
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            0.72
+        );
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+.ft8-modal.visible {
+
+    display: flex;
+
+}
+
+
+.ft8-dialog {
+
+    width: min(
+        1200px,
+        calc(100vw - 80px)
+    );
+
+    max-height:
+        calc(100vh - 80px);
+
+    display: flex;
+
+    flex-direction: column;
+
+    background:
+        #101722;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 20px 80px
+        rgba(
+            0,
+            0,
+            0,
+            0.55
+        );
+
+    overflow: hidden;
+
+}
+
+
+.ft8-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding:
+        22px 26px;
+
+    border-bottom:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+}
+
+
+.ft8-title {
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+
+}
+
+
+.ft8-status {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 7px;
+
+    font-size: 12px;
+
+    color:
+        #8d98a8;
+
+}
+
+
+.ft8-status-dot {
+
+    width: 8px;
+
+    height: 8px;
+
+    border-radius: 50%;
+
+    background:
+        #777;
+
+}
+
+
+.ft8-status-dot.connected {
+
+    background:
+        #39d98a;
+
+}
+
+
+.ft8-close {
+
+    border: none;
+
+    background: transparent;
+
+    color:
+        #9ba5b5;
+
+    font-size: 30px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+}
+
+
+.ft8-close:hover {
+
+    color: white;
+
+}
+
+
+.ft8-table-wrapper {
+
+    overflow-y: auto;
+
+    flex: 1;
+
+}
+
+
+.ft8-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 14px;
+
+}
+
+
+.ft8-table thead {
+
+    position: sticky;
+
+    top: 0;
+
+    background:
+        #151e2b;
+
+    z-index: 1;
+
+}
+
+
+.ft8-table th {
+
+    text-align: left;
+
+    padding:
+        13px 16px;
+
+    font-size: 11px;
+
+    letter-spacing: 0.08em;
+
+    color:
+        #8793a5;
+
+    border-bottom:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+}
+
+
+.ft8-table td {
+
+    padding:
+        11px 16px;
+
+    border-bottom:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.045
+        );
+
+}
+
+
+.ft8-table tr:hover {
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.025
+        );
+
+}
+
+
+.ft8-call {
+
+    font-weight: 700;
+
+    color:
+        #61dafb;
+
+}
+
+
+.ft8-snr {
+
+    font-family:
+        monospace;
+
+}
+
+
+.ft8-message {
+
+    font-family:
+        monospace;
+
+    color:
+        #c6ced9;
+
+}
+
+
+.ft8-empty td {
+
+    text-align: center;
+
+    padding: 50px;
+
+    color:
+        #697587;
+
+}
+
+
+.ft8-footer {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding:
+        14px 20px;
+
+    border-top:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+    color:
+        #8d98a8;
+
+    font-size: 12px;
+
+}
+
+
+.ft8-clear {
+
+    border: none;
+
+    border-radius: 5px;
+
+    padding:
+        7px 14px;
+
+    background:
+        #253249;
+
+    color:
+        #d7dfeb;
+
+    cursor: pointer;
+
+}
+
+
+.ft8-clear:hover {
+
+    background:
+        #34425b;
+
+}

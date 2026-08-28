@@ -16,6 +16,7 @@ import propagationRouter from "./routes/propagation.js";
 import spotsRouter from "./routes/spots.js";
 import stationRouter from "./routes/station.js";
 import systemStatusRouter from "./routes/system-status.js";
+import ft8Router from "./routes/ft8.js";
 
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -137,6 +138,15 @@ app.use(
 app.use(
     "/api/system-status",
     systemStatusRouter
+);
+
+/*
+    FT8 / TX-5DR
+*/
+
+app.use(
+    "/api/ft8",
+    ft8Router
 );
 
 
