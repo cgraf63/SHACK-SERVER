@@ -59,4 +59,15 @@ router.get('/contest-manager', (_req, res) => {
     );
 });
 
+
+router.get('/contest', (_req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '..',
+            'public',
+            'contest.html'
+        )
+    );
+});
 export default router;

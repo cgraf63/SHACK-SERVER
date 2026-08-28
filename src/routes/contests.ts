@@ -599,5 +599,462 @@ router.patch(
     }
 );
 
+/*
+ * GET /api/contests/session
+ *
+ * Return the currently active contest session.
+ */
+router.get(
+    "/session",
+    (
+        _req: Request,
+        res: Response
+    ) => {
+
+        try {
+
+            const session =
+                contestService.getActiveSession();
+
+
+            return res.json(
+                session
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Failed to load active contest session:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                error:
+                    "Failed to load active contest session"
+
+            });
+
+        }
+
+    }
+);
+
+
+/*
+ * POST /api/contests/session
+ *
+ * Create a new contest session.
+ */
+router.post(
+    "/session",
+    (
+        req: Request,
+        res: Response
+    ) => {
+
+        const {
+            contest_definition_id,
+            operator_name,
+            station_callsign,
+            station_grid
+        } = req.body;
+
+
+        const definitionId =
+            Number(
+                contest_definition_id
+            );
+
+
+        if (
+            !Number.isInteger(definitionId) ||
+            definitionId <= 0
+        ) {
+
+            return res.status(400).json({
+
+                error:
+                    "Invalid contest definition ID"
+
+            });
+
+        }
+
+
+        if (
+            typeof operator_name !== "string" ||
+            !operator_name.trim()
+        ) {
+
+            return res.status(400).json({
+
+                error:
+                    "operator_name is required"
+
+            });
+
+        }
+
+
+        if (
+            typeof station_callsign !== "string" ||
+            !station_callsign.trim()
+        ) {
+
+            return res.status(400).json({
+
+                error:
+                    "station_callsign is required"
+
+            });
+
+        }
+
+
+        if (
+            typeof station_grid !== "string" ||
+            !station_grid.trim()
+        ) {
+
+            return res.status(400).json({
+
+                error:
+                    "station_grid is required"
+
+            });
+
+        }
+
+
+        try {
+
+            const definition =
+                contestService.getById(
+                    definitionId
+                );
+
+
+            if (!definition) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Contest definition not found"
+
+                });
+
+            }
+
+
+            if (!definition.enabled) {
+
+                return res.status(400).json({
+
+                    error:
+                        "Contest definition is disabled"
+
+                });
+
+            }
+
+
+            const existing =
+                contestService.getActiveSession();
+
+
+            if (existing) {
+
+                return res.status(409).json({
+
+                    error:
+                        "A contest session is already active",
+
+                    session:
+                        existing
+
+                });
+
+            }
+
+
+            const session =
+                contestService.createSession({
+
+                    contest_definition_id:
+                        definitionId,
+
+                    name:
+                        definition.name,
+
+                    status:
+                        "READY",
+
+                    operator_name:
+                        operator_name.trim(),
+
+                    station_callsign:
+                        station_callsign
+                            .trim()
+                            .toUpperCase(),
+
+                    station_grid:
+                        station_grid
+                            .trim()
+                            .toUpperCase()
+
+                });
+
+
+            return res
+                .status(201)
+                .json(
+                    session
+                );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Failed to create contest session:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                error:
+                    "Failed to create contest session"
+
+            });
+
+        }
+
+    }
+);
+
+
+/*
+ * POST /api/contests/session/:id/start
+ */
+router.post(
+    "/session/:id/start",
+    (
+        req: Request,
+        res: Response
+    ) => {
+
+        const id =
+            parseId(
+                req.params.id
+            );
+
+
+        if (id === null) {
+
+            return res.status(400).json({
+
+                error:
+                    "Invalid contest session ID"
+
+            });
+
+        }
+
+
+        try {
+
+            const session =
+                contestService.startSession(
+                    id
+                );
+
+
+            if (!session) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Contest session not found"
+
+                });
+
+            }
+
+
+            return res.json(
+                session
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Failed to start contest session:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                error:
+                    "Failed to start contest session"
+
+            });
+
+        }
+
+    }
+);
+
+
+/*
+ * POST /api/contests/session/:id/pause
+ */
+router.post(
+    "/session/:id/pause",
+    (
+        req: Request,
+        res: Response
+    ) => {
+
+        const id =
+            parseId(
+                req.params.id
+            );
+
+
+        if (id === null) {
+
+            return res.status(400).json({
+
+                error:
+                    "Invalid contest session ID"
+
+            });
+
+        }
+
+
+        try {
+
+            const session =
+                contestService.pauseSession(
+                    id
+                );
+
+
+            if (!session) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Contest session not found"
+
+                });
+
+            }
+
+
+            return res.json(
+                session
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Failed to pause contest session:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                error:
+                    "Failed to pause contest session"
+
+            });
+
+        }
+
+    }
+);
+
+
+/*
+ * POST /api/contests/session/:id/finish
+ */
+router.post(
+    "/session/:id/finish",
+    (
+        req: Request,
+        res: Response
+    ) => {
+
+        const id =
+            parseId(
+                req.params.id
+            );
+
+
+        if (id === null) {
+
+            return res.status(400).json({
+
+                error:
+                    "Invalid contest session ID"
+
+            });
+
+        }
+
+
+        try {
+
+            const session =
+                contestService.finishSession(
+                    id
+                );
+
+
+            if (!session) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Contest session not found"
+
+                });
+
+            }
+
+
+            return res.json(
+                session
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Failed to finish contest session:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                error:
+                    "Failed to finish contest session"
+
+            });
+
+        }
+
+    }
+);
 
 export default router;

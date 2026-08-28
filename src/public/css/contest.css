@@ -1,462 +1,449 @@
-/* =========================================================
-   SHACK-SERVER
-   Contest Manager
-   ========================================================= */
 
+/* =========================================
+   CONTEST CONSOLE
+   ========================================= */
 
-/* ---------------------------------------------------------
-   Page
-   --------------------------------------------------------- */
-
-.contest-page {
-    width: 100%;
+.contest-console {
     max-width: 1250px;
+    padding-bottom: 40px;
 }
 
-
-.contest-page .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-
-    margin-bottom: 14px;
+.contest-console .page-header {
+    margin-bottom: 22px;
 }
 
-
-.contest-page .page-header h1 {
+.contest-console .page-header h1 {
     margin: 0 0 6px 0;
-    color: #ff4fa3 !important;
+    color: #ff4fa3;
 }
 
-
-.contest-page .page-header p {
+.contest-console .page-header p {
     margin: 0;
-    color: var(--text-muted, #aaa);
+    color: var(--muted-text, #9aa4ad);
 }
 
 
-/* ---------------------------------------------------------
-   Cards
-   --------------------------------------------------------- */
+/* =========================================
+   CARDS
+   ========================================= */
 
-.contest-page .card {
-    margin-bottom: 14px;
+.contest-card {
+    margin-bottom: 16px;
+    padding: 18px 20px;
+
+    background: rgba(12, 25, 34, 0.92);
+
+    border: 1px solid var(--panel-border, #20313c);
+    border-radius: 8px;
+
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.18);
 }
 
 
-/* ---------------------------------------------------------
-   Contest definition table
-   --------------------------------------------------------- */
+.contest-card-header {
+    display: flex;
 
-.contest-page table {
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 16px;
+}
+
+
+.contest-card-title {
+    color: #00e5ff;
+
+    font-size: 16px;
+    font-weight: 700;
+}
+
+
+.contest-card-subtitle {
+    margin-top: 4px;
+
+    color: var(--muted-text, #9aa4ad);
+
+    font-size: 12px;
+}
+
+
+/* =========================================
+   CONTEST SELECTION
+   ========================================= */
+
+.contest-selection-row {
+    display: grid;
+
+    grid-template-columns: 100px minmax(250px, 500px) auto;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+.contest-selection-row label {
+    color: #c9d2d8;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+.contest-select {
     width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 9px 11px;
+
+    color: var(--text);
+    background: #0b1821;
+
+    border: 1px solid #263b47;
+    border-radius: 5px;
+}
+
+
+/* =========================================
+   SESSION
+   ========================================= */
+
+.contest-status {
+    padding: 6px 12px;
+
+    color: #ffc400;
+
+    background: rgba(255, 196, 0, 0.10);
+
+    border: 1px solid rgba(255, 196, 0, 0.25);
+    border-radius: 5px;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.contest-station-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(130px, 1fr));
+
+    gap: 10px;
+}
+
+
+.contest-info {
+    padding: 11px 13px;
+
+    background: #0b1821;
+
+    border: 1px solid #1d303b;
+    border-radius: 5px;
+}
+
+
+.contest-info span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #84929b;
+
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+
+.contest-info strong {
+    color: #f0f4f6;
+
+    font-size: 14px;
+}
+
+
+.contest-session-actions {
+    display: flex;
+
+    gap: 8px;
+
+    margin-top: 16px;
+}
+
+
+/* =========================================
+   BUTTONS
+   ========================================= */
+
+.contest-console .button {
+    padding: 8px 14px;
+
+    border-radius: 5px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+.contest-console .button.primary {
+    color: #ffffff;
+
+    background: #b56cff;
+
+    border: 1px solid #b56cff;
+}
+
+
+.contest-console .button.primary:hover {
+    background: #c17dff;
+}
+
+
+.contest-console .button.secondary {
+    color: #d5dde2;
+
+    background: #14232d;
+
+    border: 1px solid #30434e;
+}
+
+
+.contest-console .button.secondary:hover {
+    background: #1b303d;
+}
+
+
+/* =========================================
+   OPERATING AREA
+   ========================================= */
+
+.contest-operating-area {
+    border-color: rgba(0, 229, 255, 0.20);
+}
+
+
+.contest-stat-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(6, minmax(100px, 1fr));
+
+    gap: 10px;
+
+    margin-bottom: 20px;
+}
+
+
+.contest-stat {
+    padding: 12px;
+
+    background: #0b1821;
+
+    border: 1px solid #1d303b;
+    border-radius: 5px;
+}
+
+
+.contest-stat span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #84929b;
+
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+
+.contest-stat strong {
+    color: #ffffff;
+
+    font-size: 18px;
+}
+
+
+.contest-stat-score {
+    border-color: rgba(255, 79, 163, 0.35);
+}
+
+
+.contest-stat-score strong {
+    color: #ff4fa3;
+
+    font-size: 21px;
+}
+
+
+/* =========================================
+   QSO ENTRY
+   ========================================= */
+
+.contest-qso-entry {
+    display: grid;
+
+    grid-template-columns:
+        minmax(220px, 1fr)
+        100px
+        minmax(220px, 1fr)
+        auto;
+
+    align-items: end;
+
+    gap: 10px;
+
+    padding: 15px;
+
+    background: #08141c;
+
+    border: 1px solid #1d303b;
+    border-radius: 6px;
+}
+
+
+.contest-entry-field label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #00e5ff;
+
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+
+.contest-entry-field input {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 10px 11px;
+
+    color: #ffffff;
+    background: #101f29;
+
+    border: 1px solid #2b424e;
+    border-radius: 5px;
+
+    outline: none;
+
+    font-size: 14px;
+}
+
+
+.contest-entry-field input:focus {
+    border-color: #00e5ff;
+
+    box-shadow:
+        0 0 0 1px rgba(0, 229, 255, 0.18);
+}
+
+
+.contest-log-button {
+    height: 38px;
+
+    min-width: 110px;
+}
+
+
+/* =========================================
+   RECENT QSOs
+   ========================================= */
+
+.contest-recent {
+    margin-top: 22px;
+}
+
+
+.contest-recent-title {
+    margin-bottom: 10px;
+
+    color: #ff4fa3;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.contest-table-wrapper {
+    overflow-x: auto;
+}
+
+
+.contest-table {
+    width: 100%;
+
     border-collapse: collapse;
 }
 
 
-.contest-page th {
-    text-align: left;
+.contest-table th {
+    padding: 9px 10px;
+
     color: #ffc400;
-    font-size: 12px;
-    padding: 7px 8px;
 
-    border-bottom: 1px solid var(--border);
+    background: #0b1821;
+
+    border-bottom: 1px solid #263b47;
+
+    font-size: 11px;
+    text-align: left;
 }
 
 
-.contest-page td {
-    padding: 6px 8px;
+.contest-table td {
+    padding: 8px 10px;
 
-    border-bottom: 1px solid var(--border);
+    color: #d7dfe3;
 
-    font-size: 13px;
-    line-height: 1.2;
-}
-
-
-.contest-page tbody tr:last-child td {
-    border-bottom: none;
-}
-
-
-.contest-page td:last-child {
-    white-space: nowrap;
-}
-
-
-/* ---------------------------------------------------------
-   Contest status
-   --------------------------------------------------------- */
-
-.contest-status {
-    display: inline-flex;
-
-    align-items: center;
-
-    gap: 6px;
+    border-bottom: 1px solid #182a34;
 
     font-size: 12px;
-    font-weight: 600;
 }
 
 
-.contest-status::before {
-    content: "";
-
-    width: 7px;
-    height: 7px;
-
-    border-radius: 50%;
+.contest-table tbody tr:hover {
+    background: rgba(0, 229, 255, 0.035);
 }
 
 
-.contest-status.enabled {
-    color: #35c978;
-}
+.contest-empty {
+    padding: 18px !important;
 
-
-.contest-status.enabled::before {
-    background: #35c978;
-}
-
-
-.contest-status.disabled {
-    color: #888;
-}
-
-
-.contest-status.disabled::before {
-    background: #666;
-}
-
-
-/* ---------------------------------------------------------
-   Contest action buttons
-   --------------------------------------------------------- */
-
-.contest-page .button {
-    cursor: pointer;
-
-    border-radius: 4px;
-
-    font-size: 12px;
-
-    padding: 6px 11px;
-}
-
-
-.contest-page .button.small {
-    padding: 4px 9px;
-
-    margin-right: 4px;
-}
-
-
-.contest-page .button.small:last-child {
-    margin-right: 0;
-}
-
-
-.contest-page .button.danger {
-    opacity: 0.9;
-}
-
-
-/* ---------------------------------------------------------
-   Editor
-   --------------------------------------------------------- */
-
-#contest-editor {
-    margin-top: 14px;
-}
-
-
-#contest-editor .card-header {
-    margin-bottom: 4px;
-}
-
-
-#contest-editor .card-header h2 {
-    margin: 0 0 5px 0;
-}
-
-
-#contest-editor .card-header p {
-    margin: 0;
-
-    color: var(--text-muted, #aaa);
-
-    font-size: 13px;
-}
-
-
-/* ---------------------------------------------------------
-   Sections
-   --------------------------------------------------------- */
-
-.contest-section {
-    margin-top: 18px;
-
-    padding-top: 16px;
-
-    border-top: 1px solid var(--border);
-}
-
-
-.contest-section:first-of-type {
-    margin-top: 4px;
-
-    padding-top: 4px;
-
-    border-top: none;
-}
-
-
-.contest-section h3 {
-    margin: 0 0 11px 0;
-
-    font-size: 13px;
-
-    color: var(--cyan);
-
-    font-weight: 600;
-}
-
-
-/* ---------------------------------------------------------
-   Form grid
-   --------------------------------------------------------- */
-
-#contest-form .form-grid {
-
-    display: grid;
-
-    grid-template-columns:
-        minmax(0, 1fr)
-        minmax(0, 1fr);
-
-    gap: 10px 16px;
-
-}
-
-
-#contest-form .form-group {
-    min-width: 0;
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 4px;
-}
-
-
-#contest-form .form-group.full-width {
-    grid-column: 1 / -1;
-}
-
-
-/* ---------------------------------------------------------
-   Form labels
-   --------------------------------------------------------- */
-
-#contest-form label {
-    font-size: 12px;
-
-    color: #d8d8d8;
-}
-
-
-#contest-form .form-group > label {
-    color: var(--cyan);
-}
-
-
-/* ---------------------------------------------------------
-   Form controls
-   --------------------------------------------------------- */
-
-#contest-form input[type="text"],
-#contest-form select,
-#contest-form textarea {
-
-    box-sizing: border-box;
-
-    width: 100%;
-
-    padding: 7px 9px;
-
-    border: 1px solid var(--border);
-
-    border-radius: 4px;
-
-    background: #101b23;
-
-    color: #fff;
-
-    font-family: inherit;
-
-    font-size: 13px;
-
-}
-
-
-#contest-form input[type="text"] {
-    height: 32px;
-}
-
-
-#contest-form select {
-    height: 32px;
-
-    cursor: pointer;
-}
-
-
-#contest-form textarea {
-    min-height: 70px;
-
-    resize: vertical;
-}
-
-
-#contest-form input[type="text"]:focus,
-#contest-form select:focus,
-#contest-form textarea:focus {
-
-    outline: none;
-
-    border-color: var(--cyan);
-
-}
-
-
-/* ---------------------------------------------------------
-   Checkbox groups
-   --------------------------------------------------------- */
-
-.checkbox-grid {
-
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 7px;
-
-}
-
-
-.checkbox-grid label {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    gap: 7px;
-
-    min-width: 68px;
-
-    padding: 7px 10px;
-
-    border: 1px solid var(--border);
-
-    border-radius: 4px;
-
-    background: #101b23;
-
-    cursor: pointer;
-
-    font-size: 12px;
-
-    transition:
-        border-color 0.15s ease,
-        background 0.15s ease;
-
-}
-
-
-.checkbox-grid label:hover {
-
-    border-color: var(--cyan);
-
-}
-
-
-.checkbox-grid input[type="checkbox"] {
-
-    margin: 0;
-
-    accent-color: var(--cyan);
-
-}
-
-
-/* ---------------------------------------------------------
-   Form actions
-   --------------------------------------------------------- */
-
-#contest-form .form-actions {
-
-    display: flex;
-
-    justify-content: flex-end;
-
-    gap: 8px;
-
-    margin-top: 20px;
-
-    padding-top: 14px;
-
-    border-top: 1px solid var(--border);
-
-}
-
-
-/* ---------------------------------------------------------
-   Empty state
-   --------------------------------------------------------- */
-
-.contest-page .empty-state {
-
-    padding: 18px;
+    color: #74818a !important;
 
     text-align: center;
-
-    color: var(--text-muted, #999);
-
 }
 
 
-/* ---------------------------------------------------------
-   Responsive
-   --------------------------------------------------------- */
+/* =========================================
+   RESPONSIVE
+   ========================================= */
 
 @media (max-width: 900px) {
 
-    .contest-page {
-        max-width: none;
+    .contest-station-grid {
+        grid-template-columns:
+            repeat(2, minmax(130px, 1fr));
     }
 
 
-    #contest-form .form-grid {
-        grid-template-columns: 1fr;
+    .contest-stat-grid {
+        grid-template-columns:
+            repeat(3, minmax(100px, 1fr));
     }
 
 
-    #contest-form .form-group.full-width {
-        grid-column: auto;
-    }
-
-
-    .contest-page .page-header {
-        flex-direction: column;
-
-        gap: 10px;
-    }
-
-
-    .contest-page td:last-child {
-        white-space: normal;
+    .contest-qso-entry {
+        grid-template-columns: 1fr 100px;
     }
 
 }
@@ -464,61 +451,151 @@
 
 @media (max-width: 600px) {
 
-    .checkbox-grid {
-        display: grid;
+    .contest-selection-row {
+        grid-template-columns: 1fr;
+    }
 
+
+    .contest-station-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .contest-stat-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+
+    .contest-qso-entry {
+        grid-template-columns: 1fr;
+    }
+
+
+    .contest-session-actions {
+        flex-wrap: wrap;
+    }
+
+}
+
+
+/* =========================================
+   COMPACT CONTEST CONSOLE
+   ========================================= */
+
+.contest-card-subtitle {
+    display: none;
+}
+
+.contest-console .page-header {
+    margin-bottom: 12px;
+}
+
+.contest-card {
+    margin-bottom: 10px;
+    padding: 12px 14px;
+}
+
+.contest-card-header {
+    margin-bottom: 10px;
+}
+
+.contest-card-title {
+    font-size: 14px;
+}
+
+
+/* =========================================
+   CONTEST TWO COLUMN LAYOUT
+   ========================================= */
+
+.contest-layout {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 850px)
+        320px;
+
+    gap: 12px;
+
+    align-items: start;
+}
+
+
+.contest-main {
+    min-width: 0;
+}
+
+
+.contest-right {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    min-width: 0;
+}
+
+
+/* =========================================
+   RIGHT SIDE CARDS
+   ========================================= */
+
+.contest-side-card {
+    padding: 12px 14px;
+
+    background: rgba(12, 25, 34, 0.92);
+
+    border: 1px solid var(--panel-border, #20313c);
+    border-radius: 8px;
+}
+
+
+.contest-side-title {
+    margin-bottom: 10px;
+
+    color: #ff4fa3;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.contest-side-content {
+    min-height: 80px;
+}
+
+
+.contest-side-empty {
+    padding: 18px 8px;
+
+    color: #74818a;
+
+    font-size: 12px;
+
+    text-align: center;
+}
+
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 1100px) {
+
+    .contest-layout {
         grid-template-columns:
-            repeat(2, minmax(0, 1fr));
-    }
-
-
-    #contest-form .form-actions {
-        justify-content: stretch;
-    }
-
-
-    #contest-form .form-actions .button {
-        flex: 1;
+            minmax(0, 1fr)
+            280px;
     }
 
 }
 
 
-/* =========================================================
-   Contest navigation
-   ========================================================= */
+@media (max-width: 850px) {
 
-.sidebar nav a.contest-manager-link:hover {
-    color: #ff5fc8;
+    .contest-layout {
+        grid-template-columns: 1fr;
+    }
 
-    background:
-        rgba(255, 95, 200, 0.10);
-}
-
-
-.sidebar nav a.contest-manager-link.active {
-    color: #ff5fc8;
-
-    background:
-        rgba(255, 95, 200, 0.16);
-
-    font-weight: 600;
-}
-
-
-.sidebar nav a.contest-link:hover {
-    color: #00e5ff;
-
-    background:
-        rgba(0, 229, 255, 0.10);
-}
-
-
-.sidebar nav a.contest-link.active {
-    color: #00e5ff;
-
-    background:
-        rgba(0, 229, 255, 0.16);
-
-    font-weight: 600;
 }

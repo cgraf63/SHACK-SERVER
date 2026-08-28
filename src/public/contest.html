@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Contest – SHACK-SERVER</title>
+
+    <link
+        rel="icon"
+        type="image/x-icon"
+        href="/favicon.ico"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/variables.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/theme.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/layout.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/contest.css"
+    >
+
+</head>
+
+
+<body>
+
+<div id="app">
+
+
+    <!-- SIDEBAR -->
+
+    <div id="sidebar"></div>
+
+
+    <!-- MAIN -->
+
+    <main>
+
+
+        <!-- HEADER -->
+
+        <div id="header"></div>
+
+
+        <!-- CONTEST CONSOLE -->
+
+       
+
+        <section class="contest-console">
+
+
+    <!-- PAGE HEADER -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>
+                Contest Console
+            </h1>
+
+        </div>
+
+    </div>
+
+
+    <!-- TWO COLUMN CONTEST LAYOUT -->
+
+    <div class="contest-layout">
+
+
+        <!-- =====================================
+             LEFT: CONTEST CONSOLE
+             ===================================== -->
+
+        <div class="contest-main">
+
+
+            <!-- CONTEST SELECTION -->
+
+            <div
+                id="contest-selection"
+                class="contest-card"
+            >
+
+                <div class="contest-card-header">
+
+                    <div class="contest-card-title">
+                        Contest
+                    </div>
+
+                </div>
+
+
+                <div class="contest-selection-row">
+
+                    <label
+                        for="contest-select">
+                        Contest
+                    </label>
+
+
+                    <select
+                        id="contest-select"
+                        class="contest-select"
+                    >
+
+                        <option value="">
+                            Loading contests...
+                        </option>
+
+                    </select>
+
+
+                    <button
+                        id="contest-create-button"
+                        class="button primary"
+                        type="button"
+                    >
+                        Create Session
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================
+                 CONTEST SESSION
+                 ================================= -->
+
+            <div
+                id="contest-session"
+                class="contest-card"
+            >
+
+                <div class="contest-card-header">
+
+                    <div class="contest-card-title">
+                        Contest Session
+                    </div>
+
+
+                    <div
+                        id="contest-status"
+                        class="contest-status"
+                    >
+                        READY
+                    </div>
+
+                </div>
+
+
+                <div class="contest-station-grid">
+
+
+                    <div class="contest-info">
+
+                        <span>
+                            Operator
+                        </span>
+
+                        <strong id="contest-operator">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="contest-info">
+
+                        <span>
+                            Callsign
+                        </span>
+
+                        <strong id="contest-callsign">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="contest-info">
+
+                        <span>
+                            Grid
+                        </span>
+
+                        <strong id="contest-grid">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="contest-info">
+
+                        <span>
+                            Started
+                        </span>
+
+                        <strong id="contest-started">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="contest-session-actions">
+
+                    <button
+                        id="contest-start-button"
+                        class="button primary"
+                        type="button"
+                    >
+                        Start Contest
+                    </button>
+
+
+                    <button
+                        id="contest-pause-button"
+                        class="button secondary"
+                        type="button"
+                    >
+                        Pause
+                    </button>
+
+
+                    <button
+                        id="contest-finish-button"
+                        class="button secondary"
+                        type="button"
+                    >
+                        Finish
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================
+                 CONTEST OPERATING AREA
+                 ================================= -->
+
+            <div
+                id="contest-operating-area"
+                class="contest-card contest-operating-area"
+            >
+
+                <div class="contest-card-header">
+
+                    <div class="contest-card-title">
+                        Contest
+                    </div>
+
+                </div>
+
+
+                <!-- CONTEST STATISTICS -->
+
+                <div class="contest-stat-grid">
+
+
+                    <div class="contest-stat">
+
+                        <span>
+                            Band
+                        </span>
+
+                        <strong id="contest-band">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="contest-stat">
+
+                        <span>
+                            Mode
+                        </span>
+
+                        <strong id="contest-mode">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="contest-stat">
+
+                        <span>
+                            Frequency
+                        </span>
+
+                        <strong id="contest-frequency">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="contest-stat">
+
+                        <span>
+                            QSOs
+                        </span>
+
+                        <strong id="contest-qso-count">
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="contest-stat">
+
+                        <span>
+                            Points
+                        </span>
+
+                        <strong id="contest-points">
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="contest-stat">
+
+                        <span>
+                            Multipliers
+                        </span>
+
+                        <strong id="contest-multipliers">
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="contest-stat contest-stat-score">
+
+                        <span>
+                            Score
+                        </span>
+
+                        <strong id="contest-score">
+                            0
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- QSO ENTRY -->
+
+                <div class="contest-qso-entry">
+
+
+                    <div class="contest-entry-field">
+
+                        <label
+                            for="contest-call">
+                            Callsign
+                        </label>
+
+                        <input
+                            id="contest-call"
+                            type="text"
+                            autocomplete="off"
+                            autocapitalize="characters"
+                            spellcheck="false"
+                            placeholder="CALLSIGN"
+                        >
+
+                    </div>
+
+
+                    <div class="contest-entry-field">
+
+                        <label
+                            for="contest-rst">
+                            RST
+                        </label>
+
+                        <input
+                            id="contest-rst"
+                            type="text"
+                            value="59"
+                            maxlength="3"
+                        >
+
+                    </div>
+
+
+                    <div class="contest-entry-field">
+
+                        <label
+                            for="contest-exchange">
+                            Exchange
+                        </label>
+
+                        <input
+                            id="contest-exchange"
+                            type="text"
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+
+                    <button
+                        id="contest-log-button"
+                        class="button primary contest-log-button"
+                        type="button"
+                    >
+                        LOG QSO
+                    </button>
+
+
+                </div>
+
+
+                <!-- RECENT QSOs -->
+
+                <div class="contest-recent">
+
+
+                    <div class="contest-recent-title">
+                        Recent QSOs
+                    </div>
+
+
+                    <div class="contest-table-wrapper">
+
+                        <table class="contest-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>UTC</th>
+                                    <th>CALL</th>
+                                    <th>BAND</th>
+                                    <th>MODE</th>
+                                    <th>RST</th>
+                                    <th>EXCHANGE</th>
+                                    <th>POINTS</th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="contest-qso-body">
+
+                                <tr>
+
+                                    <td
+                                        colspan="7"
+                                        class="contest-empty"
+                                    >
+                                        No contest QSOs
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =====================================
+             RIGHT: INFORMATION
+             ===================================== -->
+
+        <aside class="contest-right">
+
+
+            <!-- CALLSIGNS / DX -->
+
+            <div class="contest-side-card">
+
+                <div class="contest-side-title">
+                    CALLSIGNS / DX
+                </div>
+
+
+                <div
+                    id="contest-dx-list"
+                    class="contest-side-content"
+                >
+
+                    <div class="contest-side-empty">
+                        No callsigns
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- BANDPLAN -->
+
+            <div class="contest-side-card">
+
+                <div class="contest-side-title">
+                    BANDPLAN
+                </div>
+
+
+                <div
+                    id="contest-bandplan"
+                    class="contest-side-content"
+                >
+
+                    <div class="contest-side-empty">
+                        No bandplan data
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </aside>
+
+
+    </div>
+
+
+</section>
+
+
+
+    </main>
+
+</div>
+
+
+<script src="js/component-loader.js"></script>
+<script src="js/station.js"></script>
+<script src="js/system-status.js"></script>
+
+</body>
+
+</html>
