@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Contest Manager – SHACK-SERVER</title>
+
+    <link
+        rel="icon"
+        type="image/x-icon"
+        href="/favicon.ico"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/variables.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/theme.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/layout.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/contest.css"
+    >
+
+</head>
+
+
+<body>
+
+<div id="app">
+
+
+    <!-- SIDEBAR -->
+
+    <div id="sidebar"></div>
+
+
+    <!-- MAIN -->
+
+    <main>
+
+
+        <!-- HEADER -->
+
+        <div id="header"></div>
+
+
+        <!-- CONTENT -->
+
+        <section class="contest-page">
+
+
+            <!-- PAGE TITLE -->
+
+            <div class="page-header">
+
+                <div>
+
+                    <h1>
+                        Contest Manager
+                    </h1>
+
+                    <p>
+                        Manage contest definitions and sessions.
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="new-contest-button"
+                    class="button primary"
+                    type="button"
+                >
+                    + New Contest
+                </button>
+
+            </div>
+
+
+            <!-- DEFINITIONS -->
+
+            <section class="card">
+
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Contest Definitions
+                        </h2>
+
+                        <p>
+                            Configure the rules used by
+                            the Contest Console.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Name</th>
+
+                                <th>Short ID</th>
+
+                                <th>Version</th>
+
+                                <th>Status</th>
+
+                                <th>Actions</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody
+                            id="contest-definitions-body"
+                        >
+
+                            <tr>
+
+                                <td
+                                    colspan="5"
+                                    class="empty-state"
+                                >
+                                    Loading contest definitions...
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+            </section>
+
+
+            <!-- EDITOR -->
+
+            <section
+                id="contest-editor"
+                class="card"
+                hidden
+            >
+
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2
+                            id="contest-editor-title"
+                        >
+                            New Contest
+                        </h2>
+
+                        <p>
+                            Define the contest rules
+                            and operating parameters.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <form id="contest-form">
+
+
+                    <input
+                        type="hidden"
+                        id="contest-id"
+                    >
+
+
+                    <!-- GENERAL -->
+
+                    <div class="contest-section">
+
+                        <h3>
+                            General
+                        </h3>
+
+
+                        <div class="form-grid">
+
+
+                            <div class="form-group">
+
+                                <label
+                                    for="contest-name"
+                                >
+                                    Contest Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="contest-name"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    for="contest-short-name"
+                                >
+                                    Short ID
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="contest-short-name"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    for="contest-version"
+                                >
+                                    Version
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="contest-version"
+                                    value="1"
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    for="contest-enabled"
+                                >
+                                    Status
+                                </label>
+
+                                <select
+                                    id="contest-enabled"
+                                >
+
+                                    <option value="true">
+                                        Enabled
+                                    </option>
+
+                                    <option value="false">
+                                        Disabled
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group full-width">
+
+                                <label
+                                    for="contest-description"
+                                >
+                                    Description
+                                </label>
+
+                                <textarea
+                                    id="contest-description"
+                                    rows="3"
+                                ></textarea>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- BANDS -->
+
+                    <div class="contest-section">
+
+                        <h3>
+                            Bands
+                        </h3>
+
+
+                        <div class="checkbox-grid">
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-band"
+                                    value="160m"
+                                >
+                                160m
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-band"
+                                    value="80m"
+                                >
+                                80m
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-band"
+                                    value="40m"
+                                >
+                                40m
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-band"
+                                    value="20m"
+                                >
+                                20m
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-band"
+                                    value="15m"
+                                >
+                                15m
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-band"
+                                    value="10m"
+                                >
+                                10m
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-band"
+                                    value="6m"
+                                >
+                                6m
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-band"
+                                    value="2m"
+                                >
+                                2m
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MODES -->
+
+                    <div class="contest-section">
+
+                        <h3>
+                            Modes
+                        </h3>
+
+
+                        <div class="checkbox-grid">
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-mode"
+                                    value="CW"
+                                >
+                                CW
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-mode"
+                                    value="SSB"
+                                >
+                                SSB
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-mode"
+                                    value="RTTY"
+                                >
+                                RTTY
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-mode"
+                                    value="FT8"
+                                >
+                                FT8
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-mode"
+                                    value="FT4"
+                                >
+                                FT4
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- EXCHANGE -->
+
+                    <div class="contest-section">
+
+                        <h3>
+                            Exchange
+                        </h3>
+
+
+                        <div class="form-grid">
+
+
+                            <div class="form-group">
+
+                                <label
+                                    for="exchange-sent"
+                                >
+                                    Sent
+                                </label>
+
+                                <select
+                                    id="exchange-sent"
+                                >
+
+                                    <option value="none">
+                                        None
+                                    </option>
+
+                                    <option value="serial">
+                                        Serial Number
+                                    </option>
+
+                                    <option value="cq_zone">
+                                        CQ Zone
+                                    </option>
+
+                                    <option value="itu_zone">
+                                        ITU Zone
+                                    </option>
+
+                                    <option value="locator">
+                                        Locator
+                                    </option>
+
+                                    <option value="state">
+                                        State
+                                    </option>
+
+                                    <option value="country">
+                                        Country
+                                    </option>
+
+                                    <option value="custom">
+                                        Custom
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label
+                                    for="exchange-received"
+                                >
+                                    Received
+                                </label>
+
+                                <select
+                                    id="exchange-received"
+                                >
+
+                                    <option value="none">
+                                        None
+                                    </option>
+
+                                    <option value="serial">
+                                        Serial Number
+                                    </option>
+
+                                    <option value="cq_zone">
+                                        CQ Zone
+                                    </option>
+
+                                    <option value="itu_zone">
+                                        ITU Zone
+                                    </option>
+
+                                    <option value="locator">
+                                        Locator
+                                    </option>
+
+                                    <option value="state">
+                                        State
+                                    </option>
+
+                                    <option value="country">
+                                        Country
+                                    </option>
+
+                                    <option value="custom">
+                                        Custom
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DUPLICATES -->
+
+                    <div class="contest-section">
+
+                        <h3>
+                            Duplicates
+                        </h3>
+
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+
+                                <label
+                                    for="dupe-key"
+                                >
+                                    Dupe Key
+                                </label>
+
+                                <select
+                                    id="dupe-key"
+                                >
+
+                                    <option value="call">
+                                        Callsign
+                                    </option>
+
+                                    <option value="call_band">
+                                        Callsign + Band
+                                    </option>
+
+                                    <option value="call_band_mode">
+                                        Callsign + Band + Mode
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SCORING -->
+
+                    <div class="contest-section">
+
+                        <h3>
+                            Scoring
+                        </h3>
+
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+
+                                <label
+                                    for="scoring-type"
+                                >
+                                    Point Rule
+                                </label>
+
+                                <select
+                                    id="scoring-type"
+                                >
+
+                                    <option value="one">
+                                        1 point
+                                    </option>
+
+                                    <option value="distance">
+                                        Distance based
+                                    </option>
+
+                                    <option value="country">
+                                        Country based
+                                    </option>
+
+                                    <option value="custom">
+                                        Contest specific
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MULTIPLIERS -->
+
+                    <div class="contest-section">
+
+                        <h3>
+                            Multipliers
+                        </h3>
+
+
+                        <div class="checkbox-grid">
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-multiplier"
+                                    value="dxcc"
+                                >
+                                DXCC
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-multiplier"
+                                    value="cq_zone"
+                                >
+                                CQ Zone
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-multiplier"
+                                    value="itu_zone"
+                                >
+                                ITU Zone
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    name="contest-multiplier"
+                                    value="state"
+                                >
+                                State
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- RST -->
+
+                    <div class="contest-section">
+
+                        <h3>
+                            RST
+                        </h3>
+
+
+                        <div class="checkbox-grid">
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    id="send-rst"
+                                    checked
+                                >
+                                Send RST
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    id="receive-rst"
+                                    checked
+                                >
+                                Receive RST
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ACTIONS -->
+
+                    <div class="form-actions">
+
+                        <button
+                            type="button"
+                            id="cancel-contest-button"
+                            class="button secondary"
+                        >
+                            Cancel
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            class="button primary"
+                        >
+                            Save Contest
+                        </button>
+
+                    </div>
+
+
+                </form>
+
+            </section>
+
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- COMPONENT LOADER -->
+
+<script src="js/component-loader.js"></script>
+
+<script src="js/system-status.js"></script>
+<script src="js/sidebar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/station.js"></script>
+<script src="js/system-health.js"></script>
+
+<script
+    type="module"
+    src="js/contest-manager.js"
+></script>
+
+
+</body>
+
+</html>

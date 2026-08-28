@@ -3,7 +3,6 @@ import "dotenv/config";
 import express from "express";
 import compression from "compression";
 import cors from "cors";
-
 import bestBandRouter from "./routes/best-band.js";
 import radioRouter from "./routes/radio.js";
 import qsoRouter from "./routes/qso.js";
@@ -17,7 +16,7 @@ import spotsRouter from "./routes/spots.js";
 import stationRouter from "./routes/station.js";
 import systemStatusRouter from "./routes/system-status.js";
 import ft8Router from "./routes/ft8.js";
-
+import contestsRouter from "./routes/contests.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -149,6 +148,15 @@ app.use(
     ft8Router
 );
 
+
+/*
+    Contest Manager
+*/
+
+app.use(
+    "/api/contests",
+    contestsRouter
+);
 
 // Diagnostics
 app.use(

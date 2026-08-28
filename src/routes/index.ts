@@ -48,4 +48,15 @@ router.get('/diagnostics', (_req, res) => {
 });
 
 
+router.get('/contest-manager', (_req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '..',
+            'public',
+            'contest-manager.html'
+        )
+    );
+});
+
 export default router;

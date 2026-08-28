@@ -209,7 +209,7 @@ export class QsoService {
             Indexes
         */
 
-        this.db.exec(`
+                this.db.exec(`
             CREATE INDEX IF NOT EXISTS
             idx_qso_call
             ON qso(call);
@@ -222,6 +222,19 @@ export class QsoService {
             ON qso(qso_date);
         `);
 
+
+        this.db.exec(`
+            CREATE UNIQUE INDEX IF NOT EXISTS
+            idx_qso_source_id
+            ON qso(
+                spot_source,
+                spot_id
+            )
+            WHERE
+                spot_source IS NOT NULL
+                AND spot_id IS NOT NULL;
+        `);
+
     }
 
 
@@ -229,10 +242,46 @@ export class QsoService {
         qso: QsoRecord
     ): QsoRecord {
 
-        const createdAt =
+        /*
+            Prevent duplicate imports.
+
+            External sources such as TX5DR provide
+            a stable source + record ID.
+        */
+
+        if (
+            qso.spot_source &&
+            qso.spot_id
+        ) {
+
+            const existing =
+                this.db.prepare(`
+                    SELECT *
+                    FROM qso
+                    WHERE
+                        spot_source = ?
+                        AND spot_id = ?
+                    LIMIT 1
+                `)
+                .get(
+                    qso.spot_source,
+                    qso.spot_id
+                ) as QsoRecord | undefined;
+
+
+            if (
+                existing
+            ) {
+
+                return existing;
+
+            }
+
+        }
+
+     const createdAt =
             new Date().toISOString();
-
-
+      
         const statement =
             this.db.prepare(`
                 INSERT INTO qso (

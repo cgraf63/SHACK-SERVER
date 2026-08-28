@@ -876,6 +876,17 @@ async function loadFt8Decodes() {
             return;
 
         }
+ /*
+         * UTC TIME FOR THIS FT8 SLOT
+         */
+
+        const utc =
+            new Date()
+                .toISOString()
+                .substring(
+                    11,
+                    19
+                );
 
 
         ft8Decodes =
@@ -886,7 +897,7 @@ async function loadFt8Decodes() {
 
                         utc:
                             frame.utc ||
-                            "",
+                            utc,
 
                         call:
                             frame.call ||
