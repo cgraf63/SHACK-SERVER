@@ -107,6 +107,145 @@ function contestFrequencyMHz(value) {
     return frequency / 1000;
 }
 
+/*
+ * Load active radio information.
+ *
+ * Contest screen is read-only.
+ * Radio selection remains a dashboard function.
+ */
+async function loadContestRadio() {
+
+    const container =
+        document.getElementById(
+            "contest-active-radio"
+        );
+
+    if (!container) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/radio?_=" + Date.now(),
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const radios =
+            Array.isArray(data.radios)
+                ? data.radios
+                : [];
+
+
+        const radio =
+            radios.find(
+                item => item.active
+            );
+
+
+        if (!radio) {
+
+            container.innerHTML = `
+                <div class="contest-radio-placeholder">
+                    No active radio
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        const frequency =
+            radio.frequency
+                ? (
+                    radio.frequency /
+                    1000000
+                ).toFixed(3) + " MHz"
+                : "---.--- MHz";
+
+
+        const mode =
+            radio.mode ||
+            "UNKNOWN";
+
+
+        const power =
+            `${radio.power ?? 0} W`;
+
+
+        const connection =
+            radio.connected
+                ? "CAT Connected"
+                : "CAT Disconnected";
+
+
+        container.innerHTML = `
+            <div class="station-radio-card active">
+
+                <div class="station-radio-name">
+                    📻
+                    ${escapeContestHtml(
+                        radio.name
+                    )}
+                    <span class="contest-radio-cat">
+                        ● ${escapeContestHtml(
+                            connection
+                        )}
+                    </span>
+                </div>
+
+                <div class="station-radio-frequency">
+                    ${frequency}
+                    ·
+                    ${escapeContestHtml(
+                        mode
+                    )}
+                    ·
+                    ${escapeContestHtml(
+                        power
+                    )}
+                </div>
+
+            </div>
+        `;
+
+    }
+    catch (error) {
+
+        console.error(
+            "Contest radio loading failed:",
+            error
+        );
+
+        container.innerHTML = `
+            <div class="contest-radio-placeholder">
+                Radio unavailable
+            </div>
+        `;
+
+    }
+
+}
+
 
 /*
  * Load live spots.
@@ -191,7 +330,7 @@ function renderContestBand() {
         Math.max(
             900,
             Math.round(
-                range * 5000
+                range * 5600
             )
         );
 
@@ -737,9 +876,8 @@ function initContestBandViewer() {
      */
     renderContestBand();
 
-    /*
-     * Initial spot load.
-     */
+   loadContestRadio();
+
     loadContestSpots();
 
     /*

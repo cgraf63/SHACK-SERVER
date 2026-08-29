@@ -425,6 +425,74 @@
 
 
 /* =========================================
+   CONTEST ACTIVE RADIO
+   Read-only compact display
+   ========================================= */
+
+.contest-active-radio {
+    width: 100%;
+    pointer-events: none;
+}
+
+
+.contest-active-radio .station-radio-card {
+    display: flex;
+    align-items: center;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    min-width: 0;
+
+    box-sizing: border-box;
+
+    padding: 7px 10px;
+
+    gap: 14px;
+
+    height: auto;
+    min-height: 0;
+}
+
+.contest-active-radio .station-radio-name {
+    flex: 0 0 auto;
+
+    margin: 0;
+
+    white-space: nowrap;
+
+    font-size: 12px;
+    line-height: 16px;
+}
+
+
+.contest-active-radio .station-radio-frequency {
+    flex: 1 1 auto;
+
+    margin: 0;
+
+    white-space: nowrap;
+
+    font-size: 11px;
+    line-height: 15px;
+    font-weight: 400;
+}
+
+.contest-station-panel {
+    margin-bottom: 10px;
+}
+
+
+.contest-station-title {
+    margin-bottom: 5px;
+
+    font-size: 12px;
+    font-weight: 500;
+}
+
+
+
+/* =========================================
    RESPONSIVE
    ========================================= */
 
@@ -517,7 +585,7 @@
 
     gap: 12px;
 
-    align-items: start;
+    align-items: stretch;
 }
 
 
@@ -528,12 +596,10 @@
 
 .contest-right {
     display: flex;
-
     flex-direction: column;
-
     gap: 12px;
-
     min-width: 0;
+    height: 100%;
 }
 
 
@@ -606,11 +672,10 @@
 
 .contest-band-card {
     padding: 12px;
-
     background: rgba(12, 25, 34, 0.96);
-
     border: 1px solid var(--panel-border, #20313c);
     border-radius: 8px;
+    flex: 1;
 }
 
 
@@ -900,6 +965,26 @@
 
     box-shadow:
         0 0 6px rgba(181, 108, 255, 0.55);
+}
+
+
+/**********************************************/
+/* Active Radio                               */
+/**********************************************/
+
+.contest-active-radio {
+    pointer-events: none;
+}
+
+.contest-radio-cat {
+    margin-left: 5px;
+    font-size: 10px;
+    opacity: 0.85;
+}
+
+.contest-radio-placeholder {
+    color: #74818a;
+    font-size: 12px;
 }
 
 
