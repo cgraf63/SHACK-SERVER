@@ -148,6 +148,9 @@ async function loadContestSpots() {
 
 }
 
+/*
+ * Render selected band.
+ */
 
 /*
  * Render selected band.
@@ -170,22 +173,62 @@ function renderContestBand() {
         return;
     }
 
-renderContestFrequencyScale(band);
+
+    /*
+     * Dynamic vertical band size.
+     *
+     * 10 kHz = 50 px
+     */
+    const scale =
+        document.querySelector(
+            ".contest-band-scale"
+        );
+
+    const range =
+        band.max - band.min;
+
+    const bandHeight =
+        Math.max(
+            900,
+            Math.round(
+                range * 5000
+            )
+        );
+
+    if (scale) {
+
+        scale.style.height =
+            `${bandHeight}px`;
+
+        scale.style.minHeight =
+            `${bandHeight}px`;
+
+    }
+
+
+    /*
+     * Rebuild frequency scale.
+     */
+    renderContestFrequencyScale(
+        band
+    );
 
 
     container.innerHTML = "";
 
+
+    /*
+     * Select current-band spots.
+     */
     const visibleSpots =
-        contestSpots
-            .filter(
-                spot =>
-                    spot.band === contestBand
-            );
+        contestSpots.filter(
+            spot =>
+                spot.band === contestBand
+        );
 
 
     /*
-     * Prevent duplicate
-     * call/frequency entries.
+     * Remove exact duplicates.
      */
     const unique =
         new Map();
@@ -210,10 +253,13 @@ renderContestFrequencyScale(band);
                 return;
             }
 
+
             const key =
                 `${spot.call}|${spot.frequency}`;
 
+
             if (!unique.has(key)) {
+
                 unique.set(
                     key,
                     {
@@ -221,22 +267,184 @@ renderContestFrequencyScale(band);
                         frequency
                     }
                 );
+
             }
 
         }
     );
 
 
-    unique.forEach(
+    /*
+     * Sort from high to low frequency.
+     */
+    const spots =
+        [...unique.values()]
+            .sort(
+                (a, b) =>
+                    b.frequency -
+                    a.frequency
+            );
+
+
+    /*
+     * Three horizontal lanes.
+     *
+     * Spots are distributed across
+     * all three lanes by default.
+     *
+     * Collision detection is performed
+     * independently inside each lane.
+     */
+    const lanes = [
+        [],
+        [],
+        []
+    ];
+
+
+    /*
+     * Minimum vertical distance between
+     * two labels in the same lane.
+     */
+    const minimumGap = 18;
+
+
+    /*
+     * Frequency -> vertical pixel position.
+     */
+    function frequencyY(
+        frequency
+    ) {
+
+        return (
+            (
+                (band.max - frequency)
+                /
+                (band.max - band.min)
+            )
+            *
+            bandHeight
+        );
+
+    }
+
+
+    /*
+     * Round-robin lane preference.
+     *
+     * 0 -> left
+     * 1 -> center
+     * 2 -> right
+     * 0 -> left
+     * ...
+     */
+    let laneCounter = 0;
+
+
+    /*
+     * Find a suitable lane.
+     *
+     * We prefer the next lane in the
+     * rotation, but avoid collisions.
+     */
+    function findLane(y) {
+
+        const preferredLane =
+            laneCounter % 3;
+
+        laneCounter++;
+
+
+        /*
+         * Try preferred lane first,
+         * then the other two.
+         */
+        const laneOrder = [
+            preferredLane,
+            (preferredLane + 1) % 3,
+            (preferredLane + 2) % 3
+        ];
+
+
+        for (
+            const lane
+            of laneOrder
+        ) {
+
+            const entries =
+                lanes[lane];
+
+
+            const collision =
+                entries.some(
+                    existing =>
+                        Math.abs(
+                            y - existing
+                        ) < minimumGap
+                );
+
+
+            if (!collision) {
+
+                return lane;
+
+            }
+
+        }
+
+
+        /*
+         * All lanes have a collision.
+         *
+         * Choose the lane with the
+         * fewest occupied positions.
+         */
+        let bestLane = 0;
+
+        let bestCount =
+            lanes[0].length;
+
+
+        for (
+            let lane = 1;
+            lane < 3;
+            lane++
+        ) {
+
+            if (
+                lanes[lane].length <
+                bestCount
+            ) {
+
+                bestLane =
+                    lane;
+
+                bestCount =
+                    lanes[lane].length;
+
+            }
+
+        }
+
+
+        return bestLane;
+
+    }
+
+    spots.forEach(
         spot => {
 
-            const position =
-                (
-                    (band.max - spot.frequency)
-                    /
-                    (band.max - band.min)
-                )
-                * 100;
+            const y =
+                frequencyY(
+                    spot.frequency
+                );
+
+
+            const lane =
+                findLane(y);
+
+
+            lanes[lane].push(y);
 
 
             const item =
@@ -244,28 +452,74 @@ renderContestFrequencyScale(band);
                     "div"
                 );
 
+
             item.className =
                 "contest-band-spot";
 
 
+            /*
+             * The spot itself remains
+             * exactly on its frequency.
+             */
             item.style.top =
-                `${position}%`;
+                `${(
+                    (
+                        band.max -
+                        spot.frequency
+                    )
+                    /
+                    (
+                        band.max -
+                        band.min
+                    )
+                ) * 100}%`;
 
+/*
+ * Three horizontal lanes.
+ *
+ * 0 = left
+ * 1 = centre
+ * 2 = right
+ */
+const laneX = [
+    "18%",
+    "50%",
+    "82%"
+];
+
+
+item.classList.add(
+    `spot-lane-${lane}`
+);
+
+
+/*
+ * Position both marker and label
+ * at the selected horizontal lane.
+ */
+item.style.setProperty(
+    "--lane-x",
+    laneX[lane]
+);
 
             item.innerHTML = `
 
                 <span class="spot-dot spot-new"></span>
 
-                <span class="contest-band-call">
-                    ${escapeContestHtml(
-                        spot.call
-                    )}
-                </span>
+                <span class="spot-label">
 
-                <span class="contest-band-mode">
-                    ${escapeContestHtml(
-                        spot.mode || ""
-                    )}
+                    <span class="contest-band-call">
+                        ${escapeContestHtml(
+                            spot.call
+                        )}
+                    </span>
+
+                    <span class="contest-band-mode">
+                        ${escapeContestHtml(
+                            spot.mode || ""
+                        )}
+                    </span>
+
                 </span>
 
             `;
@@ -285,6 +539,7 @@ renderContestFrequencyScale(band);
     );
 
 }
+
 
 /*
  * Band selector.
@@ -351,57 +606,9 @@ function renderContestFrequencyScale(band) {
     const range =
         band.max - band.min;
 
+	const step = 0.010;
 
-    /*
-     * Target roughly 6-10
-     * frequency lines.
-     */
-    const rawStep =
-        range / 8;
-
-
-    const niceSteps = [
-        0.0005,
-        0.001,
-        0.0025,
-        0.005,
-        0.010,
-        0.025,
-        0.050,
-        0.100,
-        0.250,
-        0.500,
-        1.000,
-        2.500,
-        5.000
-    ];
-
-
-    let step =
-        niceSteps[
-            niceSteps.length - 1
-        ];
-
-
-    for (
-        const candidate
-        of niceSteps
-    ) {
-
-        if (
-            candidate >= rawStep
-        ) {
-
-            step =
-                candidate;
-
-            break;
-
-        }
-
-    }
-
-
+            
     /*
      * Generate clean frequency values.
      */
