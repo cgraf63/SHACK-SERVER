@@ -4,7 +4,7 @@
    ========================================= */
 
 .contest-console {
-    max-width: 1250px;
+    width: 100%;
     padding-bottom: 40px;
 }
 
@@ -512,8 +512,8 @@
     display: grid;
 
     grid-template-columns:
-        minmax(0, 850px)
-        320px;
+        minmax(700px, 850px)
+        minmax(360px, 560px);
 
     gap: 12px;
 
@@ -581,12 +581,12 @@
    RESPONSIVE
    ========================================= */
 
-@media (max-width: 1100px) {
+@media (max-width: 1000px) {
 
     .contest-layout {
         grid-template-columns:
             minmax(0, 1fr)
-            280px;
+            320px;
     }
 
 }
@@ -598,4 +598,288 @@
         grid-template-columns: 1fr;
     }
 
+}
+
+/* =========================================
+   LIVE BAND VIEWER
+   ========================================= */
+
+.contest-band-card {
+    padding: 12px;
+
+    background: rgba(12, 25, 34, 0.96);
+
+    border: 1px solid var(--panel-border, #20313c);
+    border-radius: 8px;
+}
+
+
+.contest-band-header {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 8px;
+
+    margin-bottom: 10px;
+}
+
+
+.contest-band-select {
+    min-width: 80px;
+
+    padding: 5px 8px;
+
+    color: var(--text);
+    background: #0b1821;
+
+    border: 1px solid #30434e;
+    border-radius: 4px;
+
+    font-size: 12px;
+}
+
+
+/* =========================================
+   SCROLLABLE BAND AREA
+   ========================================= */
+
+.contest-bandplan {
+    position: relative;
+
+    height: 560px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    background:
+        linear-gradient(
+            to right,
+            rgba(255,255,255,0.025),
+            rgba(255,255,255,0.005)
+        );
+
+    border: 1px solid #1d303b;
+    border-radius: 5px;
+}
+
+
+.contest-band-scale {
+    position: relative;
+
+    height: 1000px;
+
+    min-height: 1000px;
+}
+
+
+/* =========================================
+   FREQUENCY SCALE
+   ========================================= */
+
+.contest-frequency-scale {
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+}
+
+
+.contest-frequency-line {
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    height: 1px;
+
+    border-top: 1px solid rgba(120, 150, 165, 0.16);
+}
+
+.contest-frequency-line:nth-child(4) {
+    top: 42.84%;
+}
+
+
+.contest-frequency-line:nth-child(5) {
+    top: 57.12%;
+}
+
+
+.contest-frequency-line:nth-child(6) {
+    top: 71.40%;
+}
+
+
+.contest-frequency-line:nth-child(7) {
+    top: 85.68%;
+}
+
+
+.contest-frequency-line:nth-child(8) {
+    top: 100%;
+}
+
+
+.contest-frequency-line span {
+    position: absolute;
+
+    left: 7px;
+    top: -8px;
+
+    padding-right: 5px;
+
+    color: #72828c;
+
+    background: #0b1821;
+
+    font-family: monospace;
+
+    font-size: 10px;
+}
+
+
+/* =========================================
+   SPOTS
+   ========================================= */
+
+.contest-band-spots {
+    position: absolute;
+
+    inset: 0;
+}
+
+
+.contest-band-spot {
+    position: absolute;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    left: 55px;
+
+    transform: translateY(-50%);
+
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    font-family: monospace;
+
+    font-size: 11px;
+}
+
+
+.contest-band-spot:hover {
+    z-index: 10;
+}
+
+
+.spot-dot {
+    display: inline-block;
+
+    width: 7px;
+    height: 7px;
+
+    flex: 0 0 7px;
+
+    border-radius: 50%;
+}
+
+
+.spot-new {
+    background: #00c853;
+
+    box-shadow:
+        0 0 5px rgba(0, 200, 83, 0.55);
+}
+
+
+.spot-worked {
+    background: #ff9f43;
+
+    box-shadow:
+        0 0 5px rgba(255, 159, 67, 0.45);
+}
+
+
+.spot-multiplier {
+    background: #b56cff;
+
+    box-shadow:
+        0 0 6px rgba(181, 108, 255, 0.55);
+}
+
+
+/* =========================================
+   CURRENT RADIO FREQUENCY
+   ========================================= */
+
+.contest-current-frequency {
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    top: 48%;
+
+    height: 1px;
+
+    background: rgba(255, 79, 163, 0.75);
+
+    box-shadow:
+        0 0 5px rgba(255, 79, 163, 0.35);
+}
+
+
+.contest-current-label {
+    position: absolute;
+
+    right: 7px;
+
+    top: -8px;
+
+    padding: 2px 5px;
+
+    color: #ff4fa3;
+
+    background: #0b1821;
+
+    font-family: monospace;
+
+    font-size: 9px;
+    font-weight: 700;
+}
+
+
+/* =========================================
+   LEGEND
+   ========================================= */
+
+.contest-band-legend {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-top: 9px;
+
+    color: #87959e;
+
+    font-size: 9px;
+}
+
+
+.contest-band-legend span {
+    display: flex;
+
+    align-items: center;
+
+    gap: 4px;
 }

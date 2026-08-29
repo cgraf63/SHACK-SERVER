@@ -512,77 +512,122 @@
 
 
         <!-- =====================================
-             RIGHT: INFORMATION
-             ===================================== -->
+     RIGHT: LIVE BAND VIEWER
+     ===================================== -->
 
-        <aside class="contest-right">
+<aside class="contest-right">
+
+    <div class="contest-band-card">
+
+        <!-- HEADER -->
+
+        <div class="contest-band-header">
+
+            <div class="contest-side-title">
+                LIVE BAND
+            </div>
 
 
-            <!-- CALLSIGNS / DX -->
+            <select
+                id="contest-band-select"
+                class="contest-band-select"
+                aria-label="Band auswählen"
+            >
 
-            <div class="contest-side-card">
+                <option value="160m">160m</option>
+                <option value="80m">80m</option>
+                <option value="60m">60m</option>
+                <option value="40m">40m</option>
+                <option value="30m">30m</option>
+                <option value="20m" selected>20m</option>
+                <option value="17m">17m</option>
+                <option value="15m">15m</option>
+                <option value="12m">12m</option>
+                <option value="10m">10m</option>
 
-                <div class="contest-side-title">
-                    CALLSIGNS / DX
+            </select>
+
+        </div>
+
+
+        <!-- BAND VIEWPORT -->
+
+        <div
+            id="contest-bandplan"
+            class="contest-bandplan"
+        >
+
+            <div class="contest-band-scale">
+
+                <!-- FREQUENCY AREA -->
+
+                <div
+                    id="contest-frequency-scale"
+                    class="contest-frequency-scale"
+		>
+		</div>
+                <!-- LIVE SPOTS -->
+
+                <div
+                    id="contest-band-spots"
+                    class="contest-band-spots"
+                >
+
+                    <!--
+                        Spots werden später dynamisch
+                        anhand der Frequenz positioniert.
+                    -->
+
                 </div>
 
 
+                <!-- CURRENT RADIO FREQUENCY -->
+
                 <div
-                    id="contest-dx-list"
-                    class="contest-side-content"
+                    id="contest-current-frequency"
+                    class="contest-current-frequency"
                 >
 
-                    <div class="contest-side-empty">
-                        No callsigns
-                    </div>
+                    <span class="contest-current-label">
+                        YOU
+                    </span>
 
                 </div>
 
             </div>
 
-
-            <!-- BANDPLAN -->
-
-            <div class="contest-side-card">
-
-                <div class="contest-side-title">
-                    BANDPLAN
-                </div>
+        </div>
 
 
-                <div
-                    id="contest-bandplan"
-                    class="contest-side-content"
-                >
+        <!-- LEGEND -->
 
-                    <div class="contest-side-empty">
-                        No bandplan data
-                    </div>
+        <div class="contest-band-legend">
 
-                </div>
+            <span>
+                <i class="spot-dot spot-new"></i>
+                NEW
+            </span>
 
-            </div>
+            <span>
+                <i class="spot-dot spot-worked"></i>
+                WORKED
+            </span>
 
+            <span>
+                <i class="spot-dot spot-multiplier"></i>
+                MULTIPLIER
+            </span>
 
-        </aside>
-
+        </div>
 
     </div>
 
-
-</section>
-
-
-
-    </main>
-
-</div>
-
+</aside>
 
 <script src="js/component-loader.js"></script>
 <script src="js/station.js"></script>
 <script src="js/system-status.js"></script>
-
+<script src="js/contest-band.js?v=2"></script>
 </body>
 
 </html>
