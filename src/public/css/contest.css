@@ -1,4 +1,3 @@
-
 /* =========================================
    CONTEST CONSOLE
    ========================================= */
@@ -21,6 +20,23 @@
     margin: 0;
     color: var(--muted-text, #9aa4ad);
 }
+
+.contest-create-button {
+    width: auto;
+    min-width: 150px;
+    justify-self: start;
+}
+
+.contest-session-message {
+    min-height: 18px;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.contest-session-message.success {
+    color: #7CFF8A;
+}
+
 
 
 /* =========================================
@@ -75,11 +91,41 @@
 .contest-selection-row {
     display: grid;
 
-    grid-template-columns: 100px minmax(250px, 500px) auto;
+    grid-template-columns:
+        90px
+        minmax(300px, 1fr)
+        auto
+        minmax(180px, auto);
 
     align-items: center;
 
     gap: 10px;
+}
+
+
+.contest-create-button {
+    width: 135px;
+    min-width: 135px;
+    justify-self: start;
+}
+
+
+.contest-session-message {
+    min-height: 18px;
+    margin-top: 0;
+    margin-left: 4px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    color: #00e5ff;
+}
+
+
+.contest-session-message.success {
+    color: #00e5ff;
 }
 
 
@@ -289,9 +335,13 @@
     display: grid;
 
     grid-template-columns:
-        minmax(220px, 1fr)
-        100px
-        minmax(220px, 1fr)
+        minmax(150px, 1.3fr)
+        minmax(120px, 1fr)
+        minmax(100px, 0.8fr)
+        90px
+        110px
+        minmax(130px, 1fr)
+        minmax(130px, 1fr)
         auto;
 
     align-items: end;
@@ -305,7 +355,6 @@
     border: 1px solid #1d303b;
     border-radius: 6px;
 }
-
 
 .contest-entry-field label {
     display: block;
@@ -425,129 +474,7 @@
 
 
 /* =========================================
-   CONTEST ACTIVE RADIO
-   Read-only compact display
-   ========================================= */
-
-.contest-active-radio {
-    width: 100%;
-    pointer-events: none;
-}
-
-
-.contest-active-radio .station-radio-card {
-    display: flex;
-    align-items: center;
-
-    width: 100% !important;
-    max-width: none !important;
-
-    min-width: 0;
-
-    box-sizing: border-box;
-
-    padding: 7px 10px;
-
-    gap: 14px;
-
-    height: auto;
-    min-height: 0;
-}
-
-.contest-active-radio .station-radio-name {
-    flex: 0 0 auto;
-
-    margin: 0;
-
-    white-space: nowrap;
-
-    font-size: 12px;
-    line-height: 16px;
-}
-
-
-.contest-active-radio .station-radio-frequency {
-    flex: 1 1 auto;
-
-    margin: 0;
-
-    white-space: nowrap;
-
-    font-size: 11px;
-    line-height: 15px;
-    font-weight: 400;
-}
-
-.contest-station-panel {
-    margin-bottom: 10px;
-}
-
-
-.contest-station-title {
-    margin-bottom: 5px;
-
-    font-size: 12px;
-    font-weight: 500;
-}
-
-
-
-/* =========================================
-   RESPONSIVE
-   ========================================= */
-
-@media (max-width: 900px) {
-
-    .contest-station-grid {
-        grid-template-columns:
-            repeat(2, minmax(130px, 1fr));
-    }
-
-
-    .contest-stat-grid {
-        grid-template-columns:
-            repeat(3, minmax(100px, 1fr));
-    }
-
-
-    .contest-qso-entry {
-        grid-template-columns: 1fr 100px;
-    }
-
-}
-
-
-@media (max-width: 600px) {
-
-    .contest-selection-row {
-        grid-template-columns: 1fr;
-    }
-
-
-    .contest-station-grid {
-        grid-template-columns: 1fr;
-    }
-
-
-    .contest-stat-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-
-
-    .contest-qso-entry {
-        grid-template-columns: 1fr;
-    }
-
-
-    .contest-session-actions {
-        flex-wrap: wrap;
-    }
-
-}
-
-
-/* =========================================
-   COMPACT CONTEST CONSOLE
+   CONTEST PAGE LAYOUT
    ========================================= */
 
 .contest-card-subtitle {
@@ -561,6 +488,7 @@
 .contest-card {
     margin-bottom: 10px;
     padding: 12px 14px;
+    box-sizing: border-box;
 }
 
 .contest-card-header {
@@ -571,103 +499,114 @@
     font-size: 14px;
 }
 
-
-/* =========================================
-   CONTEST TWO COLUMN LAYOUT
-   ========================================= */
-
 .contest-layout {
     display: grid;
-
-    grid-template-columns:
-        minmax(700px, 850px)
-        minmax(360px, 560px);
-
+    grid-template-columns: minmax(0, 65fr) minmax(420px, 35fr);
+    grid-template-areas: "main right";
     gap: 12px;
-
-    align-items: stretch;
+    align-items: start;
+    width: 100%;
 }
 
-
 .contest-main {
+    grid-area: main;
     min-width: 0;
 }
 
-
 .contest-right {
+    grid-area: right;
     display: flex;
     flex-direction: column;
     gap: 12px;
     min-width: 0;
-    height: 100%;
+    align-self: start;
 }
 
+.contest-main > #contest-selection,
+.contest-main > #contest-session,
+.contest-main > #contest-operating-area {
+    width: 100%;
+    box-sizing: border-box;
+}
 
 /* =========================================
-   RIGHT SIDE CARDS
+   RIGHT: STATION
    ========================================= */
 
-.contest-side-card {
-    padding: 12px 14px;
-
-    background: rgba(12, 25, 34, 0.92);
-
+.contest-station-card {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    background: rgba(12, 25, 34, 0.96);
     border: 1px solid var(--panel-border, #20313c);
     border-radius: 8px;
+    box-sizing: border-box;
 }
 
+.contest-station-card .contest-station-panel {
+    margin: 0;
+}
 
-.contest-side-title {
-    margin-bottom: 10px;
-
-    color: #ff4fa3;
-
+.contest-station-title {
+    margin-bottom: 5px;
+    color: #00e5ff;
     font-size: 13px;
+    line-height: 16px;
     font-weight: 700;
 }
 
-
-.contest-side-content {
-    min-height: 80px;
+.contest-active-radio {
+    width: 100%;
+    pointer-events: none;
+    box-sizing: border-box;
 }
 
+.contest-active-radio .station-radio-card {
+    display: flex;
+    align-items: center;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    box-sizing: border-box;
 
-.contest-side-empty {
-    padding: 18px 8px;
+    /* Compact single-line station display */
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 10px !important;
 
-    color: #74818a;
+    gap: 14px;
+}
 
+.contest-active-radio .station-radio-name {
+    flex: 0 0 auto;
+    margin: 0;
+    white-space: nowrap;
     font-size: 12px;
-
-    text-align: center;
+    line-height: 16px;
 }
 
-
-/* =========================================
-   RESPONSIVE
-   ========================================= */
-
-@media (max-width: 1000px) {
-
-    .contest-layout {
-        grid-template-columns:
-            minmax(0, 1fr)
-            320px;
-    }
-
+.contest-active-radio .station-radio-frequency {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    white-space: nowrap;
+    font-size: 11px;
+    line-height: 15px;
+    font-weight: 400;
 }
 
+.contest-radio-cat {
+    margin-left: 5px;
+    font-size: 10px;
+    opacity: 0.85;
+}
 
-@media (max-width: 850px) {
-
-    .contest-layout {
-        grid-template-columns: 1fr;
-    }
-
+.contest-radio-placeholder {
+    color: #74818a;
+    font-size: 12px;
 }
 
 /* =========================================
-   LIVE BAND VIEWER
+   RIGHT: LIVE BAND
    ========================================= */
 
 .contest-band-card {
@@ -675,36 +614,68 @@
     background: rgba(12, 25, 34, 0.96);
     border: 1px solid var(--panel-border, #20313c);
     border-radius: 8px;
-    flex: 1;
+    box-sizing: border-box;
+    min-width: 0;
 }
-
 
 .contest-band-header {
     display: flex;
-
     align-items: center;
     justify-content: space-between;
-
     gap: 8px;
-
     margin-bottom: 10px;
 }
 
-
 .contest-band-select {
     min-width: 80px;
-
     padding: 5px 8px;
-
     color: var(--text);
     background: #0b1821;
-
     border: 1px solid #30434e;
     border-radius: 4px;
-
     font-size: 12px;
 }
 
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 1000px) {
+    .contest-layout {
+        grid-template-columns: minmax(0, 1fr) 320px;
+    }
+}
+
+@media (max-width: 850px) {
+    .contest-layout {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "main"
+            "right";
+    }
+}
+
+@media (max-width: 600px) {
+    .contest-selection-row {
+        grid-template-columns: 1fr;
+    }
+
+    .contest-station-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contest-stat-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .contest-qso-entry {
+        grid-template-columns: 1fr;
+    }
+
+    .contest-session-actions {
+        flex-wrap: wrap;
+    }
+}
 
 /* =========================================
    SCROLLABLE BAND AREA
@@ -925,7 +896,7 @@
     z-index: 10;
 }
 
-    
+
 
 .contest-band-spot:hover {
     z-index: 10;
@@ -965,26 +936,6 @@
 
     box-shadow:
         0 0 6px rgba(181, 108, 255, 0.55);
-}
-
-
-/**********************************************/
-/* Active Radio                               */
-/**********************************************/
-
-.contest-active-radio {
-    pointer-events: none;
-}
-
-.contest-radio-cat {
-    margin-left: 5px;
-    font-size: 10px;
-    opacity: 0.85;
-}
-
-.contest-radio-placeholder {
-    color: #74818a;
-    font-size: 12px;
 }
 
 
@@ -1054,4 +1005,76 @@
     align-items: center;
 
     gap: 4px;
+}
+
+
+/* =========================================
+   CONTEST WITHOUT SIDEBAR
+   ========================================= */
+
+#app.contest-app {
+    grid-template-columns: 1fr;
+}
+
+
+/* =========================================
+   COMPACT QSOs BY BAND
+   ========================================= */
+
+.contest-qso-by-band {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+
+    background: rgba(12, 25, 34, 0.92);
+
+    border: 1px solid #1d303b;
+    border-radius: 6px;
+}
+
+
+.contest-qso-by-band-title {
+    margin-bottom: 5px;
+
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.contest-qso-by-band-table {
+    display: grid;
+
+    gap: 2px;
+}
+
+
+.contest-qso-by-band-row {
+    display: grid;
+
+    grid-template-columns:
+        55px
+        repeat(6, minmax(40px, 1fr))
+        60px;
+
+    align-items: center;
+
+    text-align: center;
+
+    font-size: 11px;
+}
+
+
+.contest-qso-by-band-row > span:first-child {
+    text-align: left;
+}
+
+
+.contest-qso-by-band-header {
+    color: #aebbc4;
+}
+
+
+.contest-qso-by-band-row strong {
+    font-weight: 700;
 }

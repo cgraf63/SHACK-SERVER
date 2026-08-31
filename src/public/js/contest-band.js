@@ -670,6 +670,57 @@ item.style.setProperty(
                 `${spot.mode || ""}`;
 
 
+item.addEventListener(
+    "click",
+    () => {
+
+        const call =
+            document.getElementById(
+                "contest-call"
+            );
+
+        const frequency =
+            document.getElementById(
+                "contest-frequency"
+            );
+
+        const mode =
+            document.getElementById(
+                "contest-mode"
+            );
+
+        const band =
+            document.getElementById(
+                "contest-band"
+            );
+
+
+        if (call) {
+            call.value =
+                spot.call || "";
+        }
+
+
+        if (frequency) {
+            frequency.textContent =
+                spot.frequency || "—";
+        }
+
+
+        if (mode) {
+            mode.textContent =
+                spot.mode || "—";
+        }
+
+
+        if (band) {
+            band.textContent =
+                spot.band || "—";
+        }
+
+    }
+);
+
             container.appendChild(
                 item
             );
@@ -910,3 +961,650 @@ else {
     initContestBandViewer();
 
 }
+
+
+/*
+ * Contest QSO Logger
+ *
+ * Contest QSOs are written into the
+ * normal QSO log.
+ *
+ * contest_id:
+ *   real contest ID when available
+ *   "999" when no contest ID exists
+ */
+
+/*
+ * Load and display recent Contest QSOs.
+ *
+ * Contest QSOs are identified by a non-empty contest_id.
+ * The normal QSO log is the single source of truth.
+ */
+async function loadContestRecentQsos() {
+
+    const body =
+        document.getElementById(
+            "contest-qso-body"
+        );
+
+    if (!body) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/qso?_=" +
+                Date.now(),
+                {
+                    cache: "no-store"
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
+        }
+
+        const data =
+            await response.json();
+
+/*
+ * Active contest session is required.
+ *
+ * The contest_id stored in the QSO is the
+ * contest SESSION id, not the definition id.
+ */
+
+
+        const qsos =
+            Array.isArray(data.qsos)
+                ? data.qsos
+                : [];
+
+        const contestQsos =
+            qsos
+                .filter(
+                    qso =>
+                        qso.contest_id !== null &&
+                        qso.contest_id !== undefined &&
+                        String(
+                            qso.contest_id
+                        ).trim() !== ""
+                )
+                .sort(
+                    (a, b) => {
+
+                        const aTime =
+                            `${a.qso_date || ""} ${a.time_on_utc || ""}`;
+
+                        const bTime =
+                            `${b.qso_date || ""} ${b.time_on_utc || ""}`;
+
+                        return bTime.localeCompare(
+                            aTime
+                        );
+
+                    }
+                )
+                .slice(0, 10);
+
+
+        if (!contestQsos.length) {
+
+            body.innerHTML = `
+                <tr>
+                    <td
+                        colspan="7"
+                        class="contest-empty"
+                    >
+                        No contest QSOs
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        body.innerHTML =
+            contestQsos
+                .map(
+                    qso => {
+
+                        const notes =
+                            String(
+                                qso.notes || ""
+                            );
+
+                        let exchange = "";
+
+                        const received =
+                            notes.match(
+                                /Contest Exchange Received:\s*([^\n;]+)/i
+                            );
+
+                        const sent =
+                            notes.match(
+                                /Contest Exchange Sent:\s*([^\n;]+)/i
+                            );
+
+                        if (received) {
+
+                            exchange =
+                                received[1].trim();
+
+                        }
+                        else if (sent) {
+
+                            exchange =
+                                sent[1].trim();
+
+                        }
+
+
+                        /*
+                         * Points are not stored in the
+                         * normal QSO schema yet.
+                         */
+                        const points = "—";
+
+
+                        return `
+                            <tr>
+
+                                <td>
+                                    ${escapeContestHtml(
+                                        qso.time_on_utc || ""
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeContestHtml(
+                                        qso.call || ""
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeContestHtml(
+                                        qso.band || ""
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeContestHtml(
+                                        qso.mode || ""
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeContestHtml(
+                                        qso.rst_sent || ""
+                                    )}/${escapeContestHtml(
+                                        qso.rst_rcvd || ""
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeContestHtml(
+                                        exchange
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeContestHtml(
+                                        points
+                                    )}
+                                </td>
+
+                            </tr>
+                        `;
+
+                    }
+                )
+                .join("");
+
+    }
+    catch (error) {
+
+        console.error(
+            "Contest recent QSOs:",
+            error
+        );
+
+    }
+
+}
+
+async function logContestQso() {
+
+    const call =
+        document.getElementById(
+            "contest-call"
+        )?.value
+        .trim()
+        .toUpperCase();
+
+    if (!call) {
+
+        alert(
+            "Please enter a callsign."
+        );
+
+        return;
+    }
+
+
+    const name =
+        document.getElementById(
+            "contest-name"
+        )?.value
+        .trim() || "";
+
+
+    const locator =
+        document.getElementById(
+            "contest-locator"
+        )?.value
+        .trim()
+        .toUpperCase() || "";
+
+
+    const rstSent =
+        document.getElementById(
+            "contest-rst-sent"
+        )?.value
+        .trim() || "599";
+
+
+    const rstReceived =
+        document.getElementById(
+            "contest-rst-received"
+        )?.value
+        .trim() || "599";
+
+
+    const exchangeSent =
+        document.getElementById(
+            "contest-exchange-sent"
+        )?.value
+        .trim() || "";
+
+
+    const exchangeReceived =
+        document.getElementById(
+            "contest-exchange-received"
+        )?.value
+        .trim() || "";
+
+
+    const frequencyText =
+        document.getElementById(
+            "contest-frequency"
+        )?.textContent
+        .trim() || "";
+
+
+    const mode =
+        document.getElementById(
+            "contest-mode"
+        )?.textContent
+        .trim() || "";
+
+
+    const band =
+        document.getElementById(
+            "contest-band"
+        )?.textContent
+        .trim() || "";
+
+
+    /*
+     * Frequency shown by the Contest Console
+     * is in kHz.
+     */
+    const frequency =
+        Number(
+            frequencyText
+        );
+
+
+    if (!Number.isFinite(frequency)) {
+
+        alert(
+            "Invalid frequency."
+        );
+
+        return;
+    }
+
+
+    if (!band || band === "—") {
+
+        alert(
+            "No band available."
+        );
+
+        return;
+    }
+
+
+    if (!mode || mode === "—") {
+
+        alert(
+            "No mode available."
+        );
+
+        return;
+    }
+
+
+    /*
+     * Load station configuration.
+     */
+    let stationConfig = {};
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/station?_=" +
+                Date.now(),
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (response.ok) {
+
+            stationConfig =
+                await response.json();
+
+        }
+
+    }
+    catch (error) {
+
+        console.error(
+            "Contest station lookup failed:",
+            error
+        );
+
+    }
+
+
+    if (!stationConfig.callsign) {
+
+        alert(
+            "Station callsign is not configured."
+        );
+
+        return;
+    }
+
+
+    if (!stationConfig.locator) {
+
+        alert(
+            "Station grid is not configured."
+        );
+
+        return;
+    }
+
+
+    /*
+     * UTC timestamp.
+     */
+    const now =
+        new Date();
+
+
+    const qsoDate =
+        now.toISOString()
+            .slice(0, 10);
+
+
+    const timeUtc =
+        now.toISOString()
+            .slice(11, 19);
+
+
+    /*
+     * Exchange information goes into notes
+     * until the normal QSO schema gets
+     * dedicated exchange fields.
+     */
+    const exchangeParts = [];
+
+
+    if (exchangeSent) {
+
+        exchangeParts.push(
+            `Contest Exchange Sent: ${exchangeSent}`
+        );
+
+    }
+
+
+    if (exchangeReceived) {
+
+        exchangeParts.push(
+            `Contest Exchange Received: ${exchangeReceived}`
+        );
+
+    }
+
+
+    const qso = {
+
+        qso_date:
+            qsoDate,
+
+        time_on_utc:
+            timeUtc,
+
+        time_off_utc:
+            timeUtc,
+
+        call:
+
+            call,
+
+        frequency:
+
+            frequency,
+
+        band:
+
+            band,
+
+        mode:
+
+            mode.toUpperCase(),
+
+        rst_sent:
+
+            rstSent,
+
+        rst_rcvd:
+
+            rstReceived,
+
+        my_callsign:
+
+            String(
+                stationConfig.callsign
+            )
+            .trim()
+            .toUpperCase(),
+
+        my_grid:
+
+            String(
+                stationConfig.locator
+            )
+            .trim()
+            .toUpperCase(),
+
+        operator_name:
+
+            String(
+                stationConfig.operator_name ||
+                stationConfig.name ||
+                ""
+            )
+            .trim(),
+
+        name:
+
+            name || null,
+
+        dx_grid:
+
+            locator || null,
+
+        notes:
+
+            exchangeParts.length
+                ? exchangeParts.join(
+                    " | "
+                )
+                : null,
+
+        contest_id:
+
+    String(
+        window.contestSessionId
+    )
+
+    };
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/qso",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(qso)
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                `HTTP ${response.status}`
+            );
+
+        }
+
+
+        console.log(
+            "Contest QSO logged:",
+            data.qso
+        );
+
+await loadContestRecentQsos();
+
+        /*
+         * Prepare next QSO.
+         */
+        document.getElementById(
+            "contest-call"
+        ).value = "";
+
+        document.getElementById(
+            "contest-name"
+        ).value = "";
+
+        document.getElementById(
+            "contest-locator"
+        ).value = "";
+
+        document.getElementById(
+            "contest-exchange-received"
+        ).value = "";
+
+
+        document.getElementById(
+            "contest-call"
+        ).focus();
+
+
+    }
+    catch (error) {
+
+        console.error(
+            "Contest QSO:",
+            error
+        );
+
+
+        alert(
+            "Could not save QSO:\n\n" +
+            error.message
+        );
+
+    }
+
+}
+
+
+/*
+ * Connect LOG QSO button.
+ */
+function setupContestQsoLogger() {
+
+    const button =
+        document.getElementById(
+            "contest-log-button"
+        );
+
+
+    if (!button) {
+
+        return;
+
+    }
+
+
+    button.addEventListener(
+        "click",
+        logContestQso
+    );
+
+}
+
+
+/*
+ * Initialize Contest QSO logger.
+ */
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        setupContestQsoLogger();
+        loadContestRecentQsos();
+
+    }
+);

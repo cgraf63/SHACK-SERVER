@@ -41,7 +41,7 @@ router.post(
 
                 itu_zone,
                 cq_zone,
-
+                contest_id,
                 notes,
 
                 spot_source,
@@ -256,6 +256,11 @@ country_code:
                         Number.isInteger(cq_zone)
                             ? cq_zone
                             : null,
+
+			contest_id:
+    			typeof contest_id === "string" && contest_id.trim()
+        			? contest_id.trim()
+        			: null,
 
 
                     notes:

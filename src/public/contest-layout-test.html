@@ -43,6 +43,145 @@
         href="css/contest.css"
     >
 
+
+<style id="contest-layout-fix">
+/* =========================================================
+   CONTEST CONSOLE — FINAL 2-COLUMN LAYOUT
+   Do not change the JS structure/IDs.
+   ========================================================= */
+
+.contest-console .contest-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(360px, 1fr);
+    gap: 16px;
+    align-items: start;
+    width: 100%;
+}
+
+.contest-console .contest-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.contest-console .contest-main > #contest-selection,
+.contest-console .contest-main > #contest-session,
+.contest-console .contest-main > #contest-operating-area {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+.contest-console .contest-right {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-self: start;
+}
+
+.contest-console .contest-right .contest-band-card {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+/* Station is the first block in the right column.
+   Live Band follows immediately underneath. */
+.contest-console .contest-right .contest-station-panel {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 10px 0;
+}
+
+/* The band card itself contains STATION + LIVE BAND in the
+   existing HTML. Keep it compact and prevent stretching. */
+.contest-console .contest-right .contest-band-card {
+    display: block;
+}
+
+/* Keep the contest session directly below the selection. */
+#contest-selection {
+    order: 1;
+}
+
+#contest-session {
+    order: 2;
+}
+
+#contest-operating-area {
+    order: 3;
+}
+
+/* Selection row: label, select, button, message on one line
+   on desktop. */
+.contest-console .contest-selection-row {
+    display: grid;
+    grid-template-columns: auto minmax(220px, 1fr) auto minmax(0, auto);
+    gap: 9px;
+    align-items: center;
+}
+
+.contest-console .contest-selection-row label {
+    margin: 0;
+}
+
+.contest-console .contest-select {
+    min-width: 0;
+}
+
+.contest-console .contest-create-button {
+    width: 135px;
+    min-width: 135px;
+}
+
+.contest-console .contest-session-message {
+    min-width: 0;
+    white-space: nowrap;
+}
+
+/* Session information stays horizontal on desktop. */
+.contest-console .contest-station-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+    .contest-console .contest-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .contest-console .contest-right {
+        grid-column: 1;
+    }
+
+    .contest-console .contest-selection-row {
+        grid-template-columns: 1fr;
+    }
+
+    .contest-console .contest-create-button {
+        width: 135px;
+    }
+
+    .contest-console .contest-session-message {
+        white-space: normal;
+    }
+
+    .contest-console .contest-station-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .contest-console .contest-station-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
 </head>
 
 
@@ -114,36 +253,44 @@
 
                 <div class="contest-selection-row">
 
-                    <label
-                        for="contest-select">
-                        Contest
-                    </label>
+    <label
+        for="contest-select"
+    >
+        Contest
+    </label>
 
 
-                    <select
-                        id="contest-select"
-                        class="contest-select"
-                    >
+    <select
+        id="contest-select"
+        class="contest-select"
+    >
 
-                        <option value="">
-                            Loading contests...
-                        </option>
+        <option value="">
+            Loading contests...
+        </option>
 
-                    </select>
+    </select>
 
 
-                    <button
-                        id="contest-create-button"
-                        class="button primary contest-create-button"
-                        type="button"
-                    >
-                        Create Session
-                    </button>
+    <button
+        id="contest-create-button"
+        class="button primary contest-create-button"
+        type="button"
+    >
+        Create Session
+    </button>
 
-                    <div
-                        id="contest-session-message"
-                        class="contest-session-message"
-                    ></div>
+
+    <span
+        id="contest-session-message"
+        class="contest-session-message"
+    ></span>
+
+</div>
+
+
+
+
 
 
                 </div>
@@ -619,7 +766,12 @@
 
 <aside class="contest-right">
 
-    <div class="contest-side-card contest-station-card">
+    <div class="contest-band-card">
+
+        <!-- HEADER -->
+<!-- ACTIVE RADIO / READ ONLY -->
+
+<div class="contest-station-panel">
 
     <div class="contest-station-title">
         STATION
@@ -636,9 +788,6 @@
 
 </div>
 
-    <div class="contest-band-card">
-
-        <!-- HEADER -->
 
         <div class="contest-band-header">
 

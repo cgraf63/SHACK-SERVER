@@ -30,7 +30,7 @@ export interface QsoRecord {
 
     itu_zone?: number | null;
     cq_zone?: number | null;
-
+    contest_id?: string | null;
     notes?: string | null;
 
     spot_source?: string | null;
@@ -116,7 +116,7 @@ export class QsoService {
 
                 itu_zone INTEGER,
                 cq_zone INTEGER,
-
+                contest_id TEXT,
                 notes TEXT,
 
                 spot_source TEXT,
@@ -193,13 +193,13 @@ export class QsoService {
 
         if (
             !columnNames.includes(
-                "cq_zone"
+                "contest_id"
             )
         ) {
 
             this.db.exec(`
                 ALTER TABLE qso
-                ADD COLUMN cq_zone INTEGER
+                ADD COLUMN contest_id TEXT
             `);
 
         }
@@ -281,7 +281,7 @@ export class QsoService {
 
      const createdAt =
             new Date().toISOString();
-      
+
         const statement =
             this.db.prepare(`
                 INSERT INTO qso (
@@ -310,7 +310,7 @@ export class QsoService {
 
                     itu_zone,
                     cq_zone,
-
+                    contest_id,
                     notes,
 
                     spot_source,
@@ -344,6 +344,7 @@ export class QsoService {
                     ?,
                     ?,
 
+                    ?,
                     ?,
                     ?,
 
@@ -413,6 +414,10 @@ export class QsoService {
                     null,
 
 
+                qso.contest_id ??
+                    null,
+
+
                 qso.notes ??
                     null,
 
@@ -478,6 +483,7 @@ updateQso(
 
                 itu_zone = ?,
                 cq_zone = ?,
+                contest_id = ?,
 
                 notes = ?,
 
@@ -515,6 +521,7 @@ updateQso(
 
             qso.itu_zone ?? null,
             qso.cq_zone ?? null,
+            qso.contest_id ?? null,
 
             qso.notes ?? null,
 
@@ -666,7 +673,7 @@ getWorkedStatus() {
             `);
 
 const rows =
-	statement.all();
+        statement.all();
 
             return rows as unknown as QsoRecord[];
 

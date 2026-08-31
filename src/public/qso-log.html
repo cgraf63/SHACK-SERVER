@@ -187,13 +187,14 @@ main { max-width:none !important; }
 <th data-sort="name">Name</th>
 <th data-sort="band">Band</th>
 <th data-sort="mode">Mode</th>
+<th data-sort="contest_id">Contest</th>
 <th data-sort="frequency">Frequency</th>
 <th data-sort="rst_sent">RST</th>
 <th data-sort="country">Country</th>
 <th data-sort="dx_grid">DX Grid</th>
 <th class="no-sort">Actions</th>
 </tr></thead>
-<tbody id="qso-log-body"><tr><td colspan="11" class="qso-log-empty">Loading QSOs...</td></tr></tbody>
+<tbody id="qso-log-body"><tr><td colspan="12" class="qso-log-empty">Loading QSOs...</td></tr></tbody>
 </table>
 </div>
 </section>
@@ -216,7 +217,7 @@ async function loadQsoLog() {
     } catch (error) {
         console.error("QSO LOG:", error);
         count.textContent = "Error loading log";
-        body.innerHTML = `<tr><td colspan="11" class="qso-log-empty">Could not load QSO log.</td></tr>`;
+        body.innerHTML = `<tr><td colspan="12" class="qso-log-empty">Could not load QSO log.</td></tr>`;
     }
 }
 
@@ -227,7 +228,7 @@ function renderQsoLog() {
     const searchText = search.value.trim().toLowerCase();
     const filtered = qsoRecords.filter(qso => {
         if (!searchText) return true;
-        return [qso.call, qso.name, qso.country, qso.band, qso.mode, qso.dx_grid]
+        return [qso.call, qso.name, qso.country, qso.band, qso.mode, qso.contest_id, qso.dx_grid]
             .filter(value => value !== null && value !== undefined)
             .some(value => String(value).toLowerCase().includes(searchText));
     });
@@ -236,29 +237,31 @@ function renderQsoLog() {
     count.textContent = `${filtered.length} von ${qsoRecords.length} QSOs`;
 
     if (!filtered.length) {
-        body.innerHTML = `<tr><td colspan="11" class="qso-log-empty">No QSOs found.</td></tr>`;
+        body.innerHTML = `<tr><td colspan="12" class="qso-log-empty">No QSOs found.</td></tr>`;
         updateSortHeaders();
         return;
     }
 
     body.innerHTML = filtered.map(qso => `
         <tr>
-            <td>${escapeHtml(qso.qso_date || "")}</td>
-            <td>${escapeHtml(qso.time_on_utc || "")}</td>
-            <td class="qso-log-call">${escapeHtml(qso.call || "")}</td>
-            <td>${escapeHtml(qso.name || "")}</td>
-            <td>${escapeHtml(qso.band || "")}</td>
-            <td>${escapeHtml(qso.mode || "")}</td>
-            <td>${formatFrequency(qso.frequency)}</td>
-            <td>${escapeHtml(qso.rst_sent || "")}/${escapeHtml(qso.rst_rcvd || "")}</td>
-            <td>${qso.country_code ? `<img class="dx-flag" src="/assets/flags/${escapeHtml(qso.country_code)}.svg" alt="">` : ""}${escapeHtml(qso.country || "")}</td>
-            <td>${escapeHtml(qso.dx_grid || "")}</td>
-            <td class="qso-log-actions">
-                <button class="qso-log-action" title="Edit QSO" data-action="edit" data-id="${qso.id}">✏️</button>
-                <button class="qso-log-action" title="Delete QSO" data-action="delete" data-id="${qso.id}">🗑️</button>
-            </td>
-        </tr>`).join("");
+    <td>${escapeHtml(qso.qso_date || "")}</td>
+    <td>${escapeHtml(qso.time_on_utc || "")}</td>
+    <td class="qso-log-call">${escapeHtml(qso.call || "")}</td>
+    <td>${escapeHtml(qso.name || "")}</td>
+    <td>${escapeHtml(qso.band || "")}</td>
+    <td>${escapeHtml(qso.mode || "")}</td>
+    <td>${escapeHtml(qso.contest_id || "—")}</td>
+    <td>${formatFrequency(qso.frequency)}</td>
+    <td>${escapeHtml(qso.rst_sent || "")}/${escapeHtml(qso.rst_rcvd || "")}</td>
+    <td>${qso.country_code ? `<img class="dx-flag" src="/assets/flags/${escapeHtml(qso.country_code)}.svg" alt="">` : ""}${escapeHtml(qso.country || "")}</td>
+    <td>${escapeHtml(qso.dx_grid || "")}</td>
+    <td class="qso-log-actions">
+        <button class="qso-log-action" title="Edit QSO" data-action="edit" data-id="${qso.id}">✏️</button>
+        <button class="qso-log-action" title="Delete QSO" data-action="delete" data-id="${qso.id}">🗑️</button>
+    </td>
+</tr>
 
+`).join("");
     body.querySelectorAll(".qso-log-action").forEach(button => {
         button.addEventListener("click", () => handleQsoAction(button.dataset.action, Number(button.dataset.id)));
     });
