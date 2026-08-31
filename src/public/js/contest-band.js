@@ -701,6 +701,10 @@ item.addEventListener(
         }
 
 
+lookupContestSpotCallsign(
+    spot.call || ""
+);
+
                 if (frequency) {
 
             const spotFrequency =
@@ -928,9 +932,74 @@ function renderContestFrequencyScale(band) {
 /*
  * Initialize contest band viewer.
  */
+async function lookupContestSpotCallsign(callsign) {
+
+    const nameInput =
+        document.getElementById(
+            "contest-name"
+        );
+
+    const locatorInput =
+        document.getElementById(
+            "contest-locator"
+        );
+
+    if (!callsign) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/qso/qrz/${encodeURIComponent(callsign)}`
+            );
+
+        if (!response.ok) {
+            return;
+        }
+
+        const result =
+            await response.json();
+
+        const qrz =
+            result?.qrz;
+
+        if (!qrz) {
+            return;
+        }
+
+        if (nameInput) {
+            nameInput.value =
+                qrz.name || "";
+        }
+
+        if (locatorInput) {
+            locatorInput.value =
+                qrz.locator || "";
+        }
+
+    }
+    catch (error) {
+
+        console.warn(
+            "Contest QRZ lookup failed:",
+            error
+        );
+
+    }
+
+}
+
+
+
 function initContestBandViewer() {
 
     setupContestBandSelector();
+
+
+
+
 
     /*
      * Initial rendering.
