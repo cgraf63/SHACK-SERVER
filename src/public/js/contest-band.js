@@ -701,9 +701,19 @@ item.addEventListener(
         }
 
 
-        if (frequency) {
+                if (frequency) {
+
+            const spotFrequency =
+                Number(
+                    spot.frequency
+                );
+
             frequency.textContent =
-                spot.frequency || "—";
+                Number.isFinite(
+                    spotFrequency
+                )
+                    ? spotFrequency.toFixed(3)
+                    : "—";
         }
 
 
@@ -1479,9 +1489,9 @@ async function logContestQso() {
 
         contest_id:
 
-    String(
-        window.contestSessionId
-    )
+    	window.contestId ||
+		"999"
+    
 
     };
 

@@ -4,7 +4,7 @@
 
 let activeContestSession = null;
 let contestDefinitions = [];
-
+window.activeContestId = "999";
 
 /*
  * Helpers
@@ -39,6 +39,56 @@ function contestSessionStatus(session) {
 
 }
 
+function updateContestId() {
+
+
+    activeContestId = "999";
+    window.contestId = "999";
+
+    if (
+        !activeContestSession ||
+        !activeContestSession.id
+    ) {
+        return;
+    }
+
+    const definition =
+        contestDefinitions.find(
+            definition =>
+                Number(definition.id) ===
+                Number(
+                    activeContestSession
+                        .contest_definition_id
+                )
+        );
+
+    if (
+        !definition ||
+        !definition.short_name
+    ) {
+        console.error(
+            "Contest Short ID not found."
+        );
+
+        return;
+    }
+
+    activeContestId =
+        `${String(
+            definition.short_name
+        ).trim()}-${String(
+            activeContestSession.id
+        ).trim()}`;
+
+    window.contestId =
+        activeContestId;
+
+    console.log(
+        "Active Contest ID:",
+        window.contestId
+    );
+
+}
 
 function showContestSessionMessage(
     text,
@@ -270,7 +320,7 @@ async function loadContestSession() {
                     activeContestSession.id
                 )
                 : null;
-
+	updateContestId();
         renderContestSession();
 
     }
@@ -483,12 +533,17 @@ function formatContestDate(value) {
         "de-CH",
         {
             dateStyle: "short",
-            timeStyle: "medium"
+            timeStyle: "medium",
+	    timeZone: "UTC"
         }
     );
 
 }
 
+
+/*
+ * Create session.
+ */
 
 /*
  * Create session.
@@ -645,6 +700,8 @@ async function createContestSession() {
                 ? String(data.id)
                 : null;
 
+        updateContestId();
+
         renderContestSession();
 
         showContestSessionMessage(
@@ -667,7 +724,8 @@ async function createContestSession() {
 
     }
 
-}
+}           
+
 
 
 /*
