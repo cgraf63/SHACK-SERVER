@@ -83,6 +83,12 @@ function updateContestId() {
     window.contestId =
         activeContestId;
 
+document.dispatchEvent(
+    new CustomEvent(
+        "contestIdChanged"
+    )
+);
+
     console.log(
         "Active Contest ID:",
         window.contestId

@@ -973,8 +973,6 @@ else {
 }
 
 
-
-
 /*
  * Contest QSO Logger
  *
@@ -989,107 +987,9 @@ else {
 /*
  * Load and display recent Contest QSOs.
  *
- * Contest QSOs are identified by a non-empty contest_idp and session id
+ * Contest QSOs are identified by a non-empty contest_id.
  * The normal QSO log is the single source of truth.
  */
-
-function updateContestBandStatistics(qsos) {
-
-    const bands = [
-        "160",
-        "80",
-        "40",
-        "20",
-        "15",
-        "10"
-    ];
-
-    const counts = {};
-    const points = {};
-
-    bands.forEach(band => {
-        counts[band] = 0;
-        points[band] = 0;
-    });
-
-    const contestId =
-        String(window.contestId || "999").trim();
-
-    qsos
-        .filter(qso =>
-            String(qso.contest_id ?? "").trim() === contestId
-        )
-        .forEach(qso => {
-
-            const band =
-                String(qso.band || "")
-                    .toLowerCase()
-                    .replace("m", "")
-                    .trim();
-
-            if (!(band in counts)) {
-                return;
-            }
-
-            counts[band]++;
-
-            /*
-             * Points are not implemented yet.
-             */
-            points[band] += Number(qso.points) || 0;
-        });
-
-    let totalQsos = 0;
-    let totalPoints = 0;
-
-    bands.forEach(band => {
-
-        const qsoElement =
-            document.getElementById(
-                `contest-band-qso-${band}`
-            );
-
-        const pointsElement =
-            document.getElementById(
-                `contest-band-points-${band}`
-            );
-
-        if (qsoElement) {
-            qsoElement.textContent =
-                counts[band];
-        }
-
-        if (pointsElement) {
-            pointsElement.textContent =
-                points[band];
-        }
-
-        totalQsos += counts[band];
-        totalPoints += points[band];
-    });
-
-    const totalQsoElement =
-        document.getElementById(
-            "contest-band-qso-total"
-        );
-
-    const totalPointsElement =
-        document.getElementById(
-            "contest-band-points-total"
-        );
-
-    if (totalQsoElement) {
-        totalQsoElement.textContent =
-            totalQsos;
-    }
-
-    if (totalPointsElement) {
-        totalPointsElement.textContent =
-            totalPoints;
-    }
-}
-
-
 async function loadContestRecentQsos() {
 
     const body =
@@ -1135,9 +1035,6 @@ async function loadContestRecentQsos() {
             Array.isArray(data.qsos)
                 ? data.qsos
                 : [];
-
-
-        updateContestBandStatistics(qsos);
 
         const contestQsos =
             qsos
@@ -1712,25 +1609,6 @@ function setupContestQsoLogger() {
 /*
  * Initialize Contest QSO logger.
  */
-
-document.addEventListener(
-    "contestIdChanged",
-    () => {
-        loadContestRecentQsos();
-    }
-);
-
-
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        setupContestQsoLogger();
-        loadContestRecentQsos();
-
-    }
-);
-
 document.addEventListener(
     "DOMContentLoaded",
     () => {
