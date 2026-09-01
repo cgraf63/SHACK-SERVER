@@ -717,12 +717,9 @@
 
 .contest-bandplan {
     position: relative;
-
     height: 560px;
-
     overflow-y: auto;
     overflow-x: hidden;
-
     background:
         linear-gradient(
             to right,
@@ -733,13 +730,9 @@
     border: 1px solid #1d303b;
     border-radius: 5px;
 }
-
-
 .contest-band-scale {
     position: relative;
-
-    height: 1500px;
-
+    height: 2200px;
     min-height: 0;
 }
 
@@ -978,19 +971,7 @@
    ========================================= */
 
 .contest-current-frequency {
-    position: absolute;
-
-    left: 0;
-    right: 0;
-
-    top: 48%;
-
-    height: 1px;
-
-    background: rgba(255, 79, 163, 0.75);
-
-    box-shadow:
-        0 0 5px rgba(255, 79, 163, 0.35);
+display: none;
 }
 
 

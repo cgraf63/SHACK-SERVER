@@ -448,7 +448,7 @@ function renderContestBand() {
      * Minimum vertical distance between
      * two labels in the same lane.
      */
-    const minimumGap = 18;
+    const minimumGap = 26;
 
 
     /*
