@@ -149,7 +149,13 @@ export class SotaPotaService {
 
         const response =
             await fetch(
-                "https://api-db2.sota.org.uk/api/spots/50/all/all"
+                "https://api2.sota.org.uk/api/spots/50/all/all",
+                {
+                    headers: {
+                        "User-Agent":
+                            "SHACK-SERVER/1.0 (HB9ISO)"
+                    }
+                }
             );
 
 
