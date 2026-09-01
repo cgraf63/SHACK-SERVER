@@ -1,6 +1,9 @@
 const CONTEST_BAND_REFRESH = 10000;
 
+let contestQrzCountry = "";
+
 const CONTEST_BANDS = {
+
 
     "160m": {
         min: 1.800,
@@ -965,6 +968,10 @@ async function lookupContestSpotCallsign(callsign) {
         const qrz =
             result?.qrz;
 
+contestQrzCountry =
+    qrz?.country || "";
+
+
         if (!qrz) {
             return;
         }
@@ -1583,6 +1590,17 @@ async function logContestQso() {
     }
 
 
+console.log(
+    "Contest QSO QRZ data:",
+    {
+        call,
+        name,
+        locator,
+        contestQrzCountry
+    }
+);
+
+
     const qso = {
 
         qso_date:
@@ -1650,6 +1668,10 @@ async function logContestQso() {
         dx_grid:
 
             locator || null,
+
+country:
+    contestQrzCountry || null,
+
 
         notes:
 
