@@ -328,3 +328,91 @@ Dadurch muss der Rest des SHACK-SERVER nicht zwischen Yaesu und Icom unterscheid
 Die radio-spezifischen Details bleiben innerhalb von:
 
 `src/services/radio/icom.service.ts`
+
+
+---
+
+# Netzwerk / IP-Remote
+
+## Ziel
+
+Die bestehende Icom-CI-V-Integration soll zukünftig neben der
+seriellen Verbindung auch eine Netzwerkverbindung unterstützen.
+
+Die CI-V-Befehlsschicht bleibt dabei vom verwendeten Transport
+getrennt.
+
+## Zielgeräte
+
+### ICOM IC-705
+
+Netzwerkverbindung über WLAN.
+
+Status:
+- Netzwerk-Support: vorbereitet
+- Hardware-Test: noch offen
+
+### ICOM IC-7300
+
+Für die direkte SHACK-SERVER-Anbindung ist weiterhin
+USB/CI-V vorgesehen.
+
+Status:
+- USB/CI-V: vorgesehen
+- direktes LAN: nicht vorgesehen
+
+### ICOM IC-7300MK2
+
+Netzwerkverbindung über Ethernet.
+
+Status:
+- Netzwerk-Support: vorbereitet
+- Hardware-Test: noch offen
+
+## Konfiguration
+
+Vorgesehen ist eine Unterscheidung zwischen serieller und
+Netzwerkverbindung:
+
+    connection: "serial" | "network"
+
+Für den Netzwerkbetrieb:
+
+    host?: string
+    port?: number
+
+Die konkrete IP-Remote-Kommunikation ist noch nicht implementiert
+und muss mit einem realen Gerät getestet werden.
+
+## Architektur
+
+    RadioManager
+          |
+      IcomService
+          |
+       CI-V Layer
+        /            Serial    Network
+
+Der RadioService bleibt unverändert.
+
+## Noch offen
+
+- Netzwerktransport implementieren
+- Netzwerkverbindung testen
+- eingehende CI-V-Daten verarbeiten
+- Frequenz lesen und setzen
+- Mode lesen und setzen
+- Leistung lesen
+- IC-705 und IC-7300MK2 vergleichen
+- reale Hardwaretests durchführen
+
+## Status
+
+    CI-V Frame Layer       vorbereitet
+    Frequenz BCD           vorbereitet
+    Mode Mapping           vorbereitet
+    Serial Transport       offen
+    Network Transport      vorbereitet
+    IP-Remote-Test         offen
+    Hardware-Test          offen
+

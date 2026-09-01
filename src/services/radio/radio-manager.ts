@@ -15,6 +15,10 @@ import {
 } from "./icom.service.js";
 
 import {
+    QmxService
+} from "./qmx.service.js";
+
+import {
     radios
 } from "../../config/radios.config.js";
 
@@ -121,6 +125,17 @@ export class RadioManager {
 
                     service =
                         new IcomService(
+                            config.device,
+                            config.baudRate
+                        );
+
+                    break;
+
+
+                case "qmx":
+
+                    service =
+                        new QmxService(
                             config.device,
                             config.baudRate
                         );

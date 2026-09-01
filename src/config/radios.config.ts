@@ -7,11 +7,32 @@ export interface RadioConfig {
     protocol:
         | "rgo-one"
         | "yaesu"
-        | "icom";
+        | "icom"
+        | "qmx";
 
     device: string;
 
     baudRate: number;
+
+    /*
+     * Radio transport.
+     *
+     * Serial is the current/default transport.
+     * Network is prepared for Icom IP remote.
+     */
+    connection?:
+        | "serial"
+        | "network";
+
+    /*
+     * Network parameters.
+     *
+     * Currently used as configuration only.
+     * The Icom IP transport is not implemented yet.
+     */
+    host?: string;
+
+    port?: number;
 
     enabled: boolean;
 
@@ -56,15 +77,13 @@ export const radios:
 
 
     {
-
         id: "ftx-1",
 
         name: "YAESU FTX-1",
 
         protocol: "yaesu",
 
-        device:  "/dev/serial/by-id/usb-Silicon_Labs_CP2105_Dual_USB_to_UART_Bridge_Controller_01D1A32D-if00-port0",
-
+        device: "/dev/serial/by-id/usb-Silicon_Labs_CP2105_Dual_USB_to_UART_Bridge_Controller_01D1A32D-if00-port0",
 
         baudRate: 38400,
 
@@ -72,8 +91,24 @@ export const radios:
 
     },
 
-    {
 
+    {
+        id: "qmx-plus",
+
+        name: "QRP Labs QMX+",
+
+        protocol: "qmx",
+
+        device: "",
+
+        baudRate: 115200,
+
+        enabled: false
+
+    },
+
+
+    {
         id: "icom-705",
 
         name: "ICOM IC-705",

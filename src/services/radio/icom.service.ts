@@ -41,7 +41,12 @@ export class IcomService
     constructor(
         private device: string,
         private baudRate: number,
-        civAddress = 0x94
+        civAddress = 0x94,
+        private connection:
+            "serial" |
+            "network" = "serial",
+        private host = "",
+        private port = 50002
     ) {
 
         this.civAddress =
@@ -73,6 +78,40 @@ export class IcomService
                 .toString(16)
                 .toUpperCase()
         );
+
+        console.log(
+            "Connection:",
+            this.connection
+        );
+
+        if (
+            this.connection === "network"
+        ) {
+
+            console.log(
+                "Network host:",
+                this.host
+            );
+
+            console.log(
+                "Network port:",
+                this.port
+            );
+
+            /*
+             * TODO:
+             *
+             * Implement the Icom IP-Remote
+             * transport here.
+             *
+             * CI-V frame creation and parsing
+             * are intentionally kept independent
+             * from the transport.
+             *
+             * No network traffic is sent yet.
+             */
+
+        }
 
     }
 
