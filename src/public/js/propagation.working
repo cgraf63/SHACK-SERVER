@@ -371,6 +371,7 @@ async function updateStationInline() {
                 "/api/radio"
             );
 
+
         if (!response.ok) {
 
             throw new Error(
@@ -379,108 +380,211 @@ async function updateStationInline() {
 
         }
 
+
         const data =
             await response.json();
+
 
         const station =
             document.getElementById(
                 "station-inline-content"
             );
 
+
         if (!station) {
+
             return;
+
         }
+
 
         const radios =
-            Array.isArray(data.radios)
-                ? data.radios
-                : [];
-
-        station.innerHTML = "";
-
-        if (!radios.length) {
-            return;
-        }
-
-        /*
-         * Only radios enabled in
-         * radios.config.ts are shown.
-         */
-        const availableRadios =
-            radios.filter(
-                radio =>
-                    radio &&
-                    radio.id &&
-                    radio.name
-            );
-
-        if (!availableRadios.length) {
-            return;
-        }
-
-        const activeRadio =
-            availableRadios.find(
-                radio =>
-                    radio.active
-            ) ||
-            availableRadios[0];
-
-        /*
-         * Container keeps the selector
-         * to the left of the active radio.
-         */
-        const wrapper =
-            document.createElement(
-                "div"
-            );
-
-        wrapper.className =
-            "station-inline-wrapper";
+            data.radios ||
+            [];
 
 
-        /*
-         * Radio selector
-         */
-        const select =
-            document.createElement(
-                "select"
-            );
-
-        select.className =
-            "station-inline-selector";
-
-        select.setAttribute(
-            "aria-label",
-            "Active Transceiver"
-        );
+        station.innerHTML =
+            "";
 
 
-        availableRadios.forEach(
+        radios.forEach(
             radio => {
 
-                const option =
+                const frequency =
+                    radio.frequency
+                        ? `${(
+                            radio.frequency /
+                            1000000
+                        ).toFixed(
+                            3
+                        )} MHz`
+                        : "---.--- MHz";
+
+
+                const mode =
+                    radio.mode ||
+                    "--";
+
+
+                const power =
+                    `${radio.power ?? 0} W`;
+
+
+                const catStatus =
+                    radio.connected
+                        ? "CAT Connected"
+                        : "CAT Disconnected";
+
+
+                const card =
                     document.createElement(
-                        "option"
+                        "div"
                     );
 
-                option.value =
-                    String(
-                        radio.id
-                    );
 
-                option.textContent =
-                    radio.name;
+                card.className =
+                    "station-inline-radio";
+
 
                 if (
-                    radio.id ===
-                    activeRadio.id
+                    radio.active
                 ) {
-                    option.selected =
-                        true;
+
+                    card.classList.add(
+                        "active"
+                    );
+
                 }
 
-                select.appendChild(
-                    option
+
+                if (
+                    !radio.connected
+                ) {
+
+                    card.classList.add(
+                        "disconnected"
+                    );
+
+                }
+
+card.innerHTML = `
+
+    <div class="station-inline-top">
+
+        <span class="station-inline-name">
+
+            ${radio.name}
+
+        </span>
+
+        <span class="station-inline-cat">
+
+            <span
+    class="cat-dot ${
+        radio.connected
+            ? "connected"
+            : "disconnected"
+    }"
+></span>
+
+CAT
+
+        </span>
+
+    </div>
+
+
+    <div class="station-inline-bottom">
+
+        <span class="station-inline-data">
+
+            ${frequency}
+            ·
+            ${mode}
+            ·
+            ${power}
+
+        </span>
+
+    </div>
+
+`;
+
+
+                card.addEventListener(
+                    "click",
+                    async () => {
+
+                        if (
+                            radio.id ===
+                            data.activeRadioId
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        try {
+
+                            const response =
+                                await fetch(
+                                    "/api/radio/active",
+                                    {
+
+                                        method:
+                                            "POST",
+
+                                        headers: {
+
+                                            "Content-Type":
+                                                "application/json"
+
+                                        },
+
+                                        body:
+                                            JSON.stringify(
+                                                {
+
+                                                    radioId:
+                                                        radio.id
+
+                                                }
+                                            )
+
+                                    }
+                                );
+
+
+                            if (
+                                !response.ok
+                            ) {
+
+                                throw new Error(
+                                    `HTTP ${response.status}`
+                                );
+
+                            }
+
+
+                            updateStationInline();
+
+                        }
+                        catch (error) {
+
+                            console.error(
+                                "Active radio change failed:",
+                                error
+                            );
+
+                        }
+
+                    }
+                );
+
+
+                station.appendChild(
+                    card
                 );
 
             }
@@ -488,186 +592,17 @@ async function updateStationInline() {
 
 
         /*
-         * Change active radio.
-         */
-        select.addEventListener(
-            "change",
-            async event => {
-
-                const target =
-                    event.target;
-
-                if (
-                    !(target instanceof
-                    HTMLSelectElement)
-                ) {
-                    return;
-                }
-
-                const radioId =
-                    target.value;
-
-                if (!radioId) {
-                    return;
-                }
-
-                select.disabled =
-                    true;
-
-                try {
-
-                    const response =
-                        await fetch(
-                            "/api/radio/active",
-                            {
-
-                                method:
-                                    "POST",
-
-                                headers: {
-                                    "Content-Type":
-                                        "application/json"
-                                },
-
-                                body:
-                                    JSON.stringify(
-                                        {
-                                            radioId:
-                                                radioId
-                                        }
-                                    )
-
-                            }
-                        );
-
-                    if (!response.ok) {
-
-                        throw new Error(
-                            `HTTP ${response.status}`
-                        );
-
-                    }
-
-                    await updateStationInline();
-
-                }
-                catch (error) {
-
-                    console.error(
-                        "Active radio change failed:",
-                        error
-                    );
-
-                    select.value =
-                        String(
-                            activeRadio.id
-                        );
-
-                }
-                finally {
-
-                    select.disabled =
-                        false;
-
-                }
-
-            }
-        );
-
-
-        /*
-         * Active radio card
-         */
-        const frequency =
-            activeRadio.frequency
-                ? `${(
-                    activeRadio.frequency /
-                    1000000
-                ).toFixed(3)} MHz`
-                : "---.--- MHz";
-
-        const mode =
-            activeRadio.mode ||
-            "--";
-
-        const power =
-            `${activeRadio.power ?? 0} W`;
-
-        const card =
-            document.createElement(
-                "div"
-            );
-
-        card.className =
-            "station-inline-radio";
-
+            Fallback
+        */
 
         if (
-            !activeRadio.connected
+            radios.length === 0
         ) {
 
-            card.classList.add(
-                "disconnected"
-            );
+            station.textContent =
+                "Not configured";
 
         }
-        else {
-
-            card.classList.add(
-                "active"
-            );
-
-        }
-
-
-        card.innerHTML = `
-            <div class="station-inline-top">
-
-                <span class="station-inline-name">
-                    ${activeRadio.name}
-                </span>
-
-                <span class="station-inline-cat">
-
-                    <span
-                        class="cat-dot ${
-                            activeRadio.connected
-                                ? "connected"
-                                : "disconnected"
-                        }"
-                    ></span>
-
-                    CAT
-
-                </span>
-
-            </div>
-
-            <div class="station-inline-bottom">
-
-                <span class="station-inline-data">
-                    ${frequency}
-                    ·
-                    ${mode}
-                    ·
-                    ${power}
-                </span>
-
-            </div>
-        `;
-
-
-        wrapper.appendChild(
-            select
-        );
-
-        wrapper.appendChild(
-            card
-        );
-
-        station.appendChild(
-            wrapper
-        );
 
     }
     catch (error) {
