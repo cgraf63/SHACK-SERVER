@@ -349,6 +349,9 @@ async function loadContestSession() {
                 : null;
 	updateContestId();
         renderContestSession();
+if (typeof updateContestCantonField === "function") {
+    updateContestCantonField();
+}
 
     }
     catch (error) {

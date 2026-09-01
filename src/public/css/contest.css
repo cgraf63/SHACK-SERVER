@@ -369,6 +369,40 @@
 }
 
 
+/* Canton dropdown */
+
+.contest-entry-field select {
+    width: 100%;
+    box-sizing: border-box;
+
+    height: 38px;
+    padding: 8px 10px;
+
+    color: #ffffff;
+    background: #101f29;
+
+    border: 1px solid #2b424e;
+    border-radius: 5px;
+
+    outline: none;
+
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.contest-entry-field select:focus {
+    border-color: #00e5ff;
+
+    box-shadow:
+        0 0 0 1px rgba(0, 229, 255, 0.18);
+}
+
+.contest-entry-field select option {
+    color: #ffffff;
+    background: #101f29;
+}
+
+
 .contest-entry-field input {
     width: 100%;
 

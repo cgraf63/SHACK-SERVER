@@ -1005,6 +1005,9 @@ function initContestBandViewer() {
     setupContestBandSelector();
 
 
+    updateContestCantonField();
+
+
 
 
 
@@ -1440,6 +1443,49 @@ async function loadContestRecentQsos() {
 
 }
 
+
+function isHelvetiaContest() {
+
+    const contestId =
+        String(
+            window.contestId || ""
+        ).trim();
+
+    return contestId.startsWith("123-");
+}
+
+
+function updateContestCantonField() {
+
+    const field =
+        document.getElementById(
+            "contest-canton-field"
+        );
+
+    const select =
+        document.getElementById(
+            "contest-canton"
+        );
+
+    if (!field || !select) {
+        return;
+    }
+
+    if (isHelvetiaContest()) {
+
+        field.hidden = false;
+
+    }
+    else {
+
+        field.hidden = true;
+        select.value = "";
+
+    }
+
+}
+
+
 async function logContestQso() {
 
     const call =
@@ -1500,6 +1546,13 @@ async function logContestQso() {
             "contest-exchange-received"
         )?.value
         .trim() || "";
+
+    const canton =
+        document.getElementById(
+            "contest-canton"
+        )?.value
+        .trim()
+        .toUpperCase() || "";
 
 
     const frequencyText =
@@ -1656,6 +1709,14 @@ async function logContestQso() {
 
         exchangeParts.push(
             `Contest Exchange Received: ${exchangeReceived}`
+        );
+
+    }
+
+    if (canton) {
+
+        exchangeParts.push(
+            `Contest Canton: ${canton}`
         );
 
     }
@@ -1819,6 +1880,15 @@ await loadContestRecentQsos();
         document.getElementById(
             "contest-exchange-received"
         ).value = "";
+
+        const cantonField =
+            document.getElementById(
+                "contest-canton"
+            );
+
+        if (cantonField) {
+            cantonField.value = "";
+        }
 
 
         document.getElementById(
