@@ -83,6 +83,27 @@ function updateContestId() {
     window.contestId =
         activeContestId;
 
+    window.contestExchangeSent =
+        definition.rules_json
+            ? (() => {
+                try {
+                    const rules =
+                        JSON.parse(
+                            definition.rules_json
+                        );
+
+                    return String(
+                        rules?.exchange?.sent ||
+                        "none"
+                    ).trim().toLowerCase();
+
+                }
+                catch {
+                    return "none";
+                }
+            })()
+            : "none";
+
 document.dispatchEvent(
     new CustomEvent(
         "contestIdChanged"

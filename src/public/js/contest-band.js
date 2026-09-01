@@ -1165,6 +1165,75 @@ function updateContestBandStatistics(qsos) {
     }
 }
 
+function updateContestSerialNumber(qsos) {
+
+    const exchangeInput =
+        document.getElementById(
+            "contest-exchange-sent"
+        );
+
+    if (!exchangeInput) {
+        return;
+    }
+
+    if (
+        String(
+            window.contestExchangeSent || "none"
+        ).toLowerCase() !== "serial"
+    ) {
+        return;
+    }
+
+    const contestId =
+        String(
+            window.contestId || ""
+        ).trim();
+
+    let maxSerial = 0;
+
+    qsos
+        .filter(
+            qso =>
+                String(
+                    qso.contest_id ?? ""
+                ).trim() === contestId
+        )
+        .forEach(
+            qso => {
+
+                const notes =
+                    String(
+                        qso.notes || ""
+                    );
+
+                const match =
+                    notes.match(
+                        /Contest Exchange Sent:\s*(\d+)/i
+                    );
+
+                if (!match) {
+                    return;
+                }
+
+                const serial =
+                    Number(
+                        match[1]
+                    );
+
+                if (
+                    Number.isInteger(serial) &&
+                    serial > maxSerial
+                ) {
+                    maxSerial = serial;
+                }
+
+            }
+        );
+
+    exchangeInput.value =
+        String(maxSerial + 1);
+
+}
 
 async function loadContestRecentQsos() {
 
@@ -1214,6 +1283,8 @@ async function loadContestRecentQsos() {
 
 
         updateContestBandStatistics(qsos);
+	updateContestSerialNumber(qsos);
+
 
         const contestQsos =
             qsos
