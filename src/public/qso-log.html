@@ -77,6 +77,67 @@ main { max-width:none !important; }
     }
 
 
+/* =========================================================
+   QSO LOG FILTERS
+   ========================================================= */
+
+.qso-log-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.qso-log-filter-row .qso-log-search {
+    flex: 1;
+}
+
+.qso-log-contest-filter {
+    width: 170px;
+    min-width: 170px;
+
+    padding: 10px 13px;
+
+    border: 1px solid #344754;
+    border-radius: 6px;
+
+    background: #101c25;
+    color: white;
+
+    outline: none;
+    box-sizing: border-box;
+
+    font: inherit;
+}
+
+.qso-log-contest-filter:focus {
+    border-color: #607d8b;
+}
+
+
+/* =========================================================
+   RESPONSIVE FILTERS
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+    .qso-log-filter-row {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .qso-log-filter-row .qso-log-search {
+        width: 100% !important;
+    }
+
+    .qso-log-contest-filter {
+        width: 100%;
+        min-width: 0;
+    }
+
+}
+
+
 .qso-log-search { width:280px !important; min-width:220px; padding:10px 13px; border:1px solid #344754; border-radius:6px; background:#101c25; color:white; outline:none; box-sizing:border-box; }
 .qso-log-search::placeholder { color:#71838f; }
 .qso-log-search:focus { border-color:#607d8b; }
@@ -132,52 +193,99 @@ main { max-width:none !important; }
 <div id="app">
 <main>
 <section class="qso-log-page">
+
 <div class="qso-log-header">
-<div class="qso-log-title">
-<div class="qso-log-brand">
 
-                    <img
-                        src="/images/qso-logo.png"
-                        alt=""
-                    >
+    <div class="qso-log-title">
 
-                    <h1>
-                        QSO LOG
-                    </h1>
+        <div class="qso-log-brand">
 
-                </div>
-<div id="qso-log-count" class="qso-log-count">Loading...</div>
+            <img
+                src="/images/qso-logo.png"
+                alt=""
+            >
+
+            <h1>
+                QSO LOG
+            </h1>
+
+        </div>
+
+        <div
+            id="qso-log-count"
+            class="qso-log-count"
+        >
+            Loading...
+        </div>
+
+    </div>
+
+
+    <div class="qso-log-controls">
+
+        <div class="qso-log-adif-tools">
+
+            <button
+                id="qso-log-import-adif"
+                class="qso-log-export"
+                type="button"
+            >
+                IMPORT ADIF
+            </button>
+
+            <button
+                id="qso-log-export-adif"
+                class="qso-log-export"
+                type="button"
+            >
+                EXPORT ADIF
+            </button>
+
+            <button
+                id="qso-log-export-cabrillo"
+                class="qso-log-export"
+                type="button"
+                disabled
+            >
+                EXPORT CABRILLO
+            </button>
+
+            <input
+                id="qso-log-import-file"
+                type="file"
+                accept=".adi,.adif"
+                style="display:none"
+            >
+
+        </div>
+
+
+        <div class="qso-log-filter-row">
+
+            <input
+                id="qso-log-search"
+                class="qso-log-search"
+                type="search"
+                placeholder="Search callsign, country..."
+                autocomplete="off"
+            >
+
+            <select
+                id="qso-log-contest-filter"
+                class="qso-log-contest-filter"
+            >
+                <option value="">
+                    All Contests
+                </option>
+            </select>
+
+        </div>
+
+    </div>
+
 </div>
 
-            <div class="qso-log-adif-tools">
 
-                <button
-                    id="qso-log-import-adif"
-                    class="qso-log-export"
-                    type="button"
-                >
-                    IMPORT ADIF
-                </button>
-
-                <button
-                    id="qso-log-export-adif"
-                    class="qso-log-export"
-                    type="button"
-                >
-                    EXPORT ADIF
-                </button>
-
-                <input
-                    id="qso-log-import-file"
-                    type="file"
-                    accept=".adi,.adif"
-                    style="display:none"
-                >
-
-            </div>
-
-<input id="qso-log-search" class="qso-log-search" type="search" placeholder="Search callsign, country..." autocomplete="off">
-</div>
 <div class="qso-log-table-wrapper">
 <table class="qso-log-table">
 <thead><tr>
@@ -204,6 +312,7 @@ main { max-width:none !important; }
 let qsoRecords = [];
 let sortField = "qso_date";
 let sortDirection = "desc";
+let contestFilter = "";
 
 async function loadQsoLog() {
     const body = document.getElementById("qso-log-body");
@@ -213,6 +322,9 @@ async function loadQsoLog() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         qsoRecords = Array.isArray(data.qsos) ? data.qsos : [];
+
+        populateContestFilter();
+
         renderQsoLog();
     } catch (error) {
         console.error("QSO LOG:", error);
@@ -221,17 +333,170 @@ async function loadQsoLog() {
     }
 }
 
+function updateCabrilloButton() {
+
+    const button =
+        document.getElementById(
+            "qso-log-export-cabrillo"
+        );
+
+    const filter =
+        document.getElementById(
+            "qso-log-contest-filter"
+        );
+
+    if (!button || !filter) {
+        return;
+    }
+
+    button.disabled =
+        !filter.value;
+
+}
+
+
+function populateContestFilter() {
+
+    const select =
+        document.getElementById(
+            "qso-log-contest-filter"
+        );
+
+    if (!select) {
+        return;
+    }
+
+    const contests =
+        [...new Set(
+            qsoRecords
+                .map(
+                    qso =>
+                        qso.contest_id
+                )
+                .filter(
+                    value =>
+                        value !== null &&
+                        value !== undefined &&
+                        String(value).trim() !== ""
+                )
+                .map(
+                    value =>
+                        String(value).trim()
+                )
+        )]
+        .sort(
+            (a, b) =>
+                a.localeCompare(
+                    b,
+                    "de",
+                    {
+                        numeric: true,
+                        sensitivity: "base"
+                    }
+                )
+        );
+
+    select.innerHTML =
+        '<option value="">All Contests</option>';
+
+    contests.forEach(
+        contestId => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                contestId;
+
+            option.textContent =
+                contestId;
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+    select.value =
+        contestFilter;
+
+    updateCabrilloButton();
+
+}
+
+
 function renderQsoLog() {
     const body = document.getElementById("qso-log-body");
     const count = document.getElementById("qso-log-count");
-    const search = document.getElementById("qso-log-search");
-    const searchText = search.value.trim().toLowerCase();
-    const filtered = qsoRecords.filter(qso => {
-        if (!searchText) return true;
-        return [qso.call, qso.name, qso.country, qso.band, qso.mode, qso.contest_id, qso.dx_grid]
-            .filter(value => value !== null && value !== undefined)
-            .some(value => String(value).toLowerCase().includes(searchText));
-    });
+    const search =
+        document.getElementById(
+            "qso-log-search"
+        );
+
+    const contestSelect =
+        document.getElementById(
+            "qso-log-contest-filter"
+        );
+
+    const searchText =
+        search.value.trim().toLowerCase();
+
+    const selectedContest =
+        contestSelect
+            ? contestSelect.value
+            : "";
+
+    contestFilter =
+        selectedContest;
+
+    const filtered =
+        qsoRecords.filter(
+            qso => {
+
+                if (
+                    contestFilter &&
+                    String(
+                        qso.contest_id ?? ""
+                    ).trim() !==
+                    contestFilter
+                ) {
+                    return false;
+                }
+
+                if (!searchText) {
+                    return true;
+                }
+
+                return [
+                    qso.call,
+                    qso.name,
+                    qso.country,
+                    qso.band,
+                    qso.mode,
+                    qso.contest_id,
+                    qso.dx_grid
+                ]
+                    .filter(
+                        value =>
+                            value !== null &&
+                            value !== undefined
+                    )
+                    .some(
+                        value =>
+                            String(
+                                value
+                            )
+                            .toLowerCase()
+                            .includes(
+                                searchText
+                            )
+                    );
+
+            }
+        );
 
     filtered.sort((a,b) => compareValues(a[sortField], b[sortField]) * (sortDirection === "asc" ? 1 : -1));
     count.textContent = `${filtered.length} von ${qsoRecords.length} QSOs`;
@@ -426,8 +691,28 @@ function formatFrequency(frequency) { const value=Number(frequency); if(!Number.
 function formatFrequencyInput(frequency) { const value=Number(frequency); return Number.isFinite(value) ? (value/1000).toFixed(3) : ""; }
 function escapeHtml(value) { return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
 
-document.getElementById("qso-log-search").addEventListener("input",renderQsoLog);
-document.querySelectorAll(".qso-log-table th[data-sort]").forEach(th=>{
+document.getElementById(
+    "qso-log-search"
+).addEventListener(
+    "input",
+    renderQsoLog
+);
+
+document.getElementById(
+    "qso-log-contest-filter"
+).addEventListener(
+    "change",
+    () => {
+
+        renderQsoLog();
+        updateCabrilloButton();
+
+    }
+);
+
+document.querySelectorAll(
+    ".qso-log-table th[data-sort]"
+).forEach(th=>{
     th.addEventListener("click",()=>{
         const field=th.dataset.sort;
         if(sortField===field) sortDirection=sortDirection==="asc"?"desc":"asc";
@@ -435,6 +720,29 @@ document.querySelectorAll(".qso-log-table th[data-sort]").forEach(th=>{
         renderQsoLog();
     });
 });
+document.getElementById(
+    "qso-log-export-cabrillo"
+).addEventListener(
+    "click",
+    () => {
+
+        const filter =
+            document.getElementById(
+                "qso-log-contest-filter"
+            );
+
+        if (!filter || !filter.value) {
+            return;
+        }
+
+        console.log(
+            "Cabrillo export requested:",
+            filter.value
+        );
+
+    }
+);
+
 document.addEventListener("keydown",event=>{ if(event.key==="Escape") closeEditQsoDialog(); });
 
 

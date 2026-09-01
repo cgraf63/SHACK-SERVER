@@ -1,0 +1,476 @@
+/* =========================================================
+   CONTEST MANAGER
+   Dedicated page styling
+   ========================================================= */
+
+.contest-page {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0 0 40px 0;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.contest-page .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+
+    margin-bottom: 20px;
+}
+
+.contest-page .page-header h1 {
+    margin: 0 0 6px 0;
+    color: #ff4fa3;
+    font-size: 28px;
+    line-height: 1.15;
+}
+
+.contest-page .page-header p {
+    margin: 0;
+    color: var(--muted-text, #9aa4ad);
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.contest-page .card {
+    margin-bottom: 12px;
+    padding: 14px 18px;
+
+    background: rgba(12, 25, 34, 0.94);
+    border: 1px solid var(--panel-border, #20313c);
+    border-radius: 8px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CARD HEADER
+   ========================================================= */
+
+.contest-page .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+
+    border-bottom: 1px solid #1c303b;
+}
+
+.contest-page .card-header h2 {
+    margin: 0 0 5px 0;
+    color: #00e5ff;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.contest-page .card-header p {
+    margin: 0;
+    color: var(--muted-text, #8f9ba4);
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.contest-page .table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.contest-page table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.contest-page th {
+    padding: 11px 12px;
+
+    color: #ffc400;
+    background: #0b1821;
+
+    border-bottom: 1px solid #263b47;
+
+    font-size: 11px;
+    font-weight: 700;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.contest-page td {
+    padding: 11px 12px;
+
+    color: #d7dfe3;
+
+    border-bottom: 1px solid #182a34;
+
+    font-size: 13px;
+}
+
+.contest-page tbody tr:hover {
+    background: rgba(0, 229, 255, 0.035);
+}
+
+.contest-page .empty-state {
+    padding: 24px !important;
+    color: #74818a !important;
+    text-align: center;
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+#contest-form {
+    width: 100%;
+}
+
+.contest-section {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+
+    background: rgba(8, 20, 28, 0.72);
+    border: 1px solid #1d303b;
+    border-radius: 7px;
+
+    box-sizing: border-box;
+}
+
+.contest-section:last-of-type {
+    margin-bottom: 0;
+}
+
+.contest-section h3 {
+    margin: 0 0 10px 0;
+
+    color: #00e5ff;
+    font-size: 14px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.45px;
+}
+
+
+/* =========================================================
+   GENERAL FORM GRID
+   ========================================================= */
+
+.contest-page .form-grid {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 2fr)
+        minmax(180px, 1fr)
+        minmax(140px, 0.7fr);
+
+    gap: 10px 14px;
+}
+
+.contest-page .form-group {
+    min-width: 0;
+}
+
+.contest-page .form-group label {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #c9d2d8;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    text-transform: uppercase;
+    letter-spacing: 0.35px;
+}
+
+.contest-page .form-group input,
+.contest-page .form-group select,
+.contest-page .form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 8px 10px;
+
+    color: #ffffff;
+    background: #101f29;
+
+    border: 1px solid #2b424e;
+    border-radius: 5px;
+
+    outline: none;
+
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.contest-page .form-group input:focus,
+.contest-page .form-group select:focus,
+.contest-page .form-group textarea:focus {
+    border-color: #00e5ff;
+
+    box-shadow:
+        0 0 0 1px rgba(0, 229, 255, 0.18);
+}
+
+.contest-page .form-group textarea {
+    min-height: 65px;
+    resize: vertical;
+}
+
+
+/* =========================================================
+   CHECKBOX / OPTION GROUPS
+   ========================================================= */
+
+.contest-options {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(120px, 1fr));
+
+    gap: 9px;
+}
+
+.contest-option {
+    display: flex;
+    align-items: center;
+
+    min-height: 38px;
+    padding: 8px 10px;
+
+    background: #0b1821;
+
+    border: 1px solid #1d303b;
+    border-radius: 5px;
+
+    box-sizing: border-box;
+}
+
+.contest-option:hover {
+    border-color: #2c505f;
+    background: #0e1e29;
+}
+
+.contest-option input {
+    margin: 0 8px 0 0;
+    accent-color: #b56cff;
+}
+
+.contest-option label {
+    margin: 0;
+
+    color: #d4dde2;
+
+    font-size: 12px;
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   EXCHANGE / SCORING / DUPLICATE ROWS
+   ========================================================= */
+
+.contest-rule-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+.contest-rule-block {
+    padding: 14px;
+
+    background: #0b1821;
+
+    border: 1px solid #1d303b;
+    border-radius: 6px;
+}
+
+.contest-rule-block h4 {
+    margin: 0 0 10px 0;
+
+    color: #ffc400;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+
+/* =========================================================
+   FORM ACTIONS
+   ========================================================= */
+
+.contest-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 22px;
+    padding-top: 16px;
+
+    border-top: 1px solid #1c303b;
+}
+
+.contest-form-actions .button {
+    min-width: 120px;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.contest-page .button {
+    padding: 9px 15px;
+
+    border-radius: 5px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.contest-page .button.primary {
+    color: #ffffff;
+    background: #b56cff;
+    border: 1px solid #b56cff;
+}
+
+.contest-page .button.primary:hover {
+    background: #c17dff;
+}
+
+.contest-page .button.secondary {
+    color: #d5dde2;
+    background: #14232d;
+    border: 1px solid #30434e;
+}
+
+.contest-page .button.secondary:hover {
+    background: #1b303d;
+}
+
+
+/* =========================================================
+   STATUS / ACTION CELLS
+   ========================================================= */
+
+.contest-page .status {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 4px 8px;
+
+    border-radius: 4px;
+
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.contest-page .status.enabled {
+    color: #7cff8a;
+    background: rgba(124, 255, 138, 0.08);
+    border: 1px solid rgba(124, 255, 138, 0.20);
+}
+
+.contest-page .status.disabled {
+    color: #84929b;
+    background: rgba(132, 146, 155, 0.08);
+    border: 1px solid rgba(132, 146, 155, 0.20);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .contest-page .form-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .contest-rule-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 760px) {
+
+    .contest-page .page-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .contest-page .page-header .button {
+        width: 100%;
+    }
+
+    .contest-page .card {
+        padding: 16px;
+    }
+
+    .contest-page .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contest-section {
+        padding: 14px;
+    }
+
+    .contest-options {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .contest-form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .contest-form-actions .button {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 460px) {
+
+    .contest-options {
+        grid-template-columns: 1fr;
+    }
+
+}
+
