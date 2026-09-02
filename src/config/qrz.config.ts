@@ -4,6 +4,8 @@ export const qrzConfig = {
         process.env.QRZ_USER ?? "",
 
     password:
-        process.env.QRZ_PASSWORD ?? ""
+        process.env.QRZ_PASSWORD ?? "",
 
+ apiKey:
+        process.env.QRZ_API_KEY ?? ""
 };

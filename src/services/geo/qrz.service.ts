@@ -9,6 +9,10 @@ import {
 } from "./geo.model.js";
 
 import {
+    QsoRecord
+} from "../qso/qso.service.js";
+
+import {
     qrzConfig
 } from "../../config/qrz.config.js";
 
@@ -298,6 +302,301 @@ export class QRZService {
         }
 
     }
+
+    private buildQrzAdif(
+        qso: QsoRecord
+    ): string {
+
+        const fields: string[] = [];
+
+
+        const addField = (
+            name: string,
+            value: string | number | null | undefined
+        ) => {
+
+            if (
+                value === null ||
+                value === undefined ||
+                value === ""
+            ) {
+                return;
+            }
+
+
+            const text =
+                String(value);
+
+            fields.push(
+                `<${name}:${text.length}>${text}`
+            );
+        };
+
+
+        const qsoDate =
+            qso.qso_date
+                .replaceAll("-", "");
+
+
+        const timeOn =
+            qso.time_on_utc
+                .replaceAll(":", "")
+                .replaceAll(" ", "");
+
+
+        const timeOff =
+            qso.time_off_utc
+                ? qso.time_off_utc
+                    .replaceAll(":", "")
+                    .replaceAll(" ", "")
+                : null;
+
+
+        const frequencyMHz =
+            (
+                qso.frequency /
+                1_000_000
+            ).toFixed(6);
+
+
+        addField(
+            "CALL",
+            qso.call
+        );
+
+        addField(
+            "QSO_DATE",
+            qsoDate
+        );
+
+        addField(
+            "TIME_ON",
+            timeOn
+        );
+
+        addField(
+            "TIME_OFF",
+            timeOff
+        );
+
+        addField(
+            "FREQ",
+            frequencyMHz
+        );
+
+        addField(
+            "BAND",
+            qso.band
+        );
+
+        addField(
+            "MODE",
+            qso.mode
+        );
+
+        addField(
+            "RST_SENT",
+            qso.rst_sent
+        );
+
+        addField(
+            "RST_RCVD",
+            qso.rst_rcvd
+        );
+
+        addField(
+            "STATION_CALLSIGN",
+            qso.my_callsign
+        );
+
+        addField(
+            "OPERATOR",
+            qso.operator_name
+        );
+
+        addField(
+            "MY_GRIDSQUARE",
+            qso.my_grid
+        );
+
+        addField(
+            "GRIDSQUARE",
+            qso.dx_grid
+        );
+
+        addField(
+            "NAME",
+            qso.name
+        );
+
+        addField(
+            "COUNTRY",
+            qso.country
+        );
+
+        addField(
+            "CQZ",
+            qso.cq_zone
+        );
+
+        addField(
+            "ITUZ",
+            qso.itu_zone
+        );
+
+        addField(
+            "COMMENT",
+            qso.notes
+        );
+
+
+        return (
+            fields.join("") +
+            "<EOR>"
+        );
+    }
+
+
+    async uploadQsoToLogbook(
+        qso: QsoRecord
+    ): Promise<boolean> {
+
+        if (!qrzConfig.apiKey) {
+
+            systemLog.warn(
+                "QRZ",
+                "QRZ",
+                "Logbook API key missing"
+            );
+
+            return false;
+        }
+
+
+        try {
+
+            const adif =
+                this.buildQrzAdif(
+                    qso
+                );
+
+
+            const response =
+                await axios.post(
+                    "https://logbook.qrz.com/api",
+                    new URLSearchParams({
+
+                        KEY:
+                            qrzConfig.apiKey,
+
+                        ACTION:
+                            "INSERT",
+
+                        ADIF:
+                            adif
+
+                    }),
+                    {
+                        headers: {
+
+                            "Content-Type":
+                                "application/x-www-form-urlencoded",
+
+                            "User-Agent":
+                                "SHACK-SERVER/1.0 (HB9ISO)"
+
+                        },
+
+                        timeout: 5000
+                    }
+                );
+
+
+            const result =
+                String(
+                    response.data ?? ""
+                );
+
+
+            const resultMatch =
+                result.match(
+                    /(?:^|&)RESULT=([^&]+)/i
+                );
+
+
+            const resultCode =
+                resultMatch?.[1]
+                    ?.toUpperCase() ?? "";
+
+
+            if (
+                resultCode === "OK"
+            ) {
+
+                const logIdMatch =
+                    result.match(
+                        /(?:^|&)LOGID=([^&]+)/i
+                    );
+
+
+                const logId =
+                    logIdMatch?.[1] ?? "";
+
+
+                systemLog.info(
+                    "QRZ",
+                    "QRZ",
+                    `Logbook upload successful: ${qso.call}` +
+                    (
+                        logId
+                            ? ` (LOGID ${logId})`
+                            : ""
+                    )
+                );
+
+
+                return true;
+            }
+
+
+            systemLog.warn(
+                "QRZ",
+                "QRZ",
+                `Logbook upload rejected: ${qso.call} ${result}`
+            );
+
+
+            return false;
+
+        }
+        catch (error) {
+
+            const message =
+                this.getErrorMessage(
+                    error
+                );
+
+
+            systemLog.error(
+                "QRZ",
+                "QRZ",
+                `Logbook upload ${qso.call}: ${message}`
+            );
+
+
+            console.error(
+                "QRZ logbook upload failed:",
+                qso.call,
+                error
+            );
+
+
+            return false;
+        }
+    }
+
+
+
 
 
     private toNumber(

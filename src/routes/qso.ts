@@ -12,7 +12,7 @@ const qrzService =
 
 router.post(
     "/",
-    (req, res) => {
+    async (req, res) => {
 
         try {
 
@@ -282,6 +282,14 @@ country_code:
 
                 });
 
+
+              if (!qso.contest_id) {
+
+                  await qrzService.uploadQsoToLogbook(
+                      qso
+                  );
+
+              }
 
             return res.status(201).json({
                 success: true,
