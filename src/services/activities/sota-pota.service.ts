@@ -50,7 +50,7 @@ export class SotaPotaService {
         this.timer =
             setInterval(
                 () => this.update(),
-                60 * 1000
+               5 * 60 * 1000
             );
 
     }

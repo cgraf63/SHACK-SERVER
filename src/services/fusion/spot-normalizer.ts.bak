@@ -23,6 +23,11 @@ if (frequency < 1000) {
         );
 
 
+console.log(
+    "NORMALIZER LOCATOR",
+    raw.call,
+    raw.locator
+);
 
 
         return {

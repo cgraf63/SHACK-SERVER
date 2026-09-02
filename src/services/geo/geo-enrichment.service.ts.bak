@@ -123,8 +123,17 @@ export class GeoEnrichmentService {
     ): Promise<DxLocation | null> {
 
 
+        console.log(
+            "GEO ENRICH INPUT",
+            call,
+            locator
+        );
 
 
+        console.log(
+            "GEO LOOKUP:",
+            call
+        );
 
 
         const normalized =

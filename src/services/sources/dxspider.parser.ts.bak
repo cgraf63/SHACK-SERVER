@@ -46,12 +46,21 @@ export class DXSpiderParser {
                 this.parseLine(line);
 
 
+            console.log(
+                "AFTER PARSELINE:",
+                raw
+            );
 
 
             if (!raw)
                 continue;
 
 
+            console.log(
+                "DXSPIDER RAW BEFORE NORMALIZE",
+                raw?.call,
+                raw?.locator
+            );
 
 
             const spot =
@@ -71,6 +80,10 @@ export class DXSpiderParser {
                 );
 
 
+                console.log(
+                    "DXSPIDER PARSED:",
+                    spot
+                );
 
 
                 this.fusionEngine.addSpot(
@@ -140,6 +153,10 @@ export class DXSpiderParser {
                 .trim();
 
 
+        console.log(
+            "DXSPIDER COMMENT:",
+            comment
+        );
 
 
         const locatorMatch =
@@ -154,10 +171,31 @@ export class DXSpiderParser {
                 : undefined;
 
 
+        console.log(
+            "DXSPIDER LOCATOR DEBUG",
+            call,
+            "MATCH:",
+            locatorMatch,
+            "LOCATOR:",
+            locator,
+            "COMMENT:",
+            comment
+        );
 
 
+        console.log(
+            "LOCATOR DEBUG:",
+            comment,
+            "=>",
+            locator
+        );
 
 
+        console.log(
+            "DXSPIDER PARSER OUTPUT",
+            call,
+            locator
+        );
 
 
         return {
