@@ -35,24 +35,11 @@
 
 
 
-        <div
-            id="modeFilter"
-            class="mode-filter"
-        >
-            <button
-                type="button"
-                id="modeFilterButton"
-                class="mode-filter-button"
-            >
+        <select id="modeFilter">
+            <option value="">
                 ALL MODES
-            </button>
-
-            <div
-                id="modeFilterMenu"
-                class="mode-filter-menu"
-                hidden
-            ></div>
-        </div>
+            </option>
+        </select>
 
 
 

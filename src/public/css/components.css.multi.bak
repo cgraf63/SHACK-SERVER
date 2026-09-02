@@ -546,14 +546,16 @@
 /* =========================================
    LIVE SPOT FILTERS
 ========================================= */
+
+
 .mode-filter {
     position: relative;
 }
 
 .mode-filter-button {
     width: 100%;
-    height: 38px;
-    padding: 0 30px 0 12px;
+    min-height: 38px;
+    padding: 8px 34px 8px 12px;
     border: 1px solid rgba(255,255,255,0.14);
     border-radius: 6px;
     background: #142a35;
@@ -566,7 +568,7 @@
 .mode-filter-button::after {
     content: "▾";
     position: absolute;
-    right: 10px;
+    right: 12px;
     top: 50%;
     transform: translateY(-50%);
 }
@@ -575,11 +577,12 @@
     position: absolute;
     left: 0;
     top: calc(100% + 4px);
-    width: 220px;
-    max-height: 320px;
+    width: 100%;
+    min-width: 220px;
+    max-height: 420px;
     overflow-y: auto;
     z-index: 1000;
-    padding: 5px;
+    padding: 8px;
     border: 1px solid rgba(255,255,255,0.14);
     border-radius: 6px;
     background: #142a35;
@@ -587,22 +590,19 @@
 }
 
 .mode-filter-section {
-    padding: 5px 7px 3px;
-    font-size: 11px;
-    opacity: 0.55;
+    padding: 4px 8px 6px;
+    font-size: 0.72rem;
+    opacity: 0.65;
     letter-spacing: 0.08em;
 }
 
 .mode-filter-option {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 8px;
-    padding: 5px 7px;
-    min-height: 28px;
+    padding: 7px 8px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 13px;
 }
 
 .mode-filter-option:hover {
@@ -610,38 +610,12 @@
 }
 
 .mode-filter-option input {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 15px;
-    height: 15px;
-    min-width: 15px;
-    min-height: 15px;
     margin: 0;
-    flex: 0 0 15px;
-    border: 1px solid rgba(255,255,255,0.35);
-    border-radius: 3px;
-    background: transparent;
-    cursor: pointer;
-}
-
-.mode-filter-option input:checked {
-    background: #1683d8;
-    border-color: #1683d8;
-}
-
-.mode-filter-option input:checked::after {
-    content: "✓";
-    display: block;
-    text-align: center;
-    line-height: 13px;
-    font-size: 11px;
-    color: white;
 }
 
 .mode-filter-group {
     font-weight: 600;
 }
-
 
 .spot-filters {
 
@@ -654,39 +628,7 @@
     flex-wrap:nowrap;
 }
 
-.mode-filter .mode-filter-option input {
-    appearance: none;
-    -webkit-appearance: none;
 
-    width: 15px;
-    height: 15px;
-    min-width: 15px;
-    min-height: 15px;
-
-    margin: 0;
-
-    flex: 0 0 15px;
-
-    border: 1px solid rgba(255,255,255,0.35);
-    border-radius: 3px;
-
-    background: transparent;
-    cursor: pointer;
-}
-
-.mode-filter .mode-filter-option input:checked {
-    background: #1683d8;
-    border-color: #1683d8;
-}
-
-.mode-filter .mode-filter-option input:checked::after {
-    content: "✓";
-    display: block;
-    text-align: center;
-    line-height: 13px;
-    font-size: 11px;
-    color: white;
-}
 
 .spot-filters input,
 .spot-filters select {

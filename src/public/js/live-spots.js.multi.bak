@@ -154,7 +154,7 @@ function getWorkedStatus(spot) {
 }
 
 
-let selectedModes = [];
+let selectedMode = "ALL";
 let selectedBand = "ALL";
 let selectedCountry = "ALL";
 let selectedSource = "ALL";
@@ -299,36 +299,15 @@ function filterSpots(spots) {
         spot =>
 
             (
-                                selectedModes.length === 0 ||
-                selectedModes.some(
-                    selectedMode => {
-
-                        const mode =
-                            String(
-                                spot.mode || ""
-                            ).toUpperCase();
-
-                        if (selectedMode === "SSB") {
-                            return [
-                                "SSB",
-                                "USB",
-                                "LSB",
-                                "AM"
-                            ].includes(mode);
-                        }
-
-                        if (selectedMode === "DIGITAL") {
-                            return [
-                                "FT8",
-                                "FT4",
-                                "RTTY",
-                                "PSK31"
-                            ].includes(mode);
-                        }
-
-                        return mode ===
-                            selectedMode;
-                    }
+                !selectedMode ||
+                selectedMode === "ALL" ||
+                (
+                    selectedMode === "SSB"
+                        ? ["SSB", "LSB", "USB"].includes(
+                            String(spot.mode || "").toUpperCase()
+                        )
+                        : String(spot.mode || "").toUpperCase() ===
+                          String(selectedMode).toUpperCase()
                 )
             )
 
@@ -369,322 +348,74 @@ function filterSpots(spots) {
 
 function updateModeFilter(spots) {
 
-    const button =
+    const select =
         document.getElementById(
-            "modeFilterButton"
-        );
-
-    const menu =
-        document.getElementById(
-            "modeFilterMenu"
+            "modeFilter"
         );
 
 
-    if (
-        !button ||
-        !menu
-    ) {
+    if (!select) {
         return;
     }
-if (
-    button.dataset.modeFilterReady !== "1"
-) {
-
-    button.dataset.modeFilterReady = "1";
-
-    button.addEventListener(
-        "click",
-        event => {
-
-            event.stopPropagation();
-
-            menu.hidden =
-                !menu.hidden;
-
-        }
-    );
 
 
-    menu.addEventListener(
-        "click",
-        event => {
-
-            event.stopPropagation();
-
-        }
-    );
+    const current =
+        select.value;
 
 
-    document.addEventListener(
-        "click",
-        () => {
-
-            menu.hidden =
-                true;
-
-        }
-    );
-
-}
-
-    const modes = [
-        ...new Set(
-            spots
-                .map(
-                    spot =>
-                        String(
-                            spot.mode || ""
-                        ).toUpperCase()
-                )
-                .filter(
-                    mode =>
-                        mode &&
-                        mode !== "UNKNOWN"
-                )
-        )
-    ].sort();
-
-
-    const groups = [
-        {
-            value: "SSB",
-            label: "SSB"
-        },
-        {
-            value: "CW",
-            label: "CW"
-        },
-        {
-            value: "DIGITAL",
-            label: "DIGITAL"
-        },
-        {
-            value: "FM",
-            label: "FM"
-        }
-    ];
-
-
-    const groupMembers = {
-        SSB: [
-            "SSB",
-            "USB",
-            "LSB",
-            "AM"
-        ],
-
-        CW: [
-            "CW"
-        ],
-
-        DIGITAL: [
-            "FT8",
-            "FT4",
-            "RTTY",
-            "PSK31"
-        ],
-
-        FM: [
-            "FM"
+    const modes =
+        [
+            ...new Set(
+                spots
+                    .map(
+                        s => s.mode
+                    )
+                    .filter(
+                        m =>
+                            m &&
+                            m !== "UNKNOWN"
+                    )
+            )
         ]
-    };
+        .sort();
 
 
-    menu.innerHTML = "";
-
-
-    const createSection =
-        title => {
-
-            const section =
-                document.createElement(
-                    "div"
-                );
-
-            section.className =
-                "mode-filter-section";
-
-            section.textContent =
-                title;
-
-            menu.appendChild(
-                section
-            );
-        };
-
-
-    const createOption =
-        (
-            value,
-            label,
-            isGroup
-        ) => {
-
-            const wrapper =
-                document.createElement(
-                    "label"
-                );
-
-            wrapper.className =
-                isGroup
-                    ? "mode-filter-option mode-filter-group"
-                    : "mode-filter-option";
-
-
-            const checkbox =
-                document.createElement(
-                    "input"
-                );
-
-            checkbox.type =
-                "checkbox";
-
-            checkbox.value =
-                value;
-
-            checkbox.checked =
-                selectedModes.includes(
-                    value
-                );
-
-
-            checkbox.addEventListener(
-                "change",
-                () => {
-
-                    if (
-                        checkbox.checked
-                    ) {
-
-                        if (
-                            !selectedModes.includes(
-                                value
-                            )
-                        ) {
-
-                            selectedModes.push(
-                                value
-                            );
-
-                        }
-
-                    }
-                    else {
-
-                        selectedModes =
-                            selectedModes.filter(
-                                mode =>
-                                    mode !== value
-                            );
-
-                    }
-
-
-                    updateModeFilter(
-                        spots
-                    );
-
-                    renderLiveSpots();
-
-                }
-            );
-
-
-            wrapper.appendChild(
-                checkbox
-            );
-
-            wrapper.append(
-                document.createTextNode(
-                    label
-                )
-            );
-
-            menu.appendChild(
-                wrapper
-            );
-        };
-
-
-    createSection(
-        "GROUPS"
-    );
-
-
-    groups.forEach(
-        group => {
-
-            createOption(
-                group.value,
-                group.label,
-                true
-            );
-
-        }
-    );
-
-
-    createSection(
-        "MODES"
-    );
+    select.innerHTML =
+        `
+        <option value="">
+            ALL MODES
+        </option>
+        `;
 
 
     modes.forEach(
         mode => {
 
-            const belongsToGroup =
-                Object.values(
-                    groupMembers
-                )
-                    .some(
-                        members =>
-                            members.includes(
-                                mode
-                            )
-                    );
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                mode;
+
+            option.textContent =
+                mode;
 
 
-            if (
-                belongsToGroup &&
-                [
-                    "SSB",
-                    "CW",
-                    "DIGITAL",
-                    "FM"
-                ].includes(mode)
-            ) {
-                return;
-            }
-
-
-            createOption(
-                mode,
-                mode,
-                false
+            select.appendChild(
+                option
             );
 
         }
     );
 
 
-    if (
-        selectedModes.length === 0
-    ) {
-
-        button.textContent =
-            "ALL MODES";
-
-    }
-    else {
-
-        button.textContent =
-            selectedModes.join(
-                ", "
-            );
-
-    }
+    select.value =
+        current;
 
 }
+
 
 
 function updateBandFilter(spots) {
@@ -1984,7 +1715,7 @@ if (resetView) {
         "click",
         () => {
 
-            selectedModes = [];
+            selectedMode = "ALL";
             selectedBand = "ALL";
             selectedCountry = "ALL";
             selectedSource = "ALL";
@@ -2098,7 +1829,36 @@ if (country) {
 }
 
 
+
+    const mode =
+        document.getElementById(
+            "modeFilter"
+        );
+
+
+    if (!mode) {
+
+        return;
+
+    }
+
+
+    mode.addEventListener(
+        "change",
+        () => {
+
+            selectedMode =
+                mode.value ||
+                "ALL";
+
+
+            renderLiveSpots();
+
+        }
+    );
+
 }
+
 function setupWorkedHelp() {
 
     const button =

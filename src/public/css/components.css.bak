@@ -130,6 +130,7 @@
 .sun-icon {
 
     font-size:22px;
+    color: #ffd54a;
 
 }
 
@@ -161,10 +162,171 @@
 }
 
 #station-inline-content {
+
     display: flex;
-    align-items: center;
-    gap: 10px;
+
+    align-items: stretch;
+
+    gap: 6px;
+
     font-size: 13px;
+
+}
+
+.station-inline-wrapper {
+
+    display: flex;
+
+    align-items: stretch;
+
+    gap: 6px;
+
+    font-size: 13px;
+
+}
+
+
+.station-inline-selector {
+
+    width: 150px;
+
+    min-width: 150px;
+
+    padding: 6px 8px;
+
+    border: 1px solid
+        rgba(255,255,255,0.08);
+
+    border-radius: 6px;
+
+/*    background: #101820; */
+    background: #142a35;
+
+
+    color: #ffffff;
+
+    font: inherit;
+
+    outline: none;
+
+    cursor: pointer;
+
+}
+
+
+.station-inline-selector:hover {
+
+    border-color: cyan;
+
+}
+
+
+.station-inline-selector:focus {
+
+    border-color: cyan;
+
+    box-shadow:
+        0 0 0 1px
+        rgba(0,255,255,0.15);
+
+}
+
+
+.station-inline-selector:disabled {
+
+    opacity: 0.6;
+
+    cursor: wait;
+
+}
+
+.station-inline-radio {
+
+    flex: 0 0 230px;
+
+    min-width: 230px;
+
+    padding: 6px 8px;
+
+    border: 1px solid
+        rgba(255,255,255,0.08);
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.15s,
+        background 0.15s;
+
+}
+
+
+.station-inline-radio:hover {
+
+    border-color: cyan;
+
+}
+
+
+.station-inline-radio.active {
+
+    border: 2px solid cyan;
+
+    background:
+        rgba(0,255,255,0.06);
+
+}
+
+
+.station-inline-radio.disconnected {
+
+    opacity: 0.55;
+
+}
+
+
+.station-inline-name {
+
+    font-size: 11px;
+
+    color:
+        var(--text-muted);
+
+    margin-bottom: 2px;
+
+    text-transform: uppercase;
+
+}
+
+
+.station-inline-data {
+
+    font-size: 13px;
+
+    color:
+        var(--text);
+
+    white-space: nowrap;
+
+}
+
+
+.station-inline-cat {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 3px;
+
+    margin-top: 0;
+
+    font-size: 10px;
+
+    color:
+        var(--text);
+
 }
 
 #station-inline-content strong {
@@ -184,13 +346,32 @@
 }
 
 .cat-dot {
-    width: 8px;
-    height: 8px;
+
+    width: 7px;
+
+    height: 7px;
+
     border-radius: 50%;
-    background: #00ff3c;
+
+    background: #e05252;
+
     display: inline-block;
+
 }
 
+
+.cat-dot.connected {
+
+    background: #00ff3c;
+
+}
+
+
+.cat-dot.disconnected {
+
+    background: #e05252;
+
+}
 
 
 
@@ -327,7 +508,7 @@
 
     align-items:center;
 
-    justify-content:space-between;
+    justify-content:flex-start;
 
     font-size:14px;
 
@@ -598,9 +779,8 @@
 .live-table {
 
     width:100%;
-
     border-collapse:collapse;
-
+ /*   table-layout: fixed; */
 }
 
 
@@ -640,7 +820,7 @@
 }
 
 .live-table .comment-cell {
-    width: 240px
+    width: 240px;
     max-width: 240px;
     white-space: nowrap;
     overflow: hidden;
@@ -745,7 +925,146 @@
 
 }
 
+.station-radios {
 
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            230px
+        );
+
+    gap: 10px;
+
+}
+
+
+.station-radio-card {
+
+ width: 230px !important;
+
+    min-width: 230px !important;
+
+
+
+    min-height: 115px;
+
+    padding: 12px;
+
+    border: 1px solid
+        var(--border);
+
+    border-radius: 8px;
+
+    background:
+        rgba(255,255,255,0.02);
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.15s,
+        background 0.15s,
+        transform 0.15s;
+
+}
+
+
+.station-radio-card:hover {
+
+    border-color:
+        var(--cyan);
+
+    transform:
+        translateY(-1px);
+
+}
+
+
+.station-radio-card.active {
+
+    border: 2px solid cyan !important;
+       
+
+    background:
+        rgba(0,255,255,0.10);
+
+}
+
+
+.station-radio-card.disconnected {
+
+    opacity: 0.65;
+
+}
+
+
+.station-radio-name {
+
+    color:
+        var(--cyan);
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    margin-bottom: 10px;
+
+}
+
+
+.station-radio-frequency {
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    color:
+        #ffffff;
+
+    margin-bottom: 6px;
+
+}
+
+
+.station-radio-details {
+
+    font-size: 13px;
+
+    color:
+        #cccccc;
+
+    margin-bottom: 8px;
+
+}
+
+
+.station-radio-connection {
+
+    font-size: 12px;
+
+    color:
+        #999999;
+
+}
+
+
+.station-radio-card.active .station-radio-connection {
+
+    color:
+        var(--cyan);
+
+}
+
+
+.station-radio-placeholder {
+
+    color:
+        #999999;
+
+    padding: 20px;
+
+}
 
 /* =========================================
    PRIORITY DX
