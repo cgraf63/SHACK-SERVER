@@ -301,7 +301,14 @@ function filterSpots(spots) {
             (
                 !selectedMode ||
                 selectedMode === "ALL" ||
-                spot.mode === selectedMode
+                (
+                    selectedMode === "SSB"
+                        ? ["SSB", "LSB", "USB"].includes(
+                            String(spot.mode || "").toUpperCase()
+                        )
+                        : String(spot.mode || "").toUpperCase() ===
+                          String(selectedMode).toUpperCase()
+                )
             )
 
             &&
