@@ -382,13 +382,7 @@ const formMyGrid =
                         📝 New QSO
                     </div>
 
-                    <div class="qso-station">
-                        ${escapeQsoHtml(
-                            stationCall ||
-                            spot.call ||
-                            "--"
-                        )}
-                    </div>
+                   
 
                 </div>
 
@@ -680,7 +674,7 @@ const formMyGrid =
                     </div>
 
 
-                    <div class="qso-field qso-field-wide">
+                    <div class="qso-field">
 
                         <label>
                             NOTES
