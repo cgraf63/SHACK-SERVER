@@ -1179,7 +1179,21 @@ function renderLiveSpots() {
 
 
 
-<td class="call-cell">
+<td
+    class="call-cell"
+    title="${
+        spot.countryCode
+            ? new Intl.DisplayNames(
+                  ["de-CH"],
+                  { type: "region" }
+              ).of(
+                  String(
+                      spot.countryCode
+                  ).toUpperCase()
+              ) || ""
+            : ""
+    }"
+>
 
     ${
         worked === "station-band"
@@ -1191,17 +1205,30 @@ function renderLiveSpots() {
                     : worked === "country"
                         ? `<span class="worked-indicator worked-country" title="Land bereits gearbeitet">●</span>`
                         : `<span class="worked-indicator worked-new" title="Noch nicht gearbeitet">●</span>`
-    }
 
-    ${
-        spot.countryCode
-        ?
-        `<img
-            src="/assets/flags/${spot.countryCode}.svg"
-            class="flag">`
-        :
-        ""
-    }
+      }
+
+      ${
+          spot.countryCode
+              ?
+              `<img
+                  src="/assets/flags/${spot.countryCode}.svg"
+                  class="flag"
+                  title="${
+                      new Intl.DisplayNames(
+                          ["de-CH"],
+                          { type: "region" }
+                      ).of(
+                          String(
+                              spot.countryCode
+                          ).toUpperCase()
+                      ) || ""
+                  }"
+                  alt=""
+              >`
+              :
+              ""
+      }
 
     <span>
         ${
@@ -2279,15 +2306,16 @@ async function showSpotDetails(spot) {
                 ? `<span style="color:white;">▲ SOTA</span>`
                 : "";
 
-    const flag =
+const flag =
     spot.countryCode
         ? `<img
                 class="dx-flag"
                 src="/assets/flags/${spot.countryCode}.svg"
+		title="${spot.country || ""}"
+alt="${spot.country || ""}"
                 style="width:20px; height:14px; vertical-align:middle;"
            >`
         : "";
-
     const distance =
         spot.distance !== undefined
             ? `${spot.distance.toLocaleString("de-CH")} km`
@@ -2611,3 +2639,132 @@ function maidenheadToLatLon(locator) {
         lon: longitude
     };
 }
+
+/* =========================================================
+   FLAG COUNTRY TOOLTIP
+   ========================================================= */
+
+(() => {
+
+    let tooltip = null;
+
+    const countryNames =
+        new Intl.DisplayNames(
+            ["de-CH"],
+            {
+                type: "region"
+            }
+        );
+
+
+    function getCountryCode(flag) {
+
+        const match =
+            flag?.src?.match(
+                /\/flags\/([a-z]{2})\.svg/i
+            );
+
+        return match
+            ? match[1].toUpperCase()
+            : "";
+    }
+
+
+    function showTooltip(flag) {
+
+        const code =
+            getCountryCode(flag);
+
+        if (!code) {
+            return;
+        }
+
+
+        const country =
+            countryNames.of(code);
+
+        if (!country) {
+            return;
+        }
+
+
+        if (!tooltip) {
+
+            tooltip =
+                document.createElement("div");
+
+            tooltip.className =
+                "flag-country-tooltip";
+
+            document.body.appendChild(
+                tooltip
+            );
+        }
+
+
+        tooltip.textContent =
+            country;
+
+        tooltip.style.display =
+            "block";
+
+
+        const rect =
+            flag.getBoundingClientRect();
+
+        tooltip.style.left =
+            `${rect.left + rect.width / 2}px`;
+
+        tooltip.style.top =
+            `${rect.top - 8}px`;
+
+    }
+
+
+    function hideTooltip() {
+
+        if (tooltip) {
+
+            tooltip.style.display =
+                "none";
+
+        }
+
+    }
+
+
+    document.addEventListener(
+        "mouseover",
+        event => {
+
+            const flag =
+                event.target.closest(
+                    ".flag"
+                );
+
+            if (flag) {
+
+                showTooltip(flag);
+
+            }
+
+        }
+    );
+
+
+    document.addEventListener(
+        "mouseout",
+        event => {
+
+            if (
+                event.target.closest(".flag")
+            ) {
+
+                hideTooltip();
+
+            }
+
+        }
+    );
+
+})();

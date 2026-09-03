@@ -54,7 +54,7 @@ async function updatePriorityDX() {
     ${
         spot.countryCode
         ?
-        `<img src="/assets/flags/${spot.countryCode}.svg" class="flag">`
+          `<img src="/assets/flags/${spot.countryCode}.svg" class="flag" title="${spot.country || ""}" alt="${spot.country || ""}">`
         :
         "🌐"
     }
