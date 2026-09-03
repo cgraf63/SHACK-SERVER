@@ -3,6 +3,10 @@ console.log("LIVE SPOTS JS LOADED");
 
 let currentSpots = [];
 
+const LIVE_SPOT_PAGE_SIZE = 15;
+
+let liveSpotOffset = 0;
+
 let liveSpotOrder = [];
 
 let workedStatus = {
@@ -1157,8 +1161,72 @@ function renderLiveSpots() {
     );
 
 
+    const pageSlider =
+        document.getElementById(
+            "liveSpotsSlider"
+        );
+
+
+    if (
+        pageSlider &&
+        pageSlider.dataset.ready !== "1"
+    ) {
+
+        pageSlider.dataset.ready =
+            "1";
+
+        pageSlider.addEventListener(
+            "input",
+            () => {
+
+                liveSpotOffset =
+                    Number(
+                        pageSlider.value
+                    ) || 0;
+
+                renderLiveSpots();
+
+            }
+        );
+
+    }
+
+
+    const maxOffset =
+        Math.max(
+            0,
+            sorted.length -
+            LIVE_SPOT_PAGE_SIZE
+        );
+
+
+    liveSpotOffset =
+        Math.min(
+            liveSpotOffset,
+            maxOffset
+        );
+
+
+    if (pageSlider) {
+
+        pageSlider.max =
+            String(maxOffset);
+
+        pageSlider.value =
+            String(liveSpotOffset);
+
+        pageSlider.disabled =
+            maxOffset === 0;
+
+    }
+
+
     sorted
-        .slice(0, 22)
+        .slice(
+            liveSpotOffset,
+            liveSpotOffset +
+            LIVE_SPOT_PAGE_SIZE
+        )
         .forEach(
             spot => {
 

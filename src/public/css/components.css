@@ -2307,3 +2307,31 @@ img.flag {
     }
 
 }
+
+/* =========================================================
+   LIVE SPOTS VERTICAL SLIDER
+   ========================================================= */
+
+.live-spots-container {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.live-spots-table-area {
+    flex: 1;
+    min-width: 0;
+}
+
+.live-spots-slider {
+    width: 16px;
+    height: 640px;
+    margin: 4px 0 0 8px;
+
+    writing-mode: vertical-lr;
+    direction: rtl;
+
+    cursor: pointer;
+
+    accent-color: var(--cyan);
+}
