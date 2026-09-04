@@ -1,12 +1,5 @@
 import * as net from "node:net";
 
-interface SotaSpot {
-
-    activatorCallsign: string;
-
-    summitCode: string;
-
-    timeStamp: string;
 
 }
 
@@ -25,10 +18,6 @@ interface PotaSpot {
 
 
 export class SotaPotaService {
-
-
-    private sotaCalls =
-        new Set<string>();
 
 
     private potaCalls =
@@ -104,19 +93,10 @@ console.log("SOTA CLUSTER START TEST");
 
     }
 
-
-isSota(
-    call: string
-): boolean {
-
-    const base =
-        this.baseCall(call);
-
-    return (
-        this.sotaCalls.has(base) ||
-        this.sotaClusterCalls.has(base)
+isSota(call: string): boolean {
+    return this.sotaClusterCalls.has(
+        this.baseCall(call)
     );
-
 }
 
     isPota(
@@ -146,25 +126,12 @@ isSota(
 
         try {
 
-            await Promise.all([
+await this.updatePota();
 
-                this.updateSota(),
-
-                this.updatePota()
-
-            ]);
-
-
-            console.log(
-
-                `SOTA/POTA updated: ` +
-
-                `${this.sotaCalls.size} SOTA, ` +
-
-                `${this.potaCalls.size} POTA`
-
-            );
-
+console.log(
+    `SOTA/POTA updated: ` +
+    `${this.potaCalls.size} POTA`
+);
         }
         catch (error) {
 
@@ -188,7 +155,7 @@ isSota(
         }
 
 console.log(
-    "SOTA cluster connecting to cluster.sota.org.uk:73xx"
+    "SOTA cluster connecting to cluster.sota.org.uk:7300"
 );
 
         const socket =
@@ -197,7 +164,7 @@ console.log(
                     host:
                         "cluster.sota.org.uk",
                     port:
-                        7373
+                        7300
                 }
             );
 
@@ -453,67 +420,6 @@ console.log(
             );
 
         }
-
-    }
-
-
-    private async updateSota() {
-
-        const response =
-            await fetch(
-                "https://api2.sota.org.uk/api/spots/50/all/all",
-                {
-                    headers: {
-                        "User-Agent":
-                            "SHACK-SERVER/1.0 (HB9ISO)"
-                    }
-                }
-            );
-
-
-        if (
-            !response.ok
-        ) {
-
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-
-        }
-
-
-        const spots: SotaSpot[] =
-    	    await response.json();
-
-
-        const calls =
-            new Set<string>();
-
-
-        for (
-            const spot of spots
-        ) {
-
-            if (
-                !spot.activatorCallsign
-            ) {
-
-                continue;
-
-            }
-
-
-            calls.add(
-                this.baseCall(
-                    spot.activatorCallsign
-                )
-            );
-
-        }
-
-
-        this.sotaCalls =
-            calls;
 
     }
 
