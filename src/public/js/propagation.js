@@ -145,7 +145,6 @@ function updateBandGraph(
 
     const bandNames = [
 
-        "6m",
         "10m",
         "12m",
         "15m",
