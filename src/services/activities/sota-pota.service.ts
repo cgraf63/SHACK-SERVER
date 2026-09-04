@@ -1,9 +1,4 @@
 import * as net from "node:net";
-
-
-}
-
-
 interface PotaSpot {
 
     activator: string;

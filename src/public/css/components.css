@@ -1568,9 +1568,8 @@ img.flag {
 
 .sidebar nav a {
     display: block;
-
-    padding: 9px 12px;
-    margin: 2px 0;
+    padding: 7px 12px;
+    margin: 1px 0;
 
     color: var(--text);
 
@@ -2334,4 +2333,18 @@ img.flag {
     cursor: pointer;
 
     accent-color: var(--cyan);
+}
+
+/* Standard */
+.live-spots-slider {
+    height: 640px;
+}
+
+const slider = document.querySelector(".live-spots-slider");
+
+if (slider) {
+    slider.style.height =
+        window.screen.height >= 1200
+            ? "640px"
+            : "520px";
 }

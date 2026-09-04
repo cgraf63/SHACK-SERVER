@@ -508,7 +508,7 @@ const formMyGrid =
     formFrequencyKHz.toFixed(3)
     :
     ""
-}">
+}"
                     </div>
 
 
@@ -523,7 +523,7 @@ const formMyGrid =
                             type="text"
                             value="${escapeQsoHtml(
    				 formBand
-			)}">
+			)}"
 
                     </div>
 
@@ -539,7 +539,7 @@ const formMyGrid =
                             type="text"
                             value="${escapeQsoHtml(
    				 formMode
-			)}">
+			)}"
 
                     </div>
 

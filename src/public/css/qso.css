@@ -498,3 +498,24 @@
 .qso-footer {
     padding: 10px 20px;
 }
+
+
+/* =========================================================
+   QSO DIALOG – COMPACT TYPOGRAPHY
+   ========================================================= */
+
+.qso-title {
+    font-size: 18px;
+}
+
+.qso-call {
+    font-size: 27px;
+}
+
+.qso-info-card strong {
+    font-size: 13px;
+}
+
+.qso-source strong {
+    font-size: 11px;
+}

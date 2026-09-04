@@ -416,7 +416,7 @@ const formMyGrid =
                         type="text"
                         value="${escapeQsoHtml(
                             spot.call || ""
-                        )}">
+                        )}"
                         autocomplete="off">
 
                 </div>
@@ -500,6 +500,7 @@ const formMyGrid =
                             type="number"
                             step="0.001"
 
+/////////////////
                             value="${
     Number.isFinite(
         formFrequencyKHz
@@ -508,7 +509,8 @@ const formMyGrid =
     formFrequencyKHz.toFixed(3)
     :
     ""
-}">
+}"
+////////////////////////
                     </div>
 
 
@@ -523,7 +525,7 @@ const formMyGrid =
                             type="text"
                             value="${escapeQsoHtml(
    				 formBand
-			)}">
+			)}"
 
                     </div>
 
@@ -539,7 +541,7 @@ const formMyGrid =
                             type="text"
                             value="${escapeQsoHtml(
    				 formMode
-			)}">
+			)}"
 
                     </div>
 

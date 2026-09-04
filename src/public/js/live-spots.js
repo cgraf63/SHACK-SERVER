@@ -3,8 +3,9 @@ console.log("LIVE SPOTS JS LOADED");
 
 let currentSpots = [];
 
-const LIVE_SPOT_PAGE_SIZE = 15;
-
+function getLiveSpotPageSize() {
+    return window.screen.height < 1100 ? 13 : 15;
+}
 let liveSpotOffset = 0;
 
 let liveSpotOrder = [];
@@ -1196,7 +1197,7 @@ function renderLiveSpots() {
         Math.max(
             0,
             sorted.length -
-            LIVE_SPOT_PAGE_SIZE
+            getLiveSpotPageSize()
         );
 
 
@@ -1208,6 +1209,8 @@ function renderLiveSpots() {
 
 
     if (pageSlider) {
+        pageSlider.style.height = window.screen.height < 1100 ? "480px" : "640px";
+        pageSlider.style.height = window.screen.height < 1100 ? "480px" : "640px";
 
         pageSlider.max =
             String(maxOffset);
@@ -1225,7 +1228,7 @@ function renderLiveSpots() {
         .slice(
             liveSpotOffset,
             liveSpotOffset +
-            LIVE_SPOT_PAGE_SIZE
+            getLiveSpotPageSize()
         )
         .forEach(
             spot => {
