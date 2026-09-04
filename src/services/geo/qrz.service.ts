@@ -8,6 +8,11 @@ import {
     DxLocation
 } from "./geo.model.js";
 
+
+import {
+    CallsignResolverService
+} from "./callsign-resolver.service.js";
+
 import {
     QsoRecord
 } from "../qso/qso.service.js";
@@ -19,6 +24,8 @@ import {
 import {
     systemLog
 } from "../diagnostics/system-log.service.js";
+
+
 
 
 export class QRZService {
@@ -33,6 +40,9 @@ export class QRZService {
         new XMLParser({
             ignoreAttributes: false
         });
+
+    private callsignResolver =
+        new CallsignResolverService();
 
 
     async lookup(
@@ -176,6 +186,17 @@ export class QRZService {
 
             }
 
+            const callsignInfo =
+                this.callsignResolver.resolve(
+                    normalizedCall
+                );
+
+            if (callsignInfo) {
+
+                result.countryCode =
+                    callsignInfo.countryCode;
+
+            }
 
             if (cs.grid) {
 

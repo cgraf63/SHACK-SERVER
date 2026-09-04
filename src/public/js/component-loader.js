@@ -122,7 +122,30 @@ async function loadComponents() {
         "priority-dx.html"
     );
 
+    /*
+        Manual QSO
+    */
 
+    await loadComponent(
+        "manual-qso",
+        "manual-qso.html"
+    );
+
+    /*
+        Manual QSO functionality
+    */
+
+    const manualQsoScript =
+        document.createElement(
+            "script"
+        );
+
+    manualQsoScript.src =
+        "js/manual-qso.js";
+
+    document.body.appendChild(
+        manualQsoScript
+    );
     /*
         Recommendations
     */

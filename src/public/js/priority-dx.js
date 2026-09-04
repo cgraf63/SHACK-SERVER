@@ -26,7 +26,7 @@ async function updatePriorityDX() {
                     (a,b) =>
                         b.distance - a.distance
                 )
-                .slice(0,5);
+                .slice(0,3);
 
 
 

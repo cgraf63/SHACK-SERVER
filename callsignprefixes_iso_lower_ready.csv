@@ -1,0 +1,321 @@
+Prefix,DXCC Entity,ISO,ISO LOWER
+1A,SMOM (Malteserorden),--,
+1S,Spratly-Inseln,--,
+3A,Monaco,MC,mc
+3B6,Agalega & St. Brandon,MU,mu
+3B8,Mauritius,MU,mu
+3C,Äquatorialguinea,GQ,gq
+3C0,Annabon,GQ,gq
+3D2,Fidschi,FJ,fj
+3D2C,Conway Reef,FJ,fj
+3D2R,Rotuma,FJ,fj
+3DA,Eswatini (Swasiland),SZ,sz
+3V,Tunesien,TN,tn
+3W,Vietnam,VN,vn
+3Y,Bouvetinsel,BV,bv
+3Y/P,Peter-I.-Insel,AQ,aq
+4L,Georgien,GE,ge
+4O,Montenegro,ME,me
+4S,Sri Lanka,LK,lk
+4U1ITU,ITU Genf,CH,ch
+4U1UN,UN Hauptquartier New York,US,us
+4W,Osttimor,TL,tl
+4X,Israel,IL,il
+4Z,Israel,IL,il
+5A,Libyen,LY,ly
+5B,Zypern,CY,cy
+5H,Tansania,TZ,tz
+5N,Nigeria,NG,ng
+5R,Madagaskar,MG,mg
+5T,Mauretanien,MR,mr
+5U,Niger,NE,ne
+5V,Togo,TG,tg
+5W,Westsamoa,WS,ws
+5X,Uganda,UG,ug
+5Y,Kenia,KE,ke
+6W,Senegal,SN,sn
+6Y,Jamaika,JM,jm
+7P,Lesotho,LS,ls
+7Q,Malawi,MW,mw
+7X,Algerien,DZ,dz
+8P,Barbados,BB,bb
+8Q,Malediven,MV,mv
+8R,Guyana,GY,gy
+9A,Kroatien,HR,hr
+9G,Ghana,GH,gh
+9H,Malta,MT,mt
+9J,Sambia,ZM,zm
+9K,Kuwait,KW,kw
+9L,Sierra Leone,SL,sl
+9M2,West-Malaysia,MY,my
+9M6,Ost-Malaysia,MY,my
+9N,Nepal,NP,np
+9U,Burundi,BI,bi
+9V,Singapur,SG,sg
+9X,Ruanda,RW,rw
+9Y,Trinidad & Tobago,TT,tt
+A2,Botswana,BW,bw
+A3,Tonga,TO,to
+A4,Oman,OM,om
+A5,Bhutan,BT,bt
+A6,Ver. Arabische Emirate,AE,ae
+A7,Katar,QA,qa
+A9,Bahrain,BH,bh
+AA-AK,USA (Zentral),US,us
+B,China,CN,cn
+BS7,Scarborough Reef,--,--
+BV,Taiwan,TW,tw
+BY,China (Klubstationen),CN,cn
+C2,Nauru,NR,nr
+C3,Andorra,AD,ad
+C5,Gambia,GM,gm
+C6,Bahamas,BS,bs
+C9,Mosambik,MZ,mz
+CE,Chile,CL,cl
+CE0A,Osterinsel,CL,cl
+CE0X,San Felix,CL,cl
+CE0Z,Juan Fernandez,CL,cl
+CE9,Antarktis,AQ,aq
+CM,Kuba,CU,cu
+CN,Marokko,MA,ma
+CP,Bolivien,BO,bo
+CT,Portugal,PT,pt
+CT3,Madeira,PT,pt
+CU,Azoren,PT,pt
+CX,Uruguay,UY,uy
+D2,Angola,AO,ao
+D4,Kap Verde,CV,cv
+D6,Komoren,KM,km
+DA-DR,Deutschland,DE,de
+DU,Philippinen,PH,ph
+E3,Eritrea,ER,er
+E4,Palästina,PS,ps
+E5,Cookinseln,CK,ck
+E7,Bosnien-Herzegowina,BA,ba
+EA,Spanien,ES,es
+EA6,Balearen,ES,es
+EA8,Kanarische Inseln,IC,ic
+EA9,Ceuta & Melilla,EA,ea
+EI,Irland,IE,ie
+EK,Armenien,AM,am
+EL,Liberia,LR,lr
+EP,Iran,IR,ir
+ER,Moldawien,MD,md
+ES,Estland,EE,ee
+ET,Äthiopien,ET,et
+EU,Belarus,BY,by
+EX,Kirgistan,KG,kg
+EY,Tadschikistan,TJ,tj
+EZ,Turkmenistan,TM,tm
+F,Frankreich,FR,fr
+FG,Guadeloupe,GP,gp
+FH,Mayotte,YT,yt
+FJ,St. Barthelemy,BL,bl
+FK,Neukaledonien,NC,nc
+FM,Martinique,MQ,mq
+FO,Französisch-Polynesien,PF,pf
+FO/A,Austral-Inseln,PF,pf
+FO/M,Marquesas-Inseln,PF,pf
+FP,St. Pierre & Miquelon,PM,pm
+FR,Réunion,RE,re
+FR/G,Glorioso-Inseln,TF,tf
+FR/J,Juan de Nova,TF,tf
+FR/T,Tromelin,TF,tf
+FS,St. Martin,MF,mf
+FT,Kerguelen,TF,tf
+FT/A,Amsterdam & St. Paul,TF,tf
+FT/C,Crozet-Inseln,TF,tf
+FW,Wallis & Futuna,WF,wf
+FY,Französisch-Guayana,GF,gf
+G,England,GB,gb
+GD,Isle of Man,IM,im
+GI,Nordirland,GB,gb
+GJ,Jersey,JE,je
+GM,Schottland,GB,gb
+GU,Guernsey,GG,gg
+GW,Wales,GB,gb
+H4,Salomonen,SB,sb
+H40,Temotu-Provinz,SB,sb
+HA,Ungarn,HU,hu
+HB,Schweiz,CH,ch
+HB0,Liechtenstein,LI,li
+HC,Ecuador,EC,ec
+HD8,Galapagos-Inseln,EC,ec
+HH,Haiti,HT,ht
+HI,Dominikanische Republik,DO,do
+HK,Kolumbien,CO,co
+HK0,San Andres & Providencia,CO,co
+HK0M,Malpelo,CO,co
+HL,Südkorea,KR,kr
+HP,Panama,PA,pa
+HR,Honduras,HN,hn
+HS,Thailand,TH,th
+HV,Vatikanstadt,VA,va
+HZ,Saudi-Arabien,SA,sa
+I,Italien,IT,it
+IS0,Sardinien,IT,it
+JA,Japan,JP,jp
+JD1,Ogasawara,JP,jp
+JD1M,Minami-Torishima,JP,jp
+JT,Mongolei,MN,mn
+JW,Svalbard (Spitzbergen),NO,no
+JX,Jan Mayen,NO,no
+K,USA (Mittlerer Westen),US,us
+KG4,Guantanamo Bay,US,us
+KH0,Marianen-Inseln,MP,mp
+KH2,Guam,GU,gu
+KH3,Johnston-Atoll,UM,um
+KH4,Midway-Inseln,UM,um
+KH5,Palmyra & Jarvis,UM,um
+KH5K,Kingman Reef,UM,um
+KH6,Hawaii,US,us
+KH7K,Kure-Insel,UM,um
+KH8,Amerikanisch-Samoa,AS,as
+KH8/S,Swains Island,AS,as
+KH9,Wake-Insel,UM,um
+KL7,Alaska,US,us
+KP1,Navassa,UM,um
+KP2,Jungferninseln (USA),VI,vi
+KP3,Navassa Island,UM,um
+KP4,Puerto Rico,PR,pr
+KP5,Desecheo,PR,pr
+LA,Norwegen,NO,no
+LU,Argentinien,AR,ar
+LX,Luxemburg,LU,lu
+LY,Litauen,LT,lt
+LZ,Bulgarien,BG,bg
+N,USA (Westküste),US,us
+OA,Peru,PE,pe
+OE,Österreich,AT,at
+OH,Finnland,FI,fi
+OH0,Aland-Inseln,AX,ax
+OJ0,Market Reef,FI,fi
+OK,Tschechische Republik,CZ,cz
+OM,Slowakische Republik,SK,sk
+ON,Belgien,BE,be
+OX,Grönland,GL,gl
+OY,Färöer-Inseln,FO,fo
+OZ,Dänemark,DK,dk
+P2,Papua-Neuguinea,PG,pg
+P4,Aruba,AW,aw
+P5,Nordkorea,KP,kp
+PA,Niederlande,NL,nl
+PJ2,Curaçao,CW,cw
+PJ4,Bonaire,BQ,bq
+PJ5,Saba & St. Eustatius,BQ,bq
+PJ7,Sint Maarten,SX,sx
+PY,Brasilien,BR,br
+PY0F,Fernando de Noronha,BR,br
+PY0S,St. Peter & St. Paul Rocks,BR,br
+PY0T,Trindade & Martim Vaz,BR,br
+PZ,Suriname,SR,sr
+S0,Westsahara,EH,eh
+S2,Bangladesch,BD,bd
+S5,Slowenien,SI,si
+S7,Seychellen,SC,sc
+S9,São Tomé & Príncipe,ST,st
+SM,Schweden,SE,se
+SP,Polen,PL,pl
+ST,Sudan,SD,sd
+SU,Ägypten,EG,eg
+SV,Griechenland,GR,gr
+SV/A,Athos (Mönchsrepublik),GR,gr
+SV5,Dodekanes (Rhodos),GR,gr
+SV9,Kreta,GR,gr
+T2,Tuvalu,TV,tv
+T30,West-Kiribati (Gilbert Is.),KI,ki
+T31,Zentral-Kiribati (British Phoenix),KI,ki
+T32,Ost-Kiribati (Line Is.),KI,ki
+T33,Banaba Island (Ocean Is.),KI,ki
+T5,Somalia,SO,so
+T7,San Marino,SM,sm
+T8,Palau,PW,pw
+TA,Türkei,TR,tr
+TF,Island,IS,is
+TG,Guatemala,GT,gt
+TI,Costa Rica,CR,cr
+TI9,Cocos-Insel (Costa Rica),CR,cr
+TJ,Kamerun,CM,cm
+TK,Korsika,FR,fr
+TL,Zentralafrik. Republik,CF,cf
+TN,Kongo (Republik),CG,cg
+TR,Gabun,GA,ga
+TT,Tschad,TD,td
+TU,Elfenbeinküste,CI,ci
+TY,Benin,BJ,bj
+TZ,Mali,ML,ml
+UA,Russland (Europäischer Teil),RU,ru
+UA2,Kaliningrad,RU,ru
+UA9,Russland (Asiatischer Teil),RU,ru
+UN,Kasachstan,KZ,kz
+UR,Ukraine,UA,ua
+V2,Antigua & Barbuda,AG,ag
+V3,Belize,BZ,bz
+V4,St. Kitts & Nevis,KN,kn
+V5,Namibia,,na
+V6,Mikronesien,FM,fm
+V7,Marshallinseln,MH,mh
+V8,Brunei,BN,bn
+VE,Kanada,CA,ca
+VK,Australien,AU,au
+VK0M,Macquarie-Insel,AU,au
+VK0H,Heard-Insel,HM,hm
+VK9C,Cocos-Inseln (Keeling),CC,cc
+VK9X,Weihnachtsinsel,CX,cx
+VK9N,Norfolk-Insel,AU,au
+VK9L,Lord-Howe-Insel,AU,au
+VK9W,Melish Reef,AU,au
+VK9Z,Willis-Inseln,AU,au
+VP2E,Anguilla,AI,ai
+VP2M,Montserrat,MS,ms
+VP2V,Jungferninseln (UK),VG,vg
+VP5,Turks- & Caicosinseln,TC,tc
+VP6,Pitcairn-Insel,PN,pn
+VP6D,Ducie Island,PN,pn
+VP8,Falklandinseln,FK,fk
+VP8/G,Süd-Georgia,GS,gs
+VP8/O,Süd-Orkneyinseln,AQ,aq
+VP8/S,Süd-Shetlandinseln,AQ,aq
+VP8/W,Süd-Sandwichinseln,GS,gs
+VP9,Bermuda,BM,bm
+VQ9,Chagos-Archipel,IO,io
+VR2,Hongkong,HK,hk
+VU,Indien,IN,in
+VU4,Andamanen & Nikobaren,IN,in
+VU7,Lakshadweep-Inseln (Lakkadiven),IN,in
+W,USA (Ostküste),US,us
+XE,Mexiko,MX,mx
+XF4,Revillagigedo-Inseln,MX,mx
+XT,Burkina Faso,BF,bf
+XU,Kambodscha,KH,kh
+XW,Laos,LA,la
+XX9,Macau,MO,mo
+XZ,Myanmar (Birma),MM,mm
+YA,Afghanistan,AF,af
+YI,Irak,IQ,iq
+YJ,Vanuatu,VU,vu
+YK,Syrien,SY,sy
+YL,Lettland,LV,lv
+YN,Nicaragua,NI,ni
+YO,Rumänien,RO,ro
+YS,El Salvador,SV,sv
+YV,Venezuela,VE,ve
+YV0,Aves Island,VE,ve
+Z2,Simbabwe,ZW,zw
+Z3,Nordmazedonien,MK,mk
+Z6,Kosovo,XK,xk
+ZA,Albanien,AL,al
+ZB,Gibraltar,GI,gi
+ZC4,UK Sovereign Base (Zypern),CY,cy
+ZD7,St. Helena,SH,sh
+ZD8,Ascension Island,SH,sh
+ZD9,Tristan da Cunha,SH,sh
+ZF,Kaimaninseln,KY,ky
+ZK3,Tokelau-Inseln,TK,tk
+ZL,Neuseeland,NZ,nz
+ZL7,Chatham-Inseln,NZ,nz
+ZL8,Kermadec-Inseln,NZ,nz
+ZL9,Subantarktische Inseln,NZ,nz
+ZP,Paraguay,PY,py
+ZR-ZU,Südafrika,ZA,za
+ZS8,Prince-Edward-Insel,ZA,za

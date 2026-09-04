@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 export interface CallsignInfo {
 
     call: string;
@@ -7,13 +9,84 @@ export interface CallsignInfo {
     countryCode: string;
 
     continent: string;
-
 }
+const prefixDatabasePath =
+    path.resolve(
+        process.cwd(),
+        "callsignprefixes_iso_lower_ready.csv"
+    );
+
+
 
 
 
 export class CallsignResolverService {
 
+private loadPrefixDatabase(): void {
+
+    if (!fs.existsSync(prefixDatabasePath)) {
+
+        return;
+
+    }
+
+    const content =
+        fs.readFileSync(
+            prefixDatabasePath,
+            "utf8"
+        );
+
+    const lines =
+        content
+            .split(/\r?\n/)
+            .slice(1);
+
+    for (const line of lines) {
+
+        const columns =
+            line.split(",");
+
+        if (columns.length < 4) {
+
+            continue;
+
+        }
+
+        const prefix =
+            columns[0]?.trim()
+                .toUpperCase() || "";
+
+        const country =
+            columns[1]?.trim() || "";
+
+        const countryCode =
+            columns[3]?.trim()
+                .toLowerCase() || "";
+
+        if (
+            !prefix ||
+            !countryCode
+        ) {
+
+            continue;
+
+        }
+
+        this.database[prefix] = {
+
+            call: "",
+
+            country,
+
+            countryCode,
+
+            continent: ""
+
+        };
+
+    }
+
+}
 
     private database: Record<string, CallsignInfo> = {
 
@@ -107,7 +180,11 @@ export class CallsignResolverService {
 
     };
 
+    constructor() {
 
+        this.loadPrefixDatabase();
+
+    }
 
     resolve(
         call: string

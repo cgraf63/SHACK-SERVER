@@ -2348,3 +2348,198 @@ if (slider) {
             ? "640px"
             : "520px";
 }
+
+
+/* =====================================================
+   Manual QSO
+   ===================================================== */
+
+.manual-qso-call-row {
+
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+}
+
+
+.manual-qso-call-row input {
+
+    width: 150px;
+    box-sizing: border-box;
+
+}
+
+
+.manual-qso-qrz-button {
+
+    width: 34px;
+    height: 32px;
+
+    padding: 0;
+
+    background: transparent;
+
+    border: 1px solid var(--border);
+
+    color: var(--text);
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    font-size: 15px;
+
+}
+
+
+.manual-qso-qrz-button:hover {
+
+    color: cyan;
+    border-color: cyan;
+
+}
+
+
+.manual-qso-flag {
+
+    width: 16px;
+    height: 12px;
+
+    max-width: 16px;
+    max-height: 12px;
+
+    object-fit: cover;
+
+    display: inline-block;
+    vertical-align: middle;
+
+}
+
+
+/* Zwei Felder nebeneinander */
+
+.manual-qso-row {
+
+    display: flex;
+    gap: 12px;
+
+}
+
+
+.manual-qso-row .manual-qso-field {
+
+    min-width: 0;
+
+}
+
+.manual-qso-band-field {
+
+    width: 70px;
+
+}
+
+
+.manual-qso-mode-field {
+
+    width: 70px;
+
+}
+
+.manual-qso-card input,
+.manual-qso-card select {
+
+    background: var(--panel);
+
+    border: 1px solid var(--border);
+
+    color: #cccccc;
+
+    border-radius: 6px;
+
+    height: 32px;
+
+    padding: 0 8px;
+
+    font-size: 13px;
+
+    box-sizing: border-box;
+
+}
+
+
+.manual-qso-card input:focus,
+.manual-qso-card select:focus {
+
+    outline: none;
+
+    border-color: var(--cyan);
+
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.25);
+
+}
+
+
+.manual-qso-card select {
+
+    cursor: pointer;
+
+}
+
+
+/* Band */
+
+.manual-qso-band-field select {
+
+    border-color: rgba(0, 255, 255, 0.55);
+
+}
+
+
+/* Mode */
+
+.manual-qso-mode-field select {
+
+    border-color: rgba(0, 255, 100, 0.55);
+
+}
+
+
+/* Kleine Felder */
+
+#manual-qso-itu,
+#manual-qso-cq {
+
+    width: 70px;
+
+}
+
+.manual-qso-open-button {
+
+    height: 28px;
+
+    padding: 0 12px;
+
+    background: rgba(0, 180, 150, 0.14);
+
+    border: 1px solid rgba(0, 220, 170, 0.65);
+
+    color: #00e0aa;
+
+    border-radius: 5px;
+
+    cursor: pointer;
+
+    font-size: 12px;
+
+}
+
+
+.manual-qso-open-button:hover {
+
+    background: rgba(0, 220, 170, 0.22);
+
+    border-color: #00e0aa;
+
+}
+

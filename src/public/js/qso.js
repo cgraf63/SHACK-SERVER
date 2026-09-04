@@ -416,7 +416,7 @@ const formMyGrid =
                         type="text"
                         value="${escapeQsoHtml(
                             spot.call || ""
-                        )}">
+                        )}"
                         autocomplete="off">
 
                 </div>
