@@ -49,23 +49,53 @@ async function updatePriorityDX() {
                     "priority-item";
 
 
-                div.innerHTML = `
-                    <strong>
-    ${
-        spot.countryCode
-        ?
-          `<img src="/assets/flags/${spot.countryCode}.svg" class="flag" title="${spot.country || ""}" alt="${spot.country || ""}">`
-        :
-        "🌐"
-    }
-    ${spot.call}
+div.innerHTML = `
+    <strong>
+${
+    spot.countryCode
+    ?
+      `<img src="/assets/flags/${spot.countryCode}.svg" class="flag" title="${spot.country || ""}" alt="${spot.country || ""}">`
+    :
+    "🌐"
+}
+<span class="priority-call" style="cursor:pointer;">${spot.call}</span>
 </strong>
+
+
                     ${freq} MHz ${spot.mode}
                     <br>
                     ${spot.distance} km
                     AZ ${spot.azimuth ?? "-"}
                 `;
 
+const callElement =
+    div.querySelector(".priority-call");
+
+if (callElement) {
+
+    callElement.addEventListener(
+        "click",
+        () => {
+
+            if (
+                typeof window.openQsoDialog !==
+                "function"
+            ) {
+                console.error(
+                    "openQsoDialog() is not available."
+                );
+                return;
+            }
+
+            window.openQsoDialog(
+                spot,
+                {}
+            );
+
+        }
+    );
+
+}
 
                 container.appendChild(div);
 

@@ -2641,3 +2641,16 @@ if (slider) {
 
 }
 
+#dx-opportunity-value {
+    white-space: nowrap;
+}
+.dx-opportunity-call,
+.priority-call {
+    cursor: pointer !important;
+}
+
+.dx-opportunity-call {
+    display: inline !important;
+}
+
+

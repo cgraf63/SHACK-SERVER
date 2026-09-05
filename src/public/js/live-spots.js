@@ -1873,9 +1873,37 @@ element.innerHTML =
             ? `<img class="dx-flag" src="/assets/flags/${dx.countryCode}.svg">`
             : ""
     }
-    ${dx.call} on ${mhz}${mode}
+    <span class="dx-opportunity-call">${dx.call}</span> on ${mhz}${mode}
     `;
 
+const callElement =
+    element.querySelector(".dx-opportunity-call");
+
+if (callElement) {
+
+    callElement.addEventListener(
+        "click",
+        () => {
+
+            if (
+                typeof window.openQsoDialog !==
+                "function"
+            ) {
+                console.error(
+                    "openQsoDialog() is not available."
+                );
+                return;
+            }
+
+            window.openQsoDialog(
+                dx,
+                {}
+            );
+
+        }
+    );
+
+}
 
 }
 
