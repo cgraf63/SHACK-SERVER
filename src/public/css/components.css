@@ -159,7 +159,7 @@
 
     font-size: 13px;
 
-    color: #ff69b4;
+    color: #00e5ff;
 
     margin-bottom: 4px;
     position: relative;
@@ -1533,7 +1533,7 @@
 
     display:grid;
 
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:repeat(5,1fr);
 
 }
 
