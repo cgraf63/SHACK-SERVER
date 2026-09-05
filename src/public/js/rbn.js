@@ -1,6 +1,9 @@
 console.log("RBN JS LOADED");
 
 
+let rbnRefreshTimer = null;
+
+
 function setupRbn() {
 
     const rbnButton =
@@ -31,89 +34,207 @@ function setupRbn() {
 }
 
 
-async function openRbnPopup() {
+function createRbnModal() {
 
     let modal =
         document.getElementById("rbn-modal");
 
 
-    if (!modal) {
+    if (modal) {
+        return modal;
+    }
 
-        modal =
-            document.createElement("div");
 
-        modal.id =
-            "rbn-modal";
+    modal =
+        document.createElement("div");
 
-        modal.className =
-            "rbn-modal";
+    modal.id =
+        "rbn-modal";
 
-        modal.innerHTML = `
+    modal.className =
+        "rbn-modal";
 
-            <div class="rbn-dialog">
+    modal.innerHTML = `
 
-                <button
-                    id="rbn-close"
-                    class="rbn-close"
-                    type="button"
-                    aria-label="Close">
-                    ×
-                </button>
+        <div class="rbn-dialog">
 
-                <div class="rbn-title">
-                    RBN
-                </div>
+            <button
+                id="rbn-close"
+                class="rbn-close"
+                type="button"
+                aria-label="Close">
+                ×
+            </button>
 
-                <div id="rbn-content">
-                    Loading...
-                </div>
-
+            <div class="rbn-title">
+                RBN
             </div>
-        `;
 
-        document.body.appendChild(
-            modal
-        );
+            <div id="rbn-content">
+                Loading...
+            </div>
 
-
-        document
-            .getElementById("rbn-close")
-            ?.addEventListener(
-                "click",
-                () => {
-
-                    modal?.classList.remove(
-                        "visible"
-                    );
-
-                }
-            );
+        </div>
+    `;
 
 
-        modal.addEventListener(
+    document.body.appendChild(
+        modal
+    );
+
+
+    document
+        .getElementById("rbn-close")
+        ?.addEventListener(
             "click",
-            event => {
+            () => {
 
-                if (
-                    event.target === modal
-                ) {
-
-                    modal.classList.remove(
-                        "visible"
-                    );
-
-                }
+                closeRbnPopup();
 
             }
         );
 
+
+    modal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target === modal
+            ) {
+
+                closeRbnPopup();
+
+            }
+
+        }
+    );
+
+
+    return modal;
+
+}
+
+
+function closeRbnPopup() {
+
+    const modal =
+        document.getElementById(
+            "rbn-modal"
+        );
+
+
+    if (modal) {
+
+        modal.classList.remove(
+            "visible"
+        );
+
     }
+
+
+    if (rbnRefreshTimer) {
+
+        clearInterval(
+            rbnRefreshTimer
+        );
+
+        rbnRefreshTimer =
+            null;
+
+    }
+
+}
+
+
+async function openRbnPopup() {
+
+    const modal =
+        createRbnModal();
 
 
     modal.classList.add(
         "visible"
     );
 
+
+    await loadRbnData();
+
+
+    if (rbnRefreshTimer) {
+
+        clearInterval(
+            rbnRefreshTimer
+        );
+
+    }
+
+
+    rbnRefreshTimer =
+        setInterval(
+            () => {
+
+                const visible =
+                    modal.classList.contains(
+                        "visible"
+                    );
+
+
+                if (!visible) {
+
+                    clearInterval(
+                        rbnRefreshTimer
+                    );
+
+                    rbnRefreshTimer =
+                        null;
+
+                    return;
+
+                }
+
+
+                loadRbnData();
+
+            },
+            5000
+        );
+
+}
+
+
+function escapeHtml(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+async function loadRbnData() {
 
     const content =
         document.getElementById(
@@ -124,10 +245,6 @@ async function openRbnPopup() {
     if (!content) {
         return;
     }
-
-
-    content.innerHTML =
-        "Loading...";
 
 
     try {
@@ -164,83 +281,125 @@ async function openRbnPopup() {
         }
 
 
-        const spot =
-            spots[0];
-
-
-        const frequency =
-            Number(
-                spot.frequency
-            ).toFixed(2);
-
-
-        const snr =
-            Number(
-                spot.snr
+        const visibleSpots =
+            spots.slice(
+                0,
+                20
             );
-
-
-        const snrText =
-            snr >= 0
-                ? `+${snr}`
-                : `${snr}`;
-
-
-        const distance =
-            spot.distanceKm != null
-                ? `${spot.distanceKm} km`
-                : "—";
 
 
         content.innerHTML = `
 
-            <div class="rbn-row">
-                <span>CALL</span>
-                <strong>
-                    ${spot.callsign || "—"}
-                </strong>
-            </div>
+            <div class="rbn-table">
 
-            <div class="rbn-row">
-                <span>FREQUENCY</span>
-                <strong>
-                    ${frequency} MHz
-                </strong>
-            </div>
+                <div class="rbn-table-header">
 
-            <div class="rbn-row">
-                <span>MODE</span>
-                <strong>
-                    ${spot.mode || "—"}
-                </strong>
-            </div>
+                    <span>CALL</span>
+                    <span>FREQUENCY</span>
+                    <span>MODE</span>
+                    <span>SNR</span>
+                    <span>SPOTTER</span>
+                    <span>DISTANCE</span>
+                    <span>TIME</span>
 
-            <div class="rbn-row">
-                <span>SNR</span>
-                <strong>
-                    ${snrText} dB
-                </strong>
-            </div>
+                </div>
 
-            <div class="rbn-row">
-                <span>SPOTTER</span>
-                <strong>
-                    ${spot.spotter || "—"}
-                </strong>
-            </div>
+                <div class="rbn-table-body">
 
-            <div class="rbn-row">
-                <span>DISTANCE</span>
-                <strong>
-                    ${distance}
-                </strong>
-            </div>
+                    ${visibleSpots
+                        .map(
+                            spot => {
 
-            <div class="rbn-row">
-                <span>TIME</span>
-                <strong>
-                    ${spot.time || "—"}
-                </strong>
+                                const frequency =
+                                    Number(
+                                        spot.frequency
+                                    ) / 1000;
+
+
+                                const frequencyText =
+                                    Number.isFinite(
+                                        frequency
+                                    )
+                                        ? `${frequency.toFixed(3)} MHz`
+                                        : "—";
+
+
+                                const snr =
+                                    Number(
+                                        spot.snr
+                                    );
+
+
+                                const snrText =
+                                    Number.isFinite(
+                                        snr
+                                    )
+                                        ? (
+                                            snr >= 0
+                                                ? `+${snr}`
+                                                : `${snr}`
+                                        )
+                                        : "—";
+
+
+                                const distance =
+                                    spot.distanceKm != null
+                                        ? `${spot.distanceKm} km`
+                                        : "—";
+
+
+                                return `
+
+                                    <div class="rbn-table-row">
+
+                                        <span>
+                                            ${escapeHtml(
+                                                spot.callsign
+                                            )}
+                                        </span>
+
+                                        <span>
+                                            ${frequencyText}
+                                        </span>
+
+                                        <span>
+                                            ${escapeHtml(
+                                                spot.mode
+                                            )}
+                                        </span>
+
+                                        <span>
+                                            ${snrText} dB
+                                        </span>
+
+                                        <span>
+                                            ${escapeHtml(
+                                                spot.spotter
+                                            )}
+                                        </span>
+
+                                        <span>
+                                            ${escapeHtml(
+                                                distance
+                                            )}
+                                        </span>
+
+                                        <span>
+                                            ${escapeHtml(
+                                                spot.time
+                                            )}
+                                        </span>
+
+                                    </div>
+
+                                `;
+
+                            }
+                        )
+                        .join("")}
+
+                </div>
+
             </div>
         `;
 

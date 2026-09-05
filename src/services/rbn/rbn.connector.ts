@@ -33,7 +33,7 @@ const RBN_PORT =
     7000;
 
 const MAX_SPOTS =
-    200;
+    100X;
 
 
 export class RbnConnector {
