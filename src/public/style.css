@@ -137,35 +137,51 @@ header h1{
 
 }
 
-.large-card{
+.large-card {
 
-    background:var(--panel);
+    background: var(--panel);
 
-    border-radius:12px;
+    border-radius: 12px;
 
-    padding:25px;
+    padding: 25px;
 
-    min-height:350px;
+    min-height: 350px;
 
-    box-shadow:0 6px 15px rgba(0,0,0,.35);
+    box-shadow: 0 6px 15px rgba(0,0,0,.35);
+
+}
 
 .call-cell {
-   
 
-   
+    vertical-align: middle;
+
+    white-space: nowrap;
+
+}
+
+.call-cell > span:not(.worked-indicator) {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    vertical-align: middle;
+
 }
 
 .flag {
+
     width: 18px;
+
     height: 12px;
+
     vertical-align: middle;
+
     margin-right: 4px;
+
     object-fit: cover;
-}
 
 }
-
-
 /* =========================================================
    FT8 LIVE DECODES
    ========================================================= */

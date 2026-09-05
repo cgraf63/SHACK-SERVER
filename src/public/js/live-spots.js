@@ -4,7 +4,7 @@ console.log("LIVE SPOTS JS LOADED");
 let currentSpots = [];
 
 function getLiveSpotPageSize() {
-    return window.screen.height < 1100 ? 13 : 15;
+    return window.screen.height < 1100 ? 17 : 21;
 }
 let liveSpotOffset = 0;
 

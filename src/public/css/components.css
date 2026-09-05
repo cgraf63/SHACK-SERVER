@@ -910,9 +910,9 @@
 
 .worked-indicator {
     display: inline-block;
-    font-size: 30px;
+    font-size: 20px;
     position: relative;
-    top: 3px;
+    top: 0;
     margin-right: 7px;
 }
 
