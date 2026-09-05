@@ -19,7 +19,7 @@ import ft8Router from "./routes/ft8.js";
 import contestsRouter from "./routes/contests.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
+import rbnRouter from "./routes/rbn.js";
 
 const __filename =
     fileURLToPath(import.meta.url);
@@ -30,6 +30,10 @@ const __dirname =
 
 const app =
     express();
+
+
+
+
 
 
 /*
@@ -132,6 +136,12 @@ app.use(
     spotsRouter
 );
 
+
+// RBN
+app.use(
+    "/api/rbn",
+    rbnRouter
+);
 
 // System Status
 app.use(
