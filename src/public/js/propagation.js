@@ -69,6 +69,80 @@ async function updatePropagation() {
 
         }
 
+const sidcF107 =
+    document.getElementById(
+        "sidc-f107"
+    );
+
+
+const sidcAp =
+    document.getElementById(
+        "sidc-ap"
+    );
+
+
+const sidcF107Scale =
+    document.getElementById(
+        "sidc-f107-scale"
+    );
+
+
+const sidcApScale =
+    document.getElementById(
+        "sidc-ap-scale"
+    );
+
+
+if (
+    data.sidc
+) {
+
+    if (sidcF107) {
+
+        sidcF107.textContent =
+            data.sidc.solarFlux ??
+            "--";
+
+    }
+
+
+    if (sidcAp) {
+
+        sidcAp.textContent =
+            data.sidc.ap ??
+            "--";
+
+    }
+
+
+    if (sidcF107Scale) {
+
+        sidcF107Scale.style.width =
+            `${Math.min(
+                100,
+                Math.max(
+                    0,
+                    ((data.sidc.solarFlux - 70) / 100) * 100
+                )
+            )}%`;
+
+    }
+
+
+    if (sidcApScale) {
+
+        sidcApScale.style.width =
+            `${Math.min(
+                100,
+                Math.max(
+                    0,
+                    (data.sidc.ap / 40) * 100
+                )
+            )}%`;
+
+    }
+
+}
 
         if (
             Array.isArray(

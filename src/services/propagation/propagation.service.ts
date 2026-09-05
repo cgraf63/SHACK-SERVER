@@ -8,6 +8,15 @@ export interface BandCondition {
 
 }
 
+export interface SidcForecast {
+
+    solarFlux: number;
+
+    ap: number;
+
+    date: string;
+
+}
 
 export interface PropagationStatus {
 
@@ -21,7 +30,11 @@ export interface PropagationStatus {
 
     bands: BandCondition[];
 
+    sidc: SidcForecast;
+
     updated: string;
+
+ 
 
 }
 
@@ -146,6 +159,89 @@ export async function getPropagation(): Promise<PropagationStatus> {
             "https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json"
         );
 
+const sidcData =
+    await fetch(
+        "https://www.sidc.be/spaceweatherservices/managed/services/applications/managed/services/archive/product/meu/latest"
+    )
+    .then(
+        response => response.text()
+    );
+
+const today =
+    new Date()
+        .toISOString()
+        .slice(0, 10);
+
+
+const sidcLines =
+    sidcData.match(
+        /PREDICTIONS FOR (\d{2} \w{3} \d{4})\s+10CM FLUX:\s+(\d+)\s+\/ AP:\s+(\d+)/g
+    ) || [];
+
+
+const sidcMatch =
+    sidcLines
+        .map(line => {
+
+            const match =
+                line.match(
+                    /PREDICTIONS FOR (\d{2} \w{3} \d{4})\s+10CM FLUX:\s+(\d+)\s+\/ AP:\s+(\d+)/
+                );
+
+            if (!match) {
+                return null;
+            }
+
+const months: Record<string, string> = {
+    Jan: "01",
+    Feb: "02",
+    Mar: "03",
+    Apr: "04",
+    May: "05",
+    Jun: "06",
+    Jul: "07",
+    Aug: "08",
+    Sep: "09",
+    Oct: "10",
+    Nov: "11",
+    Dec: "12"
+};
+
+
+const dateParts =
+    match[1]!.split(" ");
+
+
+const date =
+    `${dateParts[2]!}-${months[dateParts[1]!]}-${dateParts[0]!.padStart(2, "0")}`;
+            return {
+                match,
+                date
+            };
+
+        })
+        .find(
+            item =>
+                item?.date === today
+        )?.match;
+
+const sidcForecast: SidcForecast = {
+
+    date:
+        sidcMatch?.[1] || "",
+
+    solarFlux:
+        sidcMatch
+            ? Number(sidcMatch[2])
+            : 0,
+
+    ap:
+        sidcMatch
+            ? Number(sidcMatch[3])
+            : 0
+
+};
+
 
     const latestSolar =
         solarData.find(
@@ -203,6 +299,7 @@ bands: calculateBandConditions(
     kIndex
 ),
 
+sidc: sidcForecast,
 
         updated:
             latestGeomagnetic?.time_tag ||

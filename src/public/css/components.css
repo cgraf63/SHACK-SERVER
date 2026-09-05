@@ -146,6 +146,104 @@
 
 }
 
+.sidc-forecast {
+
+    white-space: nowrap;
+
+    margin-left: 5px;
+
+}
+
+
+.sidc-title {
+
+    font-size: 13px;
+
+    color: #ff69b4;
+
+    margin-bottom: 4px;
+    position: relative;
+    top: -20px;
+
+}
+
+
+.sidc-values {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+
+}
+
+
+.sidc-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    font-size: 11px;
+
+    line-height: 13px;
+
+}
+
+
+.sidc-item > span {
+
+    width: 30px;
+
+    color: var(--text);
+
+}
+
+
+.sidc-item strong {
+
+    width: 26px;
+
+    color: #ffd54a;
+
+    font-size: 12px;
+
+    text-align: right;
+
+}
+
+
+.sidc-scale {
+
+    width: 75px;
+
+    height: 4px;
+
+    background: var(--panel-border);
+
+    border-radius: 2px;
+
+    overflow: hidden;
+
+}
+
+
+.sidc-scale-fill {
+
+    height: 100%;
+
+    width: 0;
+
+    background: var(--cyan);
+
+    border-radius: 2px;
+
+    transition: width 0.4s ease;
+
+}
 .station-inline {
     white-space: nowrap;
     border-left: 1px solid var(--panel-border);
