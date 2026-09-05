@@ -1803,47 +1803,258 @@ function updateDxOpportunity() {
     }
 
 
-console.log(
-    "TOP DISTANCE SPOTS:",
-    [...currentSpots]
-        .filter(
-            s => s.distance !== undefined
-        )
-        .sort(
-            (a,b) =>
-                b.distance - a.distance
-        )
-        .slice(0,10)
-        .map(
-            s => ({
-                call: s.call,
-                distance: s.distance,
-                frequency: s.frequency,
-                mode: s.mode,
-                age: s.age
-            })
-        )
-);
+    const scoredSpots =
+        [...currentSpots]
+            .filter(
+                spot =>
+                    spot.distance !== undefined &&
+                    spot.call
+            )
+            .map(
+                spot => {
+
+                    let score = 0;
+
+                    const worked =
+                        getWorkedStatus(spot);
 
 
-    const dx =
-    [...currentSpots]
-        .filter(
-            spot =>
-                spot.distance !== undefined
-        )
-        .sort(
-            (a,b) =>
-                b.distance - a.distance
-        )[0];
+                    /*
+                        Worked status
+                    */
 
-    if (!dx) {
+                    if (worked === "new") {
+
+                        score += 100;
+
+                    }
+                    else if (worked === "country") {
+
+                        score += 0;
+
+                    }
+                    else if (worked === "station") {
+
+                        score -= 20;
+
+                    }
+                    else if (worked === "country-band") {
+
+                        score += 60;
+
+                    }
+                    else if (worked === "station-band") {
+
+                        score -= 80;
+
+                    }
+
+
+                    /*
+                        New band
+                    */
+
+                    if (
+                        spot.countryCode &&
+                        workedStatus.countries.has(
+                            spot.countryCode.toLowerCase()
+                        ) &&
+                        !workedStatus.countriesOnBand.has(
+                            `${spot.countryCode.toLowerCase()}|${String(spot.band || "").toUpperCase()}`
+                        )
+                    ) {
+
+                        score += 60;
+
+                    }
+
+
+                    /*
+                        New station on band
+                    */
+
+                    if (
+                        workedStatus.calls.has(
+                            String(spot.call)
+                                .trim()
+                                .toUpperCase()
+                        ) &&
+                        !workedStatus.callsOnBand.has(
+                            `${String(spot.call).trim().toUpperCase()}|${String(spot.band || "").toUpperCase()}`
+                        )
+                    ) {
+
+                        score += 30;
+
+                    }
+
+
+                    /*
+                        New station
+                    */
+
+                    if (worked === "new") {
+
+                        score += 15;
+
+                    }
+
+
+                    /*
+                        Multi-cluster
+                    */
+
+                    if (
+                        Array.isArray(spot.sources) &&
+                        spot.sources.length >= 2
+                    ) {
+
+                        score += 20;
+
+                    }
+
+
+                    /*
+                        Confidence
+                    */
+
+                    const confidence =
+                        Number(
+                            spot.confidence
+                        );
+
+                    if (
+                        Number.isFinite(confidence)
+                    ) {
+
+                        score +=
+                            Math.max(
+                                0,
+                                Math.min(
+                                    100,
+                                    confidence
+                                )
+                            ) * 0.15;
+
+                    }
+
+
+                    /*
+                        Spot age
+                    */
+
+                    const age =
+                        parseInt(
+                            String(
+                                spot.age || ""
+                            ).replace(
+                                /[^0-9]/g,
+                                ""
+                            ),
+                            10
+                        );
+
+                    if (Number.isFinite(age)) {
+
+                        if (age < 60) {
+
+                            score += 15;
+
+                        }
+                        else if (age < 180) {
+
+                            score += 10;
+
+                        }
+                        else if (age < 300) {
+
+                            score += 5;
+
+                        }
+
+                    }
+
+
+                    /*
+                        Distance
+                    */
+
+                    const distance =
+                        Number(
+                            spot.distance
+                        );
+
+                    if (
+                        Number.isFinite(distance)
+                    ) {
+
+                        if (distance > 8000) {
+
+                            score += 15;
+
+                        }
+                        else if (distance > 5000) {
+
+                            score += 11;
+
+                        }
+                        else if (distance > 2000) {
+
+                            score += 7;
+
+                        }
+                        else {
+
+                            score += 3;
+
+                        }
+
+                    }
+
+
+                    return {
+                        spot,
+                        score
+                    };
+
+                }
+            )
+            .sort(
+                (a, b) =>
+                    b.score - a.score
+            );
+
+
+    const best =
+        scoredSpots[0];
+
+
+    if (!best) {
 
         element.textContent =
             "No DX data";
 
         return;
+
     }
+
+
+    const dx =
+        best.spot;
+
+
+    console.log(
+        "BEST OPPORTUNITY:",
+        {
+            call: dx.call,
+            score: Math.round(best.score),
+            worked: getWorkedStatus(dx),
+            band: dx.band,
+            distance: dx.distance,
+            age: dx.age,
+            confidence: dx.confidence
+        }
+    );
 
 
     const mhz =
@@ -1856,15 +2067,10 @@ console.log(
 
 
     const mode =
-    dx.mode !== "UNKNOWN"
-        ? " " + dx.mode
-        : "";
+        dx.mode !== "UNKNOWN"
+            ? " " + dx.mode
+            : "";
 
-
-console.log(
-    "DX OBJECT JSON",
-    JSON.stringify(dx, null, 2)
-);
 
 element.innerHTML =
     `
