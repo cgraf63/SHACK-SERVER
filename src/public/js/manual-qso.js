@@ -183,6 +183,257 @@
         }
     );
 
+    /*
+        Manual QSO Watch
+    */
+
+    const watchCheckbox =
+        document.getElementById(
+            "manual-qso-watch"
+        );
+
+    const watchAlert =
+        document.getElementById(
+            "manual-qso-watch-alert"
+        );
+
+    let watchBaselinePending = true;
+    let watchSeenSpots = new Set();
+    let watchTimer = null;
+
+
+    function getWatchSpotKey(spot) {
+
+        return [
+            spot.callsign || spot.call || "",
+            spot.frequency || "",
+            spot.mode || "",
+            spot.time || ""
+        ]
+            .join("|")
+            .toUpperCase();
+
+    }
+
+
+    function clearWatchAlert() {
+
+        if (watchTimer !== null) {
+
+            clearTimeout(watchTimer);
+            watchTimer = null;
+
+        }
+
+
+        callInput.classList.remove(
+            "manual-qso-call-detected"
+        );
+
+        callInput.classList.remove(
+            "manual-qso-call-detected-blink"
+        );
+
+
+        if (watchAlert) {
+
+            watchAlert.classList.remove(
+                "active"
+            );
+
+            watchAlert.innerHTML = "";
+
+        }
+
+    }
+
+
+    function showWatchDetection(spot) {
+
+        const callsign =
+            (
+                spot.callsign ||
+                spot.call ||
+                ""
+            )
+                .toUpperCase();
+
+
+        const frequency =
+            Number(spot.frequency);
+
+
+        const frequencyMHz =
+            Number.isFinite(frequency)
+                ? (frequency / 1000).toFixed(3)
+                : "";
+
+
+        const mode =
+            spot.mode || "";
+
+
+        callInput.classList.add(
+            "manual-qso-call-detected"
+        );
+
+        callInput.classList.add(
+            "manual-qso-call-detected-blink"
+        );
+
+
+        if (watchAlert) {
+
+            watchAlert.innerHTML = `
+                <div class="manual-qso-watch-detected">
+                    ${callsign} DETECTED!
+                </div>
+                <div class="manual-qso-watch-info">
+                    ${frequencyMHz} MHz&nbsp;&nbsp; ${mode}
+                </div>
+            `;
+
+            watchAlert.classList.add(
+                "active"
+            );
+
+        }
+
+
+        if (watchTimer !== null) {
+
+            clearTimeout(watchTimer);
+
+        }
+
+
+        watchTimer =
+            setTimeout(
+                () => {
+
+                    clearWatchAlert();
+
+                },
+                30000
+            );
+
+    }
+
+
+    window.checkManualQsoWatch =
+        function(spots) {
+
+            if (
+                !watchCheckbox ||
+                !watchCheckbox.checked
+            ) {
+                return;
+            }
+
+
+            const wantedCall =
+                callInput.value
+                    .trim()
+                    .toUpperCase();
+
+
+            if (!wantedCall) {
+                return;
+            }
+
+
+            if (!Array.isArray(spots)) {
+                return;
+            }
+
+
+            /*
+                First update after WATCH is enabled:
+                establish a baseline.
+
+                Existing spots must NOT trigger
+                a detection.
+            */
+
+            if (watchBaselinePending) {
+
+                watchSeenSpots =
+                    new Set(
+                        spots.map(
+                            getWatchSpotKey
+                        )
+                    );
+
+                watchBaselinePending =
+                    false;
+
+                return;
+
+            }
+
+
+            for (const spot of spots) {
+
+                const spotCall =
+                    (
+                        spot.callsign ||
+                        spot.call ||
+                        ""
+                    )
+                        .trim()
+                        .toUpperCase();
+
+
+                if (
+                    spotCall !== wantedCall
+                ) {
+                    continue;
+                }
+
+
+                const key =
+                    getWatchSpotKey(spot);
+
+
+                if (
+                    watchSeenSpots.has(key)
+                ) {
+                    continue;
+                }
+
+
+                watchSeenSpots.add(key);
+
+                showWatchDetection(
+                    spot
+                );
+
+                break;
+
+            }
+
+        };
+
+
+    if (watchCheckbox) {
+
+        watchCheckbox.addEventListener(
+            "change",
+            () => {
+
+                clearWatchAlert();
+
+                watchSeenSpots =
+                    new Set();
+
+                watchBaselinePending =
+                    watchCheckbox.checked;
+
+            }
+        );
+
+    }
+
 qsoButton.addEventListener(
     "click",
     () => {

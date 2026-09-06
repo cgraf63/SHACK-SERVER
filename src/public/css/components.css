@@ -2653,6 +2653,87 @@ if (slider) {
     display: inline !important;
 }
 
+/* =====================================================
+   Manual QSO Watch
+   ===================================================== */
+
+.manual-qso-watch {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 32px;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.manual-qso-watch input {
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    accent-color: var(--cyan);
+    cursor: pointer;
+}
+
+.manual-qso-watch span {
+    cursor: pointer;
+}
+
+
+/* Watch alert */
+
+.manual-qso-watch-alert {
+    display: none;
+    margin-top: 8px;
+    line-height: 1.4;
+}
+
+.manual-qso-watch-alert.active {
+    display: block;
+}
+
+.manual-qso-watch-detected {
+    color: #00ff00;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.manual-qso-watch-info {
+    color: var(--text);
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+
+/* Callsign field while detected */
+
+.manual-qso-call-detected {
+    color: #00ff00 !important;
+    border-color: #00ff00 !important;
+    box-shadow: 0 0 6px rgba(0, 255, 0, 0.5);
+}
+
+
+/* 30 second attention blink */
+
+@keyframes manualQsoWatchBlink {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.25;
+    }
+}
+
+.manual-qso-call-detected-blink {
+    animation: manualQsoWatchBlink 1s step-start infinite;
+}
+
+
 /* =========================================
    RBN POPUP
    ========================================= */

@@ -2251,6 +2251,16 @@ async function updateLiveSpots() {
         currentSpots =
             await response.json();
 
+if (
+    typeof window.checkManualQsoWatch ===
+    "function"
+) {
+
+    window.checkManualQsoWatch(
+        currentSpots
+    );
+
+}
 
         /*
             Update filters
