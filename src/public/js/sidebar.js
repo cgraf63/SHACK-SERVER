@@ -3,6 +3,45 @@ console.log("SIDEBAR JS LOADED");
 
 function setupSidebar() {
 
+
+    /*
+        Sidebar toggle
+    */
+
+    const sidebar =
+        document.querySelector(".sidebar");
+
+    const sidebarToggle =
+        document.getElementById(
+            "sidebar-toggle"
+        );
+
+
+    if (
+        sidebar &&
+        sidebarToggle
+    ) {
+
+        sidebarToggle.addEventListener(
+            "click",
+            () => {
+
+                sidebar.classList.toggle(
+                    "collapsed"
+                );
+
+                sidebarToggle.textContent =
+                    sidebar.classList.contains(
+                        "collapsed"
+                    )
+                        ? "▶"
+                        : "◀";
+
+            }
+        );
+
+    }
+
     /*
         About elements
     */
