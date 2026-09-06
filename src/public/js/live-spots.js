@@ -1129,6 +1129,18 @@ function updateLiveSpotOrder(spots) {
 }
 
 
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
 function renderLiveSpots() {
 
 
@@ -1336,7 +1348,7 @@ function renderLiveSpots() {
                     ${
                         Array.isArray(spot.comments)
                         && spot.comments.length
-                            ? spot.comments[0]
+                            ? escapeHtml(spot.comments[0])
                             : "-"
                     }
                 </td>
