@@ -2369,7 +2369,6 @@ const resetView =
         "resetView"
     );
 
-
 if (resetView) {
 
     resetView.addEventListener(
@@ -2640,7 +2639,51 @@ function startLiveSpotsUpdater() {
 
 
 
+function setupGetNewSpots() {
 
+    const getNewSpots =
+        document.getElementById(
+            "getNewSpots"
+        );
+
+    if (
+        getNewSpots &&
+        !getNewSpots.dataset.handlerAttached
+    ) {
+
+        getNewSpots.addEventListener(
+            "click",
+            () => {
+
+                updateLiveSpots();
+
+            }
+        );
+
+        getNewSpots.dataset.handlerAttached =
+            "true";
+
+    }
+
+}
+
+
+window.addEventListener(
+
+    "componentsLoaded",
+
+    setupGetNewSpots
+
+);
+
+
+setTimeout(
+
+    setupGetNewSpots,
+
+    500
+
+);
 
 window.addEventListener(
 
