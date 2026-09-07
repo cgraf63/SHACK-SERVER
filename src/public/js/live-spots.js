@@ -1455,15 +1455,53 @@ if (detailsButton) {
 
     detailsButton.addEventListener(
         "click",
-        () => {
+        async () => {
 
             console.log(
                 "VIEW DETAILS:",
                 spot
             );
 
+            let detailsSpot = {
+                ...spot
+            };
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/qso/qrz/${encodeURIComponent(spot.call)}`
+                    );
+
+                if (response.ok) {
+
+                    const data =
+                        await response.json();
+
+                    if (
+                        data.success &&
+                        data.qrz
+                    ) {
+
+                        detailsSpot.image =
+                            data.qrz.image || "";
+
+                    }
+
+                }
+
+            }
+            catch (error) {
+
+                console.error(
+                    "QRZ image lookup failed:",
+                    error
+                );
+
+            }
+
             showSpotDetails(
-                spot
+                detailsSpot
             );
 
         }
@@ -2741,15 +2779,55 @@ alt="${spot.country || ""}"
 
 
             <div
+                style="
+                    display:flex;
+                    gap:18px;
+                    margin-top:18px;
+                    align-items:stretch;
+                "
+            >
+
                 <div
-    id="spot-details-map"
-    style="
-        margin-top:18px;
-        height:550px;
-        border-radius:6px;
-        overflow:hidden;
-    "
-></div>
+                    id="spot-details-map"
+                    style="
+                        flex:1;
+                        min-width:0;
+                        height:550px;
+                        border-radius:6px;
+                        overflow:hidden;
+                    "
+                ></div>
+
+                ${
+                    spot.image
+                        ? `
+                            <div
+                                style="
+                                    width:300px;
+                                    height:550px;
+                                    border-radius:6px;
+                                    overflow:hidden;
+                                    background:#111c25;
+                                    display:flex;
+                                    align-items:center;
+                                    justify-content:center;
+                                "
+                            >
+                                <img
+                                    src="${spot.image}"
+                                    alt="${spot.call || ""}"
+                                    style="
+                                        max-width:100%;
+                                        max-height:100%;
+                                        object-fit:contain;
+                                    "
+                                >
+                            </div>
+                        `
+                        : ""
+                }
+
+            </div>
 
         </div>
     `;

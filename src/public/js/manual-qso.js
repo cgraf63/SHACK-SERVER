@@ -222,6 +222,9 @@ const viewButton =
                 countryCode:
                     qrz.countryCode || "",
 
+                image:
+                    qrz.image || "",
+
                 locator:
                     qrz.locator || "",
 

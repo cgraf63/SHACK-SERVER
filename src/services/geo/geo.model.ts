@@ -8,6 +8,8 @@ export interface DxLocation {
 
     countryCode?: string;
 
+    image?: string;
+
     continent?: string;
 
     locator?: string;

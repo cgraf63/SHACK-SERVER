@@ -179,6 +179,13 @@ export class QRZService {
                     cs.land;
 
             }
+
+	    if (cs.image) {
+
+                result.image =
+                    cs.image;
+
+            }
             else if (cs.country) {
 
                 result.country =
