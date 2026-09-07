@@ -5,10 +5,10 @@
             "manual-qso-call"
         );
 
-    const qrzButton =
-        document.getElementById(
-            "manual-qso-qrz"
-        );
+const viewButton =
+    document.getElementById(
+        "manual-qso-view"
+    );
 	const qsoButton =
     	    document.getElementById(
             "manual-qso-open"
@@ -16,157 +16,155 @@
 
     if (
         !callInput ||
-        !qrzButton ||
+        !viewButton ||
  	!qsoButton
     ) {
         return;
     }
 
+    callInput.addEventListener(
+        "input",
+        () => {
 
-    qrzButton.addEventListener(
-        "click",
-        async () => {
-
-            const call =
-                callInput.value
-                    .trim()
-                    .toUpperCase();
-
-            if (!call) {
-                return;
-            }
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        `/api/qso/qrz/${encodeURIComponent(call)}`
-                    );
-
-
-                if (!response.ok) {
-
-                    console.warn(
-                        "QRZ lookup returned:",
-                        response.status
-                    );
-
-                    return;
-                }
-
-
-                const result =
-                    await response.json();
-
-
-                const qrz =
-                    result?.qrz;
-
-
-                if (!qrz) {
-                    return;
-                }
-
-
-                console.log(
-                    "MANUAL QSO QRZ:",
-                    qrz
-                );
-
-
-                const nameInput =
-                    document.getElementById(
-                        "manual-qso-name"
-                    );
-
-                if (nameInput) {
-
-                    nameInput.value =
-                        qrz.name || "";
-
-                }
-
-
-                const countryInput =
-                    document.getElementById(
-                        "manual-qso-country"
-                    );
-
-                if (countryInput) {
-
-                    countryInput.value =
-                        qrz.country || "";
-
-                }
-
-
-                const ituInput =
-                    document.getElementById(
-                        "manual-qso-itu"
-                    );
-
-                if (ituInput) {
-
-                    ituInput.value =
-                        qrz.ituZone ?? "";
-
-                }
-
-
-                const cqInput =
-                    document.getElementById(
-                        "manual-qso-cq"
-                    );
-
-                if (cqInput) {
-
-                    cqInput.value =
-                        qrz.cqZone ?? "";
-
-                }
-
-
-                const flag =
-                    document.getElementById(
-                        "manual-qso-flag"
-                    );
-
-                if (flag) {
-
-                    flag.src = "";
-
-                    flag.alt = "";
-                    flag.title = "";
-
-                    if (qrz.countryCode) {
-
-                        flag.src =
-                            `/assets/flags/${qrz.countryCode}.svg`;
-
-                        flag.alt =
-                            qrz.country || "";
-
-                        flag.title =
-                            qrz.country || "";
-
-                    }
-
-                }
-
-            }
-            catch (error) {
-
-                console.error(
-                    "Manual QSO QRZ lookup failed:",
-                    error
-                );
-
-            }
+            callInput.value =
+                callInput.value.toUpperCase();
 
         }
     );
 
+    async function lookupCall() {
+
+        const call =
+            callInput.value
+                .trim()
+                .toUpperCase();
+
+        if (!call) {
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/qso/qrz/${encodeURIComponent(call)}`
+                );
+
+
+            if (!response.ok) {
+
+                console.warn(
+                    "QRZ lookup returned:",
+                    response.status
+                );
+
+                return;
+            }
+
+
+            const result =
+                await response.json();
+
+
+            const qrz =
+                result?.qrz;
+
+
+            if (!qrz) {
+                return;
+            }
+
+
+            console.log(
+                "MANUAL QSO QRZ:",
+                qrz
+            );
+
+
+            const nameInput =
+                document.getElementById(
+                    "manual-qso-name"
+                );
+
+            if (nameInput) {
+                nameInput.value =
+                    qrz.name || "";
+            }
+
+
+            const countryInput =
+                document.getElementById(
+                    "manual-qso-country"
+                );
+
+            if (countryInput) {
+                countryInput.value =
+                    qrz.country || "";
+            }
+
+
+            const ituInput =
+                document.getElementById(
+                    "manual-qso-itu"
+                );
+
+            if (ituInput) {
+                ituInput.value =
+                    qrz.ituZone ?? "";
+            }
+
+
+            const cqInput =
+                document.getElementById(
+                    "manual-qso-cq"
+                );
+
+            if (cqInput) {
+                cqInput.value =
+                    qrz.cqZone ?? "";
+            }
+
+
+            const flag =
+                document.getElementById(
+                    "manual-qso-flag"
+                );
+
+            if (flag) {
+
+                flag.src = "";
+                flag.alt = "";
+                flag.title = "";
+
+                if (qrz.countryCode) {
+
+                    flag.src =
+                        `/assets/flags/${qrz.countryCode}.svg`;
+
+                    flag.alt =
+                        qrz.country || "";
+
+                    flag.title =
+                        qrz.country || "";
+
+                }
+
+            }
+
+	return qrz;
+        }
+
+        catch (error) {
+
+            console.error(
+                "Manual QSO QRZ lookup failed:",
+                error
+            );
+
+        }
+
+    }
 
     callInput.addEventListener(
         "keydown",
@@ -178,7 +176,75 @@
 
             event.preventDefault();
 
-            qrzButton.click();
+            lookupCall();
+
+        }
+    );
+    /*View callsign */
+
+    viewButton.addEventListener(
+        "click",
+        async () => {
+
+            const qrz =
+                await lookupCall();
+
+            if (!qrz) {
+                return;
+            }
+
+            if (
+                typeof window.showSpotDetails !==
+                "function"
+            ) {
+
+                console.error(
+                    "showSpotDetails() is not available."
+                );
+
+                return;
+            }
+
+            const spot = {
+
+                call:
+                    qrz.call ||
+                    callInput.value
+                        .trim()
+                        .toUpperCase(),
+
+                name:
+                    qrz.name || "",
+
+                country:
+                    qrz.country || "",
+
+                countryCode:
+                    qrz.countryCode || "",
+
+                locator:
+                    qrz.locator || "",
+
+                ituZone:
+                    qrz.ituZone,
+
+                cqZone:
+                    qrz.cqZone,
+
+                dxcc:
+                    qrz.dxcc,
+
+                latitude:
+                    qrz.latitude,
+
+                longitude:
+                    qrz.longitude
+
+            };
+
+            window.showSpotDetails(
+                spot
+            );
 
         }
     );

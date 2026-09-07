@@ -206,6 +206,7 @@ export class QRZService {
             }
 
 
+
             const ituZone =
                 this.toNumber(
                     cs.ituzone
@@ -250,6 +251,30 @@ export class QRZService {
 
                 result.dxcc =
                     dxcc;
+
+            }
+
+            if (
+                result.cqZone === undefined &&
+                result.dxcc !== undefined
+            ) {
+
+
+                const dxccZones =
+                    await this.lookupDxcc(
+                        session,
+                        result.dxcc
+                    );
+
+
+                if (
+                    dxccZones?.cqZone !== undefined
+                ) {
+
+                    result.cqZone =
+                        dxccZones.cqZone;
+
+                }
 
             }
 
@@ -617,7 +642,82 @@ export class QRZService {
     }
 
 
+    private async lookupDxcc(
+        session: string,
+        dxcc: number
+    ): Promise<{
+        ituZone?: number;
+        cqZone?: number;
+    } | null> {
 
+        try {
+
+            const response =
+                await axios.get(
+                    "https://xmldata.qrz.com/xml/current/",
+                    {
+                        params: {
+                            s: session,
+                            dxcc
+                        },
+
+                        timeout: 5000
+                    }
+                );
+
+
+            const data =
+                this.parser.parse(
+                    response.data
+                );
+
+
+            const dxccData =
+                data?.QRZDatabase?.DXCC;
+
+
+            if (!dxccData) {
+                return null;
+            }
+
+	const result: {
+    ituZone?: number;
+    cqZone?: number;
+} = {};
+
+const ituZone =
+    this.toNumber(
+        dxccData.ituzone
+    );
+
+if (ituZone !== undefined) {
+    result.ituZone = ituZone;
+}
+
+const cqZone =
+    this.toNumber(
+        dxccData.cqzone
+    );
+
+if (cqZone !== undefined) {
+    result.cqZone = cqZone;
+}
+
+return result;
+
+        }
+        catch (error) {
+
+            console.error(
+                "QRZ DXCC lookup failed:",
+                dxcc,
+                error
+            );
+
+            return null;
+        }
+
+    }
 
 
     private toNumber(

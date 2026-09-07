@@ -2921,7 +2921,9 @@ map.fitBounds(
     );
 
 }
-
+/* added 6.9. */
+window.showSpotDetails =
+    showSpotDetails;
 
 function maidenheadToLatLon(locator) {
 
@@ -2935,30 +2937,29 @@ function maidenheadToLatLon(locator) {
             .toUpperCase();
 
     const lon =
-        -180
-        + (locator.charCodeAt(0) - 65) * 20
-        + (locator.charCodeAt(2) - 48) * 2;
+        (locator.charCodeAt(0) - 65) * 20 - 180;
 
     const lat =
-        -90
-        + (locator.charCodeAt(1) - 65) * 10
-        + (locator.charCodeAt(3) - 48);
+        (locator.charCodeAt(1) - 65) * 10 - 90;
 
-    let longitude = lon + 1;
-    let latitude = lat + 0.5;
+    let longitude =
+        lon +
+        Number(locator[2]) * 2;
+
+    let latitude =
+        lat +
+        Number(locator[3]) * 1;
 
     if (locator.length >= 6) {
 
         longitude +=
-            (locator.charCodeAt(4) - 65)
-            * (5 / 60);
+            (locator.charCodeAt(4) - 65) *
+            (5 / 60);
 
         latitude +=
-            (locator.charCodeAt(5) - 65)
-            * (2.5 / 60);
+            (locator.charCodeAt(5) - 65) *
+            (2.5 / 60);
 
-        longitude += 2.5 / 60;
-        latitude += 1.25 / 60;
     }
 
     return {
@@ -2966,6 +2967,7 @@ function maidenheadToLatLon(locator) {
         lon: longitude
     };
 }
+
 
 /* =========================================================
    FLAG COUNTRY TOOLTIP
