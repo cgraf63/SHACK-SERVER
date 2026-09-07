@@ -11,6 +11,9 @@ function setupSidebar() {
     const sidebar =
         document.querySelector(".sidebar");
 
+    const app =
+        document.getElementById("app");
+
     const sidebarToggle =
         document.getElementById(
             "sidebar-toggle"
@@ -26,9 +29,16 @@ function setupSidebar() {
             "click",
             () => {
 
+
                 sidebar.classList.toggle(
                     "collapsed"
                 );
+
+                if (app) {
+                    app.classList.toggle(
+                        "sidebar-collapsed"
+                    );
+                }
 
                 sidebarToggle.textContent =
                     sidebar.classList.contains(

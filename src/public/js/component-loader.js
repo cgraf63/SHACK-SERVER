@@ -160,18 +160,24 @@ async function loadComponents() {
         Initialize sidebar functionality
     */
 
-    const sidebarScript =
-        document.createElement(
-            "script"
-        );
+const sidebarScript =
+    document.createElement(
+        "script"
+    );
 
-    sidebarScript.src =
-        "js/sidebar.js";
+sidebarScript.src =
+    "js/sidebar.js";
+
+await new Promise(resolve => {
+
+    sidebarScript.onload =
+        resolve;
 
     document.body.appendChild(
         sidebarScript
     );
 
+});
 
     /*
         Initialize settings modal

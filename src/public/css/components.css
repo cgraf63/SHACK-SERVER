@@ -3140,11 +3140,18 @@ if (slider) {
    ===================================================== */
 
 .sidebar {
-    transition: transform 0.25s ease;
+    transition: all 0.25s ease;
 }
 
-.sidebar.collapsed {
-    transform: translateX(
-        calc(-100% + 40px)
-    );
+D.sidebar.collapsed {
+    transform: none;
+    padding: 0;
+    overflow: visible;
+}
+
+.sidebar.collapsed > *:not(#sidebar-toggle) {
+    display: none;
+}
+.sidebar.collapsed .sidebar-toggle {
+    right: -8px;
 }
