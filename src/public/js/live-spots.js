@@ -2623,7 +2623,7 @@ function startLiveSpotsUpdater() {
     }
 
 
-
+/* actually  manual 
     liveSpotsTimer =
         setInterval(
 
@@ -2633,7 +2633,7 @@ function startLiveSpotsUpdater() {
 
         );
 
-
+*/
 }
 
 
