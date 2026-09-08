@@ -125,3 +125,50 @@ main {
 #app.sidebar-collapsed {
     grid-template-columns: 30px 1fr;
 }
+
+/**********************FOR IPAD *****************************/
+
+@media screen and (max-width: 1400px) {
+
+    #priority-dx {
+        display: none !important;
+    }
+
+    .opportunities-item {
+        display: none !important;
+    }
+
+    .band-section {
+        display: none !important;
+    }
+
+
+.live-table .comment-cell {
+    width: 60px !important;
+    max-width: 60px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+    #resetView,
+    #getNewSpots {
+        display: none !important;
+    }
+.live-table th:nth-child(6),
+.live-table td:nth-child(6) {
+    .width: 60px !important;
+    .max-width: 60px !important;
+    display: none;
+}
+
+.live-table th:nth-child(7),
+.live-table td:nth-child(7) {
+    display: none;
+}
+
+.command-item strong {
+    font-size: 12px;
+}
+}
+
