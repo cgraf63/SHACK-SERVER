@@ -1,0 +1,202 @@
+.bandplan-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.78);
+}
+
+.bandplan-modal.visible {
+    display: flex;
+}
+
+.bandplan-dialog {
+    width: min(1100px, 92vw);
+    max-height: 88vh;
+    overflow: auto;
+    background: #101820;
+    border: 1px solid #00e5ff;
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.18);
+    border-radius: 6px;
+    color: #d8faff;
+}
+
+.bandplan-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #20343d;
+}
+
+.bandplan-header h2 {
+    margin: 0;
+    color: #00e5ff;
+    font-size: 20px;
+    letter-spacing: 1px;
+}
+
+.bandplan-close {
+    border: 0;
+    background: transparent;
+    color: #8fa8b2;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bandplan-close:hover {
+    color: #00e5ff;
+}
+
+.bandplan-band-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    padding: 14px 20px;
+    border-bottom: 1px solid #20343d;
+}
+
+.bandplan-band-btn {
+    min-width: 58px;
+    padding: 7px 12px;
+    border: 1px solid #ff1493;
+    border-radius: 3px;
+    background: #17242b;
+    color: #ff69b4;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.bandplan-band-btn:hover,
+.bandplan-band-btn.active {
+    border-color: #ff1493;
+    color: #ffffff;
+    background: #ff1493;
+    box-shadow: 0 0 10px rgba(255, 20, 147, 0.25);
+}
+
+.bandplan-content {
+    padding: 22px 20px 26px;
+}
+
+.bandplan-title {
+    margin-bottom: 14px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.bandplan-scale {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    color: #718991;
+    font-size: 11px;
+    font-family: monospace;
+}
+
+.bandplan-bar {
+    position: relative;
+    height: 74px;
+    border: 1px solid #29424c;
+    background: #0b1216;
+    overflow: visible;
+}
+
+.bandplan-segment {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2px;
+    border-right: 1px solid #0a1115;
+    background: #18343d;
+    color: #bcecf4;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.bandplan-segment:nth-child(2n) {
+    background: #1d414b;
+}
+
+.bandplan-segment span {
+    padding: 0 5px;
+}
+
+.bandplan-boundary {
+    position: absolute;
+    top: -28px;
+    transform: translateX(-50%);
+    z-index: 5;
+    pointer-events: none;
+}
+
+.bandplan-boundary-tick {
+    width: 2px;
+    height: 18px;
+    margin: 0 auto;
+    background: #00e5ff;
+    box-shadow: 0 0 5px rgba(0, 229, 255, 0.55);
+}
+
+.bandplan-boundary-label {
+    margin-bottom: 3px;
+    color: #00e5ff;
+    font-family: monospace;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.bandplan-markers {
+    position: relative;
+    height: 52px;
+}
+
+.bandplan-marker {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    height: 100%;
+}
+
+.bandplan-marker-line {
+    width: 1px;
+    height: 15px;
+    margin: 0 auto;
+    background: #00e5ff;
+}
+
+.bandplan-marker-label {
+    margin-top: 3px;
+    color: #00e5ff;
+    font-family: monospace;
+    font-size: 10px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.bandplan-marker-label span {
+    display: block;
+    margin-top: 2px;
+    color: #78939d;
+    font-family: inherit;
+    font-size: 9px;
+}
+
+.bandplan-footer {
+    padding: 10px 20px;
+    border-top: 1px solid #20343d;
+    color: #607982;
+    font-size: 10px;
+    text-align: right;
+}
