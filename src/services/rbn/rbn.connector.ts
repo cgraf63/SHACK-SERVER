@@ -17,6 +17,12 @@ import {
 } from "../geo/maidenhead.service.js";
 
 import {
+    CallsignResolverService
+} from "../geo/callsign-resolver.service.js";
+
+
+
+import {
     RbnSpot,
     parseRbnLine
 } from "./rbn.parser.js";
@@ -65,7 +71,8 @@ export class RbnConnector {
 
     private maidenheadService =
         new MaidenheadService();
-
+private callsignResolverService =
+    new CallsignResolverService();
 
     connect(): void {
 
@@ -236,7 +243,17 @@ export class RbnConnector {
 
         }
 
+const spotterInfo =
+    this.callsignResolverService.resolve(
+        spot.spotter.split("-")[0] || ""
+    );
 
+if (spotterInfo) {
+
+    spot.spotterCountryCode =
+        spotterInfo.countryCode;
+
+}
         /*
          * Determine the RBN spotter
          * grid square.
@@ -252,18 +269,6 @@ export class RbnConnector {
 
             spot.spotterGrid =
                 spotterGrid;
-		const spotterCountryCode =
-    await this.rbnGeoService.getSpotterCountryCode(
-        spot.spotter
-    );
-
-
-if (spotterCountryCode) {
-
-    spot.countryCode =
-        spotterCountryCode;
-
-}
 
             try {
 

@@ -3046,6 +3046,9 @@ map.fitBounds(
 window.showSpotDetails =
     showSpotDetails;
 
+window.maidenheadToLatLon =
+    maidenheadToLatLon;
+
 function maidenheadToLatLon(locator) {
 
     if (!locator || locator.length < 4) {

@@ -3,7 +3,7 @@ interface RbnSkimmer {
     callsign: string;
 
     grid: string;
-    countryCode: string;
+
 }
 
 
@@ -22,9 +22,7 @@ export class RbnGeoService {
         Map<string, string> =
         new Map();
 
-private skimmerCountryCodes:
-    Map<string, string> =
-    new Map();
+
     private lastUpdate =
         0;
 
@@ -57,27 +55,7 @@ private skimmerCountryCodes:
 
     }
 
-async getSpotterCountryCode(
-    spotter: string
-): Promise<string | null> {
 
-    await this.updateCache();
-
-
-    const normalizedSpotter =
-        this.normalizeSpotter(
-            spotter
-        );
-
-
-    return (
-        this.skimmerCountryCodes.get(
-            normalizedSpotter
-        )
-        ?? null
-    );
-
-}
     private async updateCache(): Promise<void> {
 
         const now =
@@ -169,7 +147,7 @@ async getSpotterCountryCode(
 
 
             this.skimmers.clear();
-this.skimmerCountryCodes.clear();
+
 
             for (
                 const skimmer of skimmers
@@ -179,10 +157,6 @@ this.skimmerCountryCodes.clear();
                     skimmer.callsign,
                     skimmer.grid
                 );
-this.skimmerCountryCodes.set(
-    skimmer.callsign,
-    skimmer.countryCode
-);
 
             }
 
@@ -216,8 +190,9 @@ this.skimmerCountryCodes.set(
             RbnSkimmer[] = [];
 
 
-const rowPattern =
-    /<tr[^>]*>[\s\S]*?<a[^>]*\?f=0&c=([^"&]+)&t=([^"&]+)[^>]*>[\s\S]*?\s+([^<]+?)\s*<\/a>\s*<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<\/td>\s*<td>\s*([A-R]{2}\d{2}[A-X]{2})\s*<\/td>/gi;
+        const rowPattern =
+            /<tr[^>]*>[\s\S]*?<a[^>]*\?f=0&c=([^"&]+)[^>]*>[\s\S]*?\s+([^<]+?)\s*<\/a>\s*<\/td>[\s\S]*?<td[^>]*>[\s\S]*?<\/td>\s*<td>\s*([A-R]{2}\d{2}[A-X]{2})\s*<\/td>/gi;
+
 
         let match:
             RegExpExecArray | null;
@@ -233,31 +208,23 @@ const rowPattern =
                     .trim()
                     .toUpperCase();
 
-const countryCode =
-    match[2]!
-        .trim()
-        .toLowerCase();
 
-
-const grid =
-    match[4]!
-        .trim()
-        .toUpperCase();
+            const grid =
+                match[3]!
+                    .trim()
+                    .toUpperCase();
 
 
             if (
                 callsign &&
-                grid &&
-		countryCode
+                grid
             ) {
 
                 result.push({
 
                     callsign,
 
-                    grid,
-	
-		    countryCode
+                    grid
 
                 });
 
