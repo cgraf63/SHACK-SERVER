@@ -252,7 +252,18 @@ export class RbnConnector {
 
             spot.spotterGrid =
                 spotterGrid;
+		const spotterCountryCode =
+    await this.rbnGeoService.getSpotterCountryCode(
+        spot.spotter
+    );
 
+
+if (spotterCountryCode) {
+
+    spot.countryCode =
+        spotterCountryCode;
+
+}
 
             try {
 

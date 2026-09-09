@@ -352,12 +352,16 @@ async function loadRbnData() {
 
                                     <div class="rbn-table-row">
 
-                                        <span>
-                                            ${escapeHtml(
-                                                spot.callsign
-                                            )}
-                                        </span>
-
+¨					<span>
+    ${
+        spot.countryCode
+            ? `<img class="rbn-flag" src="/assets/flags/${spot.countryCode}.svg" alt="">`
+            : ""
+    }
+    ${escapeHtml(
+        spot.callsign
+    )}
+</span>
                                         <span>
                                             ${frequencyText}
                                         </span>

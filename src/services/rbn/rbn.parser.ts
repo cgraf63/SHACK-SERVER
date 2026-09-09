@@ -4,6 +4,8 @@ export interface RbnSpot {
 
     spotterGrid?: string;
 
+    countryCode?: string;
+
     distanceKm?: number;
 
     callsign: string;

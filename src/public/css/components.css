@@ -3164,3 +3164,23 @@ D.sidebar.collapsed {
 #priority-dx-list strong {
     font-size: 12px;
 }
+
+/* Dashboard command cards - compact typography */
+.command-card {
+    font-size: 12px;
+}
+
+.command-card .value,
+.command-card .content,
+.command-card .status {
+    font-size: 12px;
+}
+
+/* RBN spotter flags */
+.rbn-flag {
+    width: 18px;
+    height: 12px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 6px;
+}
