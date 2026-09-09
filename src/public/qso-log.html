@@ -687,7 +687,7 @@ function closeEditQsoDialog() {
     if(overlay) overlay.remove();
 }
 function optionalNumber(value) { if(value === "") return null; const n=Number(value); return Number.isInteger(n) ? n : null; }
-function formatFrequency(frequency) { const value=Number(frequency); if(!Number.isFinite(value)) return ""; return (value/1000).toLocaleString("de-CH",{minimumFractionDigits:1,maximumFractionDigits:3})+" kHz"; }
+function formatFrequency(frequency) { const value=Number(frequency); if(!Number.isFinite(value)) return ""; return value.toLocaleString("de-CH",{minimumFractionDigits:3,maximumFractionDigits:4})+" MHz"; }
 function formatFrequencyInput(frequency) { const value=Number(frequency); return Number.isFinite(value) ? (value/1000).toFixed(3) : ""; }
 function escapeHtml(value) { return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
 

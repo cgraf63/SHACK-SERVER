@@ -3184,3 +3184,59 @@ D.sidebar.collapsed {
     vertical-align: middle;
     margin-right: 6px;
 }
+/* CW / SSB memory controls in the dashboard command strip */
+.memory-item {
+    gap: 10px;
+}
+
+.memory-panel {
+    width: 100%;
+    min-width: 0;
+}
+
+.memory-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.memory-row + .memory-row {
+    margin-top: 7px;
+}
+
+.memory-label {
+    width: 28px;
+    flex: 0 0 28px;
+    font-size: 11px !important;
+    font-weight: 600;
+    color: #cccccc !important;
+}
+
+.memory-buttons {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
+    flex: 1;
+    min-width: 0;
+}
+
+.memory-button {
+    min-width: 0;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--cyan);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.memory-button:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.memory-button:active {
+    transform: translateY(1px);
+}

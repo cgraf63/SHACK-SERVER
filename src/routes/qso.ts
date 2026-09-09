@@ -431,6 +431,10 @@ router.get(
     ADIF Import
 */
 
+/*
+    ADIF Import
+*/
+
 router.post(
     "/import-adif",
     (req, res) => {
@@ -440,91 +444,82 @@ router.post(
             const adif =
                 req.body?.adif;
 
-
             if (
                 typeof adif !== "string" ||
                 !adif.trim()
             ) {
-
                 return res.status(400).json({
                     error: "Invalid ADIF data"
                 });
-
             }
-
 
             const records:
                 Record<string, string>[] = [];
-
 
             const recordMatches =
                 adif.split(
                     /<EOR\s*>/i
                 );
 
-
             for (const rawRecord of recordMatches) {
 
                 const record =
                     rawRecord.trim();
 
-
                 if (!record) {
                     continue;
                 }
 
-
                 const fields:
                     Record<string, string> = {};
 
-
                 const regex =
-                    /<([^:>]+):(\d+)(?::[^>]*)?>([\s\S]*?)/gi;
-
+                    /<([^:>]+):(\d+)(?::[^>]*)?>/gi;
 
                 let match:
                     RegExpExecArray | null;
-
 
                 while (
                     (match = regex.exec(record)) !== null
                 ) {
 
                     const field =
-                        match[1]?.trim()
+                        match[1]
+                            ?.trim()
                             .toUpperCase() || "";
-
 
                     const length =
                         Number(match[2] || 0);
 
+                    const valueStart =
+                        regex.lastIndex;
 
                     const value =
-                        (match[3] || "")
-                            .substring(0, length)
-                            .trim();
-
+                        record.substring(
+                            valueStart,
+                            valueStart + length
+                        ).trim();
 
                     fields[field] =
                         value;
 
+                    regex.lastIndex =
+                        valueStart + length;
                 }
-
 
                 if (
                     Object.keys(fields).length
                 ) {
-
                     records.push(fields);
-
                 }
-
             }
 
+            let imported = 0;
+            let duplicates = 0;
+            let skipped = 0;
 
             const existing =
                 qsoService.getAllQso();
-
 
             const existingKeys =
                 new Set(
@@ -535,71 +530,45 @@ router.post(
                                 qso.time_on_utc,
                                 qso.call
                                     .trim()
-                                    .toUpperCase(),
-                                String(qso.frequency),
-                                qso.mode
-                                    .trim()
                                     .toUpperCase()
                             ].join("|")
                     )
                 );
 
-
-            let imported = 0;
-            let duplicates = 0;
-            let skipped = 0;
-
-
             for (const fields of records) {
 
                 const qsoDate =
-                    fields.QSO_DATE || "";
-
+                    fields["QSO_DATE"];
 
                 const timeOn =
-                    fields.TIME_ON || "";
-
-
-                const timeOff =
-                    fields.TIME_OFF || null;
-
+                    fields["TIME_ON"] ||
+                    fields["TIME_ON_UTC"];
 
                 const call =
-                    (
-                        fields.CALL || ""
-                    )
-                    .trim()
-                    .toUpperCase();
-
-
-                const freqMHz =
-                    Number(
-                        fields.FREQ || ""
-                    );
-
+                    fields["CALL"];
 
                 const frequency =
-                    Number.isFinite(freqMHz)
-                        ? Math.round(
-                            freqMHz * 1000000
-                        )
-                        : NaN;
-
+                    Number(
+                        fields["FREQ"] || ""
+                    );
 
                 const band =
-                    (
-                        fields.BAND || ""
-                    ).trim();
-
+                    fields["BAND"];
 
                 const mode =
-                    (
-                        fields.MODE || ""
-                    )
-                    .trim()
-                    .toUpperCase();
+                    fields["MODE"];
 
 
+
+console.log("ADIF DEBUG:", {
+    qsoDate,
+    timeOn,
+    call,
+    frequency,
+    band,
+    mode,
+    fields
+});
                 if (
                     !qsoDate ||
                     !timeOn ||
@@ -608,196 +577,120 @@ router.post(
                     !band ||
                     !mode
                 ) {
-
                     skipped++;
                     continue;
-
                 }
-
-
-                const myCallsign =
-                    (
-                        fields.STATION_CALLSIGN ||
-                        fields.MY_CALLSIGN ||
-                        ""
-                    )
-                    .trim()
-                    .toUpperCase();
-
-
-                const myGrid =
-                    (
-                        fields.MY_GRIDSQUARE ||
-                        ""
-                    )
-                    .trim()
-                    .toUpperCase();
-
-
-                const operatorName =
-                    (
-                        fields.OPERATOR ||
-                        myCallsign ||
-                        ""
-                    )
-                    .trim();
-
-
-                if (
-                    !myCallsign ||
-                    !myGrid ||
-                    !operatorName
-                ) {
-
-                    skipped++;
-                    continue;
-
-                }
-
-
-                const rstSent =
-                    (
-                        fields.RST_SENT ||
-                        "59"
-                    ).trim();
-
-
-                const rstRcvd =
-                    (
-                        fields.RST_RCVD ||
-                        "59"
-                    ).trim();
-
-
-                const name =
-                    fields.NAME?.trim() ||
-                    null;
-
-
-                const country =
-                    fields.COUNTRY?.trim() ||
-                    null;
-
-
-                const dxGrid =
-                    fields.GRIDSQUARE
-                        ?.trim()
-                        .toUpperCase() ||
-                    null;
-
-
-                const ituZone =
-                    fields.ITUZ
-                        ? Number(fields.ITUZ)
-                        : null;
-
-
-                const cqZone =
-                    fields.CQZ
-                        ? Number(fields.CQZ)
-                        : null;
-
-
-                const notes =
-                    fields.COMMENT?.trim() ||
-                    null;
-
 
                 const key =
                     [
                         qsoDate,
                         timeOn,
-                        call,
-                        String(frequency),
-                        mode
+                        call
+                            .trim()
+                            .toUpperCase()
                     ].join("|");
-
 
                 if (
                     existingKeys.has(key)
                 ) {
-
                     duplicates++;
                     continue;
-
                 }
 
+                const qso =
+                    qsoService.createQso({
 
-                qsoService.createQso({
+                        qso_date:
+                            qsoDate,
 
-                    qso_date:
-                        qsoDate,
+                        time_on_utc:
+                            timeOn,
 
-                    time_on_utc:
-                        timeOn,
+                        time_off_utc:
+                            fields["TIME_OFF"] ||
+                            null,
 
-                    time_off_utc:
-                        timeOff,
+                        call:
+                            call
+                                .trim()
+                                .toUpperCase(),
 
-                    call,
+                        frequency,
 
-                    frequency,
+                        band:
+                            band.trim(),
 
-                    band,
+                        mode:
+                            mode
+                                .trim()
+                                .toUpperCase(),
 
-                    mode,
+                        rst_sent:
+                            fields["RST_SENT"] ||
+                            "59",
 
-                    rst_sent:
-                        rstSent,
+                        rst_rcvd:
+                            fields["RST_RCVD"] ||
+                            "59",
 
-                    rst_rcvd:
-                        rstRcvd,
+                        my_callsign:
+                            fields["STATION_CALLSIGN"] ||
+                            fields["MY_CALLSIGN"] ||
+                            "",
 
-                    my_callsign:
-                        myCallsign,
+                        my_grid:
+                            fields["MY_GRIDSQUARE"] ||
+                            fields["MY_GRID"] ||
+                            "",
 
-                    my_grid:
-                        myGrid,
+                        operator_name:
+                            fields["OPERATOR"] ||
+                            fields["STATION_OPERATOR"] ||
+                            "",
 
-                    operator_name:
-                        operatorName,
+                        name:
+                            fields["NAME"] ||
+                            null,
 
-                    name,
+                        country:
+                            fields["COUNTRY"] ||
+                            null,
 
-                    country,
+                        dx_grid:
+                            fields["GRIDSQUARE"] ||
+                            null,
 
-                    country_code:
-                        null,
+                        itu_zone:
+                            fields["ITUZ"] ?
+                                Number(
+                                    fields["ITUZ"]
+                                ) :
+                                null,
 
-                    dx_grid:
-                        dxGrid,
+                        cq_zone:
+                            fields["CQZ"] ?
+                                Number(
+                                    fields["CQZ"]
+                                ) :
+                                null,
 
-                    itu_zone:
-                        Number.isInteger(
-                            ituZone
-                        )
-                            ? ituZone
-                            : null,
+                        notes:
+                            fields["COMMENT"] ||
+                            fields["NOTES"] ||
+                            null,
 
-                    cq_zone:
-                        Number.isInteger(
-                            cqZone
-                        )
-                            ? cqZone
-                            : null,
+                        spot_source:
+                            "ADIF",
 
-                    notes,
+                        spot_id:
+                            null
 
-                    spot_source:
-                        "ADIF",
-
-                    spot_id:
-                        null
-
-                });
-
+                    });
 
                 existingKeys.add(key);
 
                 imported++;
-
             }
-
 
             return res.json({
 
@@ -822,7 +715,6 @@ router.post(
                 error
             );
 
-
             return res.status(500).json({
                 error: "Failed to import ADIF"
             });
@@ -831,7 +723,6 @@ router.post(
 
     }
 );
-
 /*
     Get worked status
 */
