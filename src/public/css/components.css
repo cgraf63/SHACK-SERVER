@@ -3155,3 +3155,12 @@ D.sidebar.collapsed {
 .sidebar.collapsed .sidebar-toggle {
     right: -8px;
 }
+
+/* Priority DX - compact typography */
+#priority-dx-list {
+    font-size: 12px;
+}
+
+#priority-dx-list strong {
+    font-size: 12px;
+}
