@@ -586,7 +586,7 @@ qsoButton.addEventListener(
             cqZone,
 
             frequency:
-                frequencyMHz * 1000
+                frequencyMHz
 
         };
 

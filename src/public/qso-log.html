@@ -632,7 +632,7 @@ async function saveEditedQso(id) {
     const frequencyKHz = Number(value("qso-edit-frequency"));
     const payload = {
         qso_date:value("qso-edit-date"), time_on_utc:value("qso-edit-time-on"), time_off_utc:value("qso-edit-time-off") || null,
-        call:value("qso-edit-call").trim().toUpperCase(), frequency:Math.round(frequencyKHz * 1000),
+        call:value("qso-edit-call").trim().toUpperCase(), frequency:Math.round(frequencyKHz / 1000),
         band:value("qso-edit-band").trim(), mode:value("qso-edit-mode").trim().toUpperCase(),
         rst_sent:value("qso-edit-rst-sent").trim() || "59", rst_rcvd:value("qso-edit-rst-rcvd").trim() || "59",
         my_callsign:value("qso-edit-my-callsign").trim().toUpperCase(), my_grid:value("qso-edit-my-grid").trim().toUpperCase(),
@@ -688,7 +688,7 @@ function closeEditQsoDialog() {
 }
 function optionalNumber(value) { if(value === "") return null; const n=Number(value); return Number.isInteger(n) ? n : null; }
 function formatFrequency(frequency) { const value=Number(frequency); if(!Number.isFinite(value)) return ""; return value.toLocaleString("de-CH",{minimumFractionDigits:3,maximumFractionDigits:4})+" MHz"; }
-function formatFrequencyInput(frequency) { const value=Number(frequency); return Number.isFinite(value) ? (value/1000).toFixed(3) : ""; }
+function formatFrequencyInput(frequency) { const value=Number(frequency); return Number.isFinite(value) ? (value*1000).toFixed(3) : ""; }
 function escapeHtml(value) { return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
 
 document.getElementById(

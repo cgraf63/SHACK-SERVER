@@ -94,7 +94,13 @@ if (qrzCall) {
                     ...activeQsoStation,
                     ...result.qrz
                 };
-
+activeQsoSpot = {
+    ...activeQsoSpot,
+    countryCode:
+        result.qrz.countryCode ||
+        activeQsoSpot.countryCode ||
+        null
+};
             }
 
         }
@@ -296,7 +302,7 @@ const formTimeOff =
 
 const formFrequencyKHz =
     editQso
-        ? Number(editQso.frequency) / 1000
+        ? Number(editQso.frequency) * 1000
         : Number(spot.frequency);
 
 const formBand =
@@ -1025,8 +1031,8 @@ async function saveQso() {
             call,
 
         frequency:
-            Math.round(
-                frequencyKHz * 1000
+             Math.round(
+                frequencyKHz  / 1000
             ),
 
         band:

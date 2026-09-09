@@ -1,11 +1,15 @@
 import { Router } from "express";
 import { qsoService } from "../services/qso/qso-instance.js";
 import { QRZService } from "../services/geo/qrz.service.js";
+import { CallsignResolverService } from "../services/geo/callsign-resolver.service.js";
 
 const router = Router();
 
 const qrzService =
     new QRZService();
+
+const callsignResolverService =
+    new CallsignResolverService();
 /*
     Create QSO
 */
@@ -428,6 +432,34 @@ router.get(
 
 
 /*
+    Convert ADIF date/time values
+    to the internal QSO format.
+*/
+function normalizeAdifDate(value: string): string {
+    const v = value.trim();
+
+    if (/^\d{8}$/.test(v)) {
+        return `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6, 8)}`;
+    }
+
+    return v;
+}
+
+function normalizeAdifTime(value: string): string {
+    const v = value.trim();
+
+    if (/^\d{6}$/.test(v)) {
+        return `${v.slice(0, 2)}:${v.slice(2, 4)}:${v.slice(4, 6)}`;
+    }
+
+    if (/^\d{4}$/.test(v)) {
+        return `${v.slice(0, 2)}:${v.slice(2, 4)}:00`;
+    }
+
+    return v;
+}
+
+/*
     ADIF Import
 */
 
@@ -597,18 +629,26 @@ console.log("ADIF DEBUG:", {
                     continue;
                 }
 
+                const callInfo =
+                    callsignResolverService.resolve(
+                        call.trim().toUpperCase()
+                    );
+
                 const qso =
                     qsoService.createQso({
 
                         qso_date:
-                            qsoDate,
+                            normalizeAdifDate(qsoDate),
 
                         time_on_utc:
-                            timeOn,
+                            normalizeAdifTime(timeOn),
 
                         time_off_utc:
-                            fields["TIME_OFF"] ||
-                            null,
+                            fields["TIME_OFF"]
+                                ? normalizeAdifTime(
+                                    fields["TIME_OFF"]
+                                )
+                                : null,
 
                         call:
                             call
@@ -654,6 +694,10 @@ console.log("ADIF DEBUG:", {
 
                         country:
                             fields["COUNTRY"] ||
+                            null,
+
+                        country_code:
+                            callInfo?.countryCode ||
                             null,
 
                         dx_grid:
