@@ -1,0 +1,247 @@
+from luma.core.interface.serial import i2c
+from luma.oled.device import sh1106
+from PIL import Image, ImageDraw
+import time
+
+
+# --------------------------------------------------
+# OLED
+# --------------------------------------------------
+
+serial = i2c(
+    port=1,
+    address=0x3C
+)
+
+display = sh1106(serial)
+
+
+# --------------------------------------------------
+# 5x7 Pixel-Font
+# --------------------------------------------------
+
+FONT = {
+    "A": ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+    "C": ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+    "D": ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+    "E": ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+    "H": ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+    "K": ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+    "R": ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+    "S": ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+    "V": ["10001", "10001", "10001", "10001", "10001", "01010", "00100"],
+    "-": ["00000", "00000", "00000", "11111", "00000", "00000", "00000"],
+    " ": ["00000", "00000", "00000", "00000", "00000", "00000", "00000"],
+}
+
+
+def pixel_text(draw, text, x, y, scale=1):
+
+    for char in text.upper():
+
+        bitmap = FONT.get(char, FONT[" "])
+
+        for row, line in enumerate(bitmap):
+
+            for col, pixel in enumerate(line):
+
+                if pixel == "1":
+
+                    draw.rectangle(
+                        (
+                            x + col * scale,
+                            y + row * scale,
+                            x + col * scale + scale - 1,
+                            y + row * scale + scale - 1,
+                        ),
+                        fill=1
+                    )
+
+        x += 6 * scale
+
+
+# --------------------------------------------------
+# Antenne
+# --------------------------------------------------
+
+def draw_antenna(draw, cx, cy, wave_level):
+
+    # Antennenmast
+    draw.line(
+        (cx, cy + 7, cx, cy + 20),
+        fill=1
+    )
+
+    # Antennenspitze / Dreieck
+    draw.polygon(
+        [
+            (cx, cy + 7),
+            (cx - 5, cy + 20),
+            (cx + 5, cy + 20),
+        ],
+        outline=1
+    )
+
+    # --------------------------------------------------
+    # Funkwellen
+    # --------------------------------------------------
+
+    # Linke Welle
+    if wave_level >= 1:
+        draw.arc(
+            (cx - 14, cy - 4, cx + 2, cy + 12),
+            110,
+            250,
+            fill=1
+        )
+
+    # Rechte Welle
+    if wave_level >= 1:
+        draw.arc(
+            (cx - 2, cy - 4, cx + 14, cy + 12),
+            290,
+            70,
+            fill=1
+        )
+
+    # Äussere Welle
+    if wave_level >= 2:
+        draw.arc(
+            (cx - 21, cy - 9, cx + 3, cy + 15),
+            110,
+            250,
+            fill=1
+        )
+
+        draw.arc(
+            (cx - 3, cy - 9, cx + 21, cy + 15),
+            290,
+            70,
+            fill=1
+        )
+
+    # Noch äussere Welle
+    if wave_level >= 3:
+        draw.arc(
+            (cx - 27, cy - 15, cx + 4, cy + 18),
+            110,
+            250,
+            fill=1
+        )
+
+        draw.arc(
+            (cx - 4, cy - 15, cx + 27, cy + 18),
+            290,
+            70,
+            fill=1
+        )
+
+
+# --------------------------------------------------
+# Display Frame
+# --------------------------------------------------
+
+def create_display(wave_level):
+
+    image = Image.new(
+        "1",
+        (128, 64),
+        0
+    )
+
+    draw = ImageDraw.Draw(image)
+
+    # Rahmen
+    draw.rectangle(
+        (1, 1, 126, 62),
+        outline=1
+    )
+
+    # --------------------------------------------------
+    # SHACK-SERVER
+    # --------------------------------------------------
+
+    title = "SHACK-SERVER"
+
+    title_width = len(title) * 6 - 1
+    title_x = (128 - title_width) // 2
+
+    pixel_text(
+        draw,
+        title,
+        title_x,
+        5
+    )
+
+    # --------------------------------------------------
+    # Linien
+    # --------------------------------------------------
+
+    draw.line(
+        (8, 31, 48, 31),
+        fill=1
+    )
+
+    draw.line(
+        (80, 31, 120, 31),
+        fill=1
+    )
+
+    # --------------------------------------------------
+    # Antenne
+    # --------------------------------------------------
+
+    draw_antenna(
+        draw,
+        64,
+        17,
+        wave_level
+    )
+
+    # --------------------------------------------------
+    # IP-Adresse
+    # --------------------------------------------------
+
+    ip = "192.168.1.123"
+
+    draw.rectangle(
+        (20, 50, 107, 61),
+        outline=1
+    )
+
+    draw.text(
+        (27, 52),
+        ip,
+        fill=1
+    )
+
+    return image
+
+
+# --------------------------------------------------
+# Animation
+# --------------------------------------------------
+
+try:
+
+    while True:
+
+        # Funkwellen nach aussen
+        for wave in [1, 2, 3, 2, 1, 0]:
+
+            image = create_display(wave)
+
+            display.display(image)
+
+            time.sleep(0.18)
+
+        # kurze Pause
+        time.sleep(0.5)
+
+
+except KeyboardInterrupt:
+
+    display.clear()
+    display.show()
+
+    print("OLED beendet")
