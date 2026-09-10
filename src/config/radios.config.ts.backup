@@ -6,8 +6,7 @@ export interface RadioConfig {
 
     protocol:
         | "rgo-one"
-        | "ftx-1"
-        | "ftdx10"
+        | "yaesu"
         | "icom"
         | "qmx";
 
@@ -43,6 +42,22 @@ export interface RadioConfig {
 export const radios:
     RadioConfig[] = [
 
+    {
+
+        id: "rgo-one",
+
+        name: "RGO ONE",
+
+        protocol: "rgo-one",
+
+        device: "/dev/serial/by-id/usb-STMicroelectronics_STM32_Virtual_ComPort_207335B95832-if00",
+
+        baudRate: 9600,
+
+        enabled: true
+
+    },
+
 
     {
 
@@ -50,9 +65,10 @@ export const radios:
 
         name: "YAESU FTDX10",
 
-        protocol: "ftdx10",
+        protocol: "yaesu",
 
-	device: "/dev/serial/by-id/usb-Silicon_Labs_CP2105_Dual_USB_to_UART_Bridge_Controller_01A7BC63-if00-port0",
+        device: "",
+
         baudRate: 38400,
 
         enabled: true
@@ -61,20 +77,11 @@ export const radios:
 
 
     {
-        id: "rgo-one",
-        name: "RGO ONE",
-        protocol: "rgo-one",
-        device: "/dev/serial/by-id/usb-STMicroelectronics_STM32_Virtual_ComPort_207335B95832-if00",
-        baudRate: 9600,
-        enabled: true
-    },
-
-    {
         id: "ftx-1",
 
         name: "YAESU FTX-1",
 
-        protocol: "ftx-1",
+        protocol: "yaesu",
 
         device: "/dev/serial/by-id/usb-Silicon_Labs_CP2105_Dual_USB_to_UART_Bridge_Controller_01D1A32D-if00-port0",
 

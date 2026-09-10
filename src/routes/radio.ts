@@ -74,6 +74,13 @@ router.get(
                     .getPower(),
 
 
+            cwMemories:
+
+                typeof (activeRadio as any).getCwMemories === "function"
+                    ? (activeRadio as any).getCwMemories()
+                    : [],
+
+
             connected:
 
                 true,
@@ -279,6 +286,118 @@ activeRadio.setMode(
                 normalizedMode
 
         });
+
+    }
+);
+
+
+/*
+    CW Memory
+*/
+
+router.post(
+    "/radio/cw-memory",
+    async (req, res) => {
+
+        const {
+            memory
+        } = req.body;
+
+        const activeRadio =
+            radioManager.getActiveRadio();
+
+        if (!activeRadio) {
+
+            return res.status(503).json({
+                error: "No active radio"
+            });
+
+        }
+
+        if (
+            typeof memory !== "number" ||
+            !Number.isInteger(memory) ||
+            memory < 1 ||
+            memory > 5
+        ) {
+
+            return res.status(400).json({
+                error: "Invalid CW memory"
+            });
+
+        }
+
+        if (
+            !activeRadio.tune ||
+            !activeRadio.playCwMemory
+        ) {
+
+            return res.status(400).json({
+                error: "Active radio does not support CW memory tuning"
+            });
+
+        }
+
+        console.log(
+            "RADIO CW MEMORY:",
+            radioManager.getActiveRadioId(),
+            memory
+        );
+
+        try {
+
+            activeRadio.setMode(
+                "CW-L",
+                activeRadio.getFrequency()
+            );
+
+            const tuned =
+                await activeRadio.tune();
+
+            if (!tuned) {
+
+                return res.status(500).json({
+                    error: "Tuning failed",
+                    sent: false
+                });
+
+            }
+
+            const sent =
+                await activeRadio.playCwMemory(
+                    memory
+                );
+
+            return res.json({
+
+                success:
+                    sent,
+
+                memory:
+                    memory,
+
+                mode:
+                    "CW-L",
+
+                sent:
+                    sent
+
+            });
+
+        }
+        catch (error) {
+
+            console.error(
+                "CW memory failed:",
+                error
+            );
+
+            return res.status(500).json({
+                error: "CW memory failed",
+                sent: false
+            });
+
+        }
 
     }
 );

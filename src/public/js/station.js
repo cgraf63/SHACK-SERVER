@@ -67,6 +67,138 @@ async function loadStationInfo() {
 
 }
 
+function updateCwMemoryTooltips(cwMemories) {
+
+    const buttons =
+        document.querySelectorAll(
+            ".cw-memory"
+        );
+
+    buttons.forEach(
+        (button, index) => {
+
+            button.title =
+                cwMemories[index] || "";
+
+        }
+    );
+}
+
+
+let cwMemoryBusy = false;
+
+
+document.addEventListener(
+    "click",
+    async (event) => {
+
+        const button =
+            event.target.closest(
+                ".cw-memory"
+            );
+
+        if (!button || cwMemoryBusy) {
+            return;
+        }
+
+        const memory =
+            Number(button.textContent.trim());
+
+        if (
+            !Number.isInteger(memory) ||
+            memory < 1 ||
+            memory > 5
+        ) {
+            return;
+        }
+
+        cwMemoryBusy = true;
+
+        const buttons =
+            document.querySelectorAll(
+                ".cw-memory"
+            );
+
+        buttons.forEach(
+            item => {
+                item.disabled = true;
+            }
+        );
+
+        button.classList.add(
+            "active"
+        );
+
+        console.log(
+            "CW memory requested:",
+            memory
+        );
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/radio/cw-memory",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            memory: memory
+                        })
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    `HTTP ${response.status}`
+                );
+
+            }
+
+            console.log(
+                "CW memory sent:",
+                data
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "CW memory failed:",
+                error
+            );
+
+        }
+        finally {
+
+            button.classList.remove(
+                "active"
+            );
+
+            buttons.forEach(
+                item => {
+                    item.disabled = false;
+                }
+            );
+
+            cwMemoryBusy = false;
+
+        }
+
+    }
+);
+
+
 async function loadRadioInfo() {
 
     try {
@@ -85,6 +217,11 @@ async function loadRadioInfo() {
 
         const data =
             await response.json();
+
+
+        updateCwMemoryTooltips(
+            data.cwMemories || []
+        );
 
 
         console.log(

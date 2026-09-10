@@ -6,11 +6,9 @@ import {
     RgoOneService
 } from "./rgo-one.service.js";
 
-import { Ftdx10Service } from "./ftdx10.service.js";
-
 import {
-    Ftx1Service
-} from "./ftx-1.service.js";
+    YaesuService
+} from "./yaesu.service.js";
 
 import {
     IcomService
@@ -112,26 +110,16 @@ export class RadioManager {
                     break;
 
 
-		case "ftdx10":
+                case "yaesu":
 
-    service =
-        new Ftdx10Service(
-            config.device,
-            config.baudRate
-        );
+                    service =
+                        new YaesuService(
+                            config.device,
+                            config.baudRate
+                        );
 
-    break;
+                    break;
 
-
-case "ftx-1":
-
-    service =
-        new Ftx1Service(
-            config.device,
-            config.baudRate
-        );
-
-    break;
 
                 case "icom":
 

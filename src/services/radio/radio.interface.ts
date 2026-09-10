@@ -22,4 +22,11 @@ export interface RadioService {
 
     getPower(): number;
 
+
+    tune?(): Promise<boolean>;
+
+    playCwMemory?(
+        memory: number
+    ): Promise<boolean>;
+
 }

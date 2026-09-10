@@ -1,0 +1,355 @@
+import { SerialPort } from "serialport";
+import type { RadioService } from "./radio.interface.js";
+
+export class Ftdx10Service implements RadioService {
+    private port: SerialPort;
+    private buffer = "";
+
+    private frequency = 0;
+    private mode = "UNKNOWN";
+    private power = 0;
+    private smeter = 0;
+
+    private cwMemories: string[] = [
+        "",
+        "",
+        "",
+        "",
+        "",
+    ];
+
+    constructor(
+        private readonly device: string,
+        private readonly baudRate: number
+    ) {
+        this.port = new SerialPort({
+            path: device,
+            baudRate,
+            dataBits: 8,
+            stopBits: 1,
+            parity: "none",
+            autoOpen: false,
+        });
+
+        this.port.on("data", (data: Buffer) => {
+            this.handleData(data.toString());
+        });
+
+        this.port.on("error", (error) => {
+            console.error("FTDX10 CAT error:", error.message);
+        });
+
+        this.port.on("open", () => {
+            console.log(
+                `FTDX10 CAT connected: ${this.device} @ ${this.baudRate}`
+            );
+        });
+
+        this.port.on("close", () => {
+            console.log("FTDX10 CAT disconnected");
+        });
+    }
+
+    start(): void {
+        if (!this.device) {
+            console.log("FTDX10: no CAT device configured");
+            return;
+        }
+
+        if (this.port.isOpen) {
+            return;
+        }
+
+        this.port.open((error) => {
+            if (error) {
+                console.error(
+                    "FTDX10 CAT open error:",
+                    error.message
+                );
+                return;
+            }
+
+            this.poll();
+
+            setInterval(() => {
+                this.poll();
+            }, 1000);
+        });
+    }
+
+    private poll(): void {
+        this.send("FA;");
+        this.send("PC;");
+        this.send("IF;");
+        this.send("SM0;");
+
+        this.send("KM1;");
+        this.send("KM2;");
+        this.send("KM3;");
+        this.send("KM4;");
+        this.send("KM5;");
+    }
+
+    private send(command: string): void {
+        if (!this.port.isOpen) {
+            return;
+        }
+
+        this.port.write(command);
+    }
+
+    private handleData(data: string): void {
+        this.buffer += data;
+
+        let endIndex: number;
+
+        while ((endIndex = this.buffer.indexOf(";")) !== -1) {
+            const message = this.buffer.slice(0, endIndex + 1);
+
+            this.buffer = this.buffer.slice(endIndex + 1);
+
+            this.parseResponse(message);
+        }
+    }
+
+    private parseResponse(message: string): void {
+        if (message.startsWith("FA")) {
+            this.parseFrequency(message);
+            return;
+        }
+
+        if (message.startsWith("PC")) {
+            this.parsePower(message);
+            return;
+        }
+
+        if (message.startsWith("IF")) {
+            this.parseIF(message);
+            return;
+        }
+
+        if (message.startsWith("SM0")) {
+            this.parseSMeter(message);
+            return;
+        }
+
+        if (/^KM[1-5]/.test(message)) {
+            this.parseCwMemory(message);
+            return;
+        }
+    }
+
+    private parseCwMemory(message: string): void {
+        const match = message.match(/^KM([1-5])(.*);$/);
+
+        if (!match) {
+            return;
+        }
+
+        const index = Number(match[1]) - 1;
+        const text = match[2]?.trim() ?? "";
+
+        if (index >= 0 && index < 5) {
+            this.cwMemories[index] = text;
+        }
+    }
+
+    private parseFrequency(message: string): void {
+        const match = message.match(/^FA(\d{9});$/);
+
+        if (!match) {
+            return;
+        }
+
+        this.frequency = Number(match[1]);
+    }
+
+    private parsePower(message: string): void {
+        const match = message.match(/^PC(\d{3});$/);
+
+        if (!match) {
+            return;
+        }
+
+        this.power = Number(match[1]);
+    }
+
+    private parseSMeter(message: string): void {
+        const match = message.match(/^SM0(\d{3});$/);
+
+        if (!match) {
+            return;
+        }
+
+        this.smeter = Number(match[1]);
+    }
+
+    private parseIF(message: string): void {
+        /*
+         * FTDX10 example:
+         *
+         * IF006018244780+000000200000;
+         *
+         * The mode field is part of the IF response.
+         */
+
+        const match = message.match(
+            /^IF\d{12}[+-]\d{6}([0-9A-F])\d{5};$/
+        );
+
+        if (!match) {
+            return;
+        }
+
+        const modeCode = match[1];
+
+        if (modeCode === undefined) {
+            return;
+        }
+
+        this.mode = this.decodeMode(modeCode);
+    }
+
+    private decodeMode(code: string): string {
+        const modes: Record<string, string> = {
+            "1": "LSB",
+            "2": "USB",
+            "3": "CW-U",
+            "4": "FM",
+            "5": "AM",
+            "6": "RTTY-L",
+            "7": "CW-L",
+            "8": "DATA-L",
+            "9": "RTTY-U",
+            A: "DATA-FM",
+            B: "FM-N",
+            C: "DATA-U",
+            D: "AM-N",
+            E: "PSK",
+            F: "DATA-FM-N",
+        };
+
+        return modes[code] ?? "UNKNOWN";
+    }
+
+    setFrequency(frequency: number): void {
+        if (!Number.isFinite(frequency)) {
+            throw new Error("Invalid frequency");
+        }
+
+        const value = Math.round(frequency)
+            .toString()
+            .padStart(11, "0");
+
+        if (value.length !== 11) {
+            throw new Error("Frequency out of range");
+        }
+
+        this.send(`FA${value};`);
+
+        this.frequency = Math.round(frequency);
+    }
+
+    setMode(mode: string, _frequency: number): void {
+        const modes: Record<string, string> = {
+            LSB: "1",
+            USB: "2",
+            "CW-U": "3",
+            FM: "4",
+            AM: "5",
+            "RTTY-L": "6",
+            "CW-L": "7",
+            "DATA-L": "8",
+            "RTTY-U": "9",
+            "DATA-FM": "A",
+            "FM-N": "B",
+            "DATA-U": "C",
+            "AM-N": "D",
+            PSK: "E",
+            "DATA-FM-N": "F",
+        };
+
+        const normalizedMode = mode.toUpperCase();
+        const code = modes[normalizedMode];
+
+        if (code === undefined) {
+            throw new Error(
+                `Unsupported FTDX10 mode: ${mode}`
+            );
+        }
+
+        this.send(`MD0${code};`);
+
+        this.mode = normalizedMode;
+    }
+
+    async playCwMemory(
+        memory: number
+    ): Promise<boolean> {
+
+        if (!this.port.isOpen) {
+            return false;
+        }
+
+        const commands: Record<number, string> = {
+            1: "KY6;",
+            2: "KY7;",
+            3: "KY8;",
+            4: "KY9;",
+            5: "KYA;",
+        };
+
+        const command = commands[memory];
+
+        if (!command) {
+            return false;
+        }
+
+        console.log(
+            "FTDX10: playing CW memory",
+            memory
+        );
+
+        this.send(command);
+
+        return true;
+    }
+
+    async tune(): Promise<boolean> {
+        if (!this.port.isOpen) {
+            return false;
+        }
+
+        console.log("FTDX10: starting tuner");
+
+        this.send("AC002;");
+
+        await new Promise<void>(
+            resolve => setTimeout(resolve, 5000)
+        );
+
+        console.log("FTDX10: tuner wait finished");
+
+        return true;
+    }
+
+    getFrequency(): number {
+        return this.frequency;
+    }
+
+    getMode(): string {
+        return this.mode;
+    }
+
+    getPower(): number {
+        return this.power;
+    }
+
+    getSMeter(): number {
+        return this.smeter;
+    }
+
+    getCwMemories(): string[] {
+        return [...this.cwMemories];
+    }
+}
