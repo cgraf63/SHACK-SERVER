@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHACK-SERVER – FTDX10 Remote</title>
+    <link rel="stylesheet" href="/css/remote.css">
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="brand">
+        <div class="brand-icon"><img src="/assets/shack-server-logo.svg" alt="SHACK-SERVER"></div>
+        <div>
+            <div class="brand-name">SHACK-SERVER</div>
+            <div class="brand-sub">REMOTE RADIO CONTROL</div>
+        </div>
+    </div>
+
+    <div class="header-separator"></div>
+
+    <div class="radio-name">FTDX10</div>
+
+    <div class="connection">
+        <span class="status-dot"></span>
+        CONNECTED
+    </div>
+
+    <div class="header-spacer"></div>
+
+    <div class="operator">
+        <div>HB9XXX</div>
+        <div>JN47QO</div>
+    </div>
+
+    <div class="clock">
+        <div>Tue, 10 Dec 2024</div>
+        <strong>14:28:32 UTC</strong>
+    </div>
+
+    <div class="header-icon">⌁</div>
+    <div class="header-icon">⚙</div>
+    <div class="power-icon">⏻</div>
+
+</header>
+
+
+<main class="console">
+
+    <!-- =========================================================
+         TOP: VFO A / SPLIT / VFO B / MODE
+         ========================================================= -->
+
+    <section class="top-row">
+
+        <!-- VFO A -->
+        <div class="panel vfo-panel">
+
+            <div class="panel-title">VFO A</div>
+
+            <div class="vfo-status">
+                <span class="tx-badge">TX</span>
+                <span class="small-badge active">USB</span>
+                <span class="small-badge">AGC-A</span>
+                <span class="small-badge">ANT1</span>
+                <span class="small-badge">ALC2</span>
+                <span class="small-badge">IP0</span>
+            </div>
+
+            <div class="frequency">14.074.000</div>
+
+            <div class="vfo-controls">
+                <button class="band-button">▼ &nbsp;14 MHz⌄</button>
+                <button class="big-button active">A</button>
+                <button class="big-button">B</button>
+                <button class="big-button">A=B</button>
+                <button class="big-button">A↔B</button>
+            </div>
+
+        </div>
+
+
+        <!-- SPLIT -->
+        <div class="panel split-panel">
+
+            <div class="split-buttons">
+                <button class="small-tx active">TX A</button>
+                <button class="small-tx">TX B</button>
+            </div>
+
+            <div class="clarifier-values">
+                <div>
+                    <span>RIT</span>
+                    <strong>0.000</strong>
+                </div>
+
+                <div>
+                    <span>XIT</span>
+                    <strong>0.000</strong>
+                </div>
+            </div>
+
+            <button class="split-button">SPLIT</button>
+
+        </div>
+
+
+        <!-- VFO B -->
+        <div class="panel vfo-panel">
+
+            <div class="panel-title">VFO B</div>
+
+            <div class="vfo-status">
+                <span class="small-badge">LSB</span>
+                <span class="small-badge">FIL2</span>
+                <span class="small-badge">AGC-A</span>
+                <span class="small-badge">AUX-A</span>
+                <span class="small-badge">ON</span>
+            </div>
+
+            <div class="frequency">14.095.000</div>
+
+            <div class="vfo-controls">
+                <button class="band-button">▼ &nbsp;14 MHz⌄</button>
+                <button class="big-button">A</button>
+                <button class="big-button">B</button>
+                <button class="big-button">MEM</button>
+            </div>
+
+        </div>
+
+
+        <!-- MODE -->
+        <div class="panel mode-panel">
+
+            <div class="panel-title">MODE</div>
+
+            <div class="mode-grid">
+                <button>LSB</button>
+                <button class="active">USB</button>
+                <button>CW-L</button>
+                <button>CW-U</button>
+
+                <button>AM</button>
+                <button>FM</button>
+                <button>DATA-L</button>
+                <button>DATA-U</button>
+
+                <button>RTTY-L</button>
+                <button>RTTY-U</button>
+                <button>PKT</button>
+                <button>GEN</button>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         METERS
+         ========================================================= -->
+
+    <section class="meter-row">
+
+        <div class="meter panel">
+            <div class="meter-title">S-METER</div>
+
+            <div class="analog-meter">
+                <div class="meter-scale">
+                    <span>S1</span>
+                    <span>3</span>
+                    <span>5</span>
+                    <span>7</span>
+                    <span>9</span>
+                    <span>+20</span>
+                    <span>+40</span>
+                    <span>+60</span>
+                </div>
+
+                <div class="meter-arc"></div>
+                <div class="meter-needle"></div>
+            </div>
+
+            <div class="meter-value">S7</div>
+            <div class="meter-subvalue">−93 dBm</div>
+        </div>
+
+
+        <div class="meter panel">
+            <div class="meter-title">POWER</div>
+
+            <div class="analog-meter">
+                <div class="meter-scale">
+                    <span>0</span>
+                    <span>10</span>
+                    <span>50</span>
+                    <span>100</span>
+                    <span>150</span>
+                    <span>200</span>
+                </div>
+
+                <div class="meter-arc"></div>
+                <div class="meter-needle power-needle"></div>
+            </div>
+
+            <div class="meter-value">48 W</div>
+            <div class="meter-subvalue">PEP 62 W</div>
+        </div>
+
+
+        <div class="meter panel">
+            <div class="meter-title">SWR</div>
+
+            <div class="analog-meter">
+                <div class="meter-scale">
+                    <span>1.0</span>
+                    <span>1.5</span>
+                    <span>2.0</span>
+                    <span>3.0</span>
+                    <span>5.0</span>
+                </div>
+
+                <div class="meter-arc"></div>
+                <div class="meter-needle swr-needle"></div>
+            </div>
+
+            <div class="meter-value">1.2</div>
+            <div class="meter-subvalue">SWR</div>
+        </div>
+
+
+        <div class="meter panel">
+            <div class="meter-title">ALC</div>
+
+            <div class="analog-meter">
+                <div class="meter-scale">
+                    <span>0</span>
+                    <span>25</span>
+                    <span>50</span>
+                    <span>75</span>
+                    <span>100</span>
+                </div>
+
+                <div class="meter-arc"></div>
+                <div class="meter-needle alc-needle"></div>
+            </div>
+
+            <div class="meter-value">35 %</div>
+            <div class="meter-subvalue">&nbsp;</div>
+        </div>
+
+
+        <!-- TRANSMIT -->
+        <div class="panel transmit-panel">
+
+            <div class="section-title">TRANSMIT</div>
+
+            <div class="transmit-content">
+
+                <div class="ptt-ring">
+                    <button class="ptt-button">PTT</button>
+                </div>
+
+                <div class="tx-buttons">
+                    <button>TUNE</button>
+                    <button>MOX</button>
+                    <button>BK-IN</button>
+                    <button>MONI</button>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TX POWER -->
+        <div class="panel power-panel">
+
+            <div class="section-title">TX POWER</div>
+
+            <div class="power-number">50 W</div>
+
+            <input
+                class="power-slider"
+                type="range"
+                min="5"
+                max="100"
+                value="50"
+            >
+
+            <div class="slider-labels">
+                <span>1</span>
+                <span>5</span>
+                <span>10</span>
+                <span>50</span>
+                <span>100</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         CONTROL ROW
+         ========================================================= -->
+
+    <section class="control-row">
+
+        <!-- FILTER -->
+        <div class="panel control-panel">
+
+            <div class="section-title">FILTER</div>
+
+            <div class="control-line">
+                <label>WIDTH</label>
+                <input type="range" min="0" max="100" value="72">
+                <span>2.4 kHz</span>
+            </div>
+
+            <div class="scale">
+                <span>0.3</span>
+                <span>0.6</span>
+                <span>1.2</span>
+                <span>2.4</span>
+                <span>3.0</span>
+            </div>
+
+            <div class="control-line">
+                <label>SHIFT</label>
+                <input type="range" min="0" max="100" value="50">
+                <span>0 Hz</span>
+            </div>
+
+            <div class="scale">
+                <span>−1.2k</span>
+                <span>0</span>
+                <span>+1.2k</span>
+            </div>
+
+            <div class="control-line roofing">
+                <label>ROOFING</label>
+                <button class="active">3 kHz</button>
+                <button>6 kHz</button>
+                <button>12 kHz</button>
+            </div>
+
+        </div>
+
+
+        <!-- DSP -->
+        <div class="panel control-panel dsp-panel">
+
+            <div class="section-title">DSP</div>
+
+            <div class="dsp-line">
+                <label>NOTCH</label>
+                <span class="toggle active"></span>
+                <span>FREQ</span>
+                <strong>1.100 kHz</strong>
+                <button class="knob">◉</button>
+            </div>
+
+            <div class="dsp-line">
+                <label>AUTO NOTCH</label>
+                <span class="toggle"></span>
+                <span></span>
+                <strong></strong>
+                <button class="knob">◉</button>
+            </div>
+
+            <div class="dsp-line">
+                <label>CONTOUR</label>
+                <span class="toggle active"></span>
+                <span>FREQ</span>
+                <strong>800 Hz</strong>
+                <button class="knob">◉</button>
+            </div>
+
+            <div class="dsp-line">
+                <label>DNR</label>
+                <span class="toggle active"></span>
+                <span>LEVEL</span>
+                <strong>8</strong>
+                <button class="knob">◉</button>
+            </div>
+
+            <div class="dsp-line">
+                <label>NB</label>
+                <span class="toggle active"></span>
+                <span>LEVEL</span>
+                <strong>3</strong>
+                <button class="knob">◉</button>
+            </div>
+
+        </div>
+
+
+        <!-- RF / AF -->
+        <div class="panel control-panel rf-panel">
+
+            <div class="section-title">RF / AF</div>
+
+            <div class="slider-control">
+                <label>RF GAIN</label>
+                <input type="range" min="0" max="100" value="50">
+                <span>50</span>
+            </div>
+
+            <div class="slider-control">
+                <label>AF GAIN</label>
+                <input type="range" min="0" max="100" value="55">
+                <span>3</span>
+            </div>
+
+            <div class="slider-control">
+                <label>SQL</label>
+                <input type="range" min="0" max="100" value="0">
+                <span>0</span>
+            </div>
+
+            <div class="button-line">
+                <label>ATT</label>
+                <button class="active">OFF</button>
+                <button>6dB</button>
+                <button>12dB</button>
+                <button>18dB</button>
+            </div>
+
+            <div class="button-line">
+                <label>IPO</label>
+                <button>OFF</button>
+                <button>IPO</button>
+                <button class="active">PREAMP</button>
+            </div>
+
+        </div>
+
+
+        <!-- AGC -->
+        <div class="panel control-panel agc-panel">
+
+            <div class="section-title">AGC</div>
+
+            <button>FAST</button>
+            <button class="active">MID</button>
+            <button>SLOW</button>
+            <button>AUTO</button>
+
+        </div>
+
+
+        <!-- RIT / XIT -->
+        <div class="panel control-panel rit-panel">
+
+            <div class="section-title">RIT / XIT</div>
+
+            <div class="rit-line">
+                <span>RIT</span>
+                <strong>0.000</strong>
+                <button class="knob">◉</button>
+            </div>
+
+            <div class="rit-line">
+                <span>XIT</span>
+                <strong>0.000</strong>
+                <button class="knob">◉</button>
+            </div>
+
+            <button class="clear-button">CLEAR</button>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer class="statusbar">
+
+    <div>
+        <span class="status-dot"></span>
+        <strong>Radio Online</strong>
+    </div>
+
+    <div>FTDX10 via USB</div>
+    <div>CAT: Connected</div>
+    <div>PTT: Ready</div>
+
+    <div class="footer-spacer"></div>
+
+    <div>Same Passion. More Possibilities.</div>
+    <strong>⚡ SHACK-SERVER</strong>
+
+</footer>
+
+</body>
+</html>

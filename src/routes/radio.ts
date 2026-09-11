@@ -62,6 +62,13 @@ router.get(
                     .getFrequency(),
 
 
+            frequencyB:
+
+                typeof (activeRadio as any).getFrequencyB === "function"
+                    ? (activeRadio as any).getFrequencyB()
+                    : 0,
+
+
             mode:
 
                 activeRadio

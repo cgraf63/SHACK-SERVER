@@ -653,11 +653,8 @@ async function updateStationInline() {
          */
         const frequency =
             activeRadio.frequency
-                ? `${(
-                    activeRadio.frequency /
-                    1000000
-                ).toFixed(3)} MHz`
-                : "---.--- MHz";
+                ? Number(activeRadio.frequency).toLocaleString("de-CH")
+                : "---.---.---";
 
         const mode =
             activeRadio.mode ||

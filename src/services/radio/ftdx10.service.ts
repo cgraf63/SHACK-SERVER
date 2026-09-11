@@ -1,11 +1,13 @@
 import { SerialPort } from "serialport";
 import type { RadioService } from "./radio.interface.js";
+import { FTDX10_CAT } from "./ftdx10/ftdx10.cat.js";
 
 export class Ftdx10Service implements RadioService {
     private port: SerialPort;
     private buffer = "";
 
     private frequency = 0;
+    private frequencyB = 0;
     private mode = "UNKNOWN";
     private power = 0;
     private smeter = 0;
@@ -29,6 +31,7 @@ export class Ftdx10Service implements RadioService {
             stopBits: 1,
             parity: "none",
             autoOpen: false,
+	    rtscts: false,
         });
 
         this.port.on("data", (data: Buffer) => {
@@ -78,16 +81,17 @@ export class Ftdx10Service implements RadioService {
     }
 
     private poll(): void {
-        this.send("FA;");
-        this.send("PC;");
+        this.send(FTDX10_CAT.vfoA.get);
+        this.send(FTDX10_CAT.vfoB.get);
+        this.send(FTDX10_CAT.power.get);
         this.send("IF;");
-        this.send("SM0;");
+        this.send(FTDX10_CAT.smeter.get);
 
-        this.send("KM1;");
-        this.send("KM2;");
-        this.send("KM3;");
-        this.send("KM4;");
-        this.send("KM5;");
+        this.send(FTDX10_CAT.cwMemory.get(1));
+        this.send(FTDX10_CAT.cwMemory.get(2));
+        this.send(FTDX10_CAT.cwMemory.get(3));
+        this.send(FTDX10_CAT.cwMemory.get(4));
+        this.send(FTDX10_CAT.cwMemory.get(5));
     }
 
     private send(command: string): void {
@@ -115,6 +119,11 @@ export class Ftdx10Service implements RadioService {
     private parseResponse(message: string): void {
         if (message.startsWith("FA")) {
             this.parseFrequency(message);
+            return;
+        }
+
+        if (message.startsWith("FB")) {
+            this.parseFrequencyB(message);
             return;
         }
 
@@ -162,6 +171,16 @@ export class Ftdx10Service implements RadioService {
         }
 
         this.frequency = Number(match[1]);
+    }
+
+    private parseFrequencyB(message: string): void {
+        const match = message.match(/^FB(\d{9});$/);
+
+        if (!match) {
+            return;
+        }
+
+        this.frequencyB = Number(match[1]);
     }
 
     private parsePower(message: string): void {
@@ -237,15 +256,13 @@ export class Ftdx10Service implements RadioService {
             throw new Error("Invalid frequency");
         }
 
-        const value = Math.round(frequency)
-            .toString()
-            .padStart(11, "0");
+        const value = Math.round(frequency);
 
-        if (value.length !== 11) {
+        if (value < 30000 || value > 75000000) {
             throw new Error("Frequency out of range");
         }
 
-        this.send(`FA${value};`);
+        this.send(FTDX10_CAT.vfoA.set(value));
 
         this.frequency = Math.round(frequency);
     }
@@ -278,7 +295,7 @@ export class Ftdx10Service implements RadioService {
             );
         }
 
-        this.send(`MD0${code};`);
+        this.send(FTDX10_CAT.mode.set(code));
 
         this.mode = normalizedMode;
     }
@@ -322,7 +339,7 @@ export class Ftdx10Service implements RadioService {
 
         console.log("FTDX10: starting tuner");
 
-        this.send("AC002;");
+        this.send(FTDX10_CAT.tuner.start);
 
         await new Promise<void>(
             resolve => setTimeout(resolve, 5000)
@@ -335,6 +352,10 @@ export class Ftdx10Service implements RadioService {
 
     getFrequency(): number {
         return this.frequency;
+    }
+
+    getFrequencyB(): number {
+        return this.frequencyB;
     }
 
     getMode(): string {

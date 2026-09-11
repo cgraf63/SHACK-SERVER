@@ -306,16 +306,12 @@ async function loadRadioInfo() {
                 }
 
 
-                const frequency =
-                    radio.frequency
-                        ? `${
-                            (
-                                radio.frequency /
-                                1000000
-                            ).toFixed(3)
-                        } MHz`
-                        : "---.--- MHz";
-
+const frequency =
+    radio.frequency
+        ? Number(radio.frequency).toLocaleString(
+            "de-CH"
+        )
+        : "---.---.---";
 
                 const mode =
                     radio.mode ||

@@ -1,0 +1,1004 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background:
+        radial-gradient(circle at 50% 0%, #182735 0%, #0a1118 45%, #05090d 100%);
+    color: #e7edf5;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 13px;
+    user-select: none;
+}
+
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+
+.topbar {
+    height: 58px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 14px;
+
+    background: linear-gradient(
+        180deg,
+        #14212c 0%,
+        #091017 100%
+    );
+
+    border-bottom: 1px solid #30404d;
+    box-shadow: 0 3px 15px #00000080;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+}
+
+.brand-icon {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-icon img {
+    width: 36px;
+    height: 36px;
+    display: block;
+}
+
+.brand-name {
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #91bce3;
+}
+
+.brand-sub {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #72889a;
+}
+
+.header-separator {
+    width: 1px;
+    height: 34px;
+    background: #3a4a57;
+}
+
+.radio-name {
+    font-size: 24px;
+    font-weight: 700;
+    font-style: italic;
+    color: #f0d88d;
+}
+
+.connection {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #b8c7d4;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3ce17a;
+    box-shadow: 0 0 10px #3ce17a;
+}
+
+.header-spacer {
+    flex: 1;
+}
+
+.operator {
+    line-height: 16px;
+    color: #aebdca;
+    text-align: right;
+}
+
+.clock {
+    line-height: 16px;
+    color: #8798a7;
+    min-width: 130px;
+}
+
+.clock strong {
+    display: block;
+    font-size: 16px;
+    color: #dbe4ec;
+}
+
+.header-icon,
+.power-icon {
+    font-size: 23px;
+    color: #9cafbf;
+    width: 30px;
+    text-align: center;
+}
+
+.power-icon {
+    color: #ff424d;
+    font-size: 27px;
+}
+
+
+/* ============================================================
+   MAIN CONSOLE
+   ============================================================ */
+
+.console {
+    height: calc(100vh - 90px);
+    padding: 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-height: 600px;
+}
+
+
+/* ============================================================
+   PANELS
+   ============================================================ */
+
+.panel {
+    position: relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            #111d27 0%,
+            #091118 70%
+        );
+
+    border: 1px solid #30414e;
+    border-radius: 8px;
+
+    box-shadow:
+        inset 0 1px 0 #ffffff0b,
+        inset 0 -15px 30px #00000020,
+        0 2px 8px #00000070;
+
+    overflow: hidden;
+}
+
+.panel::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: 7px;
+    pointer-events: none;
+    border: 1px solid #ffffff05;
+}
+
+.panel-title,
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: 1px;
+    color: #f0df9d;
+}
+
+
+/* ============================================================
+   TOP ROW
+   ============================================================ */
+
+.top-row {
+    height: 190px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(280px, 1fr)
+        185px
+        minmax(280px, 1fr)
+        390px;
+
+    gap: 7px;
+}
+
+
+/* ============================================================
+   VFO
+   ============================================================ */
+
+.vfo-panel {
+    padding: 7px 13px;
+}
+
+.vfo-panel .panel-title {
+    position: absolute;
+    top: 5px;
+    left: 15px;
+}
+
+.vfo-status {
+    height: 31px;
+    margin-top: 19px;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tx-badge,
+.small-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 25px;
+    padding: 0 10px;
+
+    border-radius: 5px;
+
+    background: #17242e;
+    border: 1px solid #293a47;
+
+    color: #d8c98f;
+    font-size: 12px;
+}
+
+.tx-badge {
+    color: #ff5555;
+    border: 2px solid #ff2d2d;
+    background: #351316;
+    font-weight: 700;
+}
+
+.small-badge.active {
+    background: #27363f;
+    color: #f1df9b;
+}
+
+.frequency {
+    height: 71px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: clamp(40px, 4vw, 62px);
+    font-weight: 600;
+    letter-spacing: 2px;
+
+    color: #f3f8ff;
+
+    text-shadow:
+        0 0 5px #ffffff,
+        0 0 15px #5799ff,
+        0 0 28px #2d68bc;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+button {
+    border: 1px solid #344754;
+    border-radius: 5px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #1d2b36 0%,
+            #101a22 100%
+        );
+
+    color: #e0e8ef;
+    font-family: inherit;
+    font-size: 13px;
+
+    cursor: pointer;
+
+    box-shadow:
+        inset 0 1px 0 #ffffff0b,
+        0 2px 4px #00000050;
+}
+
+button:hover {
+    border-color: #557083;
+}
+
+button.active {
+    border-color: #08aaff;
+
+    background:
+        linear-gradient(
+            180deg,
+            #123c5f 0%,
+            #102638 100%
+        );
+
+    color: #ffffff;
+
+    box-shadow:
+        inset 0 0 12px #008cff55,
+        0 0 8px #008cff40;
+}
+
+.vfo-controls {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+}
+
+.band-button {
+    height: 32px;
+    min-width: 112px;
+}
+
+.big-button {
+    height: 32px;
+    min-width: 65px;
+    font-size: 14px;
+}
+
+
+/* ============================================================
+   SPLIT
+   ============================================================ */
+
+.split-panel {
+    padding: 9px;
+}
+
+.split-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.small-tx {
+    height: 31px;
+}
+
+.small-tx.active {
+    border-color: #ff493b;
+    color: #ff756a;
+    background: #38171a;
+}
+
+.clarifier-values {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    margin-top: 9px;
+
+    text-align: center;
+}
+
+.clarifier-values span {
+    display: block;
+    color: #8e9eaa;
+    font-size: 11px;
+}
+
+.clarifier-values strong {
+    display: block;
+    margin-top: 3px;
+    font-size: 16px;
+}
+
+.split-button {
+    width: 100%;
+    height: 35px;
+    margin-top: 10px;
+
+    color: #f0dc94;
+    font-weight: 600;
+}
+
+
+/* ============================================================
+   MODE
+   ============================================================ */
+
+.mode-panel {
+    padding: 7px 10px;
+}
+
+.mode-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 7px;
+}
+
+.mode-grid button {
+    height: 36px;
+}
+
+
+/* ============================================================
+   METERS
+   ============================================================ */
+
+.meter-row {
+    height: 160px;
+
+    display: grid;
+
+    grid-template-columns:
+        1.15fr
+        1.15fr
+        1.15fr
+        1.15fr
+        1.15fr
+        1.1fr;
+
+    gap: 7px;
+}
+
+.meter {
+    padding: 7px 10px;
+    text-align: center;
+}
+
+.meter-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .5px;
+}
+
+.analog-meter {
+    position: relative;
+    height: 83px;
+    margin-top: 1px;
+    overflow: hidden;
+}
+
+.meter-scale {
+    position: absolute;
+    top: 6px;
+    left: 5%;
+    right: 5%;
+
+    display: flex;
+    justify-content: space-between;
+
+    font-size: 10px;
+    color: #d6dde3;
+}
+
+.meter-arc {
+    position: absolute;
+
+    width: 84%;
+    height: 90px;
+
+    left: 8%;
+    top: 26px;
+
+    border-top: 3px solid #d9e0e5;
+    border-radius: 50% 50% 0 0;
+
+    box-shadow: 0 -2px 6px #ffffff30;
+}
+
+.meter-needle {
+    position: absolute;
+
+    left: 50%;
+    bottom: 4px;
+
+    width: 2px;
+    height: 70px;
+
+    background: #ff493b;
+
+    transform-origin: bottom center;
+    transform: rotate(-7deg);
+
+    box-shadow: 0 0 7px #ff3322;
+}
+
+.power-needle {
+    transform: rotate(-17deg);
+}
+
+.swr-needle {
+    transform: rotate(-36deg);
+}
+
+.alc-needle {
+    transform: rotate(-12deg);
+}
+
+.meter-value {
+    font-size: 21px;
+    font-weight: 600;
+    color: #dceeff;
+    line-height: 21px;
+}
+
+.meter-subvalue {
+    color: #91a1ad;
+    font-size: 11px;
+}
+
+
+/* ============================================================
+   TRANSMIT
+   ============================================================ */
+
+.transmit-panel {
+    padding: 7px 10px;
+}
+
+.transmit-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 13px;
+    height: 116px;
+}
+
+.ptt-ring {
+    width: 88px;
+    height: 88px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 3px solid #ff4034;
+
+    box-shadow:
+        0 0 10px #ff301f,
+        inset 0 0 20px #ff301f55;
+}
+
+.ptt-button {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #48535a,
+            #171d21 65%
+        );
+
+    font-size: 16px;
+}
+
+.tx-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tx-buttons button {
+    width: 90px;
+    height: 26px;
+}
+
+
+/* ============================================================
+   TX POWER
+   ============================================================ */
+
+.power-panel {
+    padding: 7px 12px;
+}
+
+.power-number {
+    text-align: right;
+    font-size: 18px;
+    margin: 4px 10px 7px 0;
+}
+
+.power-slider {
+    width: 100%;
+}
+
+.slider-labels,
+.scale {
+    display: flex;
+    justify-content: space-between;
+    color: #8797a4;
+    font-size: 10px;
+    padding: 0 2px;
+}
+
+
+/* ============================================================
+   CONTROL ROW
+   ============================================================ */
+
+.control-row {
+    flex: 1;
+    min-height: 195px;
+
+    display: grid;
+
+    grid-template-columns:
+        1.15fr
+        1.35fr
+        1.55fr
+        .65fr
+        1.15fr;
+
+    gap: 7px;
+}
+
+.control-panel {
+    padding: 8px 10px;
+}
+
+.control-panel > .section-title {
+    margin-bottom: 7px;
+}
+
+
+/* ============================================================
+   FILTER
+   ============================================================ */
+
+.control-line {
+    display: grid;
+
+    grid-template-columns:
+        62px
+        1fr
+        55px;
+
+    align-items: center;
+    gap: 7px;
+
+    margin-bottom: 1px;
+}
+
+.control-line label,
+.slider-control label,
+.button-line label,
+.dsp-line label {
+    color: #e1e8ee;
+    font-size: 12px;
+}
+
+.control-line input,
+.slider-control input {
+    margin: 0;
+    width: 100%;
+}
+
+.control-line > span {
+    text-align: right;
+    color: #e1e5e9;
+}
+
+.control-panel .scale {
+    margin-left: 69px;
+    margin-right: 53px;
+    margin-bottom: 6px;
+}
+
+.roofing {
+    margin-top: 7px;
+    grid-template-columns:
+        62px
+        repeat(3, 1fr);
+}
+
+.roofing button {
+    height: 29px;
+    font-size: 11px;
+}
+
+
+/* ============================================================
+   DSP
+   ============================================================ */
+
+.dsp-line {
+    display: grid;
+
+    grid-template-columns:
+        70px
+        27px
+        40px
+        1fr
+        30px;
+
+    align-items: center;
+    gap: 4px;
+
+    height: 30px;
+}
+
+.toggle {
+    width: 27px;
+    height: 17px;
+
+    border-radius: 12px;
+
+    background: #24313b;
+    border: 1px solid #41515e;
+
+    position: relative;
+}
+
+.toggle::after {
+    content: "";
+
+    position: absolute;
+
+    width: 13px;
+    height: 13px;
+
+    left: 1px;
+    top: 1px;
+
+    border-radius: 50%;
+    background: #73818b;
+}
+
+.toggle.active {
+    background: #087dc5;
+    border-color: #00aaff;
+}
+
+.toggle.active::after {
+    left: 12px;
+    background: #ffffff;
+}
+
+.dsp-line span:nth-child(3) {
+    color: #9aa9b4;
+    font-size: 9px;
+}
+
+.dsp-line strong {
+    font-size: 11px;
+    text-align: right;
+    font-weight: 400;
+}
+
+.knob {
+    width: 29px;
+    height: 29px;
+    border-radius: 50%;
+    font-size: 17px;
+}
+
+
+/* ============================================================
+   RF / AF
+   ============================================================ */
+
+.slider-control {
+    display: grid;
+
+    grid-template-columns:
+        67px
+        1fr
+        30px;
+
+    gap: 6px;
+
+    align-items: center;
+
+    height: 30px;
+}
+
+.slider-control span {
+    text-align: right;
+}
+
+.button-line {
+    display: grid;
+
+    grid-template-columns:
+        40px
+        repeat(4, 1fr);
+
+    gap: 4px;
+
+    align-items: center;
+
+    margin-top: 4px;
+}
+
+.button-line button {
+    height: 28px;
+    font-size: 10px;
+}
+/* ============================================================
+   AGC - COMPACT HORIZONTAL
+   ============================================================ */
+
+.agc-panel {
+    padding: 8px 10px;
+}
+
+.agc-panel .section-title {
+    margin-bottom: 8px;
+}
+
+.agc-panel button {
+    width: calc(25% - 4px);
+    height: 30px;
+    min-height: 30px;
+    margin-right: 3px;
+    font-size: 10px;
+}
+
+.agc-panel button:last-child {
+    margin-right: 0;
+
+}
+/* ============================================================
+   RIT / XIT
+   ============================================================ */
+
+.rit-line {
+    height: 51px;
+
+    display: grid;
+
+    grid-template-columns:
+        35px
+        1fr
+        35px;
+
+    align-items: center;
+    gap: 7px;
+
+    border-bottom: 1px solid #293842;
+}
+
+.rit-line strong {
+    text-align: right;
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.rit-line .knob {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.clear-button {
+    float: right;
+    margin-top: 8px;
+    height: 29px;
+    padding: 0 14px;
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.statusbar {
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    gap: 22px;
+
+    padding: 0 10px;
+
+    border-top: 1px solid #263746;
+
+    background:
+        linear-gradient(
+            180deg,
+            #0b141c,
+            #070c11
+        );
+
+    color: #8797a4;
+    font-size: 11px;
+}
+
+.statusbar strong {
+    color: #aab9c5;
+}
+
+.statusbar .status-dot {
+    width: 9px;
+    height: 9px;
+    margin-right: 4px;
+}
+
+.footer-spacer {
+    flex: 1;
+}
+
+
+/* ============================================================
+   1280 x 700
+   ============================================================ */
+
+@media (max-height: 720px) {
+
+    .topbar {
+        height: 56px;
+    }
+
+    .console {
+        height: calc(100vh - 88px);
+        padding: 7px;
+        gap: 6px;
+    }
+
+    .top-row {
+        height: 183px;
+    }
+
+    .meter-row {
+        height: 156px;
+    }
+
+    .control-row {
+        min-height: 192px;
+    }
+
+    .frequency {
+        font-size: 50px;
+    }
+
+    .analog-meter {
+        height: 78px;
+    }
+
+    .meter-value {
+        font-size: 20px;
+    }
+
+    .statusbar {
+        height: 32px;
+    }
+}
+
+
+/* ============================================================
+   TOUCH
+   ============================================================ */
+
+@media (pointer: coarse) {
+
+    button {
+        min-height: 38px;
+    }
+
+    .big-button,
+    .band-button {
+        min-height: 40px;
+    }
+
+    input[type="range"] {
+        height: 28px;
+    }
+}
+
