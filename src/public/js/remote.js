@@ -2,8 +2,8 @@ const vfoDisplays = document.querySelectorAll(".frequency");
 const connection = document.querySelector(".connection");
 const powerDisplay = document.querySelector(".power-number");
 const powerSlider = document.querySelector(".power-slider");
-const sMeterValue = document.querySelector(".meter-value");
 const sMeterNeedle = document.querySelector(".meter-needle");
+const powerNeedle = document.querySelector(".power-needle");
 const modeButtons = document.querySelectorAll(".mode-grid button");
 const vfoBadges = document.querySelectorAll(".vfo-status");
 const txButtons = document.querySelectorAll(".small-tx");
@@ -66,10 +66,6 @@ async function updateRadioState() {
 }
 
         // S-Meter
-        if (sMeterValue) {
-            sMeterValue.textContent = `S${data.meterS}`;
-        }
-
         if (sMeterNeedle) {
             const value = Math.max(
                 0,
@@ -80,6 +76,20 @@ async function updateRadioState() {
                 -45 + (value / 255) * 90;
 
             sMeterNeedle.style.transform =
+                `rotate(${angle}deg)`;
+        }
+
+        // Power meter
+        if (powerNeedle) {
+            const value = Math.max(
+                0,
+                Math.min(255, Number(data.meterPower) || 0)
+            );
+
+            const angle =
+                -45 + (value / 255) * 90;
+
+            powerNeedle.style.transform =
                 `rotate(${angle}deg)`;
         }
 

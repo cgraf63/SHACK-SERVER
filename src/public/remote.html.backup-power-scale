@@ -233,12 +233,16 @@
                     <span>10</span>
                     <span>50</span>
                     <span>100</span>
+                    <span>150</span>
+                    <span>200</span>
                 </div>
 
                 <div class="meter-arc"></div>
                 <div class="meter-needle power-needle"></div>
             </div>
 
+            <div class="meter-value">48 W</div>
+            <div class="meter-subvalue">PEP 62 W</div>
         </div>
 
 
