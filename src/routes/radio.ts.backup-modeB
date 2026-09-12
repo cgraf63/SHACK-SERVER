@@ -115,12 +115,6 @@ router.get(
                     ? (activeRadio as any).getActiveVfo()
                     : "A",
 
-            modeB:
-
-                typeof (activeRadio as any).getModeB === "function"
-                    ? (activeRadio as any).getModeB()
-                    : "UNKNOWN",
-
 
             attenuator:
 

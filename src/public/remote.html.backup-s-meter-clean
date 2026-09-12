@@ -221,6 +221,8 @@
                 <div class="meter-needle"></div>
             </div>
 
+            <div class="meter-value">S7</div>
+            <div class="meter-subvalue">−93 dBm</div>
         </div>
 
 

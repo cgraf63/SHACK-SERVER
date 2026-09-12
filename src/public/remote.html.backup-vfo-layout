@@ -87,7 +87,10 @@
         <span class="badge-value">AUTO</span>
     	</button>
 
-    	
+    	<button class="vfo-control-badge display-only">
+        <span class="badge-label">TUNE</span>
+        <span class="badge-value">---</span>
+    	</button>
 
 </div>		
 
@@ -157,6 +160,11 @@
                     <span class="badge-value">AUTO</span>
                 </button>
 
+                <button class="vfo-control-badge display-only">
+                    <span class="badge-label">TUNE</span>
+                    <span class="badge-value">---</span>
+                </button>
+
             </div>
 
             <div class="frequency">14.095.000</div>
@@ -221,6 +229,8 @@
                 <div class="meter-needle"></div>
             </div>
 
+            <div class="meter-value">S7</div>
+            <div class="meter-subvalue">−93 dBm</div>
         </div>
 
 

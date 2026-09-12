@@ -1,0 +1,233 @@
+const vfoDisplays = document.querySelectorAll(".frequency");
+const connection = document.querySelector(".connection");
+const powerDisplay = document.querySelector(".power-number");
+const powerSlider = document.querySelector(".power-slider");
+const sMeterValue = document.querySelector(".meter-value");
+const sMeterNeedle = document.querySelector(".meter-needle");
+const modeButtons = document.querySelectorAll(".mode-grid button");
+const vfoBadges = document.querySelectorAll(".vfo-status");
+const txButtons = document.querySelectorAll(".small-tx");
+
+function formatFrequency(hz) {
+    if (!Number.isFinite(hz)) {
+        return "---.---.---";
+    }
+
+    return Math.round(hz)
+        .toLocaleString("de-CH");
+}
+
+function updateMode(mode) {
+    modeButtons.forEach(button => {
+        button.classList.toggle(
+            "active",
+            button.textContent.trim() === mode
+        );
+    });
+}
+
+async function updateRadioState() {
+
+    try {
+
+        const response =
+            await fetch("/api/radio", {
+                cache: "no-store"
+            });
+
+        if (!response.ok) {
+            throw new Error("Radio API unavailable");
+        }
+
+        const data =
+            await response.json();
+
+        // VFO A
+        if (vfoDisplays[0]) {
+            vfoDisplays[0].textContent =
+                formatFrequency(data.frequency);
+        }
+
+        // VFO B
+        if (vfoDisplays[1]) {
+            vfoDisplays[1].textContent =
+                formatFrequency(data.frequencyB);
+        }
+
+        // TX Power
+
+	if (powerDisplay) {
+ 	   powerDisplay.textContent =
+        `${data.power} W`;
+}
+
+	if (powerSlider) {
+    	   powerSlider.value = data.power;
+}
+
+        // S-Meter
+        if (sMeterValue) {
+            sMeterValue.textContent = `S${data.meterS}`;
+        }
+
+        if (sMeterNeedle) {
+            const value = Math.max(
+                0,
+                Math.min(255, Number(data.meterS) || 0)
+            );
+
+            const angle =
+                -45 + (value / 255) * 90;
+
+            sMeterNeedle.style.transform =
+                `rotate(${angle}deg)`;
+        }
+
+        // VFO modes
+        if (vfoBadges[0]) {
+            const mode =
+                vfoBadges[0].querySelector(".vfo-control-badge .badge-value");
+
+            if (mode) {
+                mode.textContent = data.mode ?? "---";
+            }
+        }
+
+        if (vfoBadges[1]) {
+            const mode =
+                vfoBadges[1].querySelector(".vfo-control-badge .badge-value");
+
+            if (mode) {
+                mode.textContent = data.modeB ?? "---";
+            }
+        }
+
+        // Global mode grid
+        updateMode(data.mode);
+
+        // Active TX / VFO
+        txButtons.forEach(button => {
+            button.classList.toggle(
+                "active",
+                (button.textContent.trim() === "VFO A" && data.activeVfo === "A") ||
+                (button.textContent.trim() === "VFO B" && data.activeVfo === "B")
+            );
+        });
+
+        // Live receiver status
+        // ATT / IPO / R.FIL / AGC gehören zum aktiven VFO.
+        // Deshalb werden sie nur dort angezeigt.
+
+        vfoBadges.forEach((status, index) => {
+
+            const badges =
+                status.querySelectorAll(".vfo-control-badge");
+
+            const isActive =
+                (index === 0 && data.activeVfo === "A") ||
+                (index === 1 && data.activeVfo === "B");
+
+            // MODE bleibt immer sichtbar.
+            // ATT / IPO / R.FIL / AGC nur beim aktiven VFO.
+            for (let i = 1; i <= 4; i++) {
+
+                if (badges[i]) {
+
+                    badges[i].style.display =
+                        isActive
+                            ? "inline-flex"
+                            : "none";
+                }
+            }
+
+            if (!isActive) {
+                return;
+            }
+
+            if (badges[1]) {
+                const value =
+                    badges[1].querySelector(".badge-value");
+
+                if (value) {
+                    value.textContent =
+                        data.attenuator ?? "---";
+                }
+            }
+
+            if (badges[2]) {
+                const value =
+                    badges[2].querySelector(".badge-value");
+
+                if (value) {
+                    value.textContent =
+                        data.ipo ?? "---";
+                }
+            }
+
+            if (badges[3]) {
+                const value =
+                    badges[3].querySelector(".badge-value");
+
+                if (value) {
+                    value.textContent =
+                        data.roofingFilter ?? "---";
+                }
+            }
+
+            if (badges[4]) {
+                const value =
+                    badges[4].querySelector(".badge-value");
+
+                if (value) {
+                    value.textContent =
+                        data.agc ?? "---";
+                }
+            }
+        });
+
+        // Connection
+        if (connection) {
+            const dot =
+                connection.querySelector(".status-dot");
+
+            connection.lastChild.textContent =
+                data.connected
+                    ? " CONNECTED"
+                    : " DISCONNECTED";
+
+            if (dot) {
+                dot.classList.toggle(
+                    "active",
+                    data.connected
+                );
+            }
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Remote radio update failed:",
+            error
+        );
+
+        if (connection) {
+
+            const dot =
+                connection.querySelector(".status-dot");
+
+            connection.lastChild.textContent =
+                " DISCONNECTED";
+
+            if (dot) {
+                dot.classList.remove("active");
+            }
+        }
+    }
+}
+
+updateRadioState();
+
+setInterval(
+    updateRadioState,
+    1000
+);

@@ -101,9 +101,11 @@ export class Ftdx10Service implements RadioService {
         this.send(FTDX10_CAT.vfoA.get);
         this.send(FTDX10_CAT.vfoB.get);
         this.send("VS;");
-        this.send("IF;");
-        this.send("OI;");
+        this.send("MD0;");
+        this.send("MD1;");
         this.send(FTDX10_CAT.power.get);
+        this.send("IF;");
+        this.send(FTDX10_CAT.smeter.get);
         this.send(FTDX10_CAT.meters.s);
         this.send(FTDX10_CAT.meters.alc);
         this.send(FTDX10_CAT.meters.power);
@@ -168,11 +170,6 @@ export class Ftdx10Service implements RadioService {
             return;
         }
 
-        if (message.startsWith("OI")) {
-            this.parseOI(message);
-            return;
-        }
-
         if (message.startsWith("SM0")) {
             this.parseSMeter(message);
             return;
@@ -200,6 +197,16 @@ export class Ftdx10Service implements RadioService {
 
         if (message.startsWith("VS")) {
             this.parseActiveVfo(message);
+            return;
+        }
+
+        if (message.startsWith("MD0")) {
+            this.parseModeMain(message);
+            return;
+        }
+
+        if (message.startsWith("MD1")) {
+            this.parseModeB(message);
             return;
         }
 
@@ -443,29 +450,6 @@ export class Ftdx10Service implements RadioService {
         }
 
         this.mode = this.decodeMode(modeCode);
-    }
-
-    private parseOI(message: string): void {
-        /*
-         * OI = VFO-B information.
-         * The mode field is at the same position as in IF.
-         */
-
-        const match = message.match(
-            /^OI\d{12}[+-]\d{6}([0-9A-F])\d{5};$/
-        );
-
-        if (!match) {
-            return;
-        }
-
-        const modeCode = match[1];
-
-        if (modeCode === undefined) {
-            return;
-        }
-
-        this.modeB = this.decodeMode(modeCode);
     }
 
     private parseModeMain(message: string): void {
