@@ -169,26 +169,28 @@
 
         
 
-        <!-- MODE POPUP -->
-        <div class="mode-popup" id="mode-popup">
-            <div class="mode-popup-title">MODE</div>
+        <!-- MODE -->
+        <div class="panel mode-panel">
 
-            <div class="mode-popup-grid">
-                <button data-mode="LSB">LSB</button>
-                <button data-mode="USB">USB</button>
-                <button data-mode="CW-L">CW-L</button>
-                <button data-mode="CW-U">CW-U</button>
+            <div class="panel-title">MODE</div>
 
-                <button data-mode="AM">AM</button>
-                <button data-mode="FM">FM</button>
-                <button data-mode="DATA-L">DATA-L</button>
-                <button data-mode="DATA-U">DATA-U</button>
+            <div class="mode-grid">
+                <button>LSB</button>
+                <button class="active">USB</button>
+                <button>CW-L</button>
+                <button>CW-U</button>
 
-                <button data-mode="RTTY-L">RTTY-L</button>
-                <button data-mode="RTTY-U">RTTY-U</button>
-                <button data-mode="PKT">PKT</button>
-                <button data-mode="GEN">GEN</button>
+                <button>AM</button>
+                <button>FM</button>
+                <button>DATA-L</button>
+                <button>DATA-U</button>
+
+                <button>RTTY-L</button>
+                <button>RTTY-U</button>
+                <button>PKT</button>
+                <button>GEN</button>
             </div>
+
         </div>
 
     </section>
@@ -296,6 +298,7 @@
                 <div class="tx-buttons">
                     <button>TUNE</button>
                     <button>MOX</button>
+                    <button>BK-IN</button>
                     <button>MONI</button>
                 </div>
 
@@ -431,6 +434,19 @@
                 <input id="af-gain-slider" type="range" min="0" max="100" value="35">
                 <span>3</span>
             </div>
+        </div>
+
+
+        <!-- AGC -->
+        <div class="panel control-panel agc-panel">
+
+            <div class="section-title">AGC</div>
+
+            <button>FAST</button>
+            <button class="active">MID</button>
+            <button>SLOW</button>
+            <button>AUTO</button>
+
         </div>
 
 

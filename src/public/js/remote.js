@@ -343,3 +343,36 @@ setInterval(
     updateRadioState,
     1000
 );
+
+/* =========================================================
+   MODE POPUP
+   ========================================================= */
+
+const modeControls =
+    document.querySelectorAll(".mode-control");
+
+const modePopup =
+    document.getElementById("mode-popup");
+
+modeControls.forEach(control => {
+    control.addEventListener("click", event => {
+        event.stopPropagation();
+
+        if (!modePopup) {
+            return;
+        }
+
+        const rect = control.getBoundingClientRect();
+
+        modePopup.style.left = `${rect.left}px`;
+        modePopup.style.top = `${rect.bottom + 6}px`;
+
+        modePopup.classList.toggle("open");
+    });
+});
+
+document.addEventListener("click", () => {
+    if (modePopup) {
+        modePopup.classList.remove("open");
+    }
+});

@@ -1377,3 +1377,19 @@ button.active {
 .vfo-control-badge.mode-control.active .badge-value {
     color: #ffaaaa;
 }
+
+/* MODE popup — hidden until MODE button is pressed */
+.mode-popup {
+    display: none;
+}
+
+/* MODE popup — open state */
+.mode-popup.open {
+    display: block;
+}
+
+/* MODE popup — anchored to clicked MODE button */
+.mode-popup {
+    position: fixed;
+    z-index: 1000;
+}
