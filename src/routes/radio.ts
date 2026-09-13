@@ -301,6 +301,55 @@ router.post(
 
 
 /*
+    Select active VFO
+*/
+
+router.post(
+    "/radio/vfo",
+    (req, res) => {
+
+        const { vfo } = req.body;
+
+        const activeRadio =
+            radioManager.getActiveRadio();
+
+        if (!activeRadio) {
+            return res.status(503).json({
+                error: "No active radio"
+            });
+        }
+
+        if (vfo !== "A" && vfo !== "B") {
+            return res.status(400).json({
+                error: "Invalid VFO"
+            });
+        }
+
+        if (
+            typeof (activeRadio as any).setActiveVfo !== "function"
+        ) {
+            return res.status(501).json({
+                error: "VFO selection not supported"
+            });
+        }
+
+        (activeRadio as any).setActiveVfo(vfo);
+
+        console.log(
+            "ACTIVE VFO:",
+            vfo
+        );
+
+        return res.json({
+            success: true,
+            activeVfo: vfo
+        });
+    }
+);
+
+
+
+/*
     Tune active radio
 */
 

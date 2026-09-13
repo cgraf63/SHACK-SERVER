@@ -108,24 +108,38 @@
                 <button class="small-tx">VFO B</button>
             </div>
 
-            <div class="clarifier-values">
-                <div>
-                    <span>RIT</span>
-                    <strong>0.000</strong>
+            <button class="split-button" id="split-toggle">
+                SPLIT
+            </button>
+
+            <div class="split-frequencies">
+                <div class="split-frequency">
+                    <span>RX</span>
+                    <strong id="split-rx-frequency">14.074.000</strong>
                 </div>
 
-                <div>
-                    <span>XIT</span>
-                    <strong>0.000</strong>
+                <div class="split-frequency">
+                    <span>TX</span>
+                    <strong id="split-tx-frequency">14.079.000</strong>
                 </div>
             </div>
 
-            <button class="split-button">SPLIT</button>
+            <div class="split-tx-control">
+                <button class="split-up-button" id="split-up5">
+                    UP +5
+                </button>
+
+                <input
+                    id="split-tx-frequency-input"
+                    type="text"
+                    inputmode="decimal"
+                    value="14.079.000"
+                >
+            </div>
 
         </div>
 
 
-	<!-- VFO B -->
         <div class="panel vfo-panel">
 
             <div class="panel-title">VFO B</div>

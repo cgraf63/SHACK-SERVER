@@ -627,6 +627,14 @@ export class Ftdx10Service implements RadioService {
         return modes[code] ?? "UNKNOWN";
     }
 
+    setActiveVfo(vfo: "A" | "B"): void {
+        if (vfo === "A") {
+            this.send(FTDX10_CAT.vfo.selectA);
+        } else {
+            this.send(FTDX10_CAT.vfo.selectB);
+        }
+    }
+
     setFrequency(frequency: number): void {
         if (!Number.isFinite(frequency)) {
             throw new Error("Invalid frequency");

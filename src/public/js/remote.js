@@ -376,3 +376,39 @@ document.addEventListener("click", () => {
         modePopup.classList.remove("open");
     }
 });
+
+/* =========================================================
+   VFO A / B SELECTION
+   ========================================================= */
+
+txButtons.forEach(button => {
+    button.addEventListener("click", async () => {
+
+        const vfo =
+            button.textContent.trim() === "VFO B"
+                ? "B"
+                : "A";
+
+        try {
+            const response =
+                await fetch("/api/radio/vfo", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        vfo
+                    })
+                });
+
+            if (!response.ok) {
+                throw new Error("VFO selection failed");
+            }
+
+            await updateRadioState();
+
+        } catch (error) {
+            console.error("VFO selection error:", error);
+        }
+    });
+});
