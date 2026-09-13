@@ -62,7 +62,7 @@
 
 	    <div class="vfo-status">
 
-    	<button class="vfo-control-badge mode-control active">
+    	<button class="vfo-control-badge active">
         <span class="badge-label">MODE</span>
         <span class="badge-value">USB</span>
     	</button>
@@ -132,7 +132,7 @@
 
             <div class="vfo-status">
 
-                <button class="vfo-control-badge mode-control active">
+                <button class="vfo-control-badge active">
                     <span class="badge-label">MODE</span>
                     <span class="badge-value">CW-L</span>
                 </button>
@@ -312,10 +312,7 @@
 
             <div class="section-title">TX POWER</div>
 
-            <div class="power-ring">
-                <div class="power-ring-value power-number">50 W</div>
-                <div class="power-ring-label">TX POWER</div>
-            </div>
+            <div class="power-number">50 W</div>
 
             <input
                 class="power-slider"
@@ -351,7 +348,7 @@
 
             <div class="control-line">
                 <label>WIDTH</label>
-                <input id="filter-width" type="range" min="0" max="100" value="72">
+                <input type="range" min="0" max="100" value="72">
                 <span>2.4 kHz</span>
             </div>
 
@@ -365,7 +362,7 @@
 
             <div class="control-line">
                 <label>SHIFT</label>
-                <input id="filter-shift" type="range" min="0" max="100" value="50">
+                <input type="range" min="0" max="100" value="50">
                 <span>0 Hz</span>
             </div>
 

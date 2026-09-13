@@ -62,7 +62,7 @@
 
 	    <div class="vfo-status">
 
-    	<button class="vfo-control-badge mode-control active">
+    	<button class="vfo-control-badge active">
         <span class="badge-label">MODE</span>
         <span class="badge-value">USB</span>
     	</button>
@@ -132,7 +132,7 @@
 
             <div class="vfo-status">
 
-                <button class="vfo-control-badge mode-control active">
+                <button class="vfo-control-badge active">
                     <span class="badge-label">MODE</span>
                     <span class="badge-value">CW-L</span>
                 </button>
@@ -312,10 +312,7 @@
 
             <div class="section-title">TX POWER</div>
 
-            <div class="power-ring">
-                <div class="power-ring-value power-number">50 W</div>
-                <div class="power-ring-label">TX POWER</div>
-            </div>
+            <div class="power-number">50 W</div>
 
             <input
                 class="power-slider"
@@ -351,7 +348,7 @@
 
             <div class="control-line">
                 <label>WIDTH</label>
-                <input id="filter-width" type="range" min="0" max="100" value="72">
+                <input type="range" min="0" max="100" value="72">
                 <span>2.4 kHz</span>
             </div>
 
@@ -365,7 +362,7 @@
 
             <div class="control-line">
                 <label>SHIFT</label>
-                <input id="filter-shift" type="range" min="0" max="100" value="50">
+                <input type="range" min="0" max="100" value="50">
                 <span>0 Hz</span>
             </div>
 
@@ -373,6 +370,13 @@
                 <span>−1.2k</span>
                 <span>0</span>
                 <span>+1.2k</span>
+            </div>
+
+            <div class="control-line roofing">
+                <label>ROOFING</label>
+                <button class="active">3 kHz</button>
+                <button>6 kHz</button>
+                <button>12 kHz</button>
             </div>
 
         </div>
@@ -383,36 +387,44 @@
 
             <div class="section-title">DSP</div>
 
-            <div class="dsp-line" id="dsp-notch">
+            <div class="dsp-line">
                 <label>NOTCH</label>
-                <button class="toggle-button">OFF</button>
+                <span class="toggle active"></span>
+                <span>FREQ</span>
                 <strong>1.100 kHz</strong>
-                <button class="value-button">−</button>
-                <button class="value-button">+</button>
+                <button class="knob">◉</button>
             </div>
 
-            <div class="dsp-line" id="dsp-contour">
+            <div class="dsp-line">
+                <label>AUTO NOTCH</label>
+                <span class="toggle"></span>
+                <span></span>
+                <strong></strong>
+                <button class="knob">◉</button>
+            </div>
+
+            <div class="dsp-line">
                 <label>CONTOUR</label>
-                <button class="toggle-button">OFF</button>
+                <span class="toggle active"></span>
+                <span>FREQ</span>
                 <strong>800 Hz</strong>
-                <button class="value-button">−</button>
-                <button class="value-button">+</button>
+                <button class="knob">◉</button>
             </div>
 
-            <div class="dsp-line" id="dsp-dnr">
+            <div class="dsp-line">
                 <label>DNR</label>
-                <button class="toggle-button">OFF</button>
+                <span class="toggle active"></span>
+                <span>LEVEL</span>
                 <strong>8</strong>
-                <button class="value-button">−</button>
-                <button class="value-button">+</button>
+                <button class="knob">◉</button>
             </div>
 
-            <div class="dsp-line" id="dsp-nb">
+            <div class="dsp-line">
                 <label>NB</label>
-                <button class="toggle-button">OFF</button>
+                <span class="toggle active"></span>
+                <span>LEVEL</span>
                 <strong>3</strong>
-                <button class="value-button">−</button>
-                <button class="value-button">+</button>
+                <button class="knob">◉</button>
             </div>
 
         </div>
@@ -425,15 +437,37 @@
 
             <div class="slider-control">
                 <label>RF GAIN</label>
-                <input id="rf-gain-slider" type="range" min="0" max="100" value="50">
+                <input type="range" min="0" max="100" value="50">
                 <span>50</span>
             </div>
 
             <div class="slider-control">
                 <label>AF GAIN</label>
-                <input id="af-gain-slider" type="range" min="0" max="100" value="35">
+                <input type="range" min="0" max="100" value="55">
                 <span>3</span>
             </div>
+
+            <div class="slider-control">
+                <label>SQL</label>
+                <input type="range" min="0" max="100" value="0">
+                <span>0</span>
+            </div>
+
+            <div class="button-line">
+                <label>ATT</label>
+                <button class="active">OFF</button>
+                <button>6dB</button>
+                <button>12dB</button>
+                <button>18dB</button>
+            </div>
+
+            <div class="button-line">
+                <label>IPO</label>
+                <button>OFF</button>
+                <button>IPO</button>
+                <button class="active">PREAMP</button>
+            </div>
+
         </div>
 
 

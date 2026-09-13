@@ -2,8 +2,6 @@ const vfoDisplays = document.querySelectorAll(".frequency");
 const connection = document.querySelector(".connection");
 const powerDisplay = document.querySelector(".power-number");
 const powerSlider = document.querySelector(".power-slider");
-const rfGainSlider = document.querySelector("#rf-gain-slider");
-const afGainSlider = document.querySelector("#af-gain-slider");
 const sMeterNeedle = document.querySelector(".meter-needle");
 const powerNeedle = document.querySelector(".power-needle");
 const modeButtons = document.querySelectorAll(".mode-grid button");
@@ -67,91 +65,6 @@ async function updateRadioState() {
     	   powerSlider.value = data.power;
 }
 
-        // RF / AF Gain
-        if (rfGainSlider) {
-            rfGainSlider.value =
-                Math.round((Number(data.rfGain) || 0) / 255 * 100);
-            rfGainSlider.nextElementSibling.textContent =
-                `${rfGainSlider.value}`;
-        }
-
-        if (afGainSlider) {
-            afGainSlider.value =
-                Math.round((Number(data.afGain) || 0) / 255 * 100);
-            afGainSlider.nextElementSibling.textContent =
-                `${afGainSlider.value}`;
-        }
-
-        // DSP status
-        const dspNotch = document.querySelector("#dsp-notch");
-        const dspContour = document.querySelector("#dsp-contour");
-        const dspDnr = document.querySelector("#dsp-dnr");
-        const dspNb = document.querySelector("#dsp-nb");
-
-        if (dspNotch) {
-            const toggle = dspNotch.querySelector(".toggle-button");
-            const value = dspNotch.querySelector("strong");
-
-            if (toggle) {
-                toggle.textContent = data.notch ? "ON" : "OFF";
-                toggle.classList.toggle("dsp-on", !!data.notch);
-            }
-
-            if (value) {
-                const hz = Number(data.notchFrequency) || 0;
-                value.textContent =
-                    hz >= 1000
-                        ? `${(hz / 1000).toFixed(3)} kHz`
-                        : `${hz} Hz`;
-            }
-        }
-
-        if (dspContour) {
-            const toggle = dspContour.querySelector(".toggle-button");
-            const value = dspContour.querySelector("strong");
-
-            if (toggle) {
-                toggle.textContent = data.contour ? "ON" : "OFF";
-                toggle.classList.toggle("dsp-on", !!data.contour);
-            }
-
-            if (value) {
-                const hz = Number(data.contourFrequency) || 0;
-                value.textContent =
-                    hz >= 1000
-                        ? `${(hz / 1000).toFixed(3)} kHz`
-                        : `${hz} Hz`;
-            }
-        }
-
-        if (dspDnr) {
-            const toggle = dspDnr.querySelector(".toggle-button");
-            const value = dspDnr.querySelector("strong");
-
-            if (toggle) {
-                toggle.textContent = data.dnr ? "ON" : "OFF";
-                toggle.classList.toggle("dsp-on", !!data.dnr);
-            }
-
-            if (value) {
-                value.textContent = `${Number(data.dnrLevel) || 0}`;
-            }
-        }
-
-        if (dspNb) {
-            const toggle = dspNb.querySelector(".toggle-button");
-            const value = dspNb.querySelector("strong");
-
-            if (toggle) {
-                toggle.textContent = data.nb ? "ON" : "OFF";
-                toggle.classList.toggle("dsp-on", !!data.nb);
-            }
-
-            if (value) {
-                value.textContent = `${Number(data.nbLevel) || 0}`;
-            }
-        }
-
         // S-Meter
         if (sMeterNeedle) {
             const value = Math.max(
@@ -159,23 +72,8 @@ async function updateRadioState() {
                 Math.min(255, Number(data.meterS) || 0)
             );
 
-            // FTDX10 S-Meter calibration
-            // Measured: S5=70, S7=103, S9=132
-            let sPosition;
-
-            if (value <= 70) {
-                sPosition = value / 70 * 5;
-            } else if (value <= 103) {
-                sPosition = 5 + (value - 70) / (103 - 70) * 2;
-            } else if (value <= 132) {
-                sPosition = 7 + (value - 103) / (132 - 103) * 2;
-            } else {
-                // Above S9: continue into the +dB range
-                sPosition = 9 + (value - 132) / (255 - 132) * 60;
-            }
-
             const angle =
-                -45 + (sPosition / 69) * 90;
+                -45 + (value / 255) * 90;
 
             sMeterNeedle.style.transform =
                 `rotate(${angle}deg)`;

@@ -94,7 +94,6 @@ async function updateRadioState() {
 
             if (toggle) {
                 toggle.textContent = data.notch ? "ON" : "OFF";
-                toggle.classList.toggle("dsp-on", !!data.notch);
             }
 
             if (value) {
@@ -112,7 +111,6 @@ async function updateRadioState() {
 
             if (toggle) {
                 toggle.textContent = data.contour ? "ON" : "OFF";
-                toggle.classList.toggle("dsp-on", !!data.contour);
             }
 
             if (value) {
@@ -130,7 +128,6 @@ async function updateRadioState() {
 
             if (toggle) {
                 toggle.textContent = data.dnr ? "ON" : "OFF";
-                toggle.classList.toggle("dsp-on", !!data.dnr);
             }
 
             if (value) {
@@ -144,7 +141,6 @@ async function updateRadioState() {
 
             if (toggle) {
                 toggle.textContent = data.nb ? "ON" : "OFF";
-                toggle.classList.toggle("dsp-on", !!data.nb);
             }
 
             if (value) {

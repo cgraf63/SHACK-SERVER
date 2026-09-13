@@ -45,8 +45,6 @@ router.get(
             );
 
 
-        console.log("API GAIN:", (activeRadio as any).getRfGain(), (activeRadio as any).getAfGain());
-
         res.json({
 
             radio:
@@ -81,67 +79,6 @@ router.get(
 
                 activeRadio
                     .getPower(),
-
-
-            rfGain:
-                typeof (activeRadio as any).getRfGain === "function"
-                    ? (activeRadio as any).getRfGain()
-                    : 0,
-
-            afGain:
-                typeof (activeRadio as any).getAfGain === "function"
-                    ? (activeRadio as any).getAfGain()
-                    : 0,
-
-            filterWidth:
-                typeof (activeRadio as any).getFilterWidth === "function"
-                    ? (activeRadio as any).getFilterWidth()
-                    : 0,
-
-            filterShift:
-                typeof (activeRadio as any).getFilterShift === "function"
-                    ? (activeRadio as any).getFilterShift()
-                    : 0,
-
-            notch:
-                typeof (activeRadio as any).getNotch === "function"
-                    ? (activeRadio as any).getNotch()
-                    : false,
-
-            notchFrequency:
-                typeof (activeRadio as any).getNotchFrequency === "function"
-                    ? (activeRadio as any).getNotchFrequency()
-                    : 0,
-
-            contour:
-                typeof (activeRadio as any).getContour === "function"
-                    ? (activeRadio as any).getContour()
-                    : false,
-
-            contourFrequency:
-                typeof (activeRadio as any).getContourFrequency === "function"
-                    ? (activeRadio as any).getContourFrequency()
-                    : 0,
-
-            dnr:
-                typeof (activeRadio as any).getDnr === "function"
-                    ? (activeRadio as any).getDnr()
-                    : false,
-
-            dnrLevel:
-                typeof (activeRadio as any).getDnrLevel === "function"
-                    ? (activeRadio as any).getDnrLevel()
-                    : 1,
-
-            nb:
-                typeof (activeRadio as any).getNb === "function"
-                    ? (activeRadio as any).getNb()
-                    : false,
-
-            nbLevel:
-                typeof (activeRadio as any).getNbLevel === "function"
-                    ? (activeRadio as any).getNbLevel()
-                    : 0,
 
 
             meterS:

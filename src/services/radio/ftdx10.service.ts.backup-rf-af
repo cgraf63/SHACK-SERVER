@@ -14,24 +14,6 @@ export class Ftdx10Service implements RadioService {
     private meterAlc = 0;
     private meterPower = 0;
     private meterSwr = 0;
-    private rfGain = 0;
-    private afGain = 0;
-
-    // DSP / filter status
-    private filterWidth = 0;
-    private filterShift = 0;
-
-    private notch = false;
-    private notchFrequency = 0;
-
-    private contour = false;
-    private contourFrequency = 0;
-
-    private dnr = false;
-    private dnrLevel = 1;
-
-    private nb = false;
-    private nbLevel = 0;
 
     private attenuator = "OFF";
     private attenuatorB = "OFF";
@@ -126,26 +108,13 @@ export class Ftdx10Service implements RadioService {
         this.send(FTDX10_CAT.meters.alc);
         this.send(FTDX10_CAT.meters.power);
         this.send(FTDX10_CAT.meters.swr);
-        this.send("RG0;");
-        this.send("AG0;");
-
-        // Filter / DSP status
-        this.send(FTDX10_CAT.filter.width.get);
-        this.send(FTDX10_CAT.filter.ifShift.get);
-        this.send(FTDX10_CAT.notch.manual.get);
-        this.send("BP01;");
-        this.send(FTDX10_CAT.contour.get);
-        this.send("CO01;");
-        this.send(FTDX10_CAT.noiseReduction.get);
-        this.send(FTDX10_CAT.noiseReduction.levelGet);
-        this.send(FTDX10_CAT.noiseBlanker.get);
-        this.send(FTDX10_CAT.noiseBlanker.levelGet);
 
         // Read-only receiver status.
         // Wait briefly so the VS response is processed first.
         setTimeout(() => {
             this.send(FTDX10_CAT.attenuator.get);
             this.send(FTDX10_CAT.ipo.get);
+            this.send(FTDX10_CAT.filter.roofing.get);
             this.send(FTDX10_CAT.agc.get);
         }, 50);
 
@@ -174,19 +143,6 @@ export class Ftdx10Service implements RadioService {
 
             this.buffer = this.buffer.slice(endIndex + 1);
 
-            if (
-                message.startsWith("SH") ||
-                message.startsWith("IS") ||
-                message.startsWith("BP") ||
-                message.startsWith("CO") ||
-                message.startsWith("NR") ||
-                message.startsWith("RL") ||
-                message.startsWith("NB") ||
-                message.startsWith("NL")
-            ) {
-                console.log("FTDX10 FILTER:", message);
-            }
-
             this.parseResponse(message);
         }
     }
@@ -204,56 +160,6 @@ export class Ftdx10Service implements RadioService {
 
         if (message.startsWith("PC")) {
             this.parsePower(message);
-            return;
-        }
-
-        if (message.startsWith("RG")) {
-            this.parseRfGain(message);
-            return;
-        }
-
-        if (message.startsWith("AG")) {
-            this.parseAfGain(message);
-            return;
-        }
-
-        if (message.startsWith("SH")) {
-            this.parseFilterWidth(message);
-            return;
-        }
-
-        if (message.startsWith("IS")) {
-            this.parseFilterShift(message);
-            return;
-        }
-
-        if (message.startsWith("BP")) {
-            this.parseNotch(message);
-            return;
-        }
-
-        if (message.startsWith("CO")) {
-            this.parseContour(message);
-            return;
-        }
-
-        if (message.startsWith("NR")) {
-            this.parseDnr(message);
-            return;
-        }
-
-        if (message.startsWith("RL")) {
-            this.parseDnrLevel(message);
-            return;
-        }
-
-        if (message.startsWith("NB")) {
-            this.parseNb(message);
-            return;
-        }
-
-        if (message.startsWith("NL")) {
-            this.parseNbLevel(message);
             return;
         }
 
@@ -470,29 +376,6 @@ export class Ftdx10Service implements RadioService {
         }
 
         this.power = Number(match[1]);
-    }
-
-    private parseRfGain(message: string): void {
-
-        const match = message.match(/^RG0(\d{3});$/);
-
-
-        if (!match) {
-            return;
-        }
-
-        this.rfGain = Number(match[1]);
-
-    }
-
-    private parseAfGain(message: string): void {
-        const match = message.match(/^AG0(\d{3});$/);
-
-        if (!match) {
-            return;
-        }
-
-        this.afGain = Number(match[1]);
     }
 
     private parseSMeter(message: string): void {
@@ -726,75 +609,6 @@ export class Ftdx10Service implements RadioService {
         return true;
     }
 
-    private parseFilterWidth(message: string): void {
-        const match = message.match(/^SH(\d{4});$/);
-        if (!match) return;
-
-        this.filterWidth = Number(match[1]);
-    }
-
-    private parseFilterShift(message: string): void {
-        const match = message.match(/^IS00([+-])(\d{4});$/);
-        if (!match) return;
-
-        const value = Number(match[2]);
-        this.filterShift = match[1] === "-" ? -value : value;
-    }
-
-    private parseNotch(message: string): void {
-        const status = message.match(/^BP0000([01]);$/);
-        if (status) {
-            this.notch = status[1] === "1";
-            return;
-        }
-
-        const frequency = message.match(/^BP01(\d{3});$/);
-        if (frequency) {
-            this.notchFrequency = Number(frequency[1]) * 10;
-        }
-    }
-
-    private parseContour(message: string): void {
-        const status = message.match(/^CO00000([01]);$/);
-        if (status) {
-            this.contour = status[1] === "1";
-            return;
-        }
-
-        const frequency = message.match(/^CO01(\d{4});$/);
-        if (frequency) {
-            this.contourFrequency = Number(frequency[1]);
-        }
-    }
-
-    private parseDnr(message: string): void {
-        const match = message.match(/^NR0([01]);$/);
-        if (!match) return;
-
-        this.dnr = match[1] === "1";
-    }
-
-    private parseDnrLevel(message: string): void {
-        const match = message.match(/^RL0(\d{2});$/);
-        if (!match) return;
-
-        this.dnrLevel = Number(match[1]);
-    }
-
-    private parseNb(message: string): void {
-        const match = message.match(/^NB0([01]);$/);
-        if (!match) return;
-
-        this.nb = match[1] === "1";
-    }
-
-    private parseNbLevel(message: string): void {
-        const match = message.match(/^NL0(\d{3});$/);
-        if (!match) return;
-
-        this.nbLevel = Number(match[1]);
-    }
-
     getFrequency(): number {
         return this.frequency;
     }
@@ -809,54 +623,6 @@ export class Ftdx10Service implements RadioService {
 
     getPower(): number {
         return this.power;
-    }
-
-    getRfGain(): number {
-        return this.rfGain;
-    }
-
-    getAfGain(): number {
-        return this.afGain;
-    }
-
-    getFilterWidth(): number {
-        return this.filterWidth;
-    }
-
-    getFilterShift(): number {
-        return this.filterShift;
-    }
-
-    getNotch(): boolean {
-        return this.notch;
-    }
-
-    getNotchFrequency(): number {
-        return this.notchFrequency;
-    }
-
-    getContour(): boolean {
-        return this.contour;
-    }
-
-    getContourFrequency(): number {
-        return this.contourFrequency;
-    }
-
-    getDnr(): boolean {
-        return this.dnr;
-    }
-
-    getDnrLevel(): number {
-        return this.dnrLevel;
-    }
-
-    getNb(): boolean {
-        return this.nb;
-    }
-
-    getNbLevel(): number {
-        return this.nbLevel;
     }
 
     getSMeter(): number {

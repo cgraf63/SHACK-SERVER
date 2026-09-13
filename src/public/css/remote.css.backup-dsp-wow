@@ -768,47 +768,100 @@ button.active {
 
 .dsp-line {
     display: grid;
-    grid-template-columns: 78px 42px 1fr 30px 30px;
-    align-items: center;
-    column-gap: 6px;
-    height: 29px;
-}
 
-.dsp-line label {
-    color: #aebbc4;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
+    grid-template-columns:
+        70px
+        38px
+        75px
+        30px
+        30px;
+
+    align-items: center;
+    gap: 4px;
+
+    height: 30px;
 }
 
 .dsp-line .toggle-button {
-    width: 42px;
-    height: 22px;
-    min-height: 22px;
+    width: 38px;
+    height: 28px;
+    min-height: 28px;
     padding: 0;
-    font-size: 9px;
-    line-height: 20px;
+    font-size: 10px;
 }
 
 .dsp-line strong {
-    justify-self: end;
-    min-width: 72px;
-    color: #e4ebef;
+    width: 75px;
+    color: #e1e8ee;
     font-size: 11px;
     font-weight: 400;
     text-align: right;
     white-space: nowrap;
-    letter-spacing: 0.2px;
 }
 
 .dsp-line .value-button {
-    width: 28px;
-    height: 22px;
-    min-height: 22px;
+    width: 30px;
+    height: 28px;
+    min-height: 28px;
     padding: 0;
-    font-size: 12px;
-    line-height: 20px;
+    font-size: 13px;
 }
+
+.toggle {
+    width: 27px;
+    height: 17px;
+
+    border-radius: 12px;
+
+    background: #24313b;
+    border: 1px solid #41515e;
+
+    position: relative;
+}
+
+.toggle::after {
+    content: "";
+
+    position: absolute;
+
+    width: 13px;
+    height: 13px;
+
+    left: 1px;
+    top: 1px;
+
+    border-radius: 50%;
+    background: #73818b;
+}
+
+.toggle.active {
+    background: #087dc5;
+    border-color: #00aaff;
+}
+
+.toggle.active::after {
+    left: 12px;
+    background: #ffffff;
+}
+
+.dsp-line span:nth-child(3) {
+    color: #9aa9b4;
+    font-size: 9px;
+}
+
+.dsp-line strong {
+    font-size: 11px;
+    text-align: right;
+    font-weight: 400;
+}
+
+.knob {
+    width: 29px;
+    height: 29px;
+    border-radius: 50%;
+    font-size: 17px;
+}
+
 
 /* ============================================================
    RF / AF
@@ -1022,358 +1075,3 @@ button.active {
     }
 }
 
-
-/* ============================================================
-   FILTER SLIDERS — SHACK-SERVER
-   ============================================================ */
-
-#filter-width,
-#filter-shift {
-    appearance: none;
-    -webkit-appearance: none;
-    height: 20px;
-    background: transparent;
-    cursor: pointer;
-}
-
-/* Track */
-#filter-width::-webkit-slider-runnable-track,
-#filter-shift::-webkit-slider-runnable-track {
-    height: 4px;
-    border-radius: 3px;
-    background: linear-gradient(
-        to right,
-        #087dc5 0%,
-        #087dc5 50%,
-        #35434d 50%,
-        #35434d 100%
-    );
-    border: 1px solid #4b5b66;
-}
-
-/* Knob */
-#filter-width::-webkit-slider-thumb,
-#filter-shift::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-
-    width: 16px;
-    height: 16px;
-
-    margin-top: -7px;
-
-    border-radius: 50%;
-    border: 2px solid #d7e0e6;
-    background: #18232b;
-
-    box-shadow:
-        0 0 0 2px #087dc5,
-        0 0 8px rgba(0, 170, 255, 0.45);
-
-    transition:
-        transform 0.12s ease,
-        box-shadow 0.12s ease;
-}
-
-#filter-width::-webkit-slider-thumb:hover,
-#filter-shift::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
-    box-shadow:
-        0 0 0 2px #00aaff,
-        0 0 12px rgba(0, 170, 255, 0.65);
-}
-
-/* Firefox */
-#filter-width::-moz-range-track,
-#filter-shift::-moz-range-track {
-    height: 4px;
-    border-radius: 3px;
-    background: #35434d;
-    border: 1px solid #4b5b66;
-}
-
-#filter-width::-moz-range-progress,
-#filter-shift::-moz-range-progress {
-    height: 4px;
-    border-radius: 3px;
-    background: #087dc5;
-}
-
-#filter-width::-moz-range-thumb,
-#filter-shift::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-
-    border-radius: 50%;
-    border: 2px solid #d7e0e6;
-    background: #18232b;
-
-    box-shadow:
-        0 0 0 2px #087dc5,
-        0 0 8px rgba(0, 170, 255, 0.45);
-}
-
-/* ============================================================
-   RF / AF SLIDERS — SHACK-SERVER
-   ============================================================ */
-
-#rf-gain-slider,
-#af-gain-slider {
-    appearance: none;
-    -webkit-appearance: none;
-    height: 20px;
-    background: transparent;
-    cursor: pointer;
-}
-
-/* Track */
-#rf-gain-slider::-webkit-slider-runnable-track,
-#af-gain-slider::-webkit-slider-runnable-track {
-    height: 4px;
-    border-radius: 3px;
-    background: linear-gradient(
-        to right,
-        #087dc5 0%,
-        #087dc5 50%,
-        #35434d 50%,
-        #35434d 100%
-    );
-    border: 1px solid #4b5b66;
-}
-
-/* Knob */
-#rf-gain-slider::-webkit-slider-thumb,
-#af-gain-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-
-    width: 16px;
-    height: 16px;
-
-    margin-top: -7px;
-
-    border-radius: 50%;
-    border: 2px solid #d7e0e6;
-    background: #18232b;
-
-    box-shadow:
-        0 0 0 2px #087dc5,
-        0 0 8px rgba(0, 170, 255, 0.45);
-
-    transition:
-        transform 0.12s ease,
-        box-shadow 0.12s ease;
-}
-
-#rf-gain-slider::-webkit-slider-thumb:hover,
-#af-gain-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
-    box-shadow:
-        0 0 0 2px #00aaff,
-        0 0 12px rgba(0, 170, 255, 0.65);
-}
-
-/* Firefox */
-#rf-gain-slider::-moz-range-track,
-#af-gain-slider::-moz-range-track {
-    height: 4px;
-    border-radius: 3px;
-    background: #35434d;
-    border: 1px solid #4b5b66;
-}
-
-#rf-gain-slider::-moz-range-progress,
-#af-gain-slider::-moz-range-progress {
-    height: 4px;
-    border-radius: 3px;
-    background: #087dc5;
-}
-
-#rf-gain-slider::-moz-range-thumb,
-#af-gain-slider::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-
-    border-radius: 50%;
-    border: 2px solid #d7e0e6;
-    background: #18232b;
-
-    box-shadow:
-        0 0 0 2px #087dc5,
-        0 0 8px rgba(0, 170, 255, 0.45);
-}
-
-/* DSP — active state */
-.dsp-line .toggle-button.dsp-on {
-    background: #20382a;
-    border-color: #78c878;
-    color: #b9f0b9;
-    box-shadow: 0 0 5px rgba(100, 210, 120, 0.18);
-}
-
-/* ============================================================
-   TX POWER SLIDER — SHACK-SERVER
-   ============================================================ */
-
-.power-slider {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 100%;
-    height: 22px;
-    background: transparent;
-    cursor: pointer;
-}
-
-/* Track */
-.power-slider::-webkit-slider-runnable-track {
-    height: 4px;
-    border-radius: 3px;
-    background: #35434d;
-    border: 1px solid #4b5b66;
-}
-
-/* Round power knob */
-.power-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-
-    width: 18px;
-    height: 18px;
-
-    margin-top: -8px;
-
-    border-radius: 50%;
-    border: 2px solid #d7e0e6;
-    background: #18232b;
-
-    box-shadow:
-        0 0 0 2px #087dc5,
-        0 0 10px rgba(0, 170, 255, 0.45);
-
-    transition:
-        transform 0.12s ease,
-        box-shadow 0.12s ease;
-}
-
-.power-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.12);
-    box-shadow:
-        0 0 0 2px #00aaff,
-        0 0 14px rgba(0, 170, 255, 0.65);
-}
-
-/* Firefox */
-.power-slider::-moz-range-track {
-    height: 4px;
-    border-radius: 3px;
-    background: #35434d;
-    border: 1px solid #4b5b66;
-}
-
-.power-slider::-moz-range-progress {
-    height: 4px;
-    border-radius: 3px;
-    background: #087dc5;
-}
-
-.power-slider::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-
-    border-radius: 50%;
-    border: 2px solid #d7e0e6;
-    background: #18232b;
-
-    box-shadow:
-        0 0 0 2px #087dc5,
-        0 0 10px rgba(0, 170, 255, 0.45);
-}
-
-/* ============================================================
-   TX POWER — ROUND DISPLAY
-   ============================================================ */
-
-.power-ring {
-    width: 108px;
-    height: 108px;
-    margin: 2px auto 4px;
-
-    border-radius: 50%;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    position: relative;
-
-    background:
-        radial-gradient(
-            circle,
-            #18232b 0%,
-            #18232b 62%,
-            #111a20 63%,
-            #111a20 100%
-        );
-
-    border: 3px solid #087dc5;
-
-    box-shadow:
-        0 0 0 1px #4b5b66,
-        0 0 12px rgba(0, 170, 255, 0.20),
-        inset 0 0 12px rgba(0, 0, 0, 0.45);
-}
-
-.power-ring::before {
-    content: "";
-    position: absolute;
-
-    inset: -6px;
-
-    border-radius: 50%;
-
-    border: 1px solid #35434d;
-}
-
-.power-ring-value {
-    position: relative;
-
-    color: #e4ebef;
-    font-size: 20px;
-    font-weight: 500;
-    line-height: 1;
-}
-
-.power-ring-label {
-    position: relative;
-
-    margin-top: 5px;
-
-    color: #78909c;
-    font-size: 8px;
-    letter-spacing: 1.2px;
-}
-
-.power-panel .power-slider {
-    display: none;
-}
-
-.power-panel .slider-labels {
-    margin-top: 3px;
-}
-
-/* MODE control — transparent TX red */
-.vfo-control-badge.mode-control.active {
-    background: rgba(214, 40, 40, 0.22);
-    border-color: rgba(255, 70, 70, 0.75);
-    color: #ff8a8a;
-    box-shadow: inset 0 0 8px rgba(214, 40, 40, 0.10);
-}
-
-.vfo-control-badge.mode-control.active .badge-label {
-    color: #e87878;
-}
-
-.vfo-control-badge.mode-control.active .badge-value {
-    color: #ffaaaa;
-}
