@@ -5,7 +5,6 @@ import { FTDX10_CAT } from "./ftdx10/ftdx10.cat.js";
 export class Ftdx10Service implements RadioService {
     private port: SerialPort;
     private buffer = "";
-
     private frequency = 0;
     private frequencyB = 0;
     private mode = "UNKNOWN";
@@ -87,6 +86,8 @@ export class Ftdx10Service implements RadioService {
             console.log("FTDX10 CAT disconnected");
         });
     }
+
+
 
     start(): void {
         if (!this.device) {
@@ -635,22 +636,53 @@ export class Ftdx10Service implements RadioService {
         }
     }
 
-    setFrequency(frequency: number): void {
-        if (!Number.isFinite(frequency)) {
-            throw new Error("Invalid frequency");
-        }
-
-        const value = Math.round(frequency);
-
-        if (value < 30000 || value > 75000000) {
-            throw new Error("Frequency out of range");
-        }
-
-        this.send(FTDX10_CAT.vfoA.set(value));
-
-        this.frequency = Math.round(frequency);
+setFrequency(frequency: number): void {
+    if (!Number.isFinite(frequency)) {
+        throw new Error("Invalid frequency");
     }
 
+    const value = Math.round(frequency);
+
+    if (value < 30000 || value > 75000000) {
+        throw new Error("Frequency out of range");
+    }
+
+    this.send(FTDX10_CAT.vfoA.set(value));
+
+    this.frequency = value;
+}
+
+setFrequencyA(frequency: number): void {
+    if (!Number.isFinite(frequency)) {
+        throw new Error("Invalid frequency");
+    }
+
+    const value = Math.round(frequency);
+
+    if (value < 30000 || value > 75000000) {
+        throw new Error("Frequency out of range");
+    }
+
+    this.send(FTDX10_CAT.vfoA.set(value));
+
+    this.frequency = value;
+}
+
+setFrequencyB(frequency: number): void {
+    if (!Number.isFinite(frequency)) {
+        throw new Error("Invalid frequency");
+    }
+
+    const value = Math.round(frequency);
+
+    if (value < 30000 || value > 75000000) {
+        throw new Error("Frequency out of range");
+    }
+
+    this.send(FTDX10_CAT.vfoB.set(value));
+
+    this.frequencyB = value;
+}
     setMode(mode: string, _frequency: number): void {
         const modes: Record<string, string> = {
             LSB: "1",
@@ -802,6 +834,18 @@ export class Ftdx10Service implements RadioService {
 
         this.nbLevel = Number(match[1]);
     }
+
+	setPtt(enabled: boolean): void {
+    		if (!this.port.isOpen) {
+        	return;
+    }
+
+    this.send(
+        enabled
+            ? FTDX10_CAT.ptt.on
+            : FTDX10_CAT.ptt.off
+    );
+}
 
     getFrequency(): number {
         return this.frequency;

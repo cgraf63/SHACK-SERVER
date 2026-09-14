@@ -23,18 +23,6 @@ export interface ShackSettings {
 
     club?: string;
 
-    audio: {
-
-        enabled: boolean;
-
-        device: string;
-
-        sampleRate: number;
-
-        channels: number;
-
-    };
-
     sources: {
 
         dxspider: boolean;
@@ -59,18 +47,6 @@ export const shackSettings: ShackSettings = {
     locator: "JN36FL",
 
     club: "HB9OM",
-
-    audio: {
-
-        enabled: true,
-
-        device: "hw:CARD=CODEC,DEV=0",
-
-        sampleRate: 48000,
-
-        channels: 1
-
-    },
 
     sources: {
 

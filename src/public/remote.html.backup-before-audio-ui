@@ -430,7 +430,6 @@
                 <button class="quick-button">CW-SPEED</button>
                 <button class="quick-button">MIC GAIN</button>
                 <button class="quick-button">MIC EQ</button>
-                <button class="quick-button" id="audio-toggle">Audio On</button>
             </div>
 
         </div>

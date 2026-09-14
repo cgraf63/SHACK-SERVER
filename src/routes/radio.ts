@@ -234,7 +234,71 @@ router.get(
     }
 );
 
+/*
+    PTT
+*/
 
+router.post(
+    "/radio/ptt",
+    (req, res) => {
+
+        const {
+            enabled
+        } = req.body;
+
+        if (
+            typeof enabled !== "boolean"
+        ) {
+
+            return res.status(400).json({
+
+                error:
+                    "Invalid PTT state"
+
+            });
+
+        }
+
+        const activeRadio =
+            radioManager.getActiveRadio();
+
+        if (!activeRadio) {
+
+            return res.status(503).json({
+
+                error:
+                    "No active radio"
+
+            });
+
+        }
+
+        if (
+            typeof (activeRadio as any).setPtt !== "function"
+        ) {
+
+            return res.status(400).json({
+
+                error:
+                    "PTT not supported by active radio"
+
+            });
+
+        }
+
+        (activeRadio as any).setPtt(
+            enabled
+        );
+
+        res.json({
+
+            success: true,
+            ptt: enabled
+
+        });
+
+    }
+);
 /*
     Select active radio
 */
@@ -352,6 +416,77 @@ router.post(
 /*
     Tune active radio
 */
+
+/*
+    Set frequency of active VFO
+*/
+router.post(
+    "/radio/frequency",
+    (req, res) => {
+
+        const { frequency } = req.body;
+
+        const activeRadio =
+            radioManager.getActiveRadio();
+
+        if (!activeRadio) {
+            return res.status(503).json({
+                error: "No active radio"
+            });
+        }
+
+        if (
+            typeof frequency !== "number" ||
+            !Number.isFinite(frequency)
+        ) {
+            return res.status(400).json({
+                error: "Invalid frequency"
+            });
+        }
+
+        const activeVfo =
+            typeof (activeRadio as any).getActiveVfo === "function"
+                ? (activeRadio as any).getActiveVfo()
+                : "A";
+
+        if (activeVfo === "A") {
+
+            if (
+                typeof (activeRadio as any).setFrequencyA !== "function"
+            ) {
+                return res.status(501).json({
+                    error: "VFO A frequency control not supported"
+                });
+            }
+
+            (activeRadio as any).setFrequencyA(frequency);
+
+        } else {
+
+            if (
+                typeof (activeRadio as any).setFrequencyB !== "function"
+            ) {
+                return res.status(501).json({
+                    error: "VFO B frequency control not supported"
+                });
+            }
+
+            (activeRadio as any).setFrequencyB(frequency);
+        }
+
+        console.log(
+            "RADIO FREQUENCY:",
+            activeVfo,
+            frequency
+        );
+
+        return res.json({
+            success: true,
+            activeVfo,
+            frequency
+        });
+    }
+);
 
 router.post(
     "/radio/tune",

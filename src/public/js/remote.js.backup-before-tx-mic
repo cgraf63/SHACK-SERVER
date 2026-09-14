@@ -791,7 +791,7 @@ vfoDisplays.forEach(display => {
     console.log("AUDIO: UI initialized");
 })();
 
-/* SHACK-SERVER PTT TOGGLE + TX AUDIO */
+/* SHACK-SERVER PTT TOGGLE */
 (() => {
     const pttButton = document.querySelector(".ptt-button");
 
@@ -803,345 +803,38 @@ vfoDisplays.forEach(display => {
     let pttActive = false;
     let pttBusy = false;
 
-    let txSocket = null;
-    let micStream = null;
-    let audioContext = null;
-    let micSource = null;
-    let processor = null;
-    let silentGain = null;
-
-    function getTxAudioUrl() {
-        const protocol =
-            window.location.protocol === "https:"
-                ? "wss:"
-                : "ws:";
-
-        return `${protocol}//${window.location.host}/audio-tx`;
-    }
-
-    async function setCatPtt(enabled) {
-        const response = await fetch("/api/radio/ptt", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                enabled
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`PTT HTTP ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (
-            result.success !== true ||
-            result.ptt !== enabled
-        ) {
-            throw new Error("Invalid PTT response");
-        }
-    }
-
-    async function openTxSocket() {
-        return new Promise((resolve, reject) => {
-            const socket =
-                new WebSocket(getTxAudioUrl());
-
-            socket.binaryType = "arraybuffer";
-
-            socket.addEventListener("open", () => {
-                console.log("TX AUDIO: WebSocket connected");
-                txSocket = socket;
-                resolve();
-            }, { once: true });
-
-            socket.addEventListener("error", () => {
-                reject(new Error("TX AUDIO WebSocket error"));
-            }, { once: true });
-
-            socket.addEventListener("close", () => {
-                if (txSocket === socket) {
-                    txSocket = null;
-                }
-
-                console.log("TX AUDIO: WebSocket closed");
-            });
-        });
-    }
-
-    function stopMicrophone() {
-        if (processor) {
-            try {
-                processor.disconnect();
-            } catch (_) {}
-
-            processor.onaudioprocess = null;
-            processor = null;
-        }
-
-        if (micSource) {
-            try {
-                micSource.disconnect();
-            } catch (_) {}
-
-            micSource = null;
-        }
-
-        if (silentGain) {
-            try {
-                silentGain.disconnect();
-            } catch (_) {}
-
-            silentGain = null;
-        }
-
-        if (micStream) {
-            for (const track of micStream.getTracks()) {
-                track.stop();
-            }
-
-            micStream = null;
-        }
-
-        if (audioContext) {
-            try {
-                audioContext.close();
-            } catch (_) {}
-
-            audioContext = null;
-        }
-    }
-
-    function closeTxSocket() {
-        if (!txSocket) {
-            return;
-        }
-
-        const socket = txSocket;
-        txSocket = null;
-
-        try {
-            socket.close();
-        } catch (_) {}
-    }
-
-    async function startMicrophone() {
-        if (
-            !navigator.mediaDevices ||
-            !navigator.mediaDevices.getUserMedia
-        ) {
-            throw new Error(
-                "Mikrofonzugriff nicht verfügbar. HTTPS erforderlich."
-            );
-        }
-
-        console.log("TX AUDIO: requesting microphone");
-
-        micStream =
-            await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    channelCount: 1,
-                    sampleRate: 48000,
-                    echoCancellation: false,
-                    noiseSuppression: false,
-                    autoGainControl: false
-                }
-            });
-
-        audioContext =
-            new AudioContext({
-                sampleRate: 48000
-            });
-
-        if (audioContext.state === "suspended") {
-            await audioContext.resume();
-        }
-
-        console.log(
-            `TX AUDIO: AudioContext ${audioContext.sampleRate}Hz`
-        );
-
-        micSource =
-            audioContext.createMediaStreamSource(
-                micStream
-            );
-
-        /*
-         * ScriptProcessorNode ist hier bewusst gewählt:
-         * Wir benötigen rohe 16-bit PCM-Daten für aplay.
-         */
-        processor =
-            audioContext.createScriptProcessor(
-                4096,
-                1,
-                1
-            );
-
-        /*
-         * Der Prozessor muss mit dem Audio-Graph verbunden sein,
-         * damit die Callback-Verarbeitung zuverlässig läuft.
-         * Der Gain steht auf 0, damit wir unser Mikrofon nicht
-         * über die Lautsprecher zurückhören.
-         */
-        silentGain =
-            audioContext.createGain();
-
-        silentGain.gain.value = 0;
-
-        processor.onaudioprocess = (event) => {
-            if (
-                !txSocket ||
-                txSocket.readyState !== WebSocket.OPEN ||
-                !pttActive
-            ) {
-                return;
-            }
-
-            const input =
-                event.inputBuffer.getChannelData(0);
-
-            const buffer =
-                new ArrayBuffer(input.length * 2);
-
-            const view =
-                new DataView(buffer);
-
-            for (let i = 0; i < input.length; i++) {
-                let sample = input[i];
-
-                if (sample > 1) {
-                    sample = 1;
-                } else if (sample < -1) {
-                    sample = -1;
-                }
-
-                const value =
-                    sample < 0
-                        ? sample * 0x8000
-                        : sample * 0x7fff;
-
-                view.setInt16(
-                    i * 2,
-                    value,
-                    true
-                );
-            }
-
-            txSocket.send(buffer);
-        };
-
-        micSource.connect(processor);
-        processor.connect(silentGain);
-        silentGain.connect(audioContext.destination);
-
-        console.log("TX AUDIO: microphone streaming ready");
-    }
-
-    async function startTx() {
-        if (pttBusy || pttActive) {
-            return;
-        }
+    async function setPtt(enabled) {
+        if (pttBusy) return;
 
         pttBusy = true;
         pttButton.disabled = true;
 
         try {
-            /*
-             * Erst Mikrofon vorbereiten.
-             */
-            await startMicrophone();
+            const response = await fetch("/api/radio/ptt", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    enabled
+                })
+            });
 
-            /*
-             * Dann TX-WebSocket öffnen.
-             */
-            await openTxSocket();
-
-            /*
-             * Erst jetzt CAT wirklich auf TX.
-             */
-            await setCatPtt(true);
-
-            pttActive = true;
-
-            pttButton.classList.add("active");
-            pttButton.textContent = "TX ACTIVE";
-
-            console.log("PTT: TX ACTIVE");
-
-        } catch (error) {
-            console.error("PTT TX:", error);
-
-            /*
-             * Sicherheit: alles wieder schließen.
-             */
-            stopMicrophone();
-            closeTxSocket();
-
-            /*
-             * Falls CAT eventuell bereits auf TX ging,
-             * sicherheitshalber wieder RX setzen.
-             */
-            try {
-                await setCatPtt(false);
-            } catch (rxError) {
-                console.error(
-                    "PTT: failed to restore RX",
-                    rxError
-                );
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
 
-            pttActive = false;
-            pttButton.classList.remove("active");
-            pttButton.textContent = "PTT";
+            const result = await response.json();
 
-        } finally {
-            pttBusy = false;
-            pttButton.disabled = false;
-        }
-    }
+            if (result.success !== true || result.ptt !== enabled) {
+                throw new Error("Invalid PTT response");
+            }
 
-    async function stopTx() {
-        if (pttBusy || !pttActive) {
-            return;
-        }
-
-        pttBusy = true;
-        pttButton.disabled = true;
-
-        try {
-            /*
-             * Kein weiteres Mikrofon-Audio senden.
-             */
-            pttActive = false;
-
-            stopMicrophone();
-            closeTxSocket();
-
-            /*
-             * CAT zurück auf RX.
-             */
-            await setCatPtt(false);
-
-            pttButton.classList.remove("active");
-            pttButton.textContent = "PTT";
-
-            console.log("PTT: RX");
+            pttActive = enabled;
+            pttButton.classList.toggle("active", pttActive);
 
         } catch (error) {
-            console.error("PTT RX:", error);
-
-            /*
-             * Auch bei Fehlern lokale Audio-Ressourcen freigeben.
-             */
-            stopMicrophone();
-            closeTxSocket();
-
-            pttActive = false;
-            pttButton.classList.remove("active");
-            pttButton.textContent = "PTT";
-
+            console.error("PTT:", error);
         } finally {
             pttBusy = false;
             pttButton.disabled = false;
@@ -1149,19 +842,7 @@ vfoDisplays.forEach(display => {
     }
 
     pttButton.addEventListener("click", () => {
-        if (pttActive) {
-            stopTx();
-        } else {
-            startTx();
-        }
-    });
-
-    /*
-     * Beim Verlassen der Seite lokale Audio-Ressourcen stoppen.
-     */
-    window.addEventListener("beforeunload", () => {
-        pttActive = false;
-        stopMicrophone();
-        closeTxSocket();
+        setPtt(!pttActive);
     });
 })();
+

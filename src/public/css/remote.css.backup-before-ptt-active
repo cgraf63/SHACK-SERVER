@@ -1775,21 +1775,3 @@ button.active {
     box-shadow: 0 0 8px rgba(0, 170, 255, 0.25);
 }
 
-
-/* SHACK-SERVER PTT ACTIVE */
-.ptt-button.active {
-    background: #d32f2f;
-    border-color: #ff5252;
-    color: #ffffff;
-    box-shadow:
-        0 0 8px #ff3333,
-        0 0 20px #ff3333,
-        0 0 40px rgba(255, 40, 40, 0.80),
-        0 0 70px rgba(255, 40, 40, 0.45);
-    font-weight: 700;
-}
-
-.ptt-button.active:hover {
-    background: #e53935;
-}
-
