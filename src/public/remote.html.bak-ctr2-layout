@@ -58,11 +58,24 @@
         <!-- VFO A -->
         <div class="panel vfo-panel">
 
-            <div class="vfo-panel-header">
-                <div class="panel-title">VFO A</div>
+            <div class="panel-title">VFO A</div>
 
+            <div class="ctr2-control">
+                <button
+                    type="button"
+                    id="ctr2-connect"
+                    class="ctr2-connect-button"
+                >
+                    CONNECT CTR2
+                </button>
+
+                <span
+                    id="ctr2-status"
+                    class="ctr2-status"
+                >
+                    DISCONNECTED
+                </span>
             </div>
-
 
 	    <div class="vfo-status">
 
@@ -436,20 +449,6 @@
                 <button class="quick-button">MIC GAIN</button>
                 <button class="quick-button">MIC EQ</button>
                 <button class="quick-button" id="audio-toggle">Audio On</button>
-                <button
-                    class="quick-button ctr2-quick-button"
-                    id="ctr2-connect"
-                    type="button"
-                >
-                    CONNECT CTR2
-                </button>
-
-                <span
-                    id="ctr2-status"
-                    class="ctr2-status"
-                >
-                    DISCONNECTED
-                </span>
             </div>
 
         </div>

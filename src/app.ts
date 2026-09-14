@@ -6,6 +6,7 @@ import cors from "cors";
 import bestBandRouter from "./routes/best-band.js";
 import radioRouter from "./routes/radio.js";
 import qsoRouter from "./routes/qso.js";
+import watchlistRouter from "./routes/watchlist.js";
 import systemRouter from "./routes/system.js";
 import diagnosticsRouter from "./routes/diagnostics.js";
 import settingsRouter from "./routes/settings.js";
@@ -106,6 +107,11 @@ app.use(
 app.use(
     "/api/qso",
     qsoRouter
+);
+
+app.use(
+    "/api/watchlist",
+    watchlistRouter
 );
 
 

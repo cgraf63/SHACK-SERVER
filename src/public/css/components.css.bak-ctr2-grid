@@ -3334,21 +3334,19 @@ D.sidebar.collapsed {
    ========================================================= */
 
 .vfo-panel-header {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: start;
-    width: 100%;
+    position: relative;
 }
 
 .ctr2-control {
-    position: static;
+    position: absolute;
+    top: 0;
+    right: 0;
 
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: 3px;
 
-    justify-self: end;
     z-index: 5;
 }
 

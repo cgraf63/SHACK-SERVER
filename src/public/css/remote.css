@@ -1793,3 +1793,27 @@ button.active {
     background: #e53935;
 }
 
+/* CTR2 VFO button */
+.ctr2-quick-button {
+    background:
+        linear-gradient(
+            180deg,
+            #3b3820 0%,
+            #242313 100%
+        ) !important;
+
+    color: #f0d96a !important;
+    border-color: #7d7438 !important;
+    font-weight: bold;
+}
+
+.ctr2-quick-button:hover {
+    background:
+        linear-gradient(
+            180deg,
+            #4a4526 0%,
+            #302d18 100%
+        ) !important;
+
+    border-color: #aaa04d !important;
+}

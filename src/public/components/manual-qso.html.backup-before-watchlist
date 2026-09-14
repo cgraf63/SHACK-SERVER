@@ -49,11 +49,6 @@
             class="manual-qso-watch-alert"
         ></div>
 
-        <div
-            id="manual-qso-watch-list"
-            class="manual-qso-watch-list"
-        ></div>
-
     </div>
 
 
@@ -181,26 +176,6 @@
         >
             → QSO
         </button>
-
-    </div>
-
-
-        <button
-            type="button"
-            id="manual-qso-add-watch"
-            class="manual-qso-add-watch"
-        >ADD TO WATCH</button>
-
-    <div class="manual-qso-watch-list">
-
-        <div class="manual-qso-watch-list-title">
-            WATCH LIST
-        </div>
-
-        <div
-            id="manual-qso-watch-list-items"
-            class="manual-qso-watch-list-items"
-        ></div>
 
     </div>
 

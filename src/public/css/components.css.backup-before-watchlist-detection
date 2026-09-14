@@ -209,7 +209,7 @@
 
     color: #ffd54a;
 
-    font-size: 12px !important;
+    font-size: 12px;
 
     text-align: right;
 
@@ -2643,7 +2643,6 @@ if (slider) {
 
 #dx-opportunity-value {
     white-space: nowrap;
-    font-size: 12px;
 }
 .dx-opportunity-call,
 .priority-call {
@@ -2704,11 +2703,15 @@ if (slider) {
 }
 
 .manual-qso-watch-list {
-    margin-top: 5px;
+    margin-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .manual-qso-watch-list-title {
-    display: none;
+    padding: 10px 6px 7px;
+    color: var(--cyan);
+    font-size: 13px;
+    font-weight: bold;
 }
 
 .manual-qso-watch-list-items {
@@ -2719,31 +2722,14 @@ if (slider) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 24px;
-    padding: 1px 6px;
+    min-height: 30px;
+    padding: 3px 6px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     font-size: 12px;
 }
 
 .manual-qso-watch-item-call {
     color: var(--text);
-    flex: 1;
-}
-
-.manual-qso-watch-item-status {
-    margin-left: 8px;
-}
-
-.manual-qso-watch-detected-button {
-    display: inline-block;
-    padding: 2px 7px;
-    border: 1px solid #00ff00;
-    border-radius: 3px;
-    color: #00ff00;
-    background: rgba(0, 255, 0, 0.10);
-    font-size: 9px;
-    font-weight: bold;
-    box-shadow: 0 0 6px rgba(0, 255, 0, 0.45);
 }
 
 .manual-qso-watch-remove {
@@ -3327,62 +3313,3 @@ D.sidebar.collapsed {
 .memory-button:active {
     transform: translateY(1px);
 }
-
-
-/* =========================================================
-   CTR2-MIDI HID VFO
-   ========================================================= */
-
-.vfo-panel-header {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: start;
-    width: 100%;
-}
-
-.ctr2-control {
-    position: static;
-
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 3px;
-
-    justify-self: end;
-    z-index: 5;
-}
-
-.ctr2-connect-button {
-    padding: 4px 9px;
-
-    border: 1px solid #ff9d00;
-    border-radius: 3px;
-
-    background: transparent;
-    color: #ff9d00;
-
-    font-size: 9px;
-    font-weight: bold;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 0 5px rgba(255, 157, 0, 0.25);
-}
-
-.ctr2-connect-button:hover {
-    background: rgba(255, 157, 0, 0.10);
-
-    box-shadow:
-        0 0 8px rgba(255, 157, 0, 0.45);
-}
-
-.ctr2-status {
-    font-size: 8px;
-    color: var(--muted);
-}
-
-.ctr2-status.connected {
-    color: #ff9d00;
-}
-

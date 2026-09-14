@@ -3333,23 +3333,19 @@ D.sidebar.collapsed {
    CTR2-MIDI HID VFO
    ========================================================= */
 
-.vfo-panel-header {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: start;
-    width: 100%;
+.vfo-panel {
+    position: relative;
 }
 
 .ctr2-control {
-    position: static;
+    position: absolute;
+    top: 10px;
+    right: 10px;
 
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: 3px;
-
-    justify-self: end;
-    z-index: 5;
 }
 
 .ctr2-connect-button {

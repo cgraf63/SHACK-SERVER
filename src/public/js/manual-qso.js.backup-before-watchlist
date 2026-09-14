@@ -266,26 +266,6 @@ const viewButton =
             "manual-qso-watch-alert"
         );
 
-    const watchAddButton =
-        document.getElementById(
-            "manual-qso-add-watch"
-        );
-
-    const watchListElement =
-        document.getElementById(
-            "manual-qso-watch-list-items"
-        );
-
-    let watchList =
-        JSON.parse(
-            localStorage.getItem(
-                "shack-server-watch-list"
-            ) || "[]"
-        );
-
-    let watchDetectedCalls = new Set();
-    let watchDetectedTimers = new Map();
-
     let watchBaselinePending = true;
     let watchSeenSpots = new Set();
     let watchTimer = null;
@@ -409,177 +389,6 @@ const viewButton =
     }
 
 
-    function saveWatchList() {
-
-        localStorage.setItem(
-            "shack-server-watch-list",
-            JSON.stringify(watchList)
-        );
-
-    }
-
-
-    function renderWatchList() {
-
-        if (!watchListElement) {
-            return;
-        }
-
-        watchListElement.innerHTML = "";
-
-        for (const callsign of watchList) {
-
-            const row =
-                document.createElement("div");
-
-            row.className =
-                "manual-qso-watch-item";
-
-            const detected =
-                watchDetectedCalls.has(callsign);
-
-            row.innerHTML = `
-                <span class="manual-qso-watch-item-call">
-                    ${callsign}
-                </span>
-
-                <span class="manual-qso-watch-item-status">
-                    ${
-                        detected
-                            ? '<span class="manual-qso-watch-detected-button">DETECTED!</span>'
-                            : ""
-                    }
-                </span>
-
-                <button
-                    type="button"
-                    class="manual-qso-watch-remove"
-                    data-callsign="${callsign}"
-                    title="Remove from watch list"
-                >×</button>
-            `;
-
-            watchListElement.appendChild(row);
-
-        }
-
-    }
-
-
-    function markWatchDetected(callsign) {
-
-        watchDetectedCalls.add(
-            callsign
-        );
-
-        if (
-            watchDetectedTimers.has(callsign)
-        ) {
-            clearTimeout(
-                watchDetectedTimers.get(callsign)
-            );
-        }
-
-        watchDetectedTimers.set(
-            callsign,
-            setTimeout(
-                () => {
-
-                    watchDetectedCalls.delete(
-                        callsign
-                    );
-
-                    watchDetectedTimers.delete(
-                        callsign
-                    );
-
-                    renderWatchList();
-
-                },
-                30000
-            )
-        );
-
-        renderWatchList();
-
-    }
-
-
-    if (watchAddButton) {
-
-        watchAddButton.addEventListener(
-            "click",
-            () => {
-
-                const callsign =
-                    callInput.value
-                        .trim()
-                        .toUpperCase();
-
-                if (
-                    !callsign ||
-                    watchList.includes(callsign)
-                ) {
-                    return;
-                }
-
-                watchList.push(callsign);
-
-                saveWatchList();
-                renderWatchList();
-
-                watchCheckbox.checked = true;
-
-                clearWatchAlert();
-
-                watchSeenSpots =
-                    new Set();
-
-                watchBaselinePending = true;
-
-            }
-        );
-
-    }
-
-
-    if (watchListElement) {
-
-        watchListElement.addEventListener(
-            "click",
-            (event) => {
-
-                const button =
-                    event.target.closest(
-                        ".manual-qso-watch-remove"
-                    );
-
-                if (!button) {
-                    return;
-                }
-
-                const callsign =
-                    button.dataset.callsign;
-
-                watchList =
-                    watchList.filter(
-                        call => call !== callsign
-                    );
-
-                saveWatchList();
-                renderWatchList();
-
-                clearWatchAlert();
-
-            }
-        );
-
-    }
-
-
-    renderWatchList();
-
-
     window.checkManualQsoWatch =
         function(spots) {
 
@@ -591,7 +400,13 @@ const viewButton =
             }
 
 
-            if (!watchList.length) {
+            const wantedCall =
+                callInput.value
+                    .trim()
+                    .toUpperCase();
+
+
+            if (!wantedCall) {
                 return;
             }
 
@@ -639,7 +454,7 @@ const viewButton =
 
 
                 if (
-                    !watchList.includes(spotCall)
+                    spotCall !== wantedCall
                 ) {
                     continue;
                 }
@@ -661,16 +476,6 @@ const viewButton =
                 showWatchDetection(
                     spot
                 );
-
-                if (
-                    watchList.includes(
-                        spotCall
-                    )
-                ) {
-                    markWatchDetected(
-                        spotCall
-                    );
-                }
 
                 break;
 

@@ -156,23 +156,9 @@ export function startAudioWebSocket(
 
     const wss =
         new WebSocketServer({
-            noServer: true
+            server,
+            path: "/audio"
         });
-
-    server.on("upgrade", (request, socket, head) => {
-        const pathname = new URL(
-            request.url ?? "/",
-            "http://localhost"
-        ).pathname;
-
-        if (pathname !== "/audio") {
-            return;
-        }
-
-        wss.handleUpgrade(request, socket, head, (ws) => {
-            wss.emit("connection", ws, request);
-        });
-    });
 
 
     wss.on(
@@ -387,23 +373,9 @@ function startTxAudioWebSocket(
 
     const wss =
         new WebSocketServer({
-            noServer: true
+            server,
+            path: "/audio-tx"
         });
-
-    server.on("upgrade", (request, socket, head) => {
-        const pathname = new URL(
-            request.url ?? "/",
-            "http://localhost"
-        ).pathname;
-
-        if (pathname !== "/audio-tx") {
-            return;
-        }
-
-        wss.handleUpgrade(request, socket, head, (ws) => {
-            wss.emit("connection", ws, request);
-        });
-    });
 
 
     wss.on(
