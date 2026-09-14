@@ -735,34 +735,6 @@ async function updateStationInline() {
             card
         );
 
-        const remoteButton =
-            document.createElement("button");
-
-        remoteButton.className =
-            "station-remote-button";
-
-        remoteButton.type =
-            "button";
-
-        remoteButton.textContent =
-            "FTDX10";
-
-        remoteButton.addEventListener(
-            "click",
-            (event) => {
-
-                event.stopPropagation();
-
-                window.location.href =
-                    "/remote.html";
-
-            }
-        );
-
-        wrapper.appendChild(
-            remoteButton
-        );
-
         station.appendChild(
             wrapper
         );
