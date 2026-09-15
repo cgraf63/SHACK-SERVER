@@ -2478,7 +2478,7 @@ img.flag {
     margin: 4px 0 0 8px;
 
     writing-mode: vertical-lr;
-    direction: rtl;
+    direction: ltr;
 
     cursor: pointer;
 
