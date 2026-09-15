@@ -549,6 +549,7 @@ router.post(
             "SSB",
             "CW",
             "CW-R",
+            "CW-L",
             "AM",
             "FM"
         ];

@@ -958,35 +958,55 @@ function mapSpotModeToRgo(
     const normalized =
         String(mode || "").toUpperCase();
 
-    /*
-        All CW signals are tuned as CW-L.
-        This also covers CW-R.
-    */
+    if (
+        normalized === "SSB"
+    ) {
+
+        if (
+            frequencyHz < 10000000
+        ) {
+
+            return "LSB";
+
+        }
+
+        return "USB";
+
+    }
 
     if (
-        normalized === "CW" ||
+        normalized === "CW"
+    ) {
+
+        return "CW";
+
+    }
+
+    if (
         normalized === "CW-R"
     ) {
 
-        return "CW-L";
+        return "CW-R";
 
     }
-
-    /*
-        All other modes:
-        below 10 MHz -> LSB
-        10 MHz+      -> USB
-    */
 
     if (
-        frequencyHz < 10000000
+        normalized === "AM"
     ) {
 
-        return "LSB";
+        return "AM";
 
     }
 
-    return "USB";
+    if (
+        normalized === "FM"
+    ) {
+
+        return "FM";
+
+    }
+
+    return null;
 
 }
 
@@ -1641,6 +1661,26 @@ if (tuneButton) {
                         spotMode
                 }
             );
+
+
+            /*
+                FT8 vorerst nicht tunen
+            */
+
+            if (
+                !spotMode ||
+                spotMode.toUpperCase() ===
+                    "FT8"
+            ) {
+
+                console.log(
+                    "Radio tune skipped:",
+                    spotMode
+                );
+
+                return;
+
+            }
 
 
             const frequencyKHz =

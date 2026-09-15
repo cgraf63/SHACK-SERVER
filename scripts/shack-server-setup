@@ -1,0 +1,250 @@
+#!/bin/bash
+
+# ============================================================
+# SHACK-SERVER Setup Assistant
+# Beginner-friendly configuration helper
+# ============================================================
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+ENV_FILE="$PROJECT_DIR/.env"
+
+clear
+
+echo
+echo "============================================================"
+echo "              SHACK-SERVER Setup Assistant"
+echo "============================================================"
+echo
+echo "Dieser Assistent hilft bei der Grundkonfiguration."
+echo
+echo "Station, DXSpider, HolyCluster und DX Summit werden"
+echo "anschliessend über die Settings-Seite des SHACK-SERVER"
+echo "konfiguriert."
+echo
+echo "Geändert werden hier nur die tatsächlich verwendeten"
+echo "Umgebungsvariablen."
+echo
+echo "============================================================"
+echo
+
+# ------------------------------------------------------------
+# Check project directory
+# ------------------------------------------------------------
+
+if [ ! -d "$PROJECT_DIR" ]; then
+    echo "FEHLER: SHACK-SERVER Verzeichnis nicht gefunden:"
+    echo "$PROJECT_DIR"
+    exit 1
+fi
+
+cd "$PROJECT_DIR"
+
+# ------------------------------------------------------------
+# Network check
+# ------------------------------------------------------------
+
+echo
+echo "1. Netzwerkprüfung"
+echo "------------------"
+
+HOSTNAME_NOW="$(hostname 2>/dev/null || true)"
+
+echo "Hostname: ${HOSTNAME_NOW:-unbekannt}"
+
+if command -v hostname >/dev/null 2>&1; then
+    IP_ADDRESS="$(hostname -I 2>/dev/null | awk '{print $1}')"
+else
+    IP_ADDRESS=""
+fi
+
+if [ -n "$IP_ADDRESS" ]; then
+    echo "IP-Adresse: $IP_ADDRESS"
+else
+    echo "IP-Adresse: konnte nicht ermittelt werden"
+fi
+
+if ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; then
+    echo "Internet: OK"
+else
+    echo "Internet: NICHT ERREICHBAR"
+    echo "Bitte zuerst die Netzwerkverbindung prüfen."
+fi
+
+# ------------------------------------------------------------
+# .env handling
+# ------------------------------------------------------------
+
+echo
+echo "2. Internet-Dienste"
+echo "-------------------"
+
+if [ -f "$ENV_FILE" ]; then
+    echo ".env gefunden."
+else
+    echo ".env wurde nicht gefunden."
+    echo "Eine neue Datei wird erstellt."
+    touch "$ENV_FILE"
+fi
+
+# Backup before changing anything
+BACKUP_FILE="$ENV_FILE.backup-$(date +%Y%m%d-%H%M%S)"
+
+cp "$ENV_FILE" "$BACKUP_FILE"
+chmod 600 "$ENV_FILE"
+
+echo "Backup erstellt:"
+echo "  $BACKUP_FILE"
+
+# ------------------------------------------------------------
+# Helper functions
+# ------------------------------------------------------------
+
+get_env_value() {
+    local key="$1"
+
+    if [ ! -f "$ENV_FILE" ]; then
+        echo ""
+        return
+    fi
+
+    grep -E "^${key}=" "$ENV_FILE" 2>/dev/null \
+        | tail -n 1 \
+        | cut -d '=' -f 2-
+}
+
+set_env_value() {
+    local key="$1"
+    local value="$2"
+
+    if grep -qE "^${key}=" "$ENV_FILE" 2>/dev/null; then
+        sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"
+    else
+        printf '%s=%s\n' "$key" "$value" >> "$ENV_FILE"
+    fi
+}
+
+ask_value() {
+    local label="$1"
+    local key="$2"
+
+    local old_value
+    old_value="$(get_env_value "$key")"
+
+    if [ -n "$old_value" ]; then
+        read -r -p "$label [$old_value]: " new_value
+        new_value="${new_value:-$old_value}"
+    else
+        read -r -p "$label: " new_value
+    fi
+
+    set_env_value "$key" "$new_value"
+}
+
+ask_secret() {
+    local label="$1"
+    local key="$2"
+
+    local old_value
+    old_value="$(get_env_value "$key")"
+
+    if [ -n "$old_value" ]; then
+        echo "$label"
+        echo "  Bereits vorhanden – ENTER = unverändert lassen."
+        read -r -s -p "  Neues Passwort/Token: " new_value
+        echo
+
+        if [ -n "$new_value" ]; then
+            set_env_value "$key" "$new_value"
+        fi
+    else
+        read -r -s -p "$label: " new_value
+        echo
+
+        set_env_value "$key" "$new_value"
+    fi
+}
+
+# ------------------------------------------------------------
+# Port
+# ------------------------------------------------------------
+
+echo
+echo "HTTP-Port des SHACK-SERVER"
+echo "ENTER = aktuellen Wert behalten."
+
+ask_value "PORT" "PORT"
+
+# ------------------------------------------------------------
+# QRZ
+# ------------------------------------------------------------
+
+echo
+echo "------------------------------------------------------------"
+echo "QRZ"
+echo "------------------------------------------------------------"
+echo
+echo "Die QRZ-Zugangsdaten werden nur in .env gespeichert."
+echo "Das QRZ-Passwort und der API-Key werden nicht angezeigt."
+echo
+
+ask_value "QRZ Benutzername" "QRZ_USER"
+ask_secret "QRZ Passwort" "QRZ_PASSWORD"
+ask_secret "QRZ API-Key" "QRZ_API_KEY"
+
+# ------------------------------------------------------------
+# Security
+# ------------------------------------------------------------
+
+chmod 600 "$ENV_FILE"
+
+# ------------------------------------------------------------
+# Summary
+# ------------------------------------------------------------
+
+echo
+echo "3. Konfiguration"
+echo "----------------"
+echo
+echo "Die grundlegenden Zugangsdaten wurden gespeichert."
+echo
+echo "Die folgenden Einstellungen werden NICHT in .env"
+echo "verwaltet:"
+echo
+echo "  - Callsign"
+echo "  - Operator"
+echo "  - Locator"
+echo "  - Club"
+echo "  - DXSpider 1–4"
+echo "  - HolyCluster"
+echo "  - DX Summit"
+echo
+echo "Diese Einstellungen befinden sich zentral in:"
+echo
+echo "  data/settings.json"
+echo
+echo "und können bequem über das Dashboard geändert werden."
+echo
+
+if [ -n "$IP_ADDRESS" ]; then
+    echo "Settings öffnen:"
+    echo
+    echo "  https://${IP_ADDRESS}/settings.html"
+else
+    echo "Settings öffnen über:"
+    echo
+    echo "  https://<SHACK-SERVER-IP>/settings.html"
+fi
+
+echo
+echo "------------------------------------------------------------"
+echo "Setup abgeschlossen."
+echo "------------------------------------------------------------"
+echo
+echo "Die .env-Datei wurde mit chmod 600 geschützt."
+echo
+echo "Backup:"
+echo "  $BACKUP_FILE"
+echo

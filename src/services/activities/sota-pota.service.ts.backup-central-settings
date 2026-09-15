@@ -1,8 +1,4 @@
 import * as net from "node:net";
-import { SettingsService } from "../settings/settings.service.js";
-
-const settingsService = new SettingsService();
-
 interface PotaSpot {
 
     activator: string;
@@ -186,8 +182,13 @@ console.log(
                 );
 
 
-		const login =
-    settingsService.get().callsign.trim();
+                const login =
+                    (
+                        process.env.STATION_CALLSIGN ||
+                        process.env.CALLSIGN ||
+                        "HB9ISO"
+                    ).trim();
+
 
                 socket.write(
                     `${login}\r\n`

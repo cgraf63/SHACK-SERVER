@@ -2,11 +2,6 @@ import {
     ShackSettings
 } from "../../config/settings.config.js";
 
-import {
-    operator
-} from "../../config/operator.config.js";
-
-
 export interface ClusterSource {
 
     name: string;

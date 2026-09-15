@@ -43,9 +43,28 @@
 
 
 
+        <a
+            href="#"
+            id="ft8-btn">
+            FT8
+        </a>
 
 
- 	
+ 	<a
+    href="#"
+    onclick="
+        window.open(
+            window.location.protocol +
+            '//' +
+            window.location.hostname +
+            ':8076/',
+            '_blank'
+        );
+        return false;
+    ">
+    TX5-DR
+</a>
+
 
 <a
     href="/contest-manager"

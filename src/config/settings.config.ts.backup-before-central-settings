@@ -52,13 +52,13 @@ export interface ShackSettings {
 
 export const shackSettings: ShackSettings = {
 
-    callsign: "",
+    callsign: "HB9ISO",
 
-    operatorName: "",
+    operatorName: "Christoph",
 
-    locator: "",
+    locator: "JN36FL",
 
-    club: "",
+    club: "HB9BC",
 
     audio: {
 

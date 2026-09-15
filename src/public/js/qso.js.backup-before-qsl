@@ -323,14 +323,6 @@ const formRstRcvd =
     editQso?.rst_rcvd ||
     "59";
 
-const formQslSent =
-    Number(editQso?.qsl_sent) === 1 ||
-    editQso?.qsl_sent === true;
-
-const formQslReceived =
-    Number(editQso?.qsl_received) === 1 ||
-    editQso?.qsl_received === true;
-
 const formName =
     editQso
         ? (editQso.name || "")
@@ -584,34 +576,6 @@ const formMyGrid =
                             type="text"
                             value="59"
                             maxlength="5">
-
-                    </div>
-
-
-                    <div class="qso-field">
-
-                        <label>
-                            SEND QSL
-                        </label>
-
-                        <input
-                            id="qso-qsl-sent"
-                            type="checkbox"
-                            ${formQslSent ? "checked" : ""}>
-
-                    </div>
-
-
-                    <div class="qso-field">
-
-                        <label>
-                            QSL RECEIVED
-                        </label>
-
-                        <input
-                            id="qso-qsl-received"
-                            type="checkbox"
-                            ${formQslReceived ? "checked" : ""}>
 
                     </div>
 
@@ -1103,20 +1067,6 @@ async function saveQso() {
                 )
                 ?.value
                 .trim() || "59",
-
-        qsl_sent:
-            document
-                .getElementById(
-                    "qso-qsl-sent"
-                )
-                ?.checked || false,
-
-        qsl_received:
-            document
-                .getElementById(
-                    "qso-qsl-received"
-                )
-                ?.checked || false,
 
 
         my_callsign:

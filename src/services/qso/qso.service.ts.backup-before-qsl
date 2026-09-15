@@ -19,9 +19,6 @@ export interface QsoRecord {
     rst_sent: string;
     rst_rcvd: string;
 
-    qsl_sent?: boolean;
-    qsl_received?: boolean;
-
     my_callsign: string;
     my_grid: string;
     operator_name: string;
@@ -106,9 +103,6 @@ export class QsoService {
 
                 rst_sent TEXT NOT NULL DEFAULT '59',
                 rst_rcvd TEXT NOT NULL DEFAULT '59',
-
-                qsl_sent INTEGER NOT NULL DEFAULT 0,
-                qsl_received INTEGER NOT NULL DEFAULT 0,
 
                 my_callsign TEXT NOT NULL,
                 my_grid TEXT NOT NULL,
@@ -211,34 +205,6 @@ export class QsoService {
         }
 
 
-        if (
-            !columnNames.includes(
-                "qsl_sent"
-            )
-        ) {
-
-            this.db.exec(`
-                ALTER TABLE qso
-                ADD COLUMN qsl_sent INTEGER NOT NULL DEFAULT 0
-            `);
-
-        }
-
-
-        if (
-            !columnNames.includes(
-                "qsl_received"
-            )
-        ) {
-
-            this.db.exec(`
-                ALTER TABLE qso
-                ADD COLUMN qsl_received INTEGER NOT NULL DEFAULT 0
-            `);
-
-        }
-
-
         /*
             Indexes
         */
@@ -333,9 +299,6 @@ export class QsoService {
                     rst_sent,
                     rst_rcvd,
 
-                    qsl_sent,
-                    qsl_received,
-
                     my_callsign,
                     my_grid,
                     operator_name,
@@ -424,15 +387,6 @@ export class QsoService {
                     "59",
 
 
-                qso.qsl_sent ?
-                    1 :
-                    0,
-
-                qso.qsl_received ?
-                    1 :
-                    0,
-
-
                 qso.my_callsign,
 
                 qso.my_grid,
@@ -518,9 +472,6 @@ updateQso(
                 rst_sent = ?,
                 rst_rcvd = ?,
 
-                qsl_sent = ?,
-                qsl_received = ?,
-
                 my_callsign = ?,
                 my_grid = ?,
                 operator_name = ?,
@@ -558,9 +509,6 @@ updateQso(
 
             qso.rst_sent || "59",
             qso.rst_rcvd || "59",
-
-            qso.qsl_sent ? 1 : 0,
-            qso.qsl_received ? 1 : 0,
 
             qso.my_callsign,
             qso.my_grid,

@@ -149,12 +149,6 @@ main { max-width:none !important; }
 .qso-log-table td { padding:12px 14px; border-bottom:1px solid #24343f; white-space:nowrap; }
 .qso-log-table tbody tr:hover { background:rgba(255,255,255,.04); }
 .qso-log-call { font-weight:600; }
-.qsl-status { text-align:center; font-size:16px; width:45px; }
-.qso-log-table th[data-sort="qsl_sent"],
-.qso-log-table th[data-sort="qsl_received"] {
-    width:45px;
-    text-align:center;
-}
 .qso-log-actions { text-align:right; }
 .qso-log-action { border:none; background:transparent; cursor:pointer; font-size:17px; padding:4px 7px; }
 .qso-log-action:hover { transform:scale(1.1); }
@@ -306,11 +300,9 @@ main { max-width:none !important; }
 <th data-sort="rst_sent">RST</th>
 <th data-sort="country">Country</th>
 <th data-sort="dx_grid">DX Grid</th>
-<th data-sort="qsl_sent" title="Send QSL">QS</th>
-<th data-sort="qsl_received" title="QSL Received">QR</th>
 <th class="no-sort">Actions</th>
 </tr></thead>
-<tbody id="qso-log-body"><tr><td colspan="14" class="qso-log-empty">Loading QSOs...</td></tr></tbody>
+<tbody id="qso-log-body"><tr><td colspan="12" class="qso-log-empty">Loading QSOs...</td></tr></tbody>
 </table>
 </div>
 </section>
@@ -528,8 +520,6 @@ function renderQsoLog() {
     <td>${escapeHtml(qso.rst_sent || "")}/${escapeHtml(qso.rst_rcvd || "")}</td>
     <td>${qso.country_code ? `<img class="dx-flag" src="/assets/flags/${escapeHtml(qso.country_code)}.svg" alt="">` : ""}${escapeHtml(qso.country || "")}</td>
     <td>${escapeHtml(qso.dx_grid || "")}</td>
-    <td class="qsl-status">${Number(qso.qsl_sent) === 1 ? "✓" : "—"}</td>
-    <td class="qsl-status">${Number(qso.qsl_received) === 1 ? "✓" : "—"}</td>
     <td class="qso-log-actions">
         <button class="qso-log-action" title="Edit QSO" data-action="edit" data-id="${qso.id}">✏️</button>
         <button class="qso-log-action" title="Delete QSO" data-action="delete" data-id="${qso.id}">🗑️</button>
@@ -592,22 +582,6 @@ function openEditQsoDialog(qso) {
                     ${editField("MODE","qso-edit-mode",qso.mode || "")}
                     ${editField("RST SENT","qso-edit-rst-sent",qso.rst_sent || "59")}
                     ${editField("RST RECEIVED","qso-edit-rst-rcvd",qso.rst_rcvd || "59")}
-
-                    <div class="qso-field">
-                        <label>SEND QSL</label>
-                        <input
-                            id="qso-edit-qsl-sent"
-                            type="checkbox"
-                            ${Number(qso.qsl_sent) === 1 ? "checked" : ""}>
-                    </div>
-
-                    <div class="qso-field">
-                        <label>QSL RECEIVED</label>
-                        <input
-                            id="qso-edit-qsl-received"
-                            type="checkbox"
-                            ${Number(qso.qsl_received) === 1 ? "checked" : ""}>
-                    </div>
                 </div>
                 <div class="qso-section-title">DX INFORMATION</div>
                 <div class="qso-form-grid">
@@ -661,8 +635,6 @@ async function saveEditedQso(id) {
         call:value("qso-edit-call").trim().toUpperCase(), frequency:Math.round(frequencyKHz / 1000),
         band:value("qso-edit-band").trim(), mode:value("qso-edit-mode").trim().toUpperCase(),
         rst_sent:value("qso-edit-rst-sent").trim() || "59", rst_rcvd:value("qso-edit-rst-rcvd").trim() || "59",
-        qsl_sent:document.getElementById("qso-edit-qsl-sent")?.checked || false,
-        qsl_received:document.getElementById("qso-edit-qsl-received")?.checked || false,
         my_callsign:value("qso-edit-my-callsign").trim().toUpperCase(), my_grid:value("qso-edit-my-grid").trim().toUpperCase(),
         operator_name:value("qso-edit-operator-name").trim(), name:value("qso-edit-name").trim() || null,
         country:value("qso-edit-country").trim() || null, country_code:value("qso-edit-country-code").trim().toLowerCase() || null,
