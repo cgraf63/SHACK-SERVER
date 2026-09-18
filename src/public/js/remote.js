@@ -3207,3 +3207,912 @@ if (splitTxFrequencyInput) {
         closeTxSocket();
     });
 })();
+
+/* SHACK-SERVER SDR STREAM */
+(() => {
+
+    if (window.__shackSdrStarted) {
+        console.log("SDR: already initialized");
+        return;
+    }
+
+    window.__shackSdrStarted = true;
+
+    let sdrSocket = null;
+    let sdrFrames = 0;
+
+    const spectrumCanvas =
+        document.getElementById("sdr-spectrum");
+
+    const spectrumContext =
+        spectrumCanvas
+            ? spectrumCanvas.getContext("2d")
+            : null;
+
+    const waterfallCanvas =
+        document.getElementById("sdr-waterfall");
+
+    const waterfallStatus =
+        document.getElementById("sdr-status");
+
+    const waterfallFrequency =
+        document.getElementById("sdr-frequency");
+
+    const vfoMarker =
+        document.getElementById("sdr-vfo-marker");
+
+    const waterfallContext =
+        waterfallCanvas
+            ? waterfallCanvas.getContext("2d")
+            : null;
+
+    function resizeWaterfall() {
+
+        if (!waterfallCanvas || !waterfallContext) {
+            return;
+        }
+
+        const parent =
+            waterfallCanvas.parentElement;
+
+        if (!parent) {
+            return;
+        }
+
+        const width =
+            Math.max(
+                1,
+                Math.floor(parent.clientWidth)
+            );
+
+        const height = 220;
+
+        /*
+         * Use one canvas pixel per screen pixel.
+         * This keeps the waterfall rendering simple
+         * and avoids devicePixelRatio coordinate issues.
+         */
+        waterfallCanvas.width = width;
+        waterfallCanvas.height = height;
+
+        waterfallCanvas.style.width = "100%";
+        waterfallCanvas.style.height = `${height}px`;
+        waterfallCanvas.style.display = "block";
+
+        waterfallContext.setTransform(
+            1,
+            0,
+            0,
+            1,
+            0,
+            0
+        );
+
+        waterfallContext.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+    }
+
+    function resizeSpectrum() {
+
+        if (!spectrumCanvas || !spectrumContext) {
+            return;
+        }
+
+        const parent =
+            spectrumCanvas.parentElement;
+
+        if (!parent) {
+            return;
+        }
+
+        const width =
+            Math.max(
+                1,
+                Math.floor(parent.clientWidth)
+            );
+
+        const height = 190;
+
+        spectrumCanvas.width = width;
+        spectrumCanvas.height = height;
+
+        spectrumCanvas.style.width = "100%";
+        spectrumCanvas.style.height = `${height}px`;
+        spectrumCanvas.style.display = "block";
+
+        spectrumContext.setTransform(
+            1,
+            0,
+            0,
+            1,
+            0,
+            0
+        );
+
+        spectrumContext.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+    }
+
+    resizeSpectrum();
+
+    const SPECTRUM_AVERAGE_FRAMES = 2;
+    let spectrumHistory = [];
+
+    function drawSpectrum(data) {
+
+        if (
+            !spectrumCanvas ||
+            !spectrumContext
+        ) {
+            return;
+        }
+
+        const bins =
+            data.getUint16(0, true);
+
+        /*
+         * Keep the last 4 FFT frames.
+         */
+        const currentFrame =
+            new Float32Array(bins);
+
+        for (let i = 0; i < bins; i++) {
+            currentFrame[i] =
+                data.getFloat32(
+                    2 + (i * 4),
+                    true
+                );
+        }
+
+        spectrumHistory.push(currentFrame);
+
+        if (
+            spectrumHistory.length >
+            SPECTRUM_AVERAGE_FRAMES
+        ) {
+            spectrumHistory.shift();
+        }
+
+        /*
+         * Average the FFT frames.
+         */
+        const averagedFrame =
+            new Float32Array(bins);
+
+        for (let i = 0; i < bins; i++) {
+
+            let sum = 0;
+            let count = 0;
+
+            for (const frame of spectrumHistory) {
+
+                const value = frame[i];
+
+                if (Number.isFinite(value)) {
+                    sum += value;
+                    count++;
+                }
+            }
+
+            averagedFrame[i] =
+                count > 0
+                    ? sum / count
+                    : -120;
+        }
+
+        /*
+         * Display smoothing.
+         * The FFT still uses 2 frames.
+         * This only makes the displayed curve slower.
+         */
+        const SPECTRUM_SMOOTHING = 0.18;
+
+        if (
+            !window.__spectrumDisplayFrame ||
+            window.__spectrumDisplayFrame.length !== bins
+        ) {
+            window.__spectrumDisplayFrame =
+                new Float32Array(averagedFrame);
+        } else {
+            const displayFrame =
+                window.__spectrumDisplayFrame;
+
+            for (let i = 0; i < bins; i++) {
+                displayFrame[i] +=
+                    (averagedFrame[i] - displayFrame[i]) *
+                    SPECTRUM_SMOOTHING;
+            }
+        }
+
+        const displayFrame =
+            window.__spectrumDisplayFrame;
+
+        const rect =
+            spectrumCanvas.getBoundingClientRect();
+
+        const width =
+            Math.max(1, Math.floor(rect.width));
+
+        const height =
+            Math.max(1, Math.floor(rect.height));
+
+        /*
+         * Fixed spectrum scale.
+         *
+         * This prevents the spectrum from
+         * jumping up and down with every FFT frame.
+         */
+        const floorDb = -120;
+        const ceilingDb = -40;
+        const rangeDb = ceilingDb - floorDb;
+
+        spectrumContext.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+        /*
+         * Subtle horizontal reference grid.
+         */
+        spectrumContext.lineWidth = 1;
+        spectrumContext.strokeStyle =
+            "rgba(255,255,255,0.07)";
+
+        for (let db = -120; db <= -40; db += 20) {
+
+            const y =
+                height -
+                8 -
+                ((db - floorDb) / rangeDb) *
+                (height - 20);
+
+            spectrumContext.beginPath();
+            spectrumContext.moveTo(0, y);
+            spectrumContext.lineTo(width, y);
+            spectrumContext.stroke();
+        }
+
+        /*
+         * Build spectrum path.
+         */
+        spectrumContext.beginPath();
+
+        for (let x = 0; x < width; x++) {
+
+            /*
+             * Display only the 20 m amateur band.
+             * The RSP1B still delivers the full 2 MHz FFT.
+             */
+            const bandStart = 14000000;
+            const bandEnd = 14350000;
+            const centerFrequency = 14100000;
+            const sampleRate = 2000000;
+
+            const fftStartFrequency =
+                centerFrequency - (sampleRate / 2);
+
+            const startBin =
+                Math.max(
+                    0,
+                    Math.floor(
+                        (bandStart - fftStartFrequency) /
+                        sampleRate * bins
+                    )
+                );
+
+            const endBin =
+                Math.min(
+                    bins - 1,
+                    Math.ceil(
+                        (bandEnd - fftStartFrequency) /
+                        sampleRate * bins
+                    )
+                );
+
+            const bin =
+                Math.min(
+                    endBin,
+                    startBin +
+                    Math.floor(
+                        x * (endBin - startBin) / width
+                    )
+                );
+
+            const db =
+                displayFrame[bin];
+
+            let level =
+                (db - floorDb) / rangeDb;
+
+            level =
+                Math.max(
+                    0,
+                    Math.min(1, level)
+                );
+
+            const y =
+                height -
+                8 -
+                (level * (height - 20));
+
+            if (x === 0) {
+                spectrumContext.moveTo(x, y);
+            } else {
+                spectrumContext.lineTo(x, y);
+            }
+        }
+
+        /*
+         * Fill the area below the spectrum.
+         * Darker than the cyan trace.
+         */
+        spectrumContext.save();
+
+        spectrumContext.lineTo(
+            width,
+            height - 8
+        );
+
+        spectrumContext.lineTo(
+            0,
+            height - 8
+        );
+
+        spectrumContext.closePath();
+
+        spectrumContext.fillStyle =
+            "rgba(10, 65, 95, 0.60)";
+
+        spectrumContext.fill();
+
+        spectrumContext.restore();
+
+        /*
+         * Draw the actual spectrum trace.
+         */
+        spectrumContext.beginPath();
+
+        for (let x = 0; x < width; x++) {
+
+            /*
+             * Display only the 20 m amateur band.
+             * The RSP1B still delivers the full 2 MHz FFT.
+             */
+            const bandStart = 14000000;
+            const bandEnd = 14350000;
+            const centerFrequency = 14100000;
+            const sampleRate = 2000000;
+
+            const fftStartFrequency =
+                centerFrequency - (sampleRate / 2);
+
+            const startBin =
+                Math.max(
+                    0,
+                    Math.floor(
+                        (bandStart - fftStartFrequency) /
+                        sampleRate * bins
+                    )
+                );
+
+            const endBin =
+                Math.min(
+                    bins - 1,
+                    Math.ceil(
+                        (bandEnd - fftStartFrequency) /
+                        sampleRate * bins
+                    )
+                );
+
+            const bin =
+                Math.min(
+                    endBin,
+                    startBin +
+                    Math.floor(
+                        x * (endBin - startBin) / width
+                    )
+                );
+
+            const db =
+                displayFrame[bin];
+
+            let level =
+                (db - floorDb) / rangeDb;
+
+            level =
+                Math.max(
+                    0,
+                    Math.min(1, level)
+                );
+
+            const y =
+                height -
+                8 -
+                (level * (height - 20));
+
+            if (x === 0) {
+                spectrumContext.moveTo(x, y);
+            } else {
+                spectrumContext.lineTo(x, y);
+            }
+        }
+
+        spectrumContext.strokeStyle =
+            "#39b8e8";
+
+        spectrumContext.lineWidth = 1;
+
+        spectrumContext.stroke();
+
+        /*
+         * Bottom reference line.
+         */
+        spectrumContext.beginPath();
+
+        spectrumContext.moveTo(
+            0,
+            height - 8
+        );
+
+        spectrumContext.lineTo(
+            width,
+            height - 8
+        );
+
+        spectrumContext.strokeStyle =
+            "rgba(255,255,255,0.15)";
+
+        spectrumContext.lineWidth = 1;
+
+        spectrumContext.stroke();
+    }
+
+
+    function drawWaterfall(data) {
+
+        if (
+            !waterfallCanvas ||
+            !waterfallContext
+        ) {
+            return;
+        }
+
+        const bins =
+            data.getUint16(0, true);
+
+        const rect =
+            waterfallCanvas.getBoundingClientRect();
+
+        const width =
+            Math.max(1, Math.floor(rect.width));
+
+        const height =
+            Math.max(1, Math.floor(rect.height));
+
+        /*
+         * Move the existing waterfall down
+         * by exactly one pixel.
+         *
+         * Using ImageData avoids problems caused by
+         * drawing the canvas onto itself.
+         */
+        if (height > 1) {
+
+            const previous =
+                waterfallContext.getImageData(
+                    0,
+                    0,
+                    width,
+                    height - 1
+                );
+
+            waterfallContext.putImageData(
+                previous,
+                0,
+                1
+            );
+        }
+
+        /*
+         * Find the current FFT range.
+         */
+        let minDb = Infinity;
+        let maxDb = -Infinity;
+
+        for (let i = 0; i < bins; i++) {
+
+            const db =
+                data.getFloat32(
+                    2 + (i * 4),
+                    true
+                );
+
+            if (Number.isFinite(db)) {
+                minDb = Math.min(minDb, db);
+                maxDb = Math.max(maxDb, db);
+            }
+        }
+
+        if (
+            !Number.isFinite(minDb) ||
+            !Number.isFinite(maxDb)
+        ) {
+            return;
+        }
+
+        /*
+         * Keep the contrast reasonably stable.
+         */
+        const floor =
+            Math.max(-120, maxDb - 65);
+
+        const range =
+            Math.max(1, maxDb - floor);
+
+        const image =
+            waterfallContext.createImageData(
+                width,
+                1
+            );
+
+        for (let x = 0; x < width; x++) {
+
+            /*
+             * Display only the 20 m amateur band.
+             * The RSP1B still delivers the full 2 MHz FFT.
+             */
+            const bandStart = 14000000;
+            const bandEnd = 14350000;
+            const centerFrequency = 14100000;
+            const sampleRate = 2000000;
+
+            const fftStartFrequency =
+                centerFrequency - (sampleRate / 2);
+
+            const startBin =
+                Math.max(
+                    0,
+                    Math.floor(
+                        (bandStart - fftStartFrequency) /
+                        sampleRate * bins
+                    )
+                );
+
+            const endBin =
+                Math.min(
+                    bins - 1,
+                    Math.ceil(
+                        (bandEnd - fftStartFrequency) /
+                        sampleRate * bins
+                    )
+                );
+
+            const bin =
+                Math.min(
+                    endBin,
+                    startBin +
+                    Math.floor(
+                        x * (endBin - startBin) / width
+                    )
+                );
+
+            const db =
+                data.getFloat32(
+                    2 + (bin * 4),
+                    true
+                );
+
+            let level =
+                (db - floor) / range;
+
+            level =
+                Math.max(
+                    0,
+                    Math.min(1, level)
+                );
+
+            /*
+             * Simple blue/cyan/yellow/white
+             * SDR-style spectrum palette.
+             */
+            let r;
+            let g;
+            let b;
+
+            if (level < 0.25) {
+
+                const t =
+                    level / 0.25;
+
+                r = 0;
+                g = Math.round(20 + 80 * t);
+                b = Math.round(45 + 110 * t);
+
+            } else if (level < 0.5) {
+
+                const t =
+                    (level - 0.25) / 0.25;
+
+                r = 0;
+                g = Math.round(100 + 100 * t);
+                b = Math.round(155 - 100 * t);
+
+            } else if (level < 0.75) {
+
+                const t =
+                    (level - 0.5) / 0.25;
+
+                r = Math.round(255 * t);
+                g = 200;
+                b = Math.round(55 * (1 - t));
+
+            } else {
+
+                const t =
+                    (level - 0.75) / 0.25;
+
+                r = 255;
+                g = Math.round(200 + 55 * t);
+                b = Math.round(50 + 205 * t);
+            }
+
+            const index =
+                x * 4;
+
+            image.data[index] = r;
+            image.data[index + 1] = g;
+            image.data[index + 2] = b;
+            image.data[index + 3] = 255;
+        }
+
+        waterfallContext.putImageData(
+            image,
+            0,
+            0
+        );
+    }
+
+    function updateVfoMarker() {
+
+        if (!vfoMarker) {
+            return;
+        }
+
+        /*
+         * Currently displayed amateur band.
+         */
+        const bandStart = 14000000;
+        const bandEnd = 14350000;
+
+        const currentFrequency =
+            Number(
+                lastRadioState?.frequency
+            );
+
+        if (!Number.isFinite(currentFrequency)) {
+            return;
+        }
+
+        const position =
+            (
+                currentFrequency - bandStart
+            ) / (bandEnd - bandStart);
+
+        const clamped =
+            Math.max(
+                0,
+                Math.min(1, position)
+            );
+
+        vfoMarker.style.left =
+            `${clamped * 100}%`;
+
+        /*
+         * Show the actual VFO frequency
+         * above the marker.
+         */
+        vfoMarker.textContent =
+            `${(currentFrequency / 1000000).toFixed(3)} MHz`;
+    }
+
+    function sdrUrl() {
+        const protocol =
+            window.location.protocol === "https:"
+                ? "wss:"
+                : "ws:";
+
+        return `${protocol}//${window.location.host}/sdr`;
+    }
+
+    function connectSdr() {
+
+        if (
+            sdrSocket &&
+            (
+                sdrSocket.readyState === WebSocket.OPEN ||
+                sdrSocket.readyState === WebSocket.CONNECTING
+            )
+        ) {
+            return;
+        }
+
+        console.log("SDR: connecting to /sdr");
+
+        sdrSocket = new WebSocket(sdrUrl());
+        sdrSocket.binaryType = "arraybuffer";
+
+        sdrSocket.onopen = () => {
+
+            console.log("SDR: WebSocket connected");
+
+            if (waterfallStatus) {
+                waterfallStatus.textContent = "CONNECTED";
+                waterfallStatus.classList.add("connected");
+            }
+        };
+
+        sdrSocket.onmessage = (event) => {
+
+            if (typeof event.data === "string") {
+
+                try {
+                    const message = JSON.parse(event.data);
+
+                    console.log("SDR:", message);
+
+                } catch (error) {
+
+                    console.warn(
+                        "SDR: invalid JSON",
+                        error
+                    );
+                }
+
+                return;
+            }
+
+            if (!(event.data instanceof ArrayBuffer)) {
+                return;
+            }
+
+            const data = new DataView(event.data);
+
+            if (data.byteLength < 2) {
+                return;
+            }
+
+            const bins = data.getUint16(0, true);
+
+            if (bins !== 8192) {
+                console.warn(
+                    "SDR: unexpected FFT size:",
+                    bins
+                );
+                return;
+            }
+
+            sdrFrames++;
+
+            drawSpectrum(data);
+            drawWaterfall(data);
+            updateVfoMarker();
+
+            if (waterfallStatus) {
+                waterfallStatus.textContent =
+                    "CONNECTED";
+                waterfallStatus.classList.add(
+                    "connected"
+                );
+            }
+
+            if (waterfallFrequency) {
+                waterfallFrequency.textContent =
+                    "14.100.000 MHz";
+            }
+
+            if (
+                sdrFrames === 1 ||
+                sdrFrames % 50 === 0
+            ) {
+
+                const firstDb =
+                    data.getFloat32(2, true);
+
+                const centerDb =
+                    data.getFloat32(
+                        2 + (1024 * 4),
+                        true
+                    );
+
+                console.log(
+                    `SDR: FFT frame ${sdrFrames}`,
+                    `first=${firstDb.toFixed(1)} dB`,
+                    `center=${centerDb.toFixed(1)} dB`
+                );
+            }
+
+            /*
+             * Waterfall renderer will consume
+             * the FFT bins here.
+             */
+        };
+
+        sdrSocket.onerror = (error) => {
+            console.error(
+                "SDR: WebSocket error",
+                error
+            );
+        };
+
+        sdrSocket.onclose = () => {
+
+            console.log(
+                "SDR: WebSocket disconnected"
+            );
+
+            sdrSocket = null;
+
+            if (waterfallStatus) {
+                waterfallStatus.textContent = "DISCONNECTED";
+                waterfallStatus.classList.remove("connected");
+            }
+
+            /*
+             * Reconnect automatically.
+             */
+            setTimeout(() => {
+                connectSdr();
+            }, 2000);
+        };
+    }
+
+    /*
+     * Start immediately.
+     */
+    /*
+     * Keep the canvas backing resolution synchronized
+     * with its actual displayed size.
+     */
+    if (waterfallCanvas && typeof ResizeObserver !== "undefined") {
+
+        const waterfallObserver =
+            new ResizeObserver(() => {
+                resizeWaterfall();
+            });
+
+        waterfallObserver.observe(
+            waterfallCanvas
+        );
+
+    } else {
+
+        window.addEventListener(
+            "resize",
+            resizeWaterfall
+        );
+    }
+
+    resizeWaterfall();
+
+    requestAnimationFrame(() => {
+        resizeWaterfall();
+    });
+
+    setTimeout(() => {
+        resizeWaterfall();
+    }, 250);
+
+    connectSdr();
+
+})();
+

@@ -1,6 +1,7 @@
 import app from './app.js';
 import { createServer } from "node:http";
 import { startAudioWebSocket } from "./services/audio/audio-ws.service.js";
+import { startSdrWebSocket } from "./services/sdr/sdr-ws.service.js";
 
 import {
     fusionEngine
@@ -70,6 +71,7 @@ const server =
     createServer(app);
 
 startAudioWebSocket(server);
+startSdrWebSocket(server);
 
 server.listen(PORT, () => {
 

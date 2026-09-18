@@ -5,6 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SHACK-SERVER – FTDX10 Remote</title>
     <link rel="stylesheet" href="/css/remote.css">
+
+<style>
+/* SDR SPECTRUM / WATERFALL SPLIT */
+.sdr-waterfall-panel {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 10px;
+}
+
+.sdr-spectrum-container {
+    position: relative;
+    width: 100%;
+    height: 190px;
+    margin-bottom: 4px;
+}
+
+.sdr-spectrum {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #02070b;
+    border: 1px solid #263b49;
+    box-sizing: border-box;
+}
+
+.sdr-waterfall-container {
+    position: relative;
+    width: 100%;
+    height: 95px;
+}
+
+.sdr-waterfall-container .sdr-waterfall {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.sdr-frequency-scale {
+    padding-top: 3px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #8ea6b5;
+}
+
+.sdr-vfo-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: #ff3030;
+    box-shadow:
+        0 0 3px #ff3030,
+        0 0 7px rgba(255, 48, 48, 0.65);
+    z-index: 5;
+    pointer-events: none;
+    transform: translateX(-0.5px);
+    color: #ff3030;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: center;
+    padding-top: 3px;
+    box-sizing: border-box;
+}
+</style>
+
 </head>
 
 <body>
@@ -557,6 +629,49 @@
          ========================================================= -->
 
     <section class="power-row">
+
+        <!-- SDR WATERFALL -->
+        <div class="panel control-panel sdr-waterfall-panel">
+
+            <div class="section-title">SDR WATERFALL</div>
+
+            <div class="sdr-waterfall-header">
+                <span id="sdr-frequency">14.100.000 MHz</span>
+                <span id="sdr-status">DISCONNECTED</span>
+            </div>
+
+            <!-- SDR SPECTRUM -->
+            <div class="sdr-spectrum-container">
+
+                <canvas
+                    id="sdr-spectrum"
+                    class="sdr-spectrum"
+                ></canvas>
+
+                <div
+                    id="sdr-vfo-marker"
+                    class="sdr-vfo-marker"
+                ></div>
+
+            </div>
+
+            <!-- SDR WATERFALL -->
+            <div class="sdr-waterfall-container">
+
+                <canvas
+                    id="sdr-waterfall"
+                    class="sdr-waterfall"
+                ></canvas>
+
+            </div>
+
+            <div class="sdr-frequency-scale">
+                <span>14.000 MHz</span>
+                <span>14.175 MHz</span>
+                <span>14.350 MHz</span>
+            </div>
+
+        </div>
 
         <!-- TX POWER -->
         <div class="panel power-panel">
