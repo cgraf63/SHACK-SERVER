@@ -9,8 +9,6 @@ export class Ftdx10Service implements RadioService {
     private frequencyB = 0;
     private mode = "UNKNOWN";
     private power = 0;
-    private split = false;
-    private radioPoweredOn = false;
     private smeter = 0;
     private meterAlc = 0;
     private meterPower = 0;
@@ -91,10 +89,6 @@ export class Ftdx10Service implements RadioService {
 
 
 
-    isConnected(): boolean {
-        return this.port.isOpen;
-    }
-
     start(): void {
         if (!this.device) {
             console.log("FTDX10: no CAT device configured");
@@ -128,8 +122,6 @@ export class Ftdx10Service implements RadioService {
         this.send("VS;");
         this.send("IF;");
         this.send("OI;");
-        this.send(FTDX10_CAT.powerSwitch.get);
-        this.send(FTDX10_CAT.split.get);
         this.send(FTDX10_CAT.power.get);
         this.send(FTDX10_CAT.meters.s);
         this.send(FTDX10_CAT.meters.alc);
@@ -196,7 +188,6 @@ export class Ftdx10Service implements RadioService {
                 console.log("FTDX10 FILTER:", message);
             }
 
-            console.log("FTDX10 CAT RX:", message);
             this.parseResponse(message);
         }
     }
@@ -274,16 +265,6 @@ export class Ftdx10Service implements RadioService {
 
         if (message.startsWith("OI")) {
             this.parseOI(message);
-            return;
-        }
-
-        if (message.startsWith("PS")) {
-            this.parsePowerSwitch(message);
-            return;
-        }
-
-        if (message.startsWith("ST")) {
-            this.parseSplit(message);
             return;
         }
 
@@ -625,28 +606,6 @@ export class Ftdx10Service implements RadioService {
         this.modeB = this.decodeMode(match[1] ?? "");
     }
 
-    private parsePowerSwitch(message: string): void {
-        if (message === "PS0;") {
-            this.radioPoweredOn = false;
-            return;
-        }
-
-        if (message === "PS1;") {
-            this.radioPoweredOn = true;
-        }
-    }
-
-    private parseSplit(message: string): void {
-        if (message === "ST0;") {
-            this.split = false;
-            return;
-        }
-
-        if (message === "ST1;") {
-            this.split = true;
-        }
-    }
-
     private decodeMode(code: string): string {
         const modes: Record<string, string> = {
             "1": "LSB",
@@ -724,53 +683,6 @@ setFrequencyB(frequency: number): void {
 
     this.frequencyB = value;
 }
-    setBand(code: string, vfo: "A" | "B"): void {
-        const allowedCodes = [
-            "00",
-            "01",
-            "02",
-            "03",
-            "04",
-            "05",
-            "06",
-            "07",
-            "08",
-            "09",
-            "10",
-            "11",
-            "12"
-        ];
-
-        if (!allowedCodes.includes(code)) {
-            throw new Error(
-                `Unsupported FTDX10 band code: ${code}`
-            );
-        }
-
-        this.setActiveVfo(vfo);
-
-        this.send(
-            FTDX10_CAT.band.set(code)
-        );
-    }
-
-    setAttenuator(value: 0 | 1 | 2 | 3): void {
-        this.send(FTDX10_CAT.attenuator.set(value));
-    }
-
-    setIpo(value: 0 | 1 | 2): void {
-        this.send(FTDX10_CAT.ipo.set(value));
-    }
-
-    setRoofingFilter(value: "9" | "7" | "6"): void {
-        this.send(FTDX10_CAT.filter.roofing.set(value));
-    }
-
-    setAgc(value: number): void {
-        const mode = Math.max(0, Math.min(6, Math.round(value)));
-        this.send(FTDX10_CAT.agc.set(mode));
-    }
-
     setMode(mode: string, _frequency: number): void {
         const modes: Record<string, string> = {
             LSB: "1",
@@ -935,24 +847,6 @@ setFrequencyB(frequency: number): void {
     );
 }
 
-    setSplit(enabled: boolean): void {
-        if (!this.port.isOpen) {
-            return;
-        }
-
-        this.send(
-            enabled
-                ? FTDX10_CAT.split.on
-                : FTDX10_CAT.split.off
-        );
-
-        this.split = enabled;
-    }
-
-    getSplit(): boolean {
-        return this.split;
-    }
-
     getFrequency(): number {
         return this.frequency;
     }
@@ -967,27 +861,6 @@ setFrequencyB(frequency: number): void {
 
     getPower(): number {
         return this.power;
-    }
-
-    getPowerState(): boolean {
-        return this.radioPoweredOn;
-    }
-
-    setPowerState(enabled: boolean): void {
-        if (!this.port.isOpen) return;
-
-        if (enabled) {
-            // FTDX10 requires PS1; twice with 1–2 seconds interval.
-            this.send(FTDX10_CAT.powerSwitch.on);
-
-            setTimeout(() => {
-                this.send(FTDX10_CAT.powerSwitch.on);
-            }, 1200);
-
-            return;
-        }
-
-        this.send(FTDX10_CAT.powerSwitch.off);
     }
 
     getRfGain(): number {

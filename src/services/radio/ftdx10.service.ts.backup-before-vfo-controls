@@ -196,7 +196,6 @@ export class Ftdx10Service implements RadioService {
                 console.log("FTDX10 FILTER:", message);
             }
 
-            console.log("FTDX10 CAT RX:", message);
             this.parseResponse(message);
         }
     }
@@ -724,53 +723,6 @@ setFrequencyB(frequency: number): void {
 
     this.frequencyB = value;
 }
-    setBand(code: string, vfo: "A" | "B"): void {
-        const allowedCodes = [
-            "00",
-            "01",
-            "02",
-            "03",
-            "04",
-            "05",
-            "06",
-            "07",
-            "08",
-            "09",
-            "10",
-            "11",
-            "12"
-        ];
-
-        if (!allowedCodes.includes(code)) {
-            throw new Error(
-                `Unsupported FTDX10 band code: ${code}`
-            );
-        }
-
-        this.setActiveVfo(vfo);
-
-        this.send(
-            FTDX10_CAT.band.set(code)
-        );
-    }
-
-    setAttenuator(value: 0 | 1 | 2 | 3): void {
-        this.send(FTDX10_CAT.attenuator.set(value));
-    }
-
-    setIpo(value: 0 | 1 | 2): void {
-        this.send(FTDX10_CAT.ipo.set(value));
-    }
-
-    setRoofingFilter(value: "9" | "7" | "6"): void {
-        this.send(FTDX10_CAT.filter.roofing.set(value));
-    }
-
-    setAgc(value: number): void {
-        const mode = Math.max(0, Math.min(6, Math.round(value)));
-        this.send(FTDX10_CAT.agc.set(mode));
-    }
-
     setMode(mode: string, _frequency: number): void {
         const modes: Record<string, string> = {
             LSB: "1",

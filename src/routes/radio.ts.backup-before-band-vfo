@@ -435,7 +435,7 @@ router.post(
     "/radio/band",
     (req, res) => {
 
-        const { band, vfo } = req.body;
+        const { band } = req.body;
 
         const activeRadio =
             radioManager.getActiveRadio();
@@ -480,15 +480,9 @@ router.post(
             });
         }
 
-        if (vfo !== "A" && vfo !== "B") {
-            return res.status(400).json({
-                error: "Invalid VFO"
-            });
-        }
-
         try {
 
-            (activeRadio as any).setBand(band, vfo);
+            (activeRadio as any).setBand(band);
 
             console.log(
                 "RADIO BAND:",

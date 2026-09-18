@@ -40,6 +40,8 @@
         <strong>14:28:32 UTC</strong>
     </div>
 
+    <div class="header-icon">⌁</div>
+    <div class="header-icon">⚙</div>
     <div class="power-icon">⏻</div>
 
 </header>
@@ -96,21 +98,7 @@
             <div class="frequency" id="vfo-a-frequency">14.074.000</div>
 
             <div class="vfo-controls">
-                <select class="band-button" data-vfo="A">
-    <option value="00">160 m</option>
-    <option value="01">80 m</option>
-    <option value="02">60 m</option>
-    <option value="03">40 m</option>
-    <option value="04">30 m</option>
-    <option value="05" selected>20 m</option>
-    <option value="06">17 m</option>
-    <option value="07">15 m</option>
-    <option value="08">12 m</option>
-    <option value="09">10 m</option>
-    <option value="10">6 m</option>
-    <option value="11">GEN</option>
-    <option value="12">MW</option>
-</select>
+                <button class="band-button">▼ &nbsp;14 MHz⌄</button>
             </div>
 
         </div>
@@ -193,21 +181,7 @@
             <div class="frequency" id="vfo-b-frequency">14.095.000</div>
 
             <div class="vfo-controls">
-                <select class="band-button" data-vfo="B">
-    <option value="00">160 m</option>
-    <option value="01">80 m</option>
-    <option value="02">60 m</option>
-    <option value="03">40 m</option>
-    <option value="04">30 m</option>
-    <option value="05" selected>20 m</option>
-    <option value="06">17 m</option>
-    <option value="07">15 m</option>
-    <option value="08">12 m</option>
-    <option value="09">10 m</option>
-    <option value="10">6 m</option>
-    <option value="11">GEN</option>
-    <option value="12">MW</option>
-</select>
+                <button class="band-button">▼ &nbsp;14 MHz⌄</button>
             </div>
 
         </div>
@@ -291,9 +265,9 @@
             <div class="analog-meter">
                 <div class="meter-scale">
                     <span>1.0</span>
+                    <span>1.5</span>
                     <span>2.0</span>
                     <span>3.0</span>
-                    <span>4.0</span>
                     <span>5.0</span>
                 </div>
 

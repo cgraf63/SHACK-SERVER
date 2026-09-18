@@ -196,7 +196,6 @@ export class Ftdx10Service implements RadioService {
                 console.log("FTDX10 FILTER:", message);
             }
 
-            console.log("FTDX10 CAT RX:", message);
             this.parseResponse(message);
         }
     }
@@ -724,7 +723,7 @@ setFrequencyB(frequency: number): void {
 
     this.frequencyB = value;
 }
-    setBand(code: string, vfo: "A" | "B"): void {
+    setBand(code: string): void {
         const allowedCodes = [
             "00",
             "01",
@@ -746,8 +745,6 @@ setFrequencyB(frequency: number): void {
                 `Unsupported FTDX10 band code: ${code}`
             );
         }
-
-        this.setActiveVfo(vfo);
 
         this.send(
             FTDX10_CAT.band.set(code)
