@@ -5,9 +5,6 @@ const powerIcon = document.querySelector(".power-icon");
 const powerSlider = document.querySelector(".power-slider");
 const rfGainSlider = document.querySelector("#rf-gain-slider");
 const afGainSlider = document.querySelector("#af-gain-slider");
-const cwSpeedSlider = document.querySelector("#cw-speed-slider");
-const micGainSlider = document.querySelector("#mic-gain-slider");
-const micEqButton = document.querySelector("#mic-eq-button");
 const sMeterNeedle = document.querySelector(".meter-needle");
 const powerNeedle = document.querySelector(".power-needle");
 const alcNeedle = document.querySelector(".alc-needle");
@@ -166,105 +163,6 @@ if (afGainSlider) {
             setFilterGainControl(
                 "afGain",
                 catValue
-            );
-        }
-    );
-}
-
-
-/* CW SPEED */
-
-if (cwSpeedSlider) {
-
-    cwSpeedSlider.addEventListener(
-        "input",
-        () => {
-
-            const value =
-                Number(cwSpeedSlider.value);
-
-            const valueDisplay =
-                document.querySelector("#cw-speed-value");
-
-            if (valueDisplay) {
-                valueDisplay.textContent =
-                    `${value}`;
-            }
-
-            setFilterGainControl(
-                "cwSpeed",
-                value
-            );
-        }
-    );
-}
-
-
-/* MIC GAIN */
-
-if (micGainSlider) {
-
-    micGainSlider.addEventListener(
-        "input",
-        () => {
-
-            const value =
-                Number(micGainSlider.value);
-
-            const valueDisplay =
-                document.querySelector("#mic-gain-value");
-
-            if (valueDisplay) {
-                valueDisplay.textContent =
-                    `${value}`;
-            }
-
-            setFilterGainControl(
-                "micGain",
-                value
-            );
-        }
-    );
-}
-
-
-/* MIC EQ */
-
-if (micEqButton) {
-
-    micEqButton.addEventListener(
-        "click",
-        async () => {
-
-            const enabled =
-                !micEqButton.classList.contains("active");
-
-            await setFilterGainControl(
-                "micEq",
-                enabled
-            );
-        }
-    );
-}
-
-
-/* BK-IN */
-
-const bkInButton =
-    document.querySelector("#bk-in-button");
-
-if (bkInButton) {
-
-    bkInButton.addEventListener(
-        "click",
-        async () => {
-
-            const enabled =
-                !bkInButton.classList.contains("active");
-
-            await setFilterGainControl(
-                "breakIn",
-                enabled
             );
         }
     );
@@ -927,89 +825,6 @@ async function updateRadioState() {
             afGainSlider.nextElementSibling.textContent =
                 `${afGainSlider.value}`;
         }
-
-        // CW SPEED / MIC GAIN
-
-        if (cwSpeedSlider) {
-
-            const speed =
-                Math.max(
-                    4,
-                    Math.min(
-                        60,
-                        Number(data.cwSpeed) || 20
-                    )
-                );
-
-            cwSpeedSlider.value =
-                speed;
-
-            const valueDisplay =
-                document.querySelector("#cw-speed-value");
-
-            if (valueDisplay) {
-                valueDisplay.textContent =
-                    `${speed}`;
-            }
-        }
-
-
-        if (micGainSlider) {
-
-            const gain =
-                Math.max(
-                    0,
-                    Math.min(
-                        100,
-                        Number(data.micGain) || 50
-                    )
-                );
-
-            micGainSlider.value =
-                gain;
-
-            const valueDisplay =
-                document.querySelector("#mic-gain-value");
-
-            if (valueDisplay) {
-                valueDisplay.textContent =
-                    `${gain}`;
-            }
-        }
-
-        // MIC EQ
-
-        if (micEqButton) {
-            const enabled =
-                Boolean(data.micEq);
-
-            micEqButton.classList.toggle(
-                "active",
-                enabled
-            );
-
-            micEqButton.textContent =
-                enabled ? "MIC EQ ON" : "MIC EQ";
-        }
-
-        // BK-IN
-
-        const bkInButton =
-            document.querySelector("#bk-in-button");
-
-        if (bkInButton) {
-            const enabled =
-                Boolean(data.breakIn);
-
-            bkInButton.classList.toggle(
-                "active",
-                enabled
-            );
-
-            bkInButton.textContent =
-                enabled ? "BK-IN ON" : "BK-IN";
-        }
-
 
         // FILTER WIDTH / SHIFT
 
@@ -2643,24 +2458,60 @@ if (splitTxFrequencyInput) {
     console.log("AUDIO: UI initialized");
 })();
 
-/* SHACK-SERVER TX BUTTONS: TUNE / MONI */
+/* SHACK-SERVER TX BUTTONS: TUNE / MOX / MONI */
 (() => {
 
-    const tuneButton =
-        document.querySelector(".tune-button");
+    const txButtons =
+        document.querySelectorAll(".tx-buttons button");
 
-    const moniSlider =
-        document.querySelector(".moni-slider");
-
-    const moniValue =
-        document.querySelector(".moni-value");
-
-
-    if (!tuneButton || !moniSlider) {
-        console.warn(
-            "TX BUTTONS: controls not found"
-        );
+    if (txButtons.length < 3) {
+        console.warn("TX BUTTONS: buttons not found");
         return;
+    }
+
+    const tuneButton = txButtons[0];
+    const moxButton = txButtons[1];
+    const moniButton = txButtons[2];
+
+
+    async function setTxControl(
+        endpoint,
+        enabled,
+        property
+    ) {
+
+        const response = await fetch(
+            endpoint,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    enabled
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `${endpoint} HTTP ${response.status}`
+            );
+        }
+
+        const result =
+            await response.json();
+
+        if (
+            result.success !== true ||
+            result[property] !== enabled
+        ) {
+            throw new Error(
+                `Invalid ${property} response`
+            );
+        }
+
+        return result;
     }
 
 
@@ -2682,36 +2533,37 @@ if (splitTxFrequencyInput) {
 
             try {
 
-                const response =
-                    await fetch(
-                        "/api/radio/tune-start",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-                            body: JSON.stringify({})
-                        }
-                    );
+                await fetch(
+                    "/api/radio/tune-start",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body: JSON.stringify({})
+                    }
+                ).then(async response => {
 
-                if (!response.ok) {
-                    throw new Error(
-                        `TUNE HTTP ${response.status}`
-                    );
-                }
+                    if (!response.ok) {
+                        throw new Error(
+                            `TUNE HTTP ${response.status}`
+                        );
+                    }
 
-                const result =
-                    await response.json();
+                    const result =
+                        await response.json();
 
-                if (
-                    result.success !== true ||
-                    result.tune !== true
-                ) {
-                    throw new Error(
-                        "Invalid TUNE response"
-                    );
-                }
+                    if (
+                        result.success !== true ||
+                        result.tune !== true
+                    ) {
+                        throw new Error(
+                            "Invalid TUNE response"
+                        );
+                    }
+
+                });
 
                 console.log(
                     "TUNE: completed"
@@ -2737,26 +2589,81 @@ if (splitTxFrequencyInput) {
 
 
     /*
-     * MONI
+     * MOX
      */
 
-    let moniBusy = false;
+    let moxActive = false;
+    let moxBusy = false;
 
-    moniSlider.addEventListener(
-        "input",
-        () => {
+    moxButton.addEventListener(
+        "click",
+        async () => {
 
-            if (moniValue) {
-                moniValue.textContent =
-                    moniSlider.value;
+            if (moxBusy) {
+                return;
+            }
+
+            moxBusy = true;
+
+            const nextState =
+                !moxActive;
+
+            moxButton.disabled = true;
+
+            try {
+
+                await setTxControl(
+                    "/api/radio/mox",
+                    nextState,
+                    "mox"
+                );
+
+                moxActive =
+                    nextState;
+
+                moxButton.classList.toggle(
+                    "active",
+                    moxActive
+                );
+
+                moxButton.textContent =
+                    moxActive
+                        ? "MOX ON"
+                        : "MOX";
+
+                console.log(
+                    "MOX:",
+                    moxActive
+                        ? "ON"
+                        : "OFF"
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "MOX:",
+                    error
+                );
+
+            } finally {
+
+                moxButton.disabled = false;
+
             }
 
         }
     );
 
 
-    moniSlider.addEventListener(
-        "change",
+    /*
+     * MONI
+     */
+
+    let moniActive = false;
+    let moniBusy = false;
+
+    moniButton.addEventListener(
+        "click",
         async () => {
 
             if (moniBusy) {
@@ -2764,49 +2671,38 @@ if (splitTxFrequencyInput) {
             }
 
             moniBusy = true;
-            moniSlider.disabled = true;
 
-            const level =
-                Number(moniSlider.value);
+            const nextState =
+                !moniActive;
+
+            moniButton.disabled = true;
 
             try {
 
-                const response =
-                    await fetch(
-                        "/api/radio/monitor",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-                            body: JSON.stringify({
-                                level
-                            })
-                        }
-                    );
+                await setTxControl(
+                    "/api/radio/monitor",
+                    nextState,
+                    "monitor"
+                );
 
-                if (!response.ok) {
-                    throw new Error(
-                        `MONI HTTP ${response.status}`
-                    );
-                }
+                moniActive =
+                    nextState;
 
-                const result =
-                    await response.json();
+                moniButton.classList.toggle(
+                    "active",
+                    moniActive
+                );
 
-                if (
-                    result.success !== true ||
-                    result.monitor !== level
-                ) {
-                    throw new Error(
-                        "Invalid MONI response"
-                    );
-                }
+                moniButton.textContent =
+                    moniActive
+                        ? "MONI ON"
+                        : "MONI";
 
                 console.log(
                     "MONI:",
-                    level
+                    moniActive
+                        ? "ON"
+                        : "OFF"
                 );
 
             } catch (error) {
@@ -2818,7 +2714,7 @@ if (splitTxFrequencyInput) {
 
             } finally {
 
-                moniSlider.disabled = false;
+                moniButton.disabled = false;
 
             }
 

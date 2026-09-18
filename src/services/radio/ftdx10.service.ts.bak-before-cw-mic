@@ -17,10 +17,6 @@ export class Ftdx10Service implements RadioService {
     private meterSwr = 0;
     private rfGain = 0;
     private afGain = 0;
-    private cwSpeed = 20;
-    private micGain = 50;
-    private breakIn = false;
-    private micEq = false;
 
     // DSP / filter status
     private filterWidth = 0;
@@ -141,10 +137,6 @@ export class Ftdx10Service implements RadioService {
         this.send(FTDX10_CAT.meters.swr);
         this.send("RG0;");
         this.send("AG0;");
-        this.send(FTDX10_CAT.cwSpeed.get);
-        this.send(FTDX10_CAT.micGain.get);
-        this.send(FTDX10_CAT.breakIn.get);
-        this.send(FTDX10_CAT.micEq.get);
 
         // Filter / DSP status
         this.send(FTDX10_CAT.filter.width.get);
@@ -232,26 +224,6 @@ export class Ftdx10Service implements RadioService {
 
         if (message.startsWith("AG")) {
             this.parseAfGain(message);
-            return;
-        }
-
-        if (message.startsWith("KS")) {
-            this.parseCwSpeed(message);
-            return;
-        }
-
-        if (message.startsWith("MG")) {
-            this.parseMicGain(message);
-            return;
-        }
-
-        if (message.startsWith("BI")) {
-            this.parseBreakIn(message);
-            return;
-        }
-
-        if (message.startsWith("PR")) {
-            this.parseMicEq(message);
             return;
         }
 
@@ -543,52 +515,6 @@ export class Ftdx10Service implements RadioService {
         this.afGain = Number(match[1]);
     }
 
-    private parseCwSpeed(message: string): void {
-        const match = message.match(/^KS(\d{3});$/);
-
-        if (!match) {
-            return;
-        }
-
-        this.cwSpeed = Math.max(
-            4,
-            Math.min(60, Number(match[1]))
-        );
-    }
-
-    private parseMicGain(message: string): void {
-        const match = message.match(/^MG(\d{3});$/);
-
-        if (!match) {
-            return;
-        }
-
-        this.micGain = Math.max(
-            0,
-            Math.min(100, Number(match[1]))
-        );
-    }
-
-    private parseBreakIn(message: string): void {
-        const match = message.match(/^BI([01]);$/);
-
-        if (!match) {
-            return;
-        }
-
-        this.breakIn = match[1] === "1";
-    }
-
-    private parseMicEq(message: string): void {
-        const match = message.match(/^PR1([12]);$/);
-
-        if (!match) {
-            return;
-        }
-
-        this.micEq = match[1] === "2";
-    }
-
     private parseSMeter(message: string): void {
         const match = message.match(/^SM0(\d{3});$/);
 
@@ -864,44 +790,6 @@ setFrequencyB(frequency: number): void {
 
         this.send(
             FTDX10_CAT.afGain.set(gain)
-        );
-    }
-
-    setCwSpeed(value: number): void {
-        const speed = Math.max(
-            4,
-            Math.min(60, Math.round(value))
-        );
-
-        this.send(
-            FTDX10_CAT.cwSpeed.set(speed)
-        );
-    }
-
-    setMicGain(value: number): void {
-        const gain = Math.max(
-            0,
-            Math.min(100, Math.round(value))
-        );
-
-        this.send(
-            FTDX10_CAT.micGain.set(gain)
-        );
-    }
-
-    setBreakIn(enabled: boolean): void {
-        this.breakIn = Boolean(enabled);
-
-        this.send(
-            FTDX10_CAT.breakIn.set(this.breakIn)
-        );
-    }
-
-    setMicEq(enabled: boolean): void {
-        this.micEq = Boolean(enabled);
-
-        this.send(
-            FTDX10_CAT.micEq.set(this.micEq)
         );
     }
 
@@ -1306,22 +1194,6 @@ setFrequencyB(frequency: number): void {
 
     getAfGain(): number {
         return this.afGain;
-    }
-
-    getCwSpeed(): number {
-        return this.cwSpeed;
-    }
-
-    getMicGain(): number {
-        return this.micGain;
-    }
-
-    getBreakIn(): boolean {
-        return this.breakIn;
-    }
-
-    getMicEq(): boolean {
-        return this.micEq;
     }
 
     getFilterWidth(): number {

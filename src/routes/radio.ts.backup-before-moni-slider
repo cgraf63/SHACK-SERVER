@@ -93,26 +93,6 @@ router.get(
                     ? (activeRadio as any).getAfGain()
                     : 0,
 
-            cwSpeed:
-                typeof (activeRadio as any).getCwSpeed === "function"
-                    ? (activeRadio as any).getCwSpeed()
-                    : 20,
-
-            micGain:
-                typeof (activeRadio as any).getMicGain === "function"
-                    ? (activeRadio as any).getMicGain()
-                    : 50,
-
-            breakIn:
-                typeof (activeRadio as any).getBreakIn === "function"
-                    ? (activeRadio as any).getBreakIn()
-                    : false,
-
-            micEq:
-                typeof (activeRadio as any).getMicEq === "function"
-                    ? (activeRadio as any).getMicEq()
-                    : false,
-
             filterWidth:
                 typeof (activeRadio as any).getFilterWidth === "function"
                     ? (activeRadio as any).getFilterWidth()
@@ -412,6 +392,73 @@ router.post(
 
 
 /*
+    MOX
+*/
+
+router.post(
+    "/radio/mox",
+    (req, res) => {
+
+        const {
+            enabled
+        } = req.body;
+
+        if (
+            typeof enabled !== "boolean"
+        ) {
+
+            return res.status(400).json({
+
+                error:
+                    "Invalid MOX state"
+
+            });
+
+        }
+
+        const activeRadio =
+            radioManager.getActiveRadio();
+
+        if (!activeRadio) {
+
+            return res.status(503).json({
+
+                error:
+                    "No active radio"
+
+            });
+
+        }
+
+        if (
+            typeof (activeRadio as any).mox !== "function"
+        ) {
+
+            return res.status(400).json({
+
+                error:
+                    "MOX not supported by active radio"
+
+            });
+
+        }
+
+        (activeRadio as any).mox(
+            enabled
+        );
+
+        res.json({
+
+            success: true,
+            mox: enabled
+
+        });
+
+    }
+);
+
+
+/*
     MONITOR
 */
 
@@ -420,31 +467,21 @@ router.post(
     (req, res) => {
 
         const {
-            level
+            enabled
         } = req.body;
 
         if (
-            typeof level !== "number" ||
-            !Number.isFinite(level)
+            typeof enabled !== "boolean"
         ) {
 
             return res.status(400).json({
 
                 error:
-                    "Invalid MONI level"
+                    "Invalid MONI state"
 
             });
 
         }
-
-        const monitorLevel =
-            Math.max(
-                0,
-                Math.min(
-                    100,
-                    Math.round(level)
-                )
-            );
 
         const activeRadio =
             radioManager.getActiveRadio();
@@ -474,13 +511,13 @@ router.post(
         }
 
         (activeRadio as any).monitor(
-            monitorLevel
+            enabled
         );
 
         res.json({
 
             success: true,
-            monitor: monitorLevel
+            monitor: enabled
 
         });
 
@@ -962,78 +999,6 @@ router.post(
 
                     (activeRadio as any).setAfGain(
                         Number(value)
-                    );
-
-                    break;
-
-
-                case "cwSpeed":
-
-                    if (
-                        typeof (activeRadio as any).setCwSpeed !==
-                        "function"
-                    ) {
-                        return res.status(501).json({
-                            error: "CW SPEED control not supported"
-                        });
-                    }
-
-                    (activeRadio as any).setCwSpeed(
-                        Number(value)
-                    );
-
-                    break;
-
-
-                case "micGain":
-
-                    if (
-                        typeof (activeRadio as any).setMicGain !==
-                        "function"
-                    ) {
-                        return res.status(501).json({
-                            error: "MIC GAIN control not supported"
-                        });
-                    }
-
-                    (activeRadio as any).setMicGain(
-                        Number(value)
-                    );
-
-                    break;
-
-
-                case "breakIn":
-
-                    if (
-                        typeof (activeRadio as any).setBreakIn !==
-                        "function"
-                    ) {
-                        return res.status(501).json({
-                            error: "BK-IN control not supported"
-                        });
-                    }
-
-                    (activeRadio as any).setBreakIn(
-                        Boolean(value)
-                    );
-
-                    break;
-
-
-                case "micEq":
-
-                    if (
-                        typeof (activeRadio as any).setMicEq !==
-                        "function"
-                    ) {
-                        return res.status(501).json({
-                            error: "MIC EQ control not supported"
-                        });
-                    }
-
-                    (activeRadio as any).setMicEq(
-                        Boolean(value)
                     );
 
                     break;

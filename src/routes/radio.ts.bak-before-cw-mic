@@ -93,26 +93,6 @@ router.get(
                     ? (activeRadio as any).getAfGain()
                     : 0,
 
-            cwSpeed:
-                typeof (activeRadio as any).getCwSpeed === "function"
-                    ? (activeRadio as any).getCwSpeed()
-                    : 20,
-
-            micGain:
-                typeof (activeRadio as any).getMicGain === "function"
-                    ? (activeRadio as any).getMicGain()
-                    : 50,
-
-            breakIn:
-                typeof (activeRadio as any).getBreakIn === "function"
-                    ? (activeRadio as any).getBreakIn()
-                    : false,
-
-            micEq:
-                typeof (activeRadio as any).getMicEq === "function"
-                    ? (activeRadio as any).getMicEq()
-                    : false,
-
             filterWidth:
                 typeof (activeRadio as any).getFilterWidth === "function"
                     ? (activeRadio as any).getFilterWidth()
@@ -962,78 +942,6 @@ router.post(
 
                     (activeRadio as any).setAfGain(
                         Number(value)
-                    );
-
-                    break;
-
-
-                case "cwSpeed":
-
-                    if (
-                        typeof (activeRadio as any).setCwSpeed !==
-                        "function"
-                    ) {
-                        return res.status(501).json({
-                            error: "CW SPEED control not supported"
-                        });
-                    }
-
-                    (activeRadio as any).setCwSpeed(
-                        Number(value)
-                    );
-
-                    break;
-
-
-                case "micGain":
-
-                    if (
-                        typeof (activeRadio as any).setMicGain !==
-                        "function"
-                    ) {
-                        return res.status(501).json({
-                            error: "MIC GAIN control not supported"
-                        });
-                    }
-
-                    (activeRadio as any).setMicGain(
-                        Number(value)
-                    );
-
-                    break;
-
-
-                case "breakIn":
-
-                    if (
-                        typeof (activeRadio as any).setBreakIn !==
-                        "function"
-                    ) {
-                        return res.status(501).json({
-                            error: "BK-IN control not supported"
-                        });
-                    }
-
-                    (activeRadio as any).setBreakIn(
-                        Boolean(value)
-                    );
-
-                    break;
-
-
-                case "micEq":
-
-                    if (
-                        typeof (activeRadio as any).setMicEq !==
-                        "function"
-                    ) {
-                        return res.status(501).json({
-                            error: "MIC EQ control not supported"
-                        });
-                    }
-
-                    (activeRadio as any).setMicEq(
-                        Boolean(value)
                     );
 
                     break;

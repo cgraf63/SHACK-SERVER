@@ -339,28 +339,9 @@
                 </div>
 
                 <div class="tx-buttons">
-
-                    <button class="tune-button">
-                        TUNE
-                    </button>
-
-                    <div class="moni-control">
-                        <span>MONI</span>
-
-                        <input
-                            type="range"
-                            class="moni-slider"
-                            min="0"
-                            max="100"
-                            step="1"
-                            value="50"
-                        >
-
-                        <strong class="moni-value">
-                            50
-                        </strong>
-                    </div>
-
+                    <button>TUNE</button>
+                    <button>MOX</button>
+                    <button>MONI</button>
                 </div>
 
             </div>
@@ -419,29 +400,17 @@
             <div class="dsp-line" id="dsp-notch">
                 <label>NOTCH</label>
                 <button class="toggle-button">OFF</button>
-                <input
-                    class="dsp-slider"
-                    id="notch-slider"
-                    type="range"
-                    min="10"
-                    max="3200"
-                    step="10"
-                    value="1500">
-                <strong>1.500 kHz</strong>
+                <strong>1.100 kHz</strong>
+                <button class="value-button">−</button>
+                <button class="value-button">+</button>
             </div>
 
             <div class="dsp-line" id="dsp-contour">
                 <label>CONTOUR</label>
                 <button class="toggle-button">OFF</button>
-                <input
-                    class="dsp-slider"
-                    id="contour-slider"
-                    type="range"
-                    min="20"
-                    max="3170"
-                    step="10"
-                    value="1500">
-                <strong>1.500 kHz</strong>
+                <strong>800 Hz</strong>
+                <button class="value-button">−</button>
+                <button class="value-button">+</button>
             </div>
 
             <div class="dsp-line" id="dsp-dnr">
@@ -483,72 +452,33 @@
 
 
         <!-- QUICK FUNCTIONS -->
-    <div class="panel control-panel quick-functions-panel">
+        <div class="panel control-panel quick-functions-panel">
 
-        <div class="section-title">QUICK FUNCTIONS</div>
+            <div class="section-title">QUICK FUNCTIONS</div>
 
-        <div class="quick-functions">
-
-            <button
-                class="quick-button"
-                id="ctr2-connect"
-                type="button"
-            >
-                CONNECT CTR2
-            </button>
-
-            <button class="quick-button" id="audio-toggle">
-                Audio On
-            </button>
-
-            <button
-                class="quick-button"
-                id="mic-eq-button"
-                type="button"
-            >
-                MIC EQ
-            </button>
-
-            <button
-                class="quick-button"
-                id="bk-in-button"
-                type="button"
-            >
-                BK-IN
-            </button>
-
-            <div class="quick-slider">
-                <div class="quick-slider-label">
-                    <span>CW SPEED</span>
-                    <span id="cw-speed-value">20</span>
-                </div>
-                <input
-                    id="cw-speed-slider"
-                    type="range"
-                    min="4"
-                    max="60"
-                    value="20"
-                    step="1"
+            <div class="quick-functions">
+                <button class="quick-button">BK-IN</button>
+                <button class="quick-button">CW-SPEED</button>
+                <button class="quick-button">MIC GAIN</button>
+                <button class="quick-button">MIC EQ</button>
+                <button class="quick-button" id="audio-toggle">Audio On</button>
+                <button
+                    class="quick-button ctr2-quick-button"
+                    id="ctr2-connect"
+                    type="button"
                 >
-            </div>
+                    CONNECT CTR2
+                </button>
 
-            <div class="quick-slider">
-                <div class="quick-slider-label">
-                    <span>MIC GAIN</span>
-                    <span id="mic-gain-value">50</span>
-                </div>
-                <input
-                    id="mic-gain-slider"
-                    type="range"
-                    min="0"
-                    max="100"
-                    value="50"
-                    step="1"
+                <span
+                    id="ctr2-status"
+                    class="ctr2-status"
                 >
+                    DISCONNECTED
+                </span>
             </div>
 
         </div>
-    </div>
 
     </section>
 
@@ -591,6 +521,23 @@
 </main>
 
 
+<footer class="statusbar">
+
+    <div>
+        <span class="status-dot"></span>
+        <strong>Radio Online</strong>
+    </div>
+
+    <div>FTDX10 via USB</div>
+    <div>CAT: Connected</div>
+    <div>PTT: Ready</div>
+
+    <div class="footer-spacer"></div>
+
+    <div>Same Passion. More Possibilities.</div>
+    <strong>⚡ SHACK-SERVER</strong>
+
+</footer>
 
     <script src="/js/remote.js"></script>
 </body>
