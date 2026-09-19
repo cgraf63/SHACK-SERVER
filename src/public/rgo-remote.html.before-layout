@@ -132,8 +132,68 @@
 
             </div>
 
+            <div class="frequency-scale">
+
+                <span>14.170</span>
+                <span>14.172</span>
+                <span>14.174</span>
+
+                <span class="frequency-marker">
+                    14.175
+                </span>
+
+                <span>14.176</span>
+                <span>14.178</span>
+                <span>14.180</span>
+
+            </div>
 
         </div>
+
+
+        <!-- VFO KNOB -->
+
+        <div class="vfo-area">
+
+            <div class="vfo-selector">
+                <button class="active">VFO A</button>
+                <button>VFO B</button>
+                <button>SPLIT</button>
+            </div>
+
+            <div class="vfo-control">
+
+                <div class="vfo-knob">
+
+                    <div class="vfo-ring"></div>
+
+                    <div class="vfo-marker"></div>
+
+                    <div class="vfo-center"></div>
+
+                </div>
+
+                <div class="step-selector">
+
+                    <div class="step-title">STEP</div>
+
+                    <button>1 Hz</button>
+                    <button>10 Hz</button>
+                    <button class="active">100 Hz</button>
+                    <button>1 kHz</button>
+
+                </div>
+
+            </div>
+
+            <div class="vfo-arrows">
+                <button>‹</button>
+                <button>›</button>
+            </div>
+
+        </div>
+
+    </section>
 
 
     <!-- =====================================================
@@ -187,141 +247,12 @@
 
     </section>
 
-        <!-- VFO KNOB -->
-
-        <div class="vfo-area">
-
-            <div class="vfo-selector">
-                <button class="active">VFO A</button>
-                <button>VFO B</button>
-                <button>SPLIT</button>
-            </div>
-
-            <div class="vfo-control">
-
-                <div class="vfo-knob">
-
-                    <div class="vfo-ring"></div>
-
-                    <div class="vfo-marker"></div>
-
-                    <div class="vfo-center"></div>
-
-                </div>
-
-                <div class="step-selector">
-
-                    <div class="step-title">STEP</div>
-
-                    <button>1 Hz</button>
-                    <button>10 Hz</button>
-                    <button class="active">100 Hz</button>
-                    <button>1 kHz</button>
-
-                </div>
-
-            </div>
-
-            <div class="vfo-arrows">
-                <button>‹</button>
-                <button>›</button>
-            </div>
-
-        </div>
-
-    </section>
-
-
-
-
 
     <!-- =====================================================
          MIDDLE SECTION
          ===================================================== -->
 
     <section class="middle-section">
-
-        <div class="panel cw-panel">
-
-            <div class="panel-title">CW</div>
-
-            <div class="level-row">
-
-                <label>CW SPEED</label>
-
-                <input
-                    type="range"
-                    min="4"
-                    max="60"
-                    value="20"
-                >
-
-                <output>20</output>
-
-            </div>
-
-            <div class="level-row">
-
-                <label>BK-IN DELAY</label>
-
-                <input
-                    type="range"
-                    min="0"
-                    max="600"
-                    value="300"
-                >
-
-                <output>300</output>
-
-            </div>
-
-        </div>
-
-        <div class="panel rit-panel">
-
-            <div class="panel-title">RIT / XIT</div>
-
-            <div class="rit-row">
-
-                <label>OFFSET</label>
-
-                <input
-                    id="rgo-rit-xit-slider"
-                    type="range"
-                    min="-5000"
-                    max="5000"
-                    step="10"
-                    value="0"
-                >
-
-                <div class="rit-offset-input">
-                    <input
-                        id="rgo-rit-xit-value"
-                        type="number"
-                        min="-5"
-                        max="5"
-                        step="0.01"
-                        value="0.00"
-                        inputmode="decimal"
-                    >
-                    <span>kHz</span>
-                </div>
-
-            </div>
-
-            <div class="rit-range">
-                <span>-5.00</span>
-                <span>+5.00 kHz</span>
-            </div>
-
-            <button
-                id="rgo-rit-xit-mode"
-                class="rit-xit-mode-button"
-                type="button"
-            >OFF</button>
-
-        </div>
-
 
 
         <!-- VFO -->
@@ -346,30 +277,7 @@
                 <strong>7.074.000</strong>
             </div>
 
-
-        </div>
-
-
-        <!-- POWER -->
-
-        <div class="panel power-panel">
-
-            <div class="panel-title">POWER</div>
-
-            <div class="level-row">
-
-                <label>POWER</label>
-
-                <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value="50"
-                >
-
-                <output>50 W</output>
-
-            </div>
+            <button class="swap-button">⇄</button>
 
         </div>
 
@@ -495,6 +403,21 @@
 
             </div>
 
+            <div class="level-row">
+
+                <label>POWER</label>
+
+                <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value="50"
+                >
+
+                <output>50 W</output>
+
+            </div>
+
         </div>
 
     </section>
@@ -504,10 +427,171 @@
          BOTTOM SECTION
          ===================================================== -->
 
-    
+    <section class="bottom-section">
 
 
+        <!-- CW -->
 
+        <div class="panel cw-panel">
+
+            <div class="panel-title">CW</div>
+
+            <div class="level-row">
+
+                <label>CW SPEED</label>
+
+                <input
+                    type="range"
+                    min="4"
+                    max="60"
+                    value="20"
+                >
+
+                <output>20</output>
+
+            </div>
+
+            <div class="level-row">
+
+                <label>BK-IN DELAY</label>
+
+                <input
+                    type="range"
+                    min="0"
+                    max="600"
+                    value="300"
+                >
+
+                <output>300</output>
+
+            </div>
+
+        </div>
+
+
+        <!-- RIT / XIT -->
+
+        <div class="panel rit-panel">
+
+            <div class="panel-title">RIT / XIT</div>
+
+            <div class="rit-row">
+
+                <label>OFFSET</label>
+
+                <input
+                    id="rgo-rit-xit-slider"
+                    type="range"
+                    min="-5000"
+                    max="5000"
+                    step="10"
+                    value="0"
+                >
+
+                <div class="rit-offset-input">
+                    <input
+                        id="rgo-rit-xit-value"
+                        type="number"
+                        min="-5"
+                        max="5"
+                        step="0.01"
+                        value="0.00"
+                        inputmode="decimal"
+                    >
+                    <span>kHz</span>
+                </div>
+
+            </div>
+
+            <div class="rit-range">
+                <span>-5.00</span>
+                <span>+5.00 kHz</span>
+            </div>
+
+            <button
+                id="rgo-rit-xit-mode"
+                class="rit-xit-mode-button"
+                type="button"
+            >OFF</button>
+
+        </div>
+
+
+        <!-- QUICK ACTIONS -->
+
+        <div class="panel quick-panel">
+
+            <div class="panel-title">QUICK ACTIONS</div>
+
+            <div class="quick-actions">
+
+                <button>A &gt; B</button>
+                <button>B &gt; A</button>
+                <button>A = B</button>
+
+            </div>
+
+        </div>
+
+
+        <!-- INFO -->
+
+        <div class="panel info-panel">
+
+            <div class="panel-title">INFO</div>
+
+            <div class="info-row">
+                <span>FW</span>
+                <strong>1.10</strong>
+            </div>
+
+            <div class="info-row">
+                <span>SN</span>
+                <strong>000123</strong>
+            </div>
+
+            <div class="info-row">
+                <span>CAT</span>
+                <strong>✓</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         FOOTER
+         ===================================================== -->
+
+    <footer class="rgo-footer">
+
+        <div class="footer-brand">
+
+            <div class="footer-symbol">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <strong>SHACK-SERVER</strong>
+
+        </div>
+
+        <div class="footer-tagline">
+            SMALL RADIO. BIG POSSIBILITIES.
+        </div>
+
+        <div class="footer-time">
+            14:27
+        </div>
+
+    </footer>
 
 </div>
 
