@@ -500,24 +500,109 @@ function updateVfo() {
 }
 
 
-function updateMeter() {
+let selectedMeter =
+    "S";
 
-    const value =
-        Number(
-            rgoState.meterValue
+
+function initMeterSelector() {
+
+    const buttons =
+        document.querySelectorAll(
+            ".meter-select button"
         );
 
+    buttons.forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    buttons.forEach(
+                        item =>
+                            item.classList.remove(
+                                "active"
+                            )
+                    );
+
+                    button.classList.add(
+                        "active"
+                    );
+
+                    selectedMeter =
+                        button.dataset.meter ||
+                        "S";
+
+                    updateMeter();
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+function updateMeter() {
 
     const sValue =
         Number(
             rgoState.meterS
         );
 
+    const powerValue =
+        Number(
+            rgoState.meterPower
+        );
 
-    const meter =
-        Number.isFinite(value)
-            ? value
-            : sValue;
+    const alcValue =
+        Number(
+            rgoState.meterAlc
+        );
+
+    const swrValue =
+        Number(
+            rgoState.meterSwr
+        );
+
+    const compValue =
+        Number(
+            rgoState.meterValue
+        );
+
+
+    let meter = 0;
+
+    switch (selectedMeter) {
+
+        case "PWR":
+            meter = powerValue;
+            break;
+
+        case "ALC":
+            meter = alcValue;
+            break;
+
+        case "SWR":
+            meter = swrValue;
+            break;
+
+        case "COMP":
+            meter = compValue;
+            break;
+
+        case "S":
+        default:
+            meter = sValue;
+            break;
+
+    }
+
+
+    if (!Number.isFinite(meter)) {
+        meter = 0;
+    }
 
 
     const segments =
@@ -532,12 +617,8 @@ function updateMeter() {
             Math.max(
                 0,
                 Math.min(
-                    segments.length,
-                    Math.round(
-                        meter /
-                        16 *
-                        segments.length
-                    )
+                    15,
+                    Math.round(meter)
                 )
             );
 
@@ -1135,6 +1216,7 @@ document.addEventListener(
 
         initRitXitControl();
         initBandControls();
+        initMeterSelector();
         startRgoPolling();
 
     }

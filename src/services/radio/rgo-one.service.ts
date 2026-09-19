@@ -234,7 +234,7 @@ export class RgoOneService implements RadioService {
         /*
          * Meters
          */
-        this.send("SM;");
+        this.send("SM0;");
         this.send("RM;");
 
 

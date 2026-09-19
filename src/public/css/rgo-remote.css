@@ -317,6 +317,12 @@ button {
 
     min-width: 5px;
 
+    background: #415563;
+
+    box-shadow: none;
+}
+
+.meter-segments span.active {
     background:
         linear-gradient(
             180deg,
@@ -326,11 +332,6 @@ button {
 
     box-shadow:
         0 0 8px rgba(255, 122, 0, 0.22);
-}
-
-.meter-segments span:nth-child(n+16) {
-    background: #415563;
-    box-shadow: none;
 }
 
 .meter-reading {
