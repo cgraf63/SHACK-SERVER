@@ -48,6 +48,18 @@ router.get('/diagnostics', (_req, res) => {
 });
 
 
+router.get('/rgo', (_req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '..',
+            'public',
+            'rgo-remote.html'
+        )
+    );
+});
+
+
 router.get('/contest-manager', (_req, res) => {
     res.sendFile(
         path.join(

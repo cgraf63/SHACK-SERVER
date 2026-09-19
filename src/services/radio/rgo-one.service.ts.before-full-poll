@@ -272,6 +272,8 @@ export class RgoOneService implements RadioService {
          */
 
         this.send("ID;");
+        this.send("FW;");
+        this.send("SN;");
 
     }
 
@@ -828,7 +830,7 @@ export class RgoOneService implements RadioService {
         if (match) {
 
             this.firmware =
-                match[1] ?? "";
+                match[1];
 
             return;
 
@@ -848,7 +850,7 @@ export class RgoOneService implements RadioService {
         if (match) {
 
             this.radioId =
-                match[1] ?? "";
+                match[1];
 
             return;
 
@@ -868,7 +870,7 @@ export class RgoOneService implements RadioService {
         if (match) {
 
             this.serialNumber =
-                match[1] ?? "";
+                match[1];
 
             return;
 
@@ -906,28 +908,35 @@ export class RgoOneService implements RadioService {
         this.lastIfResponse =
             response;
 
+
         /*
-         * RGO ONE / TS-480 compatible IF response.
+         * TS-480 IF layout:
          *
-         * Example:
-         *
-         * IF00003501090     +26501000003000000 ;
-         *
-         * Frequency: 11 digits
-         * RIT/XIT offset: signed 4 digits
-         * followed by the individual status fields.
+         * IF
+         * P1  frequency 11 digits
+         * P2  5 spaces
+         * P3  RIT/XIT offset
+         * P4  RIT
+         * P5  XIT
+         * P6  memory bank
+         * P7  memory channel
+         * P8  RX/TX
+         * P9  mode
+         * P10 VFO function
+         * P11 scan
+         * P12 split
+         * P13 tone
+         * P14 tone number
+         * P15 space
          */
 
-        const body =
-            response.substring(
-                2,
-                response.length - 1
+        const match =
+            response.match(
+                /^IF(\d{11})( {5})([+-]\d{4})([01])([01])([0-9])(\d{2})([01])([1-7])([01])([01])([01])([0-2])(\d{2})( );$/
             );
 
-        if (
-            !response.startsWith("IF") ||
-            body.length < 25
-        ) {
+
+        if (!match) {
 
             console.log(
                 "RGO IF parse failed:",
@@ -938,61 +947,50 @@ export class RgoOneService implements RadioService {
 
         }
 
-        const frequencyText =
-            body.substring(0, 11);
-
-        const offsetText =
-            body.substring(16, 21);
-
-        if (
-            !/^\d{11}$/.test(frequencyText) ||
-            !/^[+-]\d{4}$/.test(offsetText)
-        ) {
-
-            console.log(
-                "RGO IF parse failed:",
-                response
-            );
-
-            return;
-
-        }
 
         this.frequency =
-            Number(frequencyText);
+            Number(match[1]);
+
 
         this.ritXitOffset =
-            Number(offsetText);
+            Number(match[3]);
 
-        /*
-         * Status fields after the RIT/XIT offset.
-         *
-         * offset ends at body[20]
-         * RIT = body[21]
-         * XIT = body[22]
-         * TX  = body[23]
-         */
 
         this.ritEnabled =
-            body[21] === "1";
+            match[4] === "1";
+
 
         this.xitEnabled =
-            body[22] === "1";
+            match[5] === "1";
+
 
         this.txState =
-            body[23] === "1";
+            match[8] === "1";
 
-        console.log(
-            "RGO IF STATUS:",
-            "offset=",
-            this.ritXitOffset,
-            "RIT=",
-            this.ritEnabled,
-            "XIT=",
-            this.xitEnabled,
-            "TX=",
-            this.txState
-        );
+
+        this.mode =
+            this.modeFromCode(
+                Number(match[9])
+            );
+
+
+        this.rxVfo =
+            Number(match[10]);
+
+
+        this.split =
+            match[11] === "1";
+
+
+        /*
+         * VFO function from IF.
+         *
+         * 0 = VFO A
+         * 1 = VFO B
+         */
+
+        this.txVfo =
+            Number(match[10]);
 
     }
 
@@ -1059,92 +1057,6 @@ export class RgoOneService implements RadioService {
 
         this.send(
             `FA${value};`
-        );
-
-    }
-
-
-    bandUp(): void {
-
-        if (!this.port.isOpen) {
-
-            console.error(
-                "RGO CAT not connected"
-            );
-
-            return;
-
-        }
-
-        this.send(
-            "BU;"
-        );
-
-    }
-
-
-    bandDown(): void {
-
-        if (!this.port.isOpen) {
-
-            console.error(
-                "RGO CAT not connected"
-            );
-
-            return;
-
-        }
-
-        this.send(
-            "BD;"
-        );
-
-    }
-
-
-    setRit(
-        enabled: boolean
-    ): void {
-
-        if (!this.port.isOpen) {
-
-            console.error(
-                "RGO CAT not connected"
-            );
-
-            return;
-
-        }
-
-        this.ritEnabled =
-            enabled;
-
-        this.send(
-            `RT${enabled ? "1" : "0"};`
-        );
-
-    }
-
-
-    setXit(
-        enabled: boolean
-    ): void {
-
-        if (!this.port.isOpen) {
-
-            console.error(
-                "RGO CAT not connected"
-            );
-
-            return;
-
-        }
-
-        this.xitEnabled =
-            enabled;
-
-        this.send(
-            `XT${enabled ? "1" : "0"};`
         );
 
     }
@@ -1361,62 +1273,6 @@ export class RgoOneService implements RadioService {
         return this.ritXitOffset;
 
     }
-
-setRitXitOffset(offset: number): void {
-
-    if (!this.port.isOpen) {
-        console.error("RGO CAT not connected");
-        return;
-    }
-
-    /*
-     * RGO RIT/XIT offset:
-     * -5000 ... +5000 Hz
-     * 10 Hz steps
-     */
-
-    let target =
-        Math.round(offset / 10) * 10;
-
-    target =
-        Math.max(
-            -5000,
-            Math.min(5000, target)
-        );
-
-    const current =
-        this.ritXitOffset;
-
-    const difference =
-        target - current;
-
-    if (difference === 0) {
-        return;
-    }
-
-    const steps =
-        Math.abs(difference) / 10;
-
-    const command =
-        difference > 0
-            ? "RU"
-            : "RD";
-
-    /*
-     * RGO CAT uses the five-digit
-     * step parameter for RU/RD.
-     *
-     * 00100 = 100 × 10 Hz = 1000 Hz
-     */
-
-    const parameter =
-        String(steps).padStart(5, "0");
-
-    this.send(
-        `${command}${parameter};`
-    );
-
-}
 
 
     getTxState(): boolean {

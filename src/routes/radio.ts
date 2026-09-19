@@ -45,7 +45,6 @@ router.get(
             );
 
 
-        console.log("API GAIN:", (activeRadio as any).getRfGain(), (activeRadio as any).getAfGain());
 
         res.json({
 
@@ -68,6 +67,36 @@ router.get(
 
                 typeof (activeRadio as any).getFrequencyB === "function"
                     ? (activeRadio as any).getFrequencyB()
+                    : 0,
+
+
+            ritXitOffset:
+
+                typeof (activeRadio as any).getRitXitOffset === "function"
+                    ? (activeRadio as any).getRitXitOffset()
+                    : 0,
+
+
+            txState:
+
+                typeof (activeRadio as any).getTxState === "function"
+                    ? (activeRadio as any).getTxState()
+                    : false,
+
+
+
+
+            rxVfo:
+
+                typeof (activeRadio as any).getRxVfo === "function"
+                    ? (activeRadio as any).getRxVfo()
+                    : 0,
+
+
+            txVfo:
+
+                typeof (activeRadio as any).getTxVfo === "function"
+                    ? (activeRadio as any).getTxVfo()
                     : 0,
 
 
@@ -161,6 +190,66 @@ router.get(
             nbLevel:
                 typeof (activeRadio as any).getNbLevel === "function"
                     ? (activeRadio as any).getNbLevel()
+                    : 0,
+
+
+            /*
+             * RGO ONE
+             */
+
+            preamp:
+                typeof (activeRadio as any).getPreamp === "function"
+                    ? (activeRadio as any).getPreamp()
+                    : false,
+
+            rgoAttenuator:
+                typeof (activeRadio as any).getAttenuator === "function"
+                    ? (activeRadio as any).getAttenuator()
+                    : false,
+
+            rgoNoiseBlanker:
+                typeof (activeRadio as any).getNoiseBlanker === "function"
+                    ? (activeRadio as any).getNoiseBlanker()
+                    : false,
+
+            atuEnabled:
+                typeof (activeRadio as any).getAtuEnabled === "function"
+                    ? (activeRadio as any).getAtuEnabled()
+                    : false,
+
+            atuTuning:
+                typeof (activeRadio as any).getAtuTuning === "function"
+                    ? (activeRadio as any).getAtuTuning()
+                    : false,
+
+            meterFunction:
+                typeof (activeRadio as any).getMeterFunction === "function"
+                    ? (activeRadio as any).getMeterFunction()
+                    : 0,
+
+            meterValue:
+                typeof (activeRadio as any).getMeterValue === "function"
+                    ? (activeRadio as any).getMeterValue()
+                    : 0,
+
+            ritEnabled:
+                typeof (activeRadio as any).getRitEnabled === "function"
+                    ? (activeRadio as any).getRitEnabled()
+                    : false,
+
+            xitEnabled:
+                typeof (activeRadio as any).getXitEnabled === "function"
+                    ? (activeRadio as any).getXitEnabled()
+                    : false,
+
+            fineTuning:
+                typeof (activeRadio as any).getFineTuning === "function"
+                    ? (activeRadio as any).getFineTuning()
+                    : false,
+
+            breakInDelay:
+                typeof (activeRadio as any).getBreakInDelay === "function"
+                    ? (activeRadio as any).getBreakInDelay()
                     : 0,
 
 
@@ -1144,6 +1233,119 @@ router.post(
         try {
 
             switch (control) {
+
+                case "ritXit": {
+
+                    if (
+                        typeof (activeRadio as any).setRit !==
+                        "function" ||
+                        typeof (activeRadio as any).setXit !==
+                        "function"
+                    ) {
+                        return res.status(501).json({
+                            error: "RIT/XIT control not supported"
+                        });
+                    }
+
+                    const mode =
+                        Number(value);
+
+                    if (
+                        !Number.isInteger(mode) ||
+                        mode < 0 ||
+                        mode > 3
+                    ) {
+                        return res.status(400).json({
+                            error: "Invalid RIT/XIT mode"
+                        });
+                    }
+
+                    /*
+                     * 0 = OFF
+                     * 1 = RIT
+                     * 2 = XIT
+                     * 3 = RIT + XIT
+                     */
+
+                    (activeRadio as any).setRit(
+                        mode === 1 ||
+                        mode === 3
+                    );
+
+                    (activeRadio as any).setXit(
+                        mode === 2 ||
+                        mode === 3
+                    );
+
+                    break;
+                }
+
+
+                case "bandUp": {
+
+            if (
+                typeof (activeRadio as any).bandUp !==
+                "function"
+            ) {
+                return res.status(501).json({
+                    error: "Band Up control not supported"
+                });
+            }
+
+            (activeRadio as any).bandUp();
+
+            break;
+        }
+
+
+        case "bandDown": {
+
+            if (
+                typeof (activeRadio as any).bandDown !==
+                "function"
+            ) {
+                return res.status(501).json({
+                    error: "Band Down control not supported"
+                });
+            }
+
+            (activeRadio as any).bandDown();
+
+            break;
+        }
+
+
+        case "ritXitOffset": {
+
+                    if (
+                        typeof (activeRadio as any).setRitXitOffset !==
+                        "function"
+                    ) {
+                        return res.status(501).json({
+                            error: "RIT/XIT offset control not supported"
+                        });
+                    }
+
+                    const offset =
+                        Number(value);
+
+                    if (
+                        !Number.isFinite(offset) ||
+                        offset < -5000 ||
+                        offset > 5000
+                    ) {
+                        return res.status(400).json({
+                            error: "Invalid RIT/XIT offset"
+                        });
+                    }
+
+                    (activeRadio as any).setRitXitOffset(
+                        offset
+                    );
+
+                    break;
+                }
+
 
                 case "att":
 

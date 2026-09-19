@@ -1,0 +1,1517 @@
+import {
+    SerialPort
+} from "serialport";
+
+import {
+    RadioService
+} from "./radio.interface.js";
+
+
+export class RgoOneService
+    implements RadioService {
+
+
+    private port: SerialPort;
+
+
+    /* =====================================================
+       RADIO STATE
+       ===================================================== */
+
+    private frequency = 0;
+
+    private frequencyB = 0;
+
+    private mode = "UNKNOWN";
+
+    private power = 0;
+
+    private rfGain = 0;
+
+    private micGain = 0;
+
+    private preamp = false;
+
+    private attenuator = false;
+
+    private noiseBlanker = false;
+
+    private agc = "UNKNOWN";
+
+    private agcCode = 0;
+
+    private atuEnabled = false;
+
+    private atuTuning = false;
+
+    private cwSpeed = 0;
+
+    private breakInDelay = 0;
+
+    private sMeter = 0;
+
+    private meterFunction = 0;
+
+    private meterValue = 0;
+
+    private ritEnabled = false;
+
+    private xitEnabled = false;
+
+    private ritXitOffset = 0;
+
+    private txState = false;
+
+    private split = false;
+
+    private rxVfo = 0;
+
+    private txVfo = 0;
+
+    private fineTuning = false;
+
+    private firmware = "UNKNOWN";
+
+    private radioId = "UNKNOWN";
+
+    private serialNumber = "UNKNOWN";
+
+    private lastIfResponse = "";
+
+    private lastRx = "";
+
+
+    /* =====================================================
+       CONSTRUCTOR
+       ===================================================== */
+
+    constructor(
+        device: string,
+        baudRate: number
+    ) {
+
+
+        this.port =
+            new SerialPort({
+
+                path:
+                    device,
+
+                baudRate:
+                    baudRate,
+
+                autoOpen:
+                    false
+
+            });
+
+
+        this.port.on(
+            "data",
+            data => {
+
+                const response =
+                    data.toString();
+
+                this.lastRx =
+                    response;
+
+                console.log(
+                    "RGO CAT RX:",
+                    response
+                );
+
+
+                this.parseResponse(
+                    response
+                );
+
+            }
+        );
+
+
+        this.port.on(
+            "error",
+            error => {
+
+                console.error(
+                    "RGO CAT error:",
+                    error.message
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       START
+       ===================================================== */
+
+    start(): void {
+
+        this.port.open(
+            err => {
+
+                if (err) {
+
+                    console.error(
+                        "RGO CAT open failed:",
+                        err.message
+                    );
+
+                    return;
+
+                }
+
+
+                console.log(
+                    "RGO CAT connected"
+                );
+
+
+                /*
+                 * RGO ONE READ ONLY POLLING
+                 *
+                 * IMPORTANT:
+                 * No WRITE commands are added here.
+                 *
+                 * All commands below are READ commands
+                 * according to the RGO ONE CAT manual.
+                 */
+
+                setInterval(
+                    () => {
+
+                        if (
+                            !this.port.isOpen
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        const commands =
+                            [
+                                "AC;",
+                                "FA;",
+                                "FB;",
+                                "FR;",
+                                "FT;",
+                                "FS;",
+                                "FW;",
+                                "GT;",
+                                "ID;",
+                                "IF;",
+                                "KS;",
+                                "MD;",
+                                "MG;",
+                                "NB;",
+                                "PA;",
+                                "PC;",
+                                "RA;",
+                                "RG;",
+                                "RM;",
+                                "RT;",
+                                "SD;",
+                                "SM;",
+                                "SN;",
+                                "XT;"
+                            ];
+
+
+                        const command =
+                            commands.join("");
+
+
+                        console.log(
+                            "RGO CAT TX READ:",
+                            command
+                        );
+
+
+                        this.port.write(
+                            command
+                        );
+
+
+                    },
+                    2000
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       RESPONSE PARSER
+       ===================================================== */
+
+    private parseResponse(
+        response: string
+    ): void {
+
+
+        /* -------------------------------------------------
+           VFO A
+           FAxxxxxxxxxxx;
+           ------------------------------------------------- */
+
+        const faMatch =
+            response.match(
+                /FA(\d{11});/
+            );
+
+
+        if (
+            faMatch
+        ) {
+
+            const value =
+                Number(
+                    faMatch[1]
+                );
+
+
+            if (
+                Number.isFinite(value)
+            ) {
+
+                this.frequency =
+                    value;
+
+                console.log(
+                    "RGO FA:",
+                    this.frequency
+                );
+
+            }
+
+        }
+
+
+        /* -------------------------------------------------
+           VFO B
+           FBxxxxxxxxxxx;
+           ------------------------------------------------- */
+
+        const fbMatch =
+            response.match(
+                /FB(\d{11});/
+            );
+
+
+        if (
+            fbMatch
+        ) {
+
+            const value =
+                Number(
+                    fbMatch[1]
+                );
+
+
+            if (
+                Number.isFinite(value)
+            ) {
+
+                this.frequencyB =
+                    value;
+
+                console.log(
+                    "RGO FB:",
+                    this.frequencyB
+                );
+
+            }
+
+        }
+
+
+        /* -------------------------------------------------
+           RX VFO
+           FR0;
+           FR1;
+           ------------------------------------------------- */
+
+        const frMatch =
+            response.match(
+                /FR([01]);/
+            );
+
+
+        if (
+            frMatch
+        ) {
+
+            this.rxVfo =
+                Number(
+                    frMatch[1]
+                );
+
+            console.log(
+                "RGO FR RX VFO:",
+                this.rxVfo
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           TX VFO
+           FT0;
+           FT1;
+           ------------------------------------------------- */
+
+        const ftMatch =
+            response.match(
+                /FT([01]);/
+            );
+
+
+        if (
+            ftMatch
+        ) {
+
+            this.txVfo =
+                Number(
+                    ftMatch[1]
+                );
+
+            console.log(
+                "RGO FT TX VFO:",
+                this.txVfo
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           Fine tuning
+           FS0;
+           FS1;
+           ------------------------------------------------- */
+
+        const fsMatch =
+            response.match(
+                /FS([01]);/
+            );
+
+
+        if (
+            fsMatch
+        ) {
+
+            this.fineTuning =
+                fsMatch[1] === "1";
+
+            console.log(
+                "RGO FS fine tuning:",
+                this.fineTuning
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           Mode
+           MD1;
+           MD2;
+           ...
+           MD7;
+           ------------------------------------------------- */
+
+        const mdMatch =
+            response.match(
+                /MD([1-7]);/
+            );
+
+
+        if (
+            mdMatch
+        ) {
+
+            const modes:
+                Record<string, string> = {
+
+                    "1": "LSB",
+                    "2": "USB",
+                    "3": "CW",
+                    "4": "FM",
+                    "5": "AM",
+                    "6": "DIGI",
+                    "7": "CW-R"
+
+                };
+
+
+            this.mode =
+                modes[
+                    mdMatch[1] ?? ""
+                ]
+                ??
+                "UNKNOWN";
+
+
+            console.log(
+                "RGO MD:",
+                this.mode
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           RF POWER
+           PC000;
+           ...
+           PC050;
+           ------------------------------------------------- */
+
+        const pcMatch =
+            response.match(
+                /PC(\d{3});/
+            );
+
+
+        if (
+            pcMatch
+        ) {
+
+            this.power =
+                Number(
+                    pcMatch[1]
+                );
+
+
+            console.log(
+                "RGO PC power:",
+                this.power
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           RF GAIN
+           RG000;
+           ...
+           RG100;
+           ------------------------------------------------- */
+
+        const rgMatch =
+            response.match(
+                /RG(\d{3});/
+            );
+
+
+        if (
+            rgMatch
+        ) {
+
+            this.rfGain =
+                Number(
+                    rgMatch[1]
+                );
+
+
+            console.log(
+                "RGO RG RF gain:",
+                this.rfGain
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           MIC GAIN
+           MG000;
+           ...
+           MG010;
+           ------------------------------------------------- */
+
+        const mgMatch =
+            response.match(
+                /MG(\d{3});/
+            );
+
+
+        if (
+            mgMatch
+        ) {
+
+            this.micGain =
+                Number(
+                    mgMatch[1]
+                );
+
+
+            console.log(
+                "RGO MG mic gain:",
+                this.micGain
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           PREAMP
+           PA0...
+           PA1...
+           ------------------------------------------------- */
+
+        const paMatch =
+            response.match(
+                /PA([01])\d?;/
+            );
+
+
+        if (
+            paMatch
+        ) {
+
+            this.preamp =
+                paMatch[1] === "1";
+
+
+            console.log(
+                "RGO PA preamp:",
+                this.preamp
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           ATTENUATOR
+           RA00...
+           RA01...
+           ------------------------------------------------- */
+
+        const raMatch =
+            response.match(
+                /RA(00|01)00;/
+            );
+
+
+        if (
+            raMatch
+        ) {
+
+            this.attenuator =
+                raMatch[1] === "01";
+
+
+            console.log(
+                "RGO RA attenuator:",
+                this.attenuator
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           NOISE BLANKER
+           NB0;
+           NB1;
+           ------------------------------------------------- */
+
+        const nbMatch =
+            response.match(
+                /NB([01]);/
+            );
+
+
+        if (
+            nbMatch
+        ) {
+
+            this.noiseBlanker =
+                nbMatch[1] === "1";
+
+
+            console.log(
+                "RGO NB:",
+                this.noiseBlanker
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           AGC
+           GT000;
+           GT001;
+           GT002;
+           ------------------------------------------------- */
+
+        const gtMatch =
+            response.match(
+                /GT(\d{3});/
+            );
+
+
+        if (
+            gtMatch
+        ) {
+
+            this.agcCode =
+                Number(
+                    gtMatch[1]
+                );
+
+
+            switch (
+                this.agcCode
+            ) {
+
+                case 0:
+                    this.agc =
+                        "OFF";
+                    break;
+
+                case 1:
+                    this.agc =
+                        "FAST";
+                    break;
+
+                case 2:
+                    this.agc =
+                        "SLOW";
+                    break;
+
+                default:
+                    this.agc =
+                        "UNKNOWN";
+
+            }
+
+
+            console.log(
+                "RGO GT AGC:",
+                this.agc
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           CW SPEED
+           KS005;
+           ...
+           KS045;
+           ------------------------------------------------- */
+
+        const ksMatch =
+            response.match(
+                /KS(\d{3});/
+            );
+
+
+        if (
+            ksMatch
+        ) {
+
+            this.cwSpeed =
+                Number(
+                    ksMatch[1]
+                );
+
+
+            console.log(
+                "RGO KS CW speed:",
+                this.cwSpeed
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           BREAK-IN DELAY
+           SD0000;
+           ...
+           SD1200;
+           ------------------------------------------------- */
+
+        const sdMatch =
+            response.match(
+                /SD(\d{4});/
+            );
+
+
+        if (
+            sdMatch
+        ) {
+
+            this.breakInDelay =
+                Number(
+                    sdMatch[1]
+                );
+
+
+            console.log(
+                "RGO SD break-in:",
+                this.breakInDelay
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           S-METER
+           SM0xxxx;
+           ------------------------------------------------- */
+
+        const smMatch =
+            response.match(
+                /SM0(\d{4});/
+            );
+
+
+        if (
+            smMatch
+        ) {
+
+            this.sMeter =
+                Number(
+                    smMatch[1]
+                );
+
+
+            console.log(
+                "RGO SM S-meter:",
+                this.sMeter
+            );
+
+        }
+
+
+        /*
+         * Some firmware revisions may return the
+         * S-meter response in a slightly different
+         * form. Keep the raw response visible for
+         * troubleshooting.
+         */
+
+        const smFallback =
+            response.match(
+                /SM(\d+);/
+            );
+
+
+        if (
+            smFallback &&
+            !smMatch
+        ) {
+
+            this.sMeter =
+                Number(
+                    smFallback[1]
+                );
+
+
+            console.log(
+                "RGO SM S-meter fallback:",
+                this.sMeter
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           METER FUNCTION + VALUE
+           RM0xxxx;
+           RM1xxxx;
+           RM2xxxx;
+           RM3xxxx;
+           ------------------------------------------------- */
+
+        const rmMatch =
+            response.match(
+                /RM([0-3])(\d{4});/
+            );
+
+
+        if (
+            rmMatch
+        ) {
+
+            this.meterFunction =
+                Number(
+                    rmMatch[1]
+                );
+
+            this.meterValue =
+                Number(
+                    rmMatch[2]
+                );
+
+
+            console.log(
+                "RGO RM meter:",
+                this.meterFunction,
+                this.meterValue
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           RIT ON/OFF
+           RT0;
+           RT1;
+           ------------------------------------------------- */
+
+        const rtMatch =
+            response.match(
+                /RT([01]);/
+            );
+
+
+        if (
+            rtMatch
+        ) {
+
+            this.ritEnabled =
+                rtMatch[1] === "1";
+
+
+            console.log(
+                "RGO RT RIT:",
+                this.ritEnabled
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           XIT ON/OFF
+           XT0;
+           XT1;
+           ------------------------------------------------- */
+
+        const xtMatch =
+            response.match(
+                /XT([01]);/
+            );
+
+
+        if (
+            xtMatch
+        ) {
+
+            this.xitEnabled =
+                xtMatch[1] === "1";
+
+
+            console.log(
+                "RGO XT XIT:",
+                this.xitEnabled
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           ATU
+           AC1P2P3;
+           ------------------------------------------------- */
+
+        const acMatch =
+            response.match(
+                /AC(\d)([01])([01]);/
+            );
+
+
+        if (
+            acMatch
+        ) {
+
+            this.atuEnabled =
+                acMatch[2] === "1";
+
+            this.atuTuning =
+                acMatch[3] === "1";
+
+
+            console.log(
+                "RGO AC ATU:",
+                {
+                    enabled:
+                        this.atuEnabled,
+
+                    tuning:
+                        this.atuTuning
+
+                }
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           FIRMWARE
+           FWXXXX;
+           ------------------------------------------------- */
+
+        const fwMatch =
+            response.match(
+                /FW([^;]+);/
+            );
+
+
+        if (
+            fwMatch
+        ) {
+
+            this.firmware =
+                fwMatch[1] ?? "UNKNOWN";
+
+
+            console.log(
+                "RGO FW:",
+                this.firmware
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           RADIO ID
+           IDXXX;
+           ------------------------------------------------- */
+
+        const idMatch =
+            response.match(
+                /ID([^;]+);/
+            );
+
+
+        if (
+            idMatch
+        ) {
+
+            this.radioId =
+                idMatch[1] ?? "UNKNOWN";
+
+
+            console.log(
+                "RGO ID:",
+                this.radioId
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           SERIAL NUMBER
+           SN...;
+           ------------------------------------------------- */
+
+        const snMatch =
+            response.match(
+                /SN([^;]+);/
+            );
+
+
+        if (
+            snMatch
+        ) {
+
+            this.serialNumber =
+                (snMatch[1] ?? "").trim();
+
+
+            console.log(
+                "RGO SN:",
+                this.serialNumber
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           IF FULL STATUS
+
+           We deliberately keep this RAW for now.
+
+           The RGO manual says:
+           IF<P1..P15>;
+
+           with fields according to the
+           TS-480 protocol.
+
+           We will decode this separately after
+           seeing the actual response from the radio.
+           ------------------------------------------------- */
+
+        const ifMatch =
+            response.match(
+                /IF(\d{11})( {5})([+-]\d{4})([01])([01])([0-9])(\d{2})([01])([1-7])([01])([01])([01])([0-2])(\d{2})( );/
+            );
+
+
+        if (
+            ifMatch
+        ) {
+
+            const frequency =
+                Number(
+                    ifMatch[1]
+                );
+
+            const offset =
+                Number(
+                    ifMatch[3]
+                );
+
+            const rit =
+                ifMatch[4] === "1";
+
+            const xit =
+                ifMatch[5] === "1";
+
+            const tx =
+                ifMatch[8] === "1";
+
+            const rxVfo =
+                Number(
+                    ifMatch[10]
+                );
+
+            const split =
+                ifMatch[12] === "1";
+
+
+            if (
+                Number.isFinite(frequency)
+            ) {
+
+                this.frequency =
+                    frequency;
+
+            }
+
+
+            if (
+                Number.isFinite(offset)
+            ) {
+
+                this.ritXitOffset =
+                    offset;
+
+            }
+
+
+            this.ritEnabled =
+                rit;
+
+            this.xitEnabled =
+                xit;
+
+            this.txState =
+                tx;
+
+            this.rxVfo =
+                rxVfo;
+
+            this.split =
+                split;
+
+
+            this.lastIfResponse =
+                ifMatch[0];
+
+
+            console.log(
+                "RGO IF STATUS:",
+                {
+                    frequency:
+                        this.frequency,
+
+                    offset:
+                        this.ritXitOffset,
+
+                    rit:
+                        this.ritEnabled,
+
+                    xit:
+                        this.xitEnabled,
+
+                    tx:
+                        this.txState,
+
+                    rxVfo:
+                        this.rxVfo,
+
+                    split:
+                        this.split
+
+                }
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       WRITE
+       Existing functionality remains unchanged.
+       ===================================================== */
+
+    setFrequency(
+        frequency: number
+    ): void {
+
+
+        if (
+            !this.port.isOpen
+        ) {
+
+            console.error(
+                "CAT not connected"
+            );
+
+            return;
+
+        }
+
+
+        const value =
+            Math.round(
+                frequency
+            )
+            .toString()
+            .padStart(
+                11,
+                "0"
+            );
+
+
+        const command =
+            `FA${value};`;
+
+
+        console.log(
+            "CAT TX:",
+            command
+        );
+
+
+        this.port.write(
+            command
+        );
+
+    }
+
+
+    setMode(
+        mode: string,
+        frequency: number
+    ): void {
+
+
+        if (
+            !this.port.isOpen
+        ) {
+
+            console.error(
+                "CAT not connected"
+            );
+
+            return;
+
+        }
+
+
+        let normalizedMode =
+            mode.toUpperCase();
+
+
+        if (
+            normalizedMode === "SSB"
+        ) {
+
+            normalizedMode =
+                frequency < 10000000
+                    ? "LSB"
+                    : "USB";
+
+        }
+
+
+        const modes:
+            Record<string, string> = {
+
+                LSB: "1",
+                USB: "2",
+                CW: "3",
+                FM: "4",
+                AM: "5",
+                CW_R: "7",
+                "CW-R": "7"
+
+            };
+
+
+        const code =
+            modes[
+                normalizedMode
+            ];
+
+
+        if (
+            !code
+        ) {
+
+            console.error(
+                "Unsupported CAT mode:",
+                mode
+            );
+
+            return;
+
+        }
+
+
+        const command =
+            `MD${code};`;
+
+
+        console.log(
+            "CAT TX:",
+            command
+        );
+
+
+        this.port.write(
+            command
+        );
+
+    }
+
+
+    /* =====================================================
+       EXISTING GETTERS
+       ===================================================== */
+
+    getFrequency(): number {
+
+        return this.frequency;
+
+    }
+
+
+    getMode(): string {
+
+        return this.mode;
+
+    }
+
+
+    getPower(): number {
+
+        return this.power;
+
+    }
+
+
+    /* =====================================================
+       NEW READ GETTERS
+       These will be connected to the API/UI later.
+       ===================================================== */
+
+    getFrequencyB(): number {
+
+        return this.frequencyB;
+
+    }
+
+
+    getRitXitOffset(): number {
+
+        return this.ritXitOffset;
+
+    }
+
+
+    getTxState(): boolean {
+
+        return this.txState;
+
+    }
+
+
+    getSplit(): boolean {
+
+        return this.split;
+
+    }
+
+
+    getRfGain(): number {
+
+        return this.rfGain;
+
+    }
+
+
+    getMicGain(): number {
+
+        return this.micGain;
+
+    }
+
+
+    getPreamp(): boolean {
+
+        return this.preamp;
+
+    }
+
+
+    getAttenuator(): boolean {
+
+        return this.attenuator;
+
+    }
+
+
+    getNoiseBlanker(): boolean {
+
+        return this.noiseBlanker;
+
+    }
+
+
+    getAgc(): string {
+
+        return this.agc;
+
+    }
+
+
+    getAtuEnabled(): boolean {
+
+        return this.atuEnabled;
+
+    }
+
+
+    getAtuTuning(): boolean {
+
+        return this.atuTuning;
+
+    }
+
+
+    getCwSpeed(): number {
+
+        return this.cwSpeed;
+
+    }
+
+
+    getBreakInDelay(): number {
+
+        return this.breakInDelay;
+
+    }
+
+
+    getSMeter(): number {
+
+        return this.sMeter;
+
+    }
+
+
+    getMeterFunction(): number {
+
+        return this.meterFunction;
+
+    }
+
+
+    getMeterValue(): number {
+
+        return this.meterValue;
+
+    }
+
+
+    getRitEnabled(): boolean {
+
+        return this.ritEnabled;
+
+    }
+
+
+    getXitEnabled(): boolean {
+
+        return this.xitEnabled;
+
+    }
+
+
+    getRxVfo(): number {
+
+        return this.rxVfo;
+
+    }
+
+
+    getTxVfo(): number {
+
+        return this.txVfo;
+
+    }
+
+
+    getFineTuning(): boolean {
+
+        return this.fineTuning;
+
+    }
+
+
+    getFirmware(): string {
+
+        return this.firmware;
+
+    }
+
+
+    getRadioId(): string {
+
+        return this.radioId;
+
+    }
+
+
+    getSerialNumber(): string {
+
+        return this.serialNumber;
+
+    }
+
+
+    getLastIfResponse(): string {
+
+        return this.lastIfResponse;
+
+    }
+
+
+    getLastRx(): string {
+
+        return this.lastRx;
+
+    }
+
+}

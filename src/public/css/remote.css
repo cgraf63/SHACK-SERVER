@@ -2156,3 +2156,20 @@ button.active {
     box-shadow: 0 0 8px rgba(210, 184, 63, 0.35);
 }
 
+
+/* =========================================================
+   QUICK FUNCTIONS - allow full control height
+   ========================================================= */
+
+.quick-functions-panel {
+    min-height: 170px;
+    box-sizing: border-box;
+}
+
+
+/* DSP DNR / NB - five controls per row */
+#dsp-dnr,
+#dsp-nb {
+    grid-template-columns: 78px 42px 1fr 28px 28px;
+}
+
