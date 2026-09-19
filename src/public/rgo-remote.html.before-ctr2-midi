@@ -192,19 +192,9 @@
         <div class="vfo-area">
 
             <div class="vfo-selector">
-                <button
-                    id="rgo-ctr2-midi"
-                    type="button"
-                >
-                    CTR2-MIDI
-                </button>
-
-                <button
-                    id="rgo-audio-on"
-                    type="button"
-                >
-                    AUDIO
-                </button>
+                <button class="active">VFO A</button>
+                <button>VFO B</button>
+                <button>SPLIT</button>
             </div>
 
             <div class="vfo-control">
@@ -341,27 +331,9 @@
             <div class="panel-title">VFO</div>
 
             <div class="vfo-buttons">
-                <button
-                    id="rgo-vfo-a"
-                    class="active"
-                    type="button"
-                >
-                    VFO A
-                </button>
-
-                <button
-                    id="rgo-vfo-b"
-                    type="button"
-                >
-                    VFO B
-                </button>
-
-                <button
-                    id="rgo-split"
-                    type="button"
-                >
-                    SPLIT
-                </button>
+                <button class="active">VFO A</button>
+                <button>VFO B</button>
+                <button>SPLIT</button>
             </div>
 
             <div class="vfo-frequency-row">
