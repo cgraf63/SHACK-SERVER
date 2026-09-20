@@ -1630,8 +1630,8 @@ button.active {
     background: linear-gradient(
         to right,
         #087dc5 0%,
-        #087dc5 50%,
-        #35434d 50%,
+        #087dc5 var(--power-percent, 50%),
+        #35434d var(--power-percent, 50%),
         #35434d 100%
     );
     border: 1px solid #4b5b66;

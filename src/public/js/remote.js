@@ -3,6 +3,7 @@ const connection = document.querySelector(".connection");
 const powerDisplay = document.querySelector(".power-number");
 const powerIcon = document.querySelector(".power-icon");
 const powerSlider = document.querySelector(".power-slider");
+let powerSliderChanging = false;
 const rfGainSlider = document.querySelector("#rf-gain-slider");
 const afGainSlider = document.querySelector("#af-gain-slider");
 const cwSpeedSlider = document.querySelector("#cw-speed-slider");
@@ -113,6 +114,71 @@ async function setFilterGainControl(control, value) {
             error
         );
     }
+}
+
+
+/* TX POWER */
+
+if (powerSlider) {
+
+    powerSlider.addEventListener(
+        "input",
+        async () => {
+
+            powerSliderChanging = true;
+
+            const power =
+                Number(powerSlider.value);
+
+            if (!Number.isFinite(power)) {
+                return;
+            }
+
+            if (powerDisplay) {
+                powerDisplay.textContent =
+                    `${power} W`;
+            }
+
+            const percent =
+                ((power - 5) / (100 - 5)) * 100;
+
+            powerSlider.style.setProperty(
+                "--power-percent",
+                `${percent}%`
+            );
+
+            try {
+
+                const response =
+                    await fetch("/api/radio/vfo-control", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body: JSON.stringify({
+                            control: "power",
+                            value: power
+                        })
+                    });
+
+                if (!response.ok) {
+                    throw new Error(
+                        `TX power failed: HTTP ${response.status}`
+                    );
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "TX POWER:",
+                    error
+                );
+            }
+
+            powerSliderChanging = false;
+        }
+    );
 }
 
 
@@ -904,14 +970,26 @@ async function updateRadioState() {
 
         // TX Power
 
-	if (powerDisplay) {
- 	   powerDisplay.textContent =
-        `${data.power} W`;
-}
+        if (powerDisplay) {
+            powerDisplay.textContent =
+                `${data.power} W`;
+        }
 
-	if (powerSlider) {
-    	   powerSlider.value = data.power;
-}
+        if (powerSlider && !powerSliderChanging) {
+            const power = Number(data.power);
+
+            if (Number.isFinite(power)) {
+                powerSlider.value = power;
+
+                const percent =
+                    ((power - 5) / (100 - 5)) * 100;
+
+                powerSlider.style.setProperty(
+                    "--power-percent",
+                    `${percent}%`
+                );
+            }
+        }
 
         // RF / AF Gain
         if (rfGainSlider) {
@@ -3583,6 +3661,52 @@ if (splitTxFrequencyInput) {
             spectrumContext.moveTo(0, y);
             spectrumContext.lineTo(width, y);
             spectrumContext.stroke();
+        
+        /*
+         * CW / SSB boundary.
+         */
+        const cwCurrentFrequency =
+            Number(lastRadioState?.frequency);
+
+        const cwDisplayBand =
+            getYaesuDisplayBand(cwCurrentFrequency);
+
+        if (cwDisplayBand.cwEnd != null) {
+
+            const cwLineX =
+                ((cwDisplayBand.cwEnd - cwDisplayBand.start) /
+                 (cwDisplayBand.end - cwDisplayBand.start)) *
+                width;
+
+            spectrumContext.save();
+
+            spectrumContext.strokeStyle =
+                "rgba(255,255,255,0.65)";
+
+            spectrumContext.lineWidth = 1;
+
+            spectrumContext.setLineDash([
+                4,
+                4
+            ]);
+
+            spectrumContext.beginPath();
+
+            spectrumContext.moveTo(
+                cwLineX,
+                0
+            );
+
+            spectrumContext.lineTo(
+                cwLineX,
+                height
+            );
+
+            spectrumContext.stroke();
+
+            spectrumContext.restore();
+        }
+
         }
 
         /*
