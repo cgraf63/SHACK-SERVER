@@ -1315,6 +1315,70 @@ router.post(
         }
 
 
+        case "power": {
+
+            if (
+                typeof (activeRadio as any).setPower !==
+                "function"
+            ) {
+                return res.status(501).json({
+                    error: "Power control not supported"
+                });
+            }
+
+            const power =
+                Number(value);
+
+            if (
+                !Number.isFinite(power) ||
+                power < 0 ||
+                power > 50
+            ) {
+                return res.status(400).json({
+                    error: "Invalid power"
+                });
+            }
+
+            (activeRadio as any).setPower(
+                power
+            );
+
+            break;
+        }
+
+
+        case "cwSpeed": {
+
+            if (
+                typeof (activeRadio as any).setCwSpeed !==
+                "function"
+            ) {
+                return res.status(501).json({
+                    error: "CW SPEED control not supported"
+                });
+            }
+
+            const speed =
+                Number(value);
+
+            if (
+                !Number.isFinite(speed) ||
+                speed < 4 ||
+                speed > 60
+            ) {
+                return res.status(400).json({
+                    error: "Invalid CW SPEED"
+                });
+            }
+
+            (activeRadio as any).setCwSpeed(
+                speed
+            );
+
+            break;
+        }
+
+
         case "ritXitOffset": {
 
                     if (

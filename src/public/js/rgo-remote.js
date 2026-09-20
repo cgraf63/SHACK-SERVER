@@ -46,6 +46,7 @@ async function fetchRgoState() {
 
 
         updateRgoDisplay();
+        updateSdrBandScale();
 
 
     } catch (error) {
@@ -279,6 +280,66 @@ function updateRgoDisplay() {
 
 
     updateMode();
+
+
+    const breakInDelaySlider =
+        document.getElementById("rgo-break-in-delay-slider");
+
+    const breakInDelayValue =
+        document.getElementById("rgo-break-in-delay-value");
+
+    if (
+        breakInDelaySlider &&
+        breakInDelayValue &&
+        Number.isFinite(Number(rgoState.breakInDelay))
+    ) {
+        breakInDelaySlider.value =
+            String(rgoState.breakInDelay);
+
+        breakInDelayValue.textContent =
+            String(rgoState.breakInDelay);
+    }
+
+
+
+    const cwSpeedSlider =
+        document.getElementById("rgo-cw-speed-slider");
+
+    const cwSpeedValue =
+        document.getElementById("rgo-cw-speed-value");
+
+    if (
+        cwSpeedSlider &&
+        cwSpeedValue &&
+        Number.isFinite(Number(rgoState.cwSpeed))
+    ) {
+        cwSpeedSlider.value =
+            String(rgoState.cwSpeed);
+
+        cwSpeedValue.textContent =
+            String(rgoState.cwSpeed);
+    }
+
+
+
+    const powerSlider =
+        document.getElementById("rgo-power-slider");
+
+    const powerValue =
+        document.getElementById("rgo-power-value");
+
+    if (
+        powerSlider &&
+        powerValue &&
+        Number.isFinite(Number(rgoState.power))
+    ) {
+        powerSlider.value =
+            String(rgoState.power);
+
+        powerValue.textContent =
+            `${rgoState.power} W`;
+    }
+
 
 
     updateVfo();
@@ -1063,6 +1124,95 @@ async function setRitXitOffset(offset) {
     }
 
 }
+
+
+function initRgoCwSpeedControl() {
+
+    const slider =
+        document.getElementById(
+            "rgo-cw-speed-slider"
+        );
+
+    const value =
+        document.getElementById(
+            "rgo-cw-speed-value"
+        );
+
+    if (!slider || !value) {
+        return;
+    }
+
+
+    slider.addEventListener(
+        "input",
+        () => {
+
+            value.textContent =
+                String(slider.value);
+
+        }
+    );
+
+
+    slider.addEventListener(
+        "change",
+        async () => {
+
+            const speed =
+                Number(slider.value);
+
+            if (
+                !Number.isFinite(speed) ||
+                speed < 4 ||
+                speed > 60
+            ) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/radio/vfo-control",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+                            body: JSON.stringify({
+                                control: "cwSpeed",
+                                value: speed
+                            })
+                        }
+                    );
+
+
+                if (!response.ok) {
+                    throw new Error(
+                        "CW SPEED control failed"
+                    );
+                }
+
+
+                await fetchRgoState();
+
+            } catch (error) {
+
+                console.error(
+                    "RGO CW SPEED:",
+                    error
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
 function initRitXitControl() {
 
     const button =
@@ -1285,20 +1435,130 @@ function initRitXitControl() {
 
 
     /*
-     * Only display the 20 m amateur band.
+     * SDR band selection.
+     *
      * The RSP1B still delivers the complete 2 MHz FFT.
+     * The displayed range follows the current RGO band
+     * from BANDPLAN_DATA.
      */
 
-    const SDR_BAND_START = 14000000;
-    const SDR_BAND_END = 14350000;
-    const SDR_CENTER_FREQUENCY = 14100000;
     const SDR_SAMPLE_RATE = 2000000;
+
+
+    function getCurrentSdrBand() {
+
+        const frequency =
+            Number(
+                rgoState?.frequency
+            );
+
+        if (
+            !Number.isFinite(frequency) ||
+            typeof BANDPLAN_DATA === "undefined"
+        ) {
+            return null;
+        }
+
+        const frequencyMHz =
+            frequency / 1000000;
+
+        return BANDPLAN_DATA.find(
+            band =>
+                frequencyMHz >= band.min &&
+                frequencyMHz <= band.max
+        ) || null;
+    }
+
+
+    function updateSdrBandScale() {
+
+        const startElement =
+            document.getElementById("rgo-sdr-scale-start");
+
+        const boundaryElement =
+            document.getElementById("rgo-sdr-scale-boundary");
+
+        const endElement =
+            document.getElementById("rgo-sdr-scale-end");
+
+        if (
+            !startElement ||
+            !boundaryElement ||
+            !endElement
+        ) {
+            return;
+        }
+
+        const range =
+            getSdrBandRange();
+
+        startElement.textContent =
+            `${(range.start / 1000000).toFixed(3)} MHz`;
+
+        const band =
+            getCurrentSdrBand();
+
+        if (
+            band &&
+            Array.isArray(band.segments) &&
+            band.segments.length > 1
+        ) {
+
+            const boundary =
+                band.segments[1].start;
+
+            boundaryElement.textContent =
+                `${boundary.toFixed(3)} MHz`;
+
+        } else {
+
+            boundaryElement.textContent =
+                "--.--- MHz";
+        }
+
+        endElement.textContent =
+            `${(range.end / 1000000).toFixed(3)} MHz`;
+    }
+
+
+    window.updateSdrBandScale =
+        updateSdrBandScale;
+
+
+    function getSdrBandRange() {
+
+        const band =
+            getCurrentSdrBand();
+
+        if (!band) {
+            return {
+                start: 14000000,
+                end: 14350000,
+                center: 14175000
+            };
+        }
+
+        const start =
+            band.min * 1000000;
+
+        const end =
+            band.max * 1000000;
+
+        return {
+            start,
+            end,
+            center: (start + end) / 2
+        };
+    }
 
 
     function getBandBins(bins) {
 
+        const range =
+            getSdrBandRange();
+
         const fftStartFrequency =
-            SDR_CENTER_FREQUENCY -
+            range.center -
             (SDR_SAMPLE_RATE / 2);
 
         const startBin =
@@ -1306,7 +1566,7 @@ function initRitXitControl() {
                 0,
                 Math.floor(
                     (
-                        SDR_BAND_START -
+                        range.start -
                         fftStartFrequency
                     ) /
                     SDR_SAMPLE_RATE *
@@ -1319,7 +1579,7 @@ function initRitXitControl() {
                 bins - 1,
                 Math.ceil(
                     (
-                        SDR_BAND_END -
+                        range.end -
                         fftStartFrequency
                     ) /
                     SDR_SAMPLE_RATE *
@@ -1613,6 +1873,70 @@ function initRitXitControl() {
 
 
         /*
+         * Bandplan segment boundaries.
+         *
+         * Only thin vertical lines are drawn.
+         * No filled regions or labels.
+         */
+
+        const currentBand =
+            getCurrentSdrBand();
+
+        if (
+            currentBand &&
+            Array.isArray(currentBand.segments)
+        ) {
+
+            const bandRange =
+                getSdrBandRange();
+
+            const bandWidth =
+                bandRange.end -
+                bandRange.start;
+
+            spectrumContext.save();
+
+            spectrumContext.strokeStyle =
+                "rgba(255, 138, 24, 0.38)";
+
+            spectrumContext.lineWidth = 1;
+
+            if (currentBand.segments.length > 1) {
+
+                const boundary =
+                    currentBand.segments[1].start *
+                    1000000;
+
+                if (
+                    boundary > bandRange.start &&
+                    boundary < bandRange.end
+                ) {
+
+                    const x =
+                        (
+                            (boundary - bandRange.start) /
+                            bandWidth
+                        ) *
+                        width;
+
+                    spectrumContext.beginPath();
+                    spectrumContext.moveTo(
+                        Math.round(x) + 0.5,
+                        0
+                    );
+                    spectrumContext.lineTo(
+                        Math.round(x) + 0.5,
+                        height
+                    );
+                    spectrumContext.stroke();
+                }
+            }
+
+            spectrumContext.restore();
+        }
+
+
+        /*
          * Bottom reference line.
          */
 
@@ -1851,7 +2175,7 @@ function initRitXitControl() {
 
         const frequency =
             Number(
-                lastRgoState?.frequency
+                rgoState?.frequency
             );
 
         if (!Number.isFinite(frequency)) {
@@ -1859,14 +2183,17 @@ function initRitXitControl() {
         }
 
 
+        const range =
+            getSdrBandRange();
+
         const position =
             (
                 frequency -
-                SDR_BAND_START
+                range.start
             ) /
             (
-                SDR_BAND_END -
-                SDR_BAND_START
+                range.end -
+                range.start
             );
 
         const clamped =
@@ -1880,6 +2207,23 @@ function initRitXitControl() {
 
         vfoMarker.style.left =
             `${clamped * 100}%`;
+
+        if (clamped <= 0.05) {
+            vfoMarker.style.transform =
+                "translateX(0)";
+            vfoMarker.style.textAlign =
+                "left";
+        } else if (clamped >= 0.95) {
+            vfoMarker.style.transform =
+                "translateX(-100%)";
+            vfoMarker.style.textAlign =
+                "right";
+        } else {
+            vfoMarker.style.transform =
+                "translateX(-0.5px)";
+            vfoMarker.style.textAlign =
+                "center";
+        }
 
         vfoMarker.textContent =
             `${(
@@ -1896,7 +2240,7 @@ function initRitXitControl() {
 
         const frequency =
             Number(
-                lastRgoState?.frequency
+                rgoState?.frequency
             );
 
         if (!Number.isFinite(frequency)) {
@@ -1904,7 +2248,7 @@ function initRitXitControl() {
         }
 
         sdrFrequency.textContent =
-            `${formatRgoFrequency(frequency)}`;
+            `${formatFrequency(frequency)}`;
     }
 
 
@@ -2126,6 +2470,7 @@ document.addEventListener(
     () => {
 
         initRitXitControl();
+        initRgoCwSpeedControl();
         initBandControls();
         initMeterSelector();
         startRgoPolling();

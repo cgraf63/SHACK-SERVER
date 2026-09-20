@@ -179,8 +179,9 @@
             </div>
 
             <div class="rgo-sdr-scale">
-                <span>14.000 MHz</span>
-                <span>14.350 MHz</span>
+                <span id="rgo-sdr-scale-start">--.--- MHz</span>
+                <span id="rgo-sdr-scale-boundary">--.--- MHz</span>
+                <span id="rgo-sdr-scale-end">--.--- MHz</span>
             </div>
 
         </div>
@@ -260,13 +261,14 @@
                 <label>CW SPEED</label>
 
                 <input
+                    id="rgo-cw-speed-slider"
                     type="range"
                     min="4"
                     max="60"
                     value="20"
                 >
 
-                <output>20</output>
+                <output id="rgo-cw-speed-value">20</output>
 
             </div>
 
@@ -275,13 +277,14 @@
                 <label>BK-IN DELAY</label>
 
                 <input
+                    id="rgo-break-in-delay-slider"
                     type="range"
                     min="0"
                     max="600"
                     value="300"
                 >
 
-                <output>300</output>
+                <output id="rgo-break-in-delay-value">300</output>
 
             </div>
 
@@ -389,13 +392,14 @@
                 <label>POWER</label>
 
                 <input
+                    id="rgo-power-slider"
                     type="range"
                     min="0"
                     max="100"
                     value="50"
                 >
 
-                <output>50 W</output>
+                <output id="rgo-power-value">50 W</output>
 
             </div>
 
@@ -539,6 +543,7 @@
 
 </div>
 
+    <script src="/js/bandplan-data.js"></script>
     <script src="/js/rgo-remote.js"></script>
 
 </body>

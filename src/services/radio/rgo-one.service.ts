@@ -1244,6 +1244,27 @@ export class RgoOneService implements RadioService {
     }
 
 
+    setPower(power: number): void {
+
+        const value =
+            Math.max(
+                0,
+                Math.min(
+                    50,
+                    Math.round(power)
+                )
+            );
+
+        const parameter =
+            String(value).padStart(3, "0");
+
+        this.send(
+            `PC${parameter};`
+        );
+
+    }
+
+
     getPower(): number {
 
         return this.power;
@@ -1303,6 +1324,27 @@ export class RgoOneService implements RadioService {
     getAtuTuning(): boolean {
 
         return this.atuTuning;
+
+    }
+
+
+    setCwSpeed(speed: number): void {
+
+        const value =
+            Math.max(
+                4,
+                Math.min(
+                    60,
+                    Math.round(speed)
+                )
+            );
+
+        const parameter =
+            String(value).padStart(3, "0");
+
+        this.send(
+            `KS${parameter};`
+        );
 
     }
 

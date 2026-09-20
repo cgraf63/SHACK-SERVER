@@ -2398,3 +2398,15 @@ cat >> src/public/css/rgo-remote.css <<'EOF'
     flex: 1;
 }
 
+
+/* SDR frequency scale: left / center / right */
+.top-section .rgo-sdr-scale {
+    position: relative;
+}
+
+.top-section .rgo-sdr-scale span:nth-child(2) {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
