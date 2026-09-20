@@ -445,6 +445,69 @@ function updateMode() {
 
 
 
+async function selectRgoMode(mode) {
+
+    if (!rgoState) {
+        return;
+    }
+
+    const normalizedMode =
+        String(mode).toUpperCase();
+
+    console.log(
+        "RGO MODE SELECT:",
+        normalizedMode
+    );
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/radio/mode",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        mode: normalizedMode
+                    })
+                }
+            );
+
+        const body =
+            await response.text();
+
+        console.log(
+            "RGO MODE RESPONSE:",
+            "HTTP",
+            response.status,
+            "OK",
+            response.ok,
+            body
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Mode selection failed: HTTP ${response.status}`
+            );
+        }
+
+        await fetchRgoState();
+
+        updateMode();
+
+    } catch (error) {
+
+        console.error(
+            "RGO MODE:",
+            error
+        );
+
+    }
+}
+
+
 async function selectRgoVfo(vfo) {
     const value = vfo === "B" ? 1 : 0;
 
@@ -2689,8 +2752,20 @@ function updateVfo() {
             "rgo-vfo-frequency"
         );
 
+    const splitButton =
+        document.getElementById(
+            "rgo-split"
+        );
+
     if (!buttonA || !buttonB || !label || !input) {
         return;
+    }
+
+    if (splitButton) {
+        splitButton.classList.toggle(
+            "active",
+            rgoState.split === true
+        );
     }
 
     const activeVfo =

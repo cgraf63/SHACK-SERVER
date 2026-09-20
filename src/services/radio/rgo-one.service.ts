@@ -1575,104 +1575,65 @@ setRitXitOffset(offset: number): void {
 
     }
 
+getRxVfo(): number {
 
-    setSplit(
-        enabled: boolean
-    ): void {
+    return this.rxVfo;
 
-        if (!this.port.isOpen) {
+}
 
-            console.error(
-                "RGO CAT not connected"
-            );
 
-            return;
+getTxVfo(): number {
 
-        }
+    return this.txVfo;
 
-        if (enabled) {
+}
 
-            // SPLIT ON:
-            // RX = VFO A
-            // TX = VFO B
-            this.setRxVfo(0);
-            this.setTxVfo(1);
 
-        } else {
+getSplit(): boolean {
 
-            // SPLIT OFF:
-            // RX = VFO A
-            // TX = VFO A
-            this.setRxVfo(0);
-            this.setTxVfo(0);
+    return this.split;
 
-        }
+}
 
-        this.split = enabled;
+setSplit(
+    enabled: boolean
+): void {
+
+    if (!this.port.isOpen) {
+
+        console.error(
+            "RGO CAT not connected"
+        );
+
+        return;
 
     }
 
+    if (enabled) {
 
-    getSplit(): boolean {
+        // SPLIT ON:
+        // RX = VFO A
+        // TX = VFO B
+        //
+        // VFO B is already prepared by /radio/split.
 
-        return this.split;
+        this.setRxVfo(0);
+        this.setTxVfo(1);
 
-    }
+    } else {
 
+        // SPLIT OFF:
+        // RX = VFO A
+        // TX = VFO A
+        // B bleibt unverändert
 
-    getRxVfo(): number {
-
-        return this.rxVfo;
-
-    }
-
-
-    getTxVfo(): number {
-
-        return this.txVfo;
-
-    }
-
-
-    getFineTuning(): boolean {
-
-        return this.fineTuning;
+        this.setRxVfo(0);
+        this.setTxVfo(0);
 
     }
 
+    this.split = enabled;
 
-    getFirmware(): string {
-
-        return this.firmware;
-
-    }
-
-
-    getRadioId(): string {
-
-        return this.radioId;
-
-    }
-
-
-    getSerialNumber(): string {
-
-        return this.serialNumber;
-
-    }
-
-
-    getLastIfResponse(): string {
-
-        return this.lastIfResponse;
-
-    }
-
-
-    getLastRx(): string {
-
-        return this.lastRx;
-
-    }
+}
 
 }

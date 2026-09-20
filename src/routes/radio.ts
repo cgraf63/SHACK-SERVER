@@ -4,6 +4,10 @@ import {
     radioManager
 } from "../services/radio/radio-manager.js";
 
+import {
+    RgoOneService
+} from "../services/radio/rgo-one.service.js";
+
 
 const router =
     Router();
@@ -1731,10 +1735,17 @@ router.post(
                     frequencyB
                 );
 
-                (activeRadio as any).setMode(
-                    modeA,
-                    frequencyB
-                );
+                // RGO ONE keeps the existing mode on VFO B.
+                // Do not send MD here because it can disturb
+                // the VFO context during SPLIT preparation.
+                if (!(activeRadio instanceof RgoOneService)) {
+
+                    (activeRadio as any).setMode(
+                        modeA,
+                        frequencyB
+                    );
+
+                }
 
             } catch (error) {
 
@@ -2139,6 +2150,95 @@ activeRadio.setMode(
                 normalizedMode
 
         });
+
+    }
+);
+
+
+/*
+    Radio Mode
+*/
+router.post(
+    "/radio/mode",
+    (req, res) => {
+
+        const { mode } = req.body;
+
+        const activeRadio =
+            radioManager.getActiveRadio();
+
+        if (!activeRadio) {
+            return res.status(503).json({
+                error: "No active radio"
+            });
+        }
+
+        if (typeof mode !== "string") {
+            return res.status(400).json({
+                error: "Invalid mode"
+            });
+        }
+
+        const allowedModes = [
+            "LSB",
+            "USB",
+            "CW",
+            "CW-R",
+            "AM",
+            "FM"
+        ];
+
+        const normalizedMode =
+            mode.toUpperCase();
+
+        if (!allowedModes.includes(normalizedMode)) {
+            return res.status(400).json({
+                error: "Unsupported mode"
+            });
+        }
+
+        if (
+            typeof activeRadio.setMode !== "function" ||
+            typeof activeRadio.getFrequency !== "function"
+        ) {
+            return res.status(501).json({
+                error: "Mode control not supported"
+            });
+        }
+
+        const frequency =
+            activeRadio.getFrequency();
+
+        try {
+
+            activeRadio.setMode(
+                normalizedMode,
+                frequency
+            );
+
+            console.log(
+                "RADIO MODE:",
+                radioManager.getActiveRadioId(),
+                normalizedMode,
+                frequency
+            );
+
+            return res.json({
+                success: true,
+                mode: normalizedMode,
+                frequency
+            });
+
+        } catch (error) {
+
+            return res.status(500).json({
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Could not set mode"
+            });
+
+        }
 
     }
 );

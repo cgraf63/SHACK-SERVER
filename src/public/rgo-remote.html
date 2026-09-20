@@ -113,13 +113,13 @@
         <div class="frequency-area">
 
             <div class="mode-selector">
-                <button>LSB</button>
-                <button class="active">USB</button>
-                <button>CW</button>
-                <button>CW-R</button>
-                <button>AM</button>
-                <button>FM</button>
-                <button>DIG</button>
+                <button type="button" onclick="selectRgoMode('LSB')">LSB</button>
+                <button type="button" class="active" onclick="selectRgoMode('USB')">USB</button>
+                <button type="button" onclick="selectRgoMode('CW')">CW</button>
+                <button type="button" onclick="selectRgoMode('CW-R')">CW-R</button>
+                <button type="button" onclick="selectRgoMode('AM')">AM</button>
+                <button type="button" onclick="selectRgoMode('FM')">FM</button>
+                <button type="button" disabled>DIG</button>
             </div>
 
             <div class="frequency-display">
@@ -364,6 +364,7 @@
                 <button
                     id="rgo-split"
                     type="button"
+                    disabled
                     onclick="toggleRgoSplit()"
                 >
                     SPLIT
