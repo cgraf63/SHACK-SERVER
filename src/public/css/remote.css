@@ -2173,3 +2173,583 @@ button.active {
     grid-template-columns: 78px 42px 1fr 28px 28px;
 }
 
+
+
+/* ============================================================
+ * SHACK-SERVER SKINS
+ * ============================================================ */
+
+/*
+ * Grey / Orange skin
+ *
+ * The default SHACK-SERVER skin remains untouched.
+ * All overrides are activated through:
+ *
+ * <html data-skin="grey-orange">
+ */
+
+/* ---------- Main surfaces ---------- */
+
+html[data-skin="grey-orange"] body {
+    background: #202428;
+    color: #e6e6e6;
+}
+
+html[data-skin="grey-orange"] .topbar {
+    background: #292d31;
+    border-bottom-color: #4a4e52;
+}
+
+html[data-skin="grey-orange"] .console {
+    background: #202428;
+}
+
+/* ---------- Header ---------- */
+
+html[data-skin="grey-orange"] .brand-name {
+    color: #f0f0f0;
+}
+
+html[data-skin="grey-orange"] .brand-sub {
+    color: #a8abad;
+}
+
+html[data-skin="grey-orange"] .radio-name {
+    color: #f0f0f0;
+}
+
+html[data-skin="grey-orange"] .connection {
+    color: #b9bdc0;
+}
+
+html[data-skin="grey-orange"] .header-separator {
+    background: #505459;
+}
+
+html[data-skin="grey-orange"] .operator,
+html[data-skin="grey-orange"] .clock {
+    color: #bfc2c4;
+}
+
+/* ---------- Skin selector ---------- */
+
+html[data-skin="grey-orange"] .skin-selector button {
+    color: #f28c28;
+    background: #303438;
+    border-color: #5b5f63;
+}
+
+html[data-skin="grey-orange"] .skin-selector button:hover {
+    color: #ff9f3d;
+    border-color: #f28c28;
+}
+
+/* ---------- Panels ---------- */
+
+html[data-skin="grey-orange"] .panel,
+html[data-skin="grey-orange"] .vfo-panel,
+html[data-skin="grey-orange"] .control-panel,
+html[data-skin="grey-orange"] .sdr-panel {
+    background: #292d31;
+    border-color: #484d51;
+}
+
+/* ---------- Panel headers ---------- */
+
+html[data-skin="grey-orange"] .panel-header,
+html[data-skin="grey-orange"] .vfo-panel-header,
+html[data-skin="grey-orange"] .sdr-waterfall-header {
+    background: #303438;
+    border-color: #484d51;
+    color: #d9dcde;
+}
+
+/* ---------- General controls ---------- */
+
+html[data-skin="grey-orange"] button {
+    background: #34383c;
+    border-color: #555a5e;
+    color: #d9dcde;
+}
+
+html[data-skin="grey-orange"] button:hover {
+    background: #3d4246;
+    border-color: #f28c28;
+    color: #ffffff;
+}
+
+html[data-skin="grey-orange"] button.active {
+    background: #4a3523;
+    border-color: #f28c28;
+    color: #ff9f3d;
+}
+
+/* ---------- Inputs ---------- */
+
+html[data-skin="grey-orange"] input,
+html[data-skin="grey-orange"] select {
+    background: #25292c;
+    border-color: #50555a;
+    color: #e5e5e5;
+}
+
+html[data-skin="grey-orange"] input:focus,
+html[data-skin="grey-orange"] select:focus {
+    border-color: #f28c28;
+    outline-color: #f28c28;
+}
+
+/* ---------- Labels / secondary text ---------- */
+
+html[data-skin="grey-orange"] .label,
+html[data-skin="grey-orange"] .caption,
+html[data-skin="grey-orange"] .secondary {
+    color: #aeb2b5;
+}
+
+/* ---------- Orange accent ---------- */
+
+html[data-skin="grey-orange"] .frequency,
+html[data-skin="grey-orange"] .vfo-frequency,
+html[data-skin="grey-orange"] .accent {
+    color: #f28c28;
+}
+
+/* ---------- Power ---------- */
+
+html[data-skin="grey-orange"] .power-icon {
+    color: #f28c28;
+}
+
+/* ---------- Connection indicator ---------- */
+
+html[data-skin="grey-orange"] .status-dot {
+    box-shadow: 0 0 8px rgba(242, 140, 40, 0.65);
+}
+
+/* ---------- SDR ---------- */
+
+html[data-skin="grey-orange"] .sdr-waterfall {
+    border-color: #484d51;
+}
+
+html[data-skin="grey-orange"] #sdr-frequency,
+html[data-skin="grey-orange"] #sdr-status {
+    color: #bfc2c4;
+}
+
+/* ---------- Scrollbars ---------- */
+
+html[data-skin="grey-orange"] ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+html[data-skin="grey-orange"] ::-webkit-scrollbar-track {
+    background: #24282b;
+}
+
+html[data-skin="grey-orange"] ::-webkit-scrollbar-thumb {
+    background: #50555a;
+    border-radius: 5px;
+}
+
+html[data-skin="grey-orange"] ::-webkit-scrollbar-thumb:hover {
+    background: #f28c28;
+}
+
+
+/* ============================================================
+ * GREY / ORANGE - DARK ANTHRACITE REFINEMENT
+ * ============================================================ */
+
+html[data-skin="grey-orange"] body {
+    background: #15191c;
+}
+
+html[data-skin="grey-orange"] .topbar {
+    background: #181c1f;
+    border-bottom-color: #343a3e;
+}
+
+html[data-skin="grey-orange"] .console {
+    background: #15191c;
+}
+
+html[data-skin="grey-orange"] .panel,
+html[data-skin="grey-orange"] .vfo-panel,
+html[data-skin="grey-orange"] .control-panel,
+html[data-skin="grey-orange"] .sdr-panel {
+    background: #1d2225;
+    border-color: #363c40;
+}
+
+html[data-skin="grey-orange"] .panel-header,
+html[data-skin="grey-orange"] .vfo-panel-header,
+html[data-skin="grey-orange"] .sdr-waterfall-header {
+    background: #24292c;
+    border-color: #3a4044;
+}
+
+html[data-skin="grey-orange"] button {
+    background: #292e32;
+    border-color: #464d52;
+}
+
+html[data-skin="grey-orange"] button:hover {
+    background: #30363a;
+    border-color: #f28c28;
+}
+
+html[data-skin="grey-orange"] button.active {
+    background: #39291d;
+    border-color: #f28c28;
+    color: #ff9f3d;
+}
+
+html[data-skin="grey-orange"] input,
+html[data-skin="grey-orange"] select {
+    background: #181c1f;
+    border-color: #41484d;
+    color: #e5e5e5;
+}
+
+html[data-skin="grey-orange"] .sdr-waterfall {
+    background: #111518;
+    border-color: #343a3e;
+}
+
+html[data-skin="grey-orange"] ::-webkit-scrollbar-track {
+    background: #171b1e;
+}
+
+html[data-skin="grey-orange"] ::-webkit-scrollbar-thumb {
+    background: #3f464b;
+}
+
+html[data-skin="grey-orange"] ::-webkit-scrollbar-thumb:hover {
+    background: #f28c28;
+}
+
+
+/* ============================================================
+ * GREY / ORANGE - CONTROL ACCENTS
+ * ============================================================ */
+
+/* Sliders */
+html[data-skin="grey-orange"] input[type="range"]::-webkit-slider-runnable-track {
+    background: #343a3e;
+    border-color: #4a5156;
+}
+
+html[data-skin="grey-orange"] input[type="range"]::-webkit-slider-thumb {
+    background: #f28c28;
+    border-color: #ffb05a;
+}
+
+html[data-skin="grey-orange"] input[type="range"]::-moz-range-track {
+    background: #343a3e;
+    border-color: #4a5156;
+}
+
+html[data-skin="grey-orange"] input[type="range"]::-moz-range-progress {
+    background: #f28c28;
+}
+
+html[data-skin="grey-orange"] input[type="range"]::-moz-range-thumb {
+    background: #f28c28;
+    border-color: #ffb05a;
+}
+
+/* Active / selected controls */
+html[data-skin="grey-orange"] .active {
+    color: #f28c28;
+}
+
+/* PTT / transmit controls */
+html[data-skin="grey-orange"] .ptt.active,
+html[data-skin="grey-orange"] #ptt.active,
+html[data-skin="grey-orange"] .transmit.active {
+    background: #4a2c19;
+    border-color: #f28c28;
+    color: #ff9f3d;
+    box-shadow: 0 0 10px rgba(242, 140, 40, 0.35);
+}
+
+/* Meter / indicator accents */
+html[data-skin="grey-orange"] .meter-value,
+html[data-skin="grey-orange"] .meter-label,
+html[data-skin="grey-orange"] .frequency-display {
+    color: #f28c28;
+}
+
+/* Skin selector */
+html[data-skin="grey-orange"] .skin-selector button {
+    background: #24292c;
+    border-color: #555d62;
+    color: #f28c28;
+}
+
+html[data-skin="grey-orange"] .skin-selector button:hover {
+    background: #2d3337;
+    border-color: #f28c28;
+    color: #ffad55;
+}
+
+
+/* ============================================================
+ * GREY / ORANGE - RGO STYLE SLIDERS
+ * ============================================================ */
+
+html[data-skin="grey-orange"] #filter-width::-webkit-slider-runnable-track,
+html[data-skin="grey-orange"] #filter-shift::-webkit-slider-runnable-track,
+html[data-skin="grey-orange"] #rf-gain-slider::-webkit-slider-runnable-track,
+html[data-skin="grey-orange"] #af-gain-slider::-webkit-slider-runnable-track,
+html[data-skin="grey-orange"] #cw-speed-slider::-webkit-slider-runnable-track,
+html[data-skin="grey-orange"] #mic-gain-slider::-webkit-slider-runnable-track,
+html[data-skin="grey-orange"] .dsp-slider::-webkit-slider-runnable-track,
+html[data-skin="grey-orange"] .moni-slider::-webkit-slider-runnable-track,
+html[data-skin="grey-orange"] .power-panel .power-slider::-webkit-slider-runnable-track {
+    background: linear-gradient(
+        to right,
+        #ff7a00 0%,
+        #ff9d32 42%,
+        #8b765f 50%,
+        #354047 62%,
+        #354047 100%
+    ) !important;
+
+    border-color: #4b555a;
+}
+
+
+/* White / metallic knob */
+
+html[data-skin="grey-orange"] #filter-width::-webkit-slider-thumb,
+html[data-skin="grey-orange"] #filter-shift::-webkit-slider-thumb,
+html[data-skin="grey-orange"] #rf-gain-slider::-webkit-slider-thumb,
+html[data-skin="grey-orange"] #af-gain-slider::-webkit-slider-thumb,
+html[data-skin="grey-orange"] #cw-speed-slider::-webkit-slider-thumb,
+html[data-skin="grey-orange"] #mic-gain-slider::-webkit-slider-thumb,
+html[data-skin="grey-orange"] .dsp-slider::-webkit-slider-thumb,
+html[data-skin="grey-orange"] .moni-slider::-webkit-slider-thumb,
+html[data-skin="grey-orange"] .power-panel .power-slider::-webkit-slider-thumb {
+    background: #e9eef1 !important;
+    border-color: #ffffff !important;
+
+    box-shadow:
+        0 0 0 2px #ff7a00,
+        0 0 9px rgba(255, 122, 0, 0.55) !important;
+}
+
+
+/* Firefox */
+
+html[data-skin="grey-orange"] #filter-width::-moz-range-track,
+html[data-skin="grey-orange"] #filter-shift::-moz-range-track,
+html[data-skin="grey-orange"] #rf-gain-slider::-moz-range-track,
+html[data-skin="grey-orange"] #af-gain-slider::-moz-range-track,
+html[data-skin="grey-orange"] #cw-speed-slider::-moz-range-track,
+html[data-skin="grey-orange"] #mic-gain-slider::-moz-range-track,
+html[data-skin="grey-orange"] .dsp-slider::-moz-range-track,
+html[data-skin="grey-orange"] .moni-slider::-moz-range-track,
+html[data-skin="grey-orange"] .power-panel .power-slider::-moz-range-track {
+    background: #354047 !important;
+    border-color: #4b555a;
+}
+
+html[data-skin="grey-orange"] #filter-width::-moz-range-progress,
+html[data-skin="grey-orange"] #filter-shift::-moz-range-progress,
+html[data-skin="grey-orange"] #rf-gain-slider::-moz-range-progress,
+html[data-skin="grey-orange"] #af-gain-slider::-moz-range-progress,
+html[data-skin="grey-orange"] #cw-speed-slider::-moz-range-progress,
+html[data-skin="grey-orange"] #mic-gain-slider::-moz-range-progress,
+html[data-skin="grey-orange"] .dsp-slider::-moz-range-progress,
+html[data-skin="grey-orange"] .moni-slider::-moz-range-progress,
+html[data-skin="grey-orange"] .power-panel .power-slider::-moz-range-progress {
+    background: linear-gradient(
+        to right,
+        #ff7a00,
+        #ff9d32
+    ) !important;
+}
+
+html[data-skin="grey-orange"] #filter-width::-moz-range-thumb,
+html[data-skin="grey-orange"] #filter-shift::-moz-range-thumb,
+html[data-skin="grey-orange"] #rf-gain-slider::-moz-range-thumb,
+html[data-skin="grey-orange"] #af-gain-slider::-moz-range-thumb,
+html[data-skin="grey-orange"] #cw-speed-slider::-moz-range-thumb,
+html[data-skin="grey-orange"] #mic-gain-slider::-moz-range-thumb,
+html[data-skin="grey-orange"] .dsp-slider::-moz-range-thumb,
+html[data-skin="grey-orange"] .moni-slider::-moz-range-thumb,
+html[data-skin="grey-orange"] .power-panel .power-slider::-moz-range-thumb {
+    background: #e9eef1 !important;
+    border-color: #ffffff !important;
+
+    box-shadow:
+        0 0 0 2px #ff7a00,
+        0 0 9px rgba(255, 122, 0, 0.55) !important;
+}
+
+
+/* ============================================================
+ * GREY / ORANGE
+ * ACTIVE VFO / MODE BUTTONS
+ * Same pressed look as SPLIT
+ * ============================================================ */
+
+html[data-skin="grey-orange"] .vfo-control-badge.active,
+html[data-skin="grey-orange"] .mode-control.active,
+html[data-skin="grey-orange"] .vfo-button.active {
+    background: linear-gradient(
+        180deg,
+        #4a2d1c 0%,
+        #302018 100%
+    ) !important;
+
+    border-color: #f28c28 !important;
+
+    color: #ff9d32 !important;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 180, 90, 0.12),
+        0 0 7px rgba(242, 140, 40, 0.20) !important;
+}
+
+
+/* MODE text inside active button */
+
+html[data-skin="grey-orange"] .mode-control.active *,
+html[data-skin="grey-orange"] .vfo-control-badge.active * {
+    color: #ff9d32 !important;
+}
+
+
+/* Keep inactive VFO buttons neutral */
+
+html[data-skin="grey-orange"] .vfo-control-badge:not(.active),
+html[data-skin="grey-orange"] .mode-control:not(.active),
+html[data-skin="grey-orange"] .vfo-button:not(.active) {
+    background: #292e32;
+    border-color: #464d52;
+    color: #d9dcde;
+}
+
+
+/* ============================================================
+ * GREY / ORANGE
+ * VFO A / VFO B — ACTIVE LOOK LIKE SPLIT
+ * ============================================================ */
+
+html[data-skin="grey-orange"] .small-tx.active {
+    background: linear-gradient(
+        180deg,
+        #4a2d1c 0%,
+        #302018 100%
+    ) !important;
+
+    border-color: #f28c28 !important;
+
+    color: #ff9d32 !important;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 180, 90, 0.12),
+        0 0 7px rgba(242, 140, 40, 0.20) !important;
+}
+
+
+/* VFO A / VFO B inactive */
+
+html[data-skin="grey-orange"] .small-tx:not(.active) {
+    background: #292e32;
+    border-color: #464d52;
+    color: #d9dcde;
+}
+
+
+/* ============================================================
+ * GREY / ORANGE
+ * ORANGE HEADINGS / ACCENT LABELS
+ * ============================================================ */
+
+/* Main panel titles */
+
+html[data-skin="grey-orange"] .panel-title,
+html[data-skin="grey-orange"] .s-meter-title,
+html[data-skin="grey-orange"] .power-title,
+html[data-skin="grey-orange"] .swr-title,
+html[data-skin="grey-orange"] .alc-title,
+html[data-skin="grey-orange"] .transmit-title,
+html[data-skin="grey-orange"] .filter-title,
+html[data-skin="grey-orange"] .dsp-title,
+html[data-skin="grey-orange"] .rf-af-title,
+html[data-skin="grey-orange"] .quick-functions-title,
+html[data-skin="grey-orange"] .sdr-waterfall-title {
+    color: #ff8a18 !important;
+}
+
+
+/* Generic section / panel headings */
+
+html[data-skin="grey-orange"] .panel > h1,
+html[data-skin="grey-orange"] .panel > h2,
+html[data-skin="grey-orange"] .panel > h3,
+html[data-skin="grey-orange"] .panel > h4 {
+    color: #ff8a18 !important;
+}
+
+
+/* Labels used for controls */
+
+html[data-skin="grey-orange"] .filter-label,
+html[data-skin="grey-orange"] .dsp-label,
+html[data-skin="grey-orange"] .rf-label,
+html[data-skin="grey-orange"] .af-label,
+html[data-skin="grey-orange"] .quick-label {
+    color: #ff8a18 !important;
+}
+
+
+/* SDR waterfall heading */
+
+html[data-skin="grey-orange"] .sdr-waterfall-header {
+    color: #ff8a18;
+}
+
+
+/* Frequency / important orange values */
+
+html[data-skin="grey-orange"] .frequency,
+html[data-skin="grey-orange"] .frequency-display,
+html[data-skin="grey-orange"] .vfo-frequency {
+    color: #ff8a18 !important;
+}
+
+
+/* Orange secondary values */
+
+html[data-skin="grey-orange"] .accent,
+html[data-skin="grey-orange"] .accent-value {
+    color: #ff8a18 !important;
+}
+
+
+/* ============================================================
+ * GREY / ORANGE
+ * SECTION TITLES
+ * ============================================================ */
+
+html[data-skin="grey-orange"] .section-title {
+    color: #ff8a18 !important;
+}
+
+/* ============================================================
+   GREY / ORANGE - FREQUENCY GLOW
+   ============================================================ */
+
+html[data-skin="grey-orange"] .frequency {
+    text-shadow:
+        0 0 5px #ffffff,
+        0 0 15px #ff9d32,
+        0 0 28px #d85f00;
+}

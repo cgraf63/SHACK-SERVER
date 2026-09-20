@@ -1335,8 +1335,8 @@ router.post(
 
             if (
                 !Number.isFinite(power) ||
-                power < 0 ||
-                power > 50
+                power < 5 ||
+                power > 100
             ) {
                 return res.status(400).json({
                     error: "Invalid power"

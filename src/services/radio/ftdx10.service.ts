@@ -1279,6 +1279,21 @@ setFrequencyB(frequency: number): void {
         return this.power;
     }
 
+    setPower(power: number): void {
+        if (!this.port.isOpen) return;
+
+        const value = Math.max(
+            5,
+            Math.min(100, Math.round(power))
+        );
+
+        this.send(
+            FTDX10_CAT.power.set(value)
+        );
+
+        this.power = value;
+    }
+
     getPowerState(): boolean {
         return this.radioPoweredOn;
     }

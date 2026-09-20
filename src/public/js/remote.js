@@ -3811,7 +3811,9 @@ if (splitTxFrequencyInput) {
         spectrumContext.closePath();
 
         spectrumContext.fillStyle =
-            "rgba(10, 65, 95, 0.60)";
+            document.documentElement.dataset.skin === "grey-orange"
+                ? "rgba(135,140,144,0.38)"
+                : "rgba(10, 65, 95, 0.60)";
 
         spectrumContext.fill();
 
@@ -3900,12 +3902,26 @@ if (splitTxFrequencyInput) {
             }
         }
 
+        const greyOrangeSkin =
+            document.documentElement.dataset.skin === "grey-orange";
+
         spectrumContext.strokeStyle =
-            "#39b8e8";
+            greyOrangeSkin
+                ? "#ff9d32"
+                : "#39b8e8";
 
         spectrumContext.lineWidth = 1;
 
+        if (greyOrangeSkin) {
+            spectrumContext.shadowColor = "#ff7a00";
+            spectrumContext.shadowBlur = 4;
+        }
+
         spectrumContext.stroke();
+
+        if (greyOrangeSkin) {
+            spectrumContext.shadowBlur = 0;
+        }
 
         /*
          * Bottom reference line.
@@ -4088,48 +4104,99 @@ if (splitTxFrequencyInput) {
                 );
 
             /*
-             * Simple blue/cyan/yellow/white
-             * SDR-style spectrum palette.
+             * Waterfall palette.
+             *
+             * Keep the original SDR palette for the
+             * default SHACK-SERVER skin.
+             *
+             * Grey / Orange uses an anthracite ->
+             * orange -> light orange palette.
              */
             let r;
             let g;
             let b;
 
-            if (level < 0.25) {
+            const greyOrange =
+                document.documentElement.dataset.skin ===
+                "grey-orange";
 
-                const t =
-                    level / 0.25;
+            if (!greyOrange) {
 
-                r = 0;
-                g = Math.round(20 + 80 * t);
-                b = Math.round(45 + 110 * t);
+                if (level < 0.25) {
 
-            } else if (level < 0.5) {
+                    const t =
+                        level / 0.25;
 
-                const t =
-                    (level - 0.25) / 0.25;
+                    r = 0;
+                    g = Math.round(20 + 80 * t);
+                    b = Math.round(45 + 110 * t);
 
-                r = 0;
-                g = Math.round(100 + 100 * t);
-                b = Math.round(155 - 100 * t);
+                } else if (level < 0.5) {
 
-            } else if (level < 0.75) {
+                    const t =
+                        (level - 0.25) / 0.25;
 
-                const t =
-                    (level - 0.5) / 0.25;
+                    r = 0;
+                    g = Math.round(100 + 100 * t);
+                    b = Math.round(155 - 100 * t);
 
-                r = Math.round(255 * t);
-                g = 200;
-                b = Math.round(55 * (1 - t));
+                } else if (level < 0.75) {
+
+                    const t =
+                        (level - 0.5) / 0.25;
+
+                    r = Math.round(255 * t);
+                    g = 200;
+                    b = Math.round(55 * (1 - t));
+
+                } else {
+
+                    const t =
+                        (level - 0.75) / 0.25;
+
+                    r = 255;
+                    g = Math.round(200 + 55 * t);
+                    b = Math.round(50 + 205 * t);
+                }
 
             } else {
 
-                const t =
-                    (level - 0.75) / 0.25;
+                if (level < 0.25) {
 
-                r = 255;
-                g = Math.round(200 + 55 * t);
-                b = Math.round(50 + 205 * t);
+                    const t =
+                        level / 0.25;
+
+                    r = Math.round(12 + 28 * t);
+                    g = Math.round(16 + 18 * t);
+                    b = Math.round(18 + 12 * t);
+
+                } else if (level < 0.5) {
+
+                    const t =
+                        (level - 0.25) / 0.25;
+
+                    r = Math.round(40 + 70 * t);
+                    g = Math.round(34 + 32 * t);
+                    b = Math.round(28 + 8 * t);
+
+                } else if (level < 0.75) {
+
+                    const t =
+                        (level - 0.5) / 0.25;
+
+                    r = Math.round(110 + 145 * t);
+                    g = Math.round(66 + 70 * t);
+                    b = Math.round(24 + 8 * t);
+
+                } else {
+
+                    const t =
+                        (level - 0.75) / 0.25;
+
+                    r = 255;
+                    g = Math.round(136 + 110 * t);
+                    b = Math.round(32 + 175 * t);
+                }
             }
 
             const index =
@@ -4396,3 +4463,75 @@ if (splitTxFrequencyInput) {
 
 })();
 
+
+/* ============================================================
+ * SHACK-SERVER SKIN SYSTEM
+ * ============================================================ */
+
+(function initSkinSystem() {
+
+    const STORAGE_KEY = "shack-server-skin";
+
+    function applySkin(skin) {
+
+        if (skin !== "grey-orange") {
+            skin = "shack-server";
+        }
+
+        document.documentElement.dataset.skin = skin;
+
+        const button = document.getElementById("skin-toggle");
+
+        if (button) {
+            button.textContent =
+                skin === "grey-orange"
+                    ? "GREY / ORANGE"
+                    : "SHACK-SERVER";
+        }
+
+        localStorage.setItem(STORAGE_KEY, skin);
+    }
+
+    function toggleSkin() {
+
+        const current =
+            document.documentElement.dataset.skin ||
+            "shack-server";
+
+        applySkin(
+            current === "grey-orange"
+                ? "shack-server"
+                : "grey-orange"
+        );
+    }
+
+    function init() {
+
+        const savedSkin =
+            localStorage.getItem(STORAGE_KEY) ||
+            "shack-server";
+
+        applySkin(savedSkin);
+
+        const button =
+            document.getElementById("skin-toggle");
+
+        if (button) {
+            button.addEventListener(
+                "click",
+                toggleSkin
+            );
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            init,
+            { once: true }
+        );
+    } else {
+        init();
+    }
+
+})();
