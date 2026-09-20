@@ -3346,6 +3346,109 @@ if (splitTxFrequencyInput) {
     const SPECTRUM_AVERAGE_FRAMES = 2;
     let spectrumHistory = [];
 
+    /*
+     * Yaesu amateur band display definitions.
+     *
+     * start/end:
+     *     visible amateur-band range
+     *
+     * cwEnd:
+     *     CW -> SSB transition.
+     *     null = no simple CW/SSB transition.
+     */
+    const YAESU_DISPLAY_BANDS = [
+        {
+            name: "160 m",
+            start: 1810000,
+            end: 2000000,
+            cwEnd: 1840000
+        },
+        {
+            name: "80 m",
+            start: 3500000,
+            end: 3800000,
+            cwEnd: 3600000
+        },
+        {
+            name: "60 m",
+            start: 5351500,
+            end: 5366500,
+            cwEnd: null
+        },
+        {
+            name: "40 m",
+            start: 7000000,
+            end: 7200000,
+            cwEnd: 7100000
+        },
+        {
+            name: "30 m",
+            start: 10100000,
+            end: 10150000,
+            cwEnd: null
+        },
+        {
+            name: "20 m",
+            start: 14000000,
+            end: 14350000,
+            cwEnd: 14070000
+        },
+        {
+            name: "17 m",
+            start: 18068000,
+            end: 18168000,
+            cwEnd: 18100000
+        },
+        {
+            name: "15 m",
+            start: 21000000,
+            end: 21450000,
+            cwEnd: 21070000
+        },
+        {
+            name: "12 m",
+            start: 24890000,
+            end: 24990000,
+            cwEnd: 24920000
+        },
+        {
+            name: "10 m",
+            start: 28000000,
+            end: 29700000,
+            cwEnd: 28070000
+        },
+        {
+            name: "6 m",
+            start: 50000000,
+            end: 52000000,
+            cwEnd: 50100000
+        }
+    ];
+
+    function getYaesuDisplayBand(frequency) {
+
+        const f = Number(frequency);
+
+        if (!Number.isFinite(f)) {
+            return YAESU_DISPLAY_BANDS.find(
+                band => band.name === "20 m"
+            );
+        }
+
+        return (
+            YAESU_DISPLAY_BANDS.find(
+                band =>
+                    f >= band.start &&
+                    f <= band.end
+            )
+            ||
+            YAESU_DISPLAY_BANDS.find(
+                band => band.name === "20 m"
+            )
+        );
+    }
+
+
     function drawSpectrum(data) {
 
         if (
@@ -3493,10 +3596,23 @@ if (splitTxFrequencyInput) {
              * Display only the 20 m amateur band.
              * The RSP1B still delivers the full 2 MHz FFT.
              */
-            const bandStart = 14000000;
-            const bandEnd = 14350000;
-            const centerFrequency = 14100000;
-            const sampleRate = 2000000;
+            const currentFrequency =
+                Number(lastRadioState?.frequency);
+
+            const displayBand =
+                getYaesuDisplayBand(currentFrequency);
+
+            const bandStart =
+                displayBand.start;
+
+            const bandEnd =
+                displayBand.end;
+
+            const centerFrequency =
+                currentFrequency;
+
+            const sampleRate =
+                2000000;
 
             const fftStartFrequency =
                 centerFrequency - (sampleRate / 2);
@@ -3588,10 +3704,23 @@ if (splitTxFrequencyInput) {
              * Display only the 20 m amateur band.
              * The RSP1B still delivers the full 2 MHz FFT.
              */
-            const bandStart = 14000000;
-            const bandEnd = 14350000;
-            const centerFrequency = 14100000;
-            const sampleRate = 2000000;
+            const currentFrequency =
+                Number(lastRadioState?.frequency);
+
+            const displayBand =
+                getYaesuDisplayBand(currentFrequency);
+
+            const bandStart =
+                displayBand.start;
+
+            const bandEnd =
+                displayBand.end;
+
+            const centerFrequency =
+                currentFrequency;
+
+            const sampleRate =
+                2000000;
 
             const fftStartFrequency =
                 centerFrequency - (sampleRate / 2);
@@ -3771,10 +3900,23 @@ if (splitTxFrequencyInput) {
              * Display only the 20 m amateur band.
              * The RSP1B still delivers the full 2 MHz FFT.
              */
-            const bandStart = 14000000;
-            const bandEnd = 14350000;
-            const centerFrequency = 14100000;
-            const sampleRate = 2000000;
+            const currentFrequency =
+                Number(lastRadioState?.frequency);
+
+            const displayBand =
+                getYaesuDisplayBand(currentFrequency);
+
+            const bandStart =
+                displayBand.start;
+
+            const bandEnd =
+                displayBand.end;
+
+            const centerFrequency =
+                currentFrequency;
+
+            const sampleRate =
+                2000000;
 
             const fftStartFrequency =
                 centerFrequency - (sampleRate / 2);
@@ -3891,13 +4033,19 @@ if (splitTxFrequencyInput) {
         /*
          * Currently displayed amateur band.
          */
-        const bandStart = 14000000;
-        const bandEnd = 14350000;
-
         const currentFrequency =
             Number(
                 lastRadioState?.frequency
             );
+
+        const displayBand =
+            getYaesuDisplayBand(currentFrequency);
+
+        const bandStart =
+            displayBand.start;
+
+        const bandEnd =
+            displayBand.end;
 
         if (!Number.isFinite(currentFrequency)) {
             return;
@@ -4016,8 +4164,16 @@ if (splitTxFrequencyInput) {
             }
 
             if (waterfallFrequency) {
+                const currentFrequency =
+                    Number(lastRadioState?.frequency);
+
+                const displayBand =
+                    getYaesuDisplayBand(currentFrequency);
+
                 waterfallFrequency.textContent =
-                    "14.100.000 MHz";
+                    `${(displayBand.start / 1000000).toFixed(3)} MHz` +
+                    ` — ` +
+                    `${(displayBand.end / 1000000).toFixed(3)} MHz`;
             }
 
             if (
