@@ -348,6 +348,7 @@
                     id="rgo-vfo-a"
                     class="active"
                     type="button"
+                    onclick="selectRgoVfo('A')"
                 >
                     VFO A
                 </button>
@@ -355,6 +356,7 @@
                 <button
                     id="rgo-vfo-b"
                     type="button"
+                    onclick="selectRgoVfo('B')"
                 >
                     VFO B
                 </button>
@@ -362,20 +364,24 @@
                 <button
                     id="rgo-split"
                     type="button"
+                    onclick="toggleRgoSplit()"
                 >
                     SPLIT
                 </button>
             </div>
 
             <div class="vfo-frequency-row">
-                <span>A</span>
-                <strong>14.175.320</strong>
-            </div>
-
-            <div class="vfo-frequency-row">
-                <span>B</span>
-                <strong>7.074.000</strong>
-            </div>
+    <span id="rgo-vfo-frequency-label">A</span>
+    <input
+        id="rgo-vfo-frequency"
+        type="text"
+        value="0"
+        inputmode="numeric"
+        autocomplete="off"
+        onchange="setRgoFrequency(this.value)"
+        onkeydown="if(event.key === 'Enter'){event.preventDefault();setRgoFrequency(this.value);this.blur();}"
+    >
+</div>
 
 
         </div>

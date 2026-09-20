@@ -2410,3 +2410,53 @@ cat >> src/public/css/rgo-remote.css <<'EOF'
     transform: translateX(-50%);
 }
 
+
+
+/* RGO VFO FREQUENCY / ACTIVE BUTTONS */
+
+#rgo-vfo-a,
+#rgo-vfo-b {
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+#rgo-vfo-a.active,
+#rgo-vfo-b.active {
+    background: rgba(255, 145, 30, 0.16) !important;
+    border-color: rgba(255, 145, 30, 0.55) !important;
+    color: #f2f2f2 !important;
+    box-shadow: none !important;
+}
+
+#rgo-vfo-frequency {
+    background: #17191c !important;
+    color: #f2f2f2 !important;
+    border: 1px solid #555 !important;
+    text-align: center;
+}
+
+#rgo-vfo-frequency:focus {
+    border-color: #ff9d2e !important;
+    outline: none;
+}
+
+/* RGO SPLIT ACTIVE STATE */
+
+#rgo-split {
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+#rgo-split.active {
+    background: linear-gradient(180deg, #ff9d2e 0%, #d96b00 100%) !important;
+    border-color: #ff9d2e !important;
+    color: #111 !important;
+    box-shadow:
+        0 0 8px rgba(255, 145, 30, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}

@@ -958,8 +958,20 @@ export class RgoOneService implements RadioService {
 
         }
 
-        this.frequency =
+        const activeFrequency =
             Number(frequencyText);
+
+        if (this.rxVfo === 1) {
+
+            this.frequencyB =
+                activeFrequency;
+
+        } else {
+
+            this.frequency =
+                activeFrequency;
+
+        }
 
         this.ritXitOffset =
             Number(offsetText);
@@ -1059,6 +1071,102 @@ export class RgoOneService implements RadioService {
 
         this.send(
             `FA${value};`
+        );
+
+    }
+
+
+    setFrequencyA(
+        frequency: number
+    ): void {
+
+        this.setFrequency(frequency);
+
+    }
+
+
+    setFrequencyB(
+        frequency: number
+    ): void {
+
+        if (!this.port.isOpen) {
+
+            console.error(
+                "RGO CAT not connected"
+            );
+
+            return;
+
+        }
+
+        this.frequencyB =
+            Math.round(frequency);
+
+        const value =
+            this.frequencyB
+                .toString()
+                .padStart(11, "0");
+
+        this.send(
+            `FB${value};`
+        );
+
+    }
+
+
+    setRxVfo(
+        vfo: number
+    ): void {
+
+        if (!this.port.isOpen) {
+
+            console.error(
+                "RGO CAT not connected"
+            );
+
+            return;
+
+        }
+
+        const value =
+            Number(vfo) === 1
+                ? 1
+                : 0;
+
+        this.rxVfo =
+            value;
+
+        this.send(
+            `FR${value};`
+        );
+
+    }
+
+
+    setTxVfo(
+        vfo: number
+    ): void {
+
+        if (!this.port.isOpen) {
+
+            console.error(
+                "RGO CAT not connected"
+            );
+
+            return;
+
+        }
+
+        const value =
+            Number(vfo) === 1
+                ? 1
+                : 0;
+
+        this.txVfo =
+            value;
+
+        this.send(
+            `FT${value};`
         );
 
     }
@@ -1464,6 +1572,43 @@ setRitXitOffset(offset: number): void {
     getTxState(): boolean {
 
         return this.txState;
+
+    }
+
+
+    setSplit(
+        enabled: boolean
+    ): void {
+
+        if (!this.port.isOpen) {
+
+            console.error(
+                "RGO CAT not connected"
+            );
+
+            return;
+
+        }
+
+        if (enabled) {
+
+            // SPLIT ON:
+            // RX = VFO A
+            // TX = VFO B
+            this.setRxVfo(0);
+            this.setTxVfo(1);
+
+        } else {
+
+            // SPLIT OFF:
+            // RX = VFO A
+            // TX = VFO A
+            this.setRxVfo(0);
+            this.setTxVfo(0);
+
+        }
+
+        this.split = enabled;
 
     }
 

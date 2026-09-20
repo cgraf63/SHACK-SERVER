@@ -186,14 +186,9 @@ function updateBandDisplay() {
         return;
     }
 
-    const activeFrequency =
-        Number(rgoState.rxVfo) === 1
-            ? Number(rgoState.frequencyB)
-            : Number(rgoState.frequency);
-
     const activeBand =
         getRgoBand(
-            activeFrequency
+            rgoState.frequency
         );
 
     document
@@ -283,8 +278,6 @@ function updateRgoDisplay() {
 
     updateFrequency();
 
-    updateVfo();
-
 
     updateMode();
 
@@ -346,9 +339,34 @@ function updateRgoDisplay() {
         powerValue.textContent =
             `${rgoState.power} W`;
     }
+
+
+
+    function updateVfo() {
+    if (!rgoState) return;
+
+    const buttonA = document.getElementById("rgo-vfo-a");
+    const buttonB = document.getElementById("rgo-vfo-b");
+    const label = document.getElementById("rgo-vfo-frequency-label");
+    const input = document.getElementById("rgo-vfo-frequency");
+
+    if (!buttonA || !buttonB || !label || !input) return;
+
+    const activeVfo = Number(rgoState.rxVfo) === 1 ? "B" : "A";
+
+    const frequency = activeVfo === "B"
+        ? Number(rgoState.frequencyB)
+        : Number(rgoState.frequency);
+
+    buttonA.classList.toggle("active", activeVfo === "A");
+    buttonB.classList.toggle("active", activeVfo === "B");
+
+    label.textContent = activeVfo;
+
+    if (Number.isFinite(frequency) && frequency > 0) {
+        input.value = formatFrequency(frequency);
+    }
 }
-
-
 
 
 function updateFrequency() {
@@ -367,9 +385,9 @@ function updateFrequency() {
 
 
     const frequency =
-        Number(rgoState.rxVfo) === 1
-            ? Number(rgoState.frequencyB)
-            : Number(rgoState.frequency);
+        Number(
+            rgoState.frequency
+        );
 
 
     if (
@@ -442,8 +460,97 @@ function updateMode() {
 }
 
 
+function updateVfo() {
+
+    const inputA =
+        document.getElementById(
+            "rgo-vfo-a-frequency"
+        );
+
+    const inputB =
+        document.getElementById(
+            "rgo-vfo-b-frequency"
+        );
 
 
+    if (
+        inputA &&
+        document.activeElement !== inputA &&
+        Number.isFinite(
+            Number(rgoState.frequency)
+        )
+    ) {
+
+        inputA.value =
+            formatFrequency(
+                Number(rgoState.frequency)
+            );
+
+    }
+
+
+    if (
+        inputB &&
+        document.activeElement !== inputB &&
+        Number.isFinite(
+            Number(rgoState.frequencyB)
+        )
+    ) {
+
+        inputB.value =
+            formatFrequency(
+                Number(rgoState.frequencyB)
+            );
+
+    }
+
+
+    const buttonA =
+        document.getElementById(
+            "rgo-vfo-a"
+        );
+
+    const buttonB =
+        document.getElementById(
+            "rgo-vfo-b"
+        );
+
+    const buttonSplit =
+        document.getElementById(
+            "rgo-split"
+        );
+
+
+    if (buttonA) {
+
+        buttonA.classList.toggle(
+            "active",
+            Number(rgoState.rxVfo) === 0
+        );
+
+    }
+
+
+    if (buttonB) {
+
+        buttonB.classList.toggle(
+            "active",
+            Number(rgoState.rxVfo) === 1
+        );
+
+    }
+
+
+    if (buttonSplit) {
+
+        buttonSplit.classList.toggle(
+            "active",
+            rgoState.split === true
+        );
+
+    }
+
+}
 
 async function selectRgoVfo(vfo) {
     const value = vfo === "B" ? 1 : 0;
@@ -563,45 +670,768 @@ async function toggleRgoSplit() {
 }
 
 
+function parseRgoFrequency(value) {
+
+    let text =
+        String(value)
+            .trim()
+            .replace(/\\s/g, "");
 
 
+    if (!text) {
+
+        return null;
+
+    }
 
 
+    /*
+     * Eingaben:
+     *
+     * 14100       -> 14.100.000 Hz
+     * 7074        ->  7.074.000 Hz
+     * 14.100      -> 14.100.000 Hz
+     * 7.074       ->  7.074.000 Hz
+     * 14.100.000  -> 14.100.000 Hz
+     * 7.074.000   ->  7.074.000 Hz
+     */
 
 
+    text =
+        text.replace(",", ".");
 
 
+    /*
+     * Eine einzelne Punktnotation mit
+     * maximal drei Nachkommastellen wird
+     * als MHz interpretiert.
+     *
+     * Beispiel:
+     * 14.100 -> 14.100 MHz
+     */
+
+    if (
+        /^\\d+\\.\\d{1,3}$/.test(text)
+    ) {
+
+        const mhz =
+            Number(text);
+
+        if (
+            Number.isFinite(mhz)
+        ) {
+
+            const frequency =
+                Math.round(
+                    mhz * 1000000
+                );
+
+            if (
+                frequency >= 100000 &&
+                frequency <= 60000000
+            ) {
+
+                return frequency;
+
+            }
+
+        }
+
+        return null;
+
+    }
 
 
+    /*
+     * Tausenderpunkte entfernen.
+     */
+
+    text =
+        text.replace(/\\./g, "");
 
 
+    if (!/^\\d+$/.test(text)) {
 
+        return null;
+
+    }
+
+
+    let frequency =
+        Number(text);
+
+
+    /*
+     * Kleine Werte werden als kHz
+     * interpretiert.
+     *
+     * 14100 -> 14100000
+     * 7074  -> 7074000
+     */
+
+    if (
+        frequency > 0 &&
+        frequency < 100000
+    ) {
+
+        frequency *= 1000;
+
+    }
+
+
+    if (
+        !Number.isFinite(frequency) ||
+        frequency < 100000 ||
+        frequency > 60000000
+    ) {
+
+        return null;
+
+    }
+
+
+    return Math.round(frequency);
+
+}
+
+
+async function setRgoFrequencyA(value) {
+
+    const frequency =
+        parseRgoFrequency(value);
+
+    if (frequency === null) {
+        await fetchRgoState();
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/radio/frequency",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        frequency
+                    })
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                `VFO A frequency failed: HTTP ${response.status}`
+            );
+        }
+
+        await fetchRgoState();
+
+    } catch (error) {
+
+        console.error(
+            "RGO VFO A frequency:",
+            error
+        );
+
+        await fetchRgoState();
+
+    }
+
+}
+
+
+async function setRgoFrequencyB(value) {
+
+    const frequency =
+        parseRgoFrequency(value);
+
+    if (frequency === null) {
+        await fetchRgoState();
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/radio/split-frequency",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        frequency
+                    })
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                `VFO B frequency failed: HTTP ${response.status}`
+            );
+        }
+
+        await fetchRgoState();
+
+    } catch (error) {
+
+        console.error(
+            "RGO VFO B frequency:",
+            error
+        );
+
+        await fetchRgoState();
+
+    }
+
+}
+
+function initRgoVfoControls() {
+
+    const vfoA =
+        document.getElementById(
+            "rgo-vfo-a"
+        );
+
+    const vfoB =
+        document.getElementById(
+            "rgo-vfo-b"
+        );
+
+    const split =
+        document.getElementById(
+            "rgo-split"
+        );
+
+    const frequencyA =
+        document.getElementById(
+            "rgo-vfo-a-frequency"
+        );
+
+    const frequencyB =
+        document.getElementById(
+            "rgo-vfo-b-frequency"
+        );
+
+
+    if (vfoA) {
+
+        vfoA.addEventListener(
+            "click",
+            () => selectRgoVfo(0)
+        );
+
+    }
+
+
+    if (vfoB) {
+
+        vfoB.addEventListener(
+            "click",
+            () => selectRgoVfo(1)
+        );
+
+    }
+
+
+    if (split) {
+
+        split.addEventListener(
+            "click",
+            toggleRgoSplit
+        );
+
+    }
+
+
+    if (frequencyA) {
+
+        frequencyA.addEventListener(
+            "change",
+            () =>
+                setRgoFrequencyA(
+                    frequencyA.value
+                )
+        );
+
+        frequencyA.addEventListener(
+            "keydown",
+            event => {
+
+                if (event.key === "Enter") {
+
+                    event.preventDefault();
+
+                    setRgoFrequencyA(
+                        frequencyA.value
+                    );
+
+                    frequencyA.blur();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    if (frequencyB) {
+
+        frequencyB.addEventListener(
+            "change",
+            () =>
+                setRgoFrequencyB(
+                    frequencyB.value
+                )
+        );
+
+        frequencyB.addEventListener(
+            "keydown",
+            event => {
+
+                if (event.key === "Enter") {
+
+                    event.preventDefault();
+
+                    setRgoFrequencyB(
+                        frequencyB.value
+                    );
+
+                    frequencyB.blur();
+
+                }
+
+            }
+        );
+
+    }
+
+}
 
 
 let selectedMeter =
     "S";
 
 
+async function selectRgoVfo(vfo) {
+
+    const value =
+        vfo === "B"
+            ? 1
+            : 0;
 
 
+    try {
+
+        const response =
+            await fetch(
+                "/api/radio/vfo-control",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        control: "rxVfo",
+                        value
+                    })
+                }
+            );
 
 
+        if (!response.ok) {
+
+            throw new Error(
+                "VFO selection failed"
+            );
+
+        }
 
 
+        await fetchRgoState();
 
 
+    } catch (error) {
+
+        console.error(
+            "RGO VFO:",
+            error
+        );
+
+    }
+
+}
 
 
+async function toggleRgoSplit() {
+
+    const enabled =
+        rgoState.split !== true;
 
 
+    try {
+
+        const response =
+            await fetch(
+                "/api/radio/split",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        enabled
+                    })
+                }
+            );
 
 
+        if (!response.ok) {
+
+            throw new Error(
+                "SPLIT control failed"
+            );
+
+        }
 
 
+        await fetchRgoState();
 
 
+    } catch (error) {
+
+        console.error(
+            "RGO SPLIT:",
+            error
+        );
+
+    }
+
+}
 
 
+function parseRgoFrequency(value) {
+
+    const text =
+        String(value)
+            .trim()
+            .replace(/\./g, "")
+            .replace(/\s/g, "");
+
+
+    if (!/^\d+$/.test(text)) {
+
+        return null;
+
+    }
+
+
+    const frequency =
+        Number(text);
+
+
+    if (
+        !Number.isFinite(frequency) ||
+        frequency < 100000 ||
+        frequency > 60000000
+    ) {
+
+        return null;
+
+    }
+
+
+    return frequency;
+
+}
+
+
+async function setRgoFrequencyA(value) {
+
+    const frequency =
+        parseRgoFrequency(value);
+
+
+    if (frequency === null) {
+
+        return;
+
+    }
+
+
+    try {
+
+        /*
+         * Sicherstellen, dass FA geschrieben wird.
+         */
+
+        const selectResponse =
+            await fetch(
+                "/api/radio/vfo-control",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        control: "rxVfo",
+                        value: 0
+                    })
+                }
+            );
+
+
+        if (!selectResponse.ok) {
+
+            throw new Error(
+                "VFO A selection failed"
+            );
+
+        }
+
+
+        const response =
+            await fetch(
+                "/api/radio/frequency",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        frequency
+                    })
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "VFO A frequency failed"
+            );
+
+        }
+
+
+        await fetchRgoState();
+
+
+    } catch (error) {
+
+        console.error(
+            "RGO VFO A frequency:",
+            error
+        );
+
+    }
+
+}
+
+
+async function setRgoFrequencyB(value) {
+
+    const frequency =
+        parseRgoFrequency(value);
+
+
+    if (frequency === null) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/radio/split-frequency",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        frequency
+                    })
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "VFO B frequency failed"
+            );
+
+        }
+
+
+        await fetchRgoState();
+
+
+    } catch (error) {
+
+        console.error(
+            "RGO VFO B frequency:",
+            error
+        );
+
+    }
+
+}
+
+
+function initRgoVfoControls() {
+
+    const buttonA =
+        document.getElementById(
+            "rgo-vfo-a"
+        );
+
+    const buttonB =
+        document.getElementById(
+            "rgo-vfo-b"
+        );
+
+    const buttonSplit =
+        document.getElementById(
+            "rgo-split"
+        );
+
+
+    const inputA =
+        document.getElementById(
+            "rgo-vfo-a-frequency"
+        );
+
+    const inputB =
+        document.getElementById(
+            "rgo-vfo-b-frequency"
+        );
+
+
+    if (buttonA) {
+
+        buttonA.addEventListener(
+            "click",
+            () => {
+                selectRgoVfo("A");
+            }
+        );
+
+    }
+
+
+    if (buttonB) {
+
+        buttonB.addEventListener(
+            "click",
+            () => {
+                selectRgoVfo("B");
+            }
+        );
+
+    }
+
+
+    if (buttonSplit) {
+
+        buttonSplit.addEventListener(
+            "click",
+            () => {
+                toggleRgoSplit();
+            }
+        );
+
+    }
+
+
+    if (inputA) {
+
+        inputA.addEventListener(
+            "keydown",
+            event => {
+
+                if (event.key === "Enter") {
+
+                    event.preventDefault();
+
+                    setRgoFrequencyA(
+                        inputA.value
+                    );
+
+                    inputA.blur();
+
+                }
+
+            }
+        );
+
+
+        inputA.addEventListener(
+            "change",
+            () => {
+
+                setRgoFrequencyA(
+                    inputA.value
+                );
+
+            }
+        );
+
+    }
+
+
+    if (inputB) {
+
+        inputB.addEventListener(
+            "keydown",
+            event => {
+
+                if (event.key === "Enter") {
+
+                    event.preventDefault();
+
+                    setRgoFrequencyB(
+                        inputB.value
+                    );
+
+                    inputB.blur();
+
+                }
+
+            }
+        );
+
+
+        inputB.addEventListener(
+            "change",
+            () => {
+
+                setRgoFrequencyB(
+                    inputB.value
+                );
+
+            }
+        );
+
+    }
+
+}
 
 
 function initMeterSelector() {
@@ -2509,8 +3339,10 @@ document.addEventListener(
 
         initRitXitControl();
         initRgoCwSpeedControl();
+        initRgoVfoControls();
         initBandControls();
         initMeterSelector();
+	initRgoVfoControls();        
 	startRgoPolling();
 
     }
@@ -2582,6 +3414,48 @@ function parseRgoFrequency(value) {
 }
 
 
+async function selectRgoVfo(vfo) {
+
+    const value =
+        vfo === "B"
+            ? 1
+            : 0;
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/radio/vfo-control",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        control: "rxVfo",
+                        value
+                    })
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                `VFO selection failed: HTTP ${response.status}`
+            );
+        }
+
+        await fetchRgoState();
+
+    } catch (error) {
+
+        console.error(
+            "RGO VFO selection:",
+            error
+        );
+
+    }
+}
 
 
 async function setRgoFrequency(value) {
@@ -2726,4 +3600,22 @@ function updateVfo() {
 }
 
 
+// RGO VFO BUTTON HANDLERS
+document.addEventListener("DOMContentLoaded", () => {
+    const vfoA = document.getElementById("rgo-vfo-a");
+    const vfoB = document.getElementById("rgo-vfo-b");
 
+    if (vfoA) {
+        vfoA.addEventListener("click", () => {
+            console.log("RGO VFO A CLICK");
+            selectRgoVfo("A");
+        });
+    }
+
+    if (vfoB) {
+        vfoB.addEventListener("click", () => {
+            console.log("RGO VFO B CLICK");
+            selectRgoVfo("B");
+        });
+    }
+});

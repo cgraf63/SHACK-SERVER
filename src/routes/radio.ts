@@ -1347,7 +1347,59 @@ router.post(
         }
 
 
-        case "cwSpeed": {
+        case "rxVfo": {
+        if (
+          typeof (activeRadio as any).setRxVfo !==
+          "function"
+        ) {
+          return res.status(501).json({
+            error: "RX VFO control not supported"
+          });
+        }
+
+        const vfo = Number(value);
+
+        if (
+          !Number.isFinite(vfo) ||
+          (vfo !== 0 && vfo !== 1)
+        ) {
+          return res.status(400).json({
+            error: "Invalid RX VFO"
+          });
+        }
+
+        (activeRadio as any).setRxVfo(vfo);
+
+        break;
+      }
+
+      case "txVfo": {
+        if (
+          typeof (activeRadio as any).setTxVfo !==
+          "function"
+        ) {
+          return res.status(501).json({
+            error: "TX VFO control not supported"
+          });
+        }
+
+        const vfo = Number(value);
+
+        if (
+          !Number.isFinite(vfo) ||
+          (vfo !== 0 && vfo !== 1)
+        ) {
+          return res.status(400).json({
+            error: "Invalid TX VFO"
+          });
+        }
+
+        (activeRadio as any).setTxVfo(vfo);
+
+        break;
+      }
+
+      case "cwSpeed": {
 
             if (
                 typeof (activeRadio as any).setCwSpeed !==
@@ -1539,6 +1591,63 @@ router.post(
                 error: "VFO control failed"
             });
         }
+    }
+);
+
+
+/* =========================================================
+   RGO VFO SELECTION
+   ========================================================= */
+
+router.post(
+    "/radio/vfo",
+    (req, res) => {
+
+        const activeRadio =
+            radioManager.getActiveRadio();
+
+        if (!activeRadio) {
+            return res.status(503).json({
+                error: "No active radio"
+            });
+        }
+
+        const vfo =
+            String(req.body?.vfo || "")
+                .toUpperCase();
+
+        if (vfo !== "A" && vfo !== "B") {
+            return res.status(400).json({
+                error: "Invalid VFO"
+            });
+        }
+
+        if (
+            typeof (activeRadio as any).setRxVfo !==
+            "function"
+        ) {
+            return res.status(501).json({
+                error: "VFO selection not supported"
+            });
+        }
+
+        const value =
+            vfo === "B"
+                ? 1
+                : 0;
+
+        (activeRadio as any).setRxVfo(value);
+
+        console.log(
+            "RGO VFO:",
+            vfo,
+            "-> FR" + value
+        );
+
+        return res.json({
+            success: true,
+            vfo
+        });
     }
 );
 
