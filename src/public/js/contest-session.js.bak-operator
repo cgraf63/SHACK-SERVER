@@ -3,8 +3,6 @@
  */
 
 let activeContestSession = null;
-let contestSessionOperators = [];
-let activeContestOperatorId = null;
 let contestDefinitions = [];
 window.activeContestId = "999";
 
@@ -355,8 +353,6 @@ if (typeof updateContestCantonField === "function") {
     updateContestCantonField();
 }
 
-        await loadContestSessionOperators();
-
     }
     catch (error) {
 
@@ -382,311 +378,6 @@ if (typeof updateContestCantonField === "function") {
  * Render session.
  */
 
-async function loadContestSessionOperators() {
-
-    const operator =
-        contestSessionElement(
-            "contest-operator"
-        );
-
-    if (!operator) {
-        return;
-    }
-
-    contestSessionOperators = [];
-
-    operator.innerHTML = `
-        <option value="">
-            Select operator...
-        </option>
-    `;
-
-    if (
-        !activeContestSession ||
-        !activeContestSession.id
-    ) {
-        operator.disabled = true;
-        return;
-    }
-
-    try {
-
-        const sessionId =
-            Number(
-                activeContestSession.id
-            );
-
-        const response =
-            await fetch(
-                `/api/contests/session/${sessionId}/operators?_=${Date.now()}`,
-                {
-                    cache: "no-store"
-                }
-            );
-
-        if (!response.ok) {
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-        }
-
-        const data =
-            await response.json();
-
-        contestSessionOperators =
-            Array.isArray(data)
-                ? data
-                : [];
-
-        contestSessionOperators.forEach(
-            sessionOperator => {
-
-                const option =
-                    document.createElement(
-                        "option"
-                    );
-
-                option.value =
-                    String(
-                        sessionOperator.id
-                    );
-
-                const callsign =
-                    sessionOperator.callsign ||
-                    "";
-
-                const name =
-                    sessionOperator.name ||
-                    "";
-
-                option.textContent =
-                    callsign && name
-                        ? `${callsign} – ${name}`
-                        : callsign || name;
-
-                operator.appendChild(
-                    option
-                );
-            }
-        );
-
-        operator.disabled =
-            contestSessionOperators.length === 0;
-
-        restoreContestActiveOperator();
-
-    }
-    catch (error) {
-
-        console.error(
-            "Contest session operators:",
-            error
-        );
-
-        operator.innerHTML = `
-            <option value="">
-                Failed to load operators
-            </option>
-        `;
-
-        operator.disabled = true;
-    }
-}
-
-
-function contestActiveOperatorStorageKey() {
-
-    if (
-        !activeContestSession ||
-        !activeContestSession.id
-    ) {
-        return null;
-    }
-
-    return (
-        "contest.activeOperator." +
-        String(activeContestSession.id)
-    );
-}
-
-
-function setupContestOperatorSelection() {
-
-    const operator =
-        contestSessionElement(
-            "contest-operator"
-        );
-
-    if (!operator) {
-        return;
-    }
-
-    if (
-        operator.dataset.operatorSelectionBound ===
-        "true"
-    ) {
-        return;
-    }
-
-    operator.dataset.operatorSelectionBound =
-        "true";
-
-    operator.addEventListener(
-        "change",
-        () => {
-
-            const value =
-                operator.value;
-
-            activeContestOperatorId =
-                value
-                    ? Number(value)
-                    : null;
-
-            const storageKey =
-                contestActiveOperatorStorageKey();
-
-            if (!storageKey) {
-                return;
-            }
-
-            if (activeContestOperatorId) {
-
-                localStorage.setItem(
-                    storageKey,
-                    String(
-                        activeContestOperatorId
-                    )
-                );
-
-            }
-            else {
-
-                localStorage.removeItem(
-                    storageKey
-                );
-
-            }
-
-            window.dispatchEvent(
-                new CustomEvent(
-                    "contest-active-operator-changed",
-                    {
-                        detail: {
-                            operatorId:
-                                activeContestOperatorId
-                        }
-                    }
-                )
-            );
-        }
-    );
-}
-
-
-function restoreContestActiveOperator() {
-
-    const operator =
-        contestSessionElement(
-            "contest-operator"
-        );
-
-    if (!operator) {
-        return;
-    }
-
-    activeContestOperatorId =
-        null;
-
-    const storageKey =
-        contestActiveOperatorStorageKey();
-
-    if (!storageKey) {
-
-        operator.value = "";
-
-        return;
-    }
-
-    const storedValue =
-        localStorage.getItem(
-            storageKey
-        );
-
-    if (!storedValue) {
-
-        operator.value = "";
-
-        return;
-    }
-
-    const storedId =
-        Number(storedValue);
-
-    const exists =
-        contestSessionOperators.some(
-            sessionOperator =>
-                Number(
-                    sessionOperator.id
-                ) === storedId
-        );
-
-    if (!exists) {
-
-        localStorage.removeItem(
-            storageKey
-        );
-
-        operator.value = "";
-
-        return;
-    }
-
-    activeContestOperatorId =
-        storedId;
-
-    operator.value =
-        String(storedId);
-
-    window.dispatchEvent(
-        new CustomEvent(
-            "contest-active-operator-changed",
-            {
-                detail: {
-                    operatorId:
-                        activeContestOperatorId
-                }
-            }
-        )
-    );
-}
-
-
-function getActiveContestOperator() {
-
-    if (!activeContestOperatorId) {
-        return null;
-    }
-
-    return (
-        contestSessionOperators.find(
-            sessionOperator =>
-                Number(
-                    sessionOperator.id
-                ) ===
-                Number(
-                    activeContestOperatorId
-                )
-        ) || null
-    );
-}
-
-
-window.getActiveContestOperator =
-    getActiveContestOperator;
-
-
-
 function renderContestSession() {
 
     const session =
@@ -707,9 +398,9 @@ function renderContestSession() {
             "contest-operator"
         );
 
-    const club =
+    const callsign =
         contestSessionElement(
-            "contest-club"
+            "contest-callsign"
         );
 
     const grid =
@@ -742,8 +433,6 @@ function renderContestSession() {
             "contest-finish-button"
         );
 
-    setupContestOperatorSelection();
-
     const createButton =
         contestSessionElement(
             "contest-create-button"
@@ -766,24 +455,27 @@ function renderContestSession() {
 
 
     /*
-     * Session information
+     * Session fields
      *
-     * Active Operator is handled separately.
-     * Callsign is no longer displayed here.
+     * These are INPUT elements, therefore
+     * use .value instead of .textContent.
      */
 
     if (session) {
 
-        if (club) {
-            club.textContent =
-                session.club ||
-                "—";
+        if (operator) {
+            operator.value =
+                session.operator_name || "";
+        }
+
+        if (callsign) {
+            callsign.value =
+                session.station_callsign || "";
         }
 
         if (grid) {
             grid.value =
-                session.station_grid ||
-                "";
+                session.station_grid || "";
         }
 
         if (started) {
@@ -798,8 +490,12 @@ function renderContestSession() {
     }
     else {
 
-        if (club) {
-            club.textContent = "—";
+        if (operator) {
+            operator.value = "";
+        }
+
+        if (callsign) {
+            callsign.value = "";
         }
 
         if (grid) {
@@ -810,19 +506,6 @@ function renderContestSession() {
             started.textContent = "—";
         }
 
-    }
-
-
-    /*
-     * Active Operator selector.
-     *
-     * The options are populated by
-     * loadContestSessionOperators().
-     */
-
-    if (operator) {
-        operator.disabled =
-            !session;
     }
 
 
@@ -839,19 +522,41 @@ function renderContestSession() {
 
 
     /*
+     * Session fields can only be edited
+     * while the session is READY.
+     */
+
+    const fieldsEditable =
+        Boolean(session) &&
+        status === "READY";
+
+    if (operator) {
+        operator.disabled =
+            !fieldsEditable;
+    }
+
+    if (callsign) {
+        callsign.disabled =
+            !fieldsEditable;
+    }
+
+    if (grid) {
+        grid.disabled =
+            !fieldsEditable;
+    }
+
+
+    /*
      * START
      *
-     * Available from READY or PAUSED.
+     * Only READY.
      */
 
     if (startButton) {
 
         startButton.disabled =
             !session ||
-            !(
-                status === "READY" ||
-                status === "PAUSED"
-            );
+            status !== "READY";
 
     }
 
@@ -859,7 +564,7 @@ function renderContestSession() {
     /*
      * PAUSE
      *
-     * Available only while RUNNING.
+     * Only RUNNING.
      */
 
     if (pauseButton) {
@@ -874,7 +579,7 @@ function renderContestSession() {
     /*
      * RESUME
      *
-     * Available only while PAUSED.
+     * Only PAUSED.
      */
 
     if (resumeButton) {
@@ -889,7 +594,7 @@ function renderContestSession() {
     /*
      * FINISH
      *
-     * Available while RUNNING or PAUSED.
+     * RUNNING or PAUSED.
      */
 
     if (finishButton) {
@@ -903,32 +608,13 @@ function renderContestSession() {
 
     }
 
-
-    /*
-     * Notify other contest components.
-     */
-
-    if (
-        window &&
-        typeof window.dispatchEvent === "function"
-    ) {
-
-        window.dispatchEvent(
-            new CustomEvent(
-                "contest-session-changed",
-                {
-                    detail: {
-                        session:
-                            activeContestSession
-                    }
-                }
-            )
-        );
-
-    }
-
 }
 
+
+
+/*
+ * Format timestamp.
+ */
 
 function formatContestDate(value) {
 

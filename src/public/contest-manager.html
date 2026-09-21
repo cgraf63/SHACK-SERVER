@@ -170,6 +170,250 @@
             </section>
 
 
+            <!-- OPERATORS -->
+
+            <section class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Operators
+                        </h2>
+
+                        <p>
+                            Manage operators available for contest sessions.
+                        </p>
+
+                    </div>
+
+                    <button
+                        id="new-operator-button"
+                        class="button primary"
+                        type="button"
+                    >
+                        + New Operator
+                    </button>
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Callsign</th>
+
+                                <th>Name</th>
+
+                                <th>Club</th>
+
+                                <th>Status</th>
+
+                                <th>Actions</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody
+                            id="contest-operators-body"
+                        >
+
+                            <tr>
+
+                                <td
+                                    colspan="5"
+                                    class="empty-state"
+                                >
+                                    Loading operators...
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+            </section>
+
+
+            <!-- OPERATOR EDITOR -->
+
+            <section
+                id="operator-editor"
+                class="card"
+                hidden
+            >
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2
+                            id="operator-editor-title"
+                        >
+                            New Operator
+                        </h2>
+
+                        <p>
+                            Enter the operator information.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <form id="operator-form">
+
+                    <input
+                        type="hidden"
+                        id="operator-id"
+                    >
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label
+                                for="operator-callsign"
+                            >
+                                Callsign
+                            </label>
+
+                            <input
+                                type="text"
+                                id="operator-callsign"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label
+                                for="operator-name"
+                            >
+                                Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="operator-name"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label
+                                for="operator-club"
+                            >
+                                Club
+                            </label>
+
+                            <input
+                                type="text"
+                                id="operator-club"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label
+                                for="operator-email"
+                            >
+                                E-Mail
+                            </label>
+
+                            <input
+                                type="email"
+                                id="operator-email"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group full-width">
+
+                            <label
+                                for="operator-notes"
+                            >
+                                Notes
+                            </label>
+
+                            <textarea
+                                id="operator-notes"
+                                rows="3"
+                            ></textarea>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Status
+                            </label>
+
+                            <label class="checkbox-label">
+
+                                <input
+                                    type="checkbox"
+                                    id="operator-active"
+                                    checked
+                                >
+
+                                Active
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-actions">
+
+                        <button
+                            type="button"
+                            id="cancel-operator-button"
+                            class="button secondary"
+                        >
+                            Cancel
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            class="button primary"
+                        >
+                            Save Operator
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+
             <!-- EDITOR -->
 
             <section

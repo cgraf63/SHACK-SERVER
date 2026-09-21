@@ -1112,3 +1112,563 @@ form.addEventListener(
  */
 
 loadDefinitions();
+
+
+/*
+ * Contest Operators
+ */
+
+const operatorsBody =
+    document.getElementById("contest-operators-body");
+
+const operatorEditor =
+    document.getElementById("operator-editor");
+
+const operatorEditorTitle =
+    document.getElementById("operator-editor-title");
+
+const operatorForm =
+    document.getElementById("operator-form");
+
+const operatorId =
+    document.getElementById("operator-id");
+
+const operatorCallsign =
+    document.getElementById("operator-callsign");
+
+const operatorName =
+    document.getElementById("operator-name");
+
+const operatorClub =
+    document.getElementById("operator-club");
+
+const operatorEmail =
+    document.getElementById("operator-email");
+
+const operatorNotes =
+    document.getElementById("operator-notes");
+
+const operatorActive =
+    document.getElementById("operator-active");
+
+const newOperatorButton =
+    document.getElementById("new-operator-button");
+
+const cancelOperatorButton =
+    document.getElementById("cancel-operator-button");
+
+
+let operators = [];
+
+
+/*
+ * Load operators
+ */
+
+async function loadOperators() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/contests/operators"
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
+        }
+
+
+        operators =
+            await response.json();
+
+
+        renderOperators();
+
+    }
+    catch (error) {
+
+        console.error(
+            "Failed to load contest operators:",
+            error
+        );
+
+
+        operatorsBody.innerHTML = `
+            <tr>
+                <td
+                    colspan="5"
+                    class="empty-state"
+                >
+                    Failed to load operators.
+                </td>
+            </tr>
+        `;
+
+    }
+
+}
+
+
+/*
+ * Render operators
+ */
+
+function renderOperators() {
+
+    if (!operators.length) {
+
+        operatorsBody.innerHTML = `
+            <tr>
+                <td
+                    colspan="5"
+                    class="empty-state"
+                >
+                    No operators available.
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+
+    operatorsBody.innerHTML =
+        operators
+            .map(
+                operator => {
+
+                    const status =
+                        operator.active
+                            ? "Active"
+                            : "Disabled";
+
+
+                    return `
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    ${escapeHtml(
+                                        operator.callsign
+                                    )}
+                                </strong>
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    operator.name
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    operator.club || ""
+                                )}
+                            </td>
+
+                            <td>
+                                <span
+                                    class="contest-status ${
+                                        operator.active
+                                            ? "enabled"
+                                            : "disabled"
+                                    }"
+                                >
+                                    ${status}
+                                </span>
+                            </td>
+
+                            <td>
+
+                                <button
+                                    type="button"
+                                    class="button small"
+                                    data-operator-action="edit"
+                                    data-id="${operator.id}"
+                                >
+                                    Edit
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="button small"
+                                    data-operator-action="toggle"
+                                    data-id="${operator.id}"
+                                >
+                                    ${
+                                        operator.active
+                                            ? "Disable"
+                                            : "Enable"
+                                    }
+                                </button>
+
+                            </td>
+
+                        </tr>
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+/*
+ * Open operator editor
+ */
+
+function openOperatorEditor(
+    operator = null
+) {
+
+    operatorEditor.hidden = false;
+
+
+    if (operator) {
+
+        operatorEditorTitle.textContent =
+            "Edit Operator";
+
+        operatorId.value =
+            operator.id ?? "";
+
+        operatorCallsign.value =
+            operator.callsign ?? "";
+
+        operatorName.value =
+            operator.name ?? "";
+
+        operatorClub.value =
+            operator.club ?? "";
+
+        operatorEmail.value =
+            operator.email ?? "";
+
+        operatorNotes.value =
+            operator.notes ?? "";
+
+        operatorActive.checked =
+            operator.active !== false;
+
+    }
+    else {
+
+        operatorEditorTitle.textContent =
+            "New Operator";
+
+        operatorForm.reset();
+
+        operatorId.value =
+            "";
+
+        operatorActive.checked =
+            true;
+
+    }
+
+
+    operatorCallsign.focus();
+
+}
+
+
+/*
+ * Close operator editor
+ */
+
+function closeOperatorEditor() {
+
+    operatorEditor.hidden = true;
+
+    operatorForm.reset();
+
+    operatorId.value =
+        "";
+
+    operatorActive.checked =
+        true;
+
+}
+
+
+/*
+ * Save operator
+ */
+
+async function saveOperator(
+    event
+) {
+
+    event.preventDefault();
+
+
+    const id =
+        Number(
+            operatorId.value
+        );
+
+
+    const payload = {
+
+        callsign:
+            operatorCallsign.value.trim(),
+
+        name:
+            operatorName.value.trim(),
+
+        club:
+            operatorClub.value.trim(),
+
+        email:
+            operatorEmail.value.trim(),
+
+        notes:
+            operatorNotes.value.trim(),
+
+        active:
+            operatorActive.checked
+
+    };
+
+
+    const url =
+        id > 0
+            ? `/api/contests/operators/${id}`
+            : "/api/contests/operators";
+
+
+    const method =
+        id > 0
+            ? "PATCH"
+            : "POST";
+
+
+    try {
+
+        const response =
+            await fetch(
+                url,
+                {
+
+                    method,
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(
+                            payload
+                        )
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                `HTTP ${response.status}`
+            );
+
+        }
+
+
+        closeOperatorEditor();
+
+        await loadOperators();
+
+    }
+    catch (error) {
+
+        console.error(
+            "Failed to save contest operator:",
+            error
+        );
+
+
+        alert(
+            error.message ||
+            "Failed to save operator."
+        );
+
+    }
+
+}
+
+
+/*
+ * Operator table actions
+ */
+
+operatorsBody.addEventListener(
+    "click",
+    async event => {
+
+        const button =
+            event.target.closest(
+                "[data-operator-action]"
+            );
+
+
+        if (!button) {
+
+            return;
+
+        }
+
+
+        const id =
+            Number(
+                button.dataset.id
+            );
+
+
+        const action =
+            button.dataset.operatorAction;
+
+
+        const operator =
+            operators.find(
+                item =>
+                    Number(item.id) === id
+            );
+
+
+        if (!operator) {
+
+            return;
+
+        }
+
+
+        if (action === "edit") {
+
+            openOperatorEditor(
+                operator
+            );
+
+            return;
+
+        }
+
+
+        if (action === "toggle") {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/contests/operators/${id}/active`,
+                        {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    active:
+                                        !operator.active
+                                })
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.error ||
+                        `HTTP ${response.status}`
+                    );
+
+                }
+
+
+                await loadOperators();
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Failed to change operator status:",
+                    error
+                );
+
+
+                alert(
+                    error.message ||
+                    "Failed to change operator status."
+                );
+
+            }
+
+        }
+
+    }
+);
+
+
+/*
+ * Operator editor events
+ */
+
+newOperatorButton.addEventListener(
+    "click",
+    () => {
+
+        openOperatorEditor();
+
+    }
+);
+
+
+cancelOperatorButton.addEventListener(
+    "click",
+    () => {
+
+        closeOperatorEditor();
+
+    }
+);
+
+
+operatorForm.addEventListener(
+    "submit",
+    saveOperator
+);
+
+
+/*
+ * Initial load
+ */
+
+loadOperators();
+
+
+
+/*
+ * Contest Operators
+ */

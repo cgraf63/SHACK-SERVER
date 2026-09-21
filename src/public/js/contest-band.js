@@ -684,55 +684,157 @@ item.addEventListener(
 
         const frequency =
             document.getElementById(
-                "contest-frequency"
+                "contest-frequency-input"
             );
 
         const mode =
             document.getElementById(
-                "contest-mode"
+                "contest-mode-input"
             );
 
         const band =
             document.getElementById(
-                "contest-band"
+                "contest-band-input"
             );
 
 
+        /*
+         * CALLSIGN
+         */
+
         if (call) {
+
             call.value =
-                spot.call || "";
+                String(
+                    spot.call || ""
+                ).toUpperCase();
+
         }
 
 
-lookupContestSpotCallsign(
-    spot.call || ""
-);
+        /*
+         * FREQUENCY
+         *
+         * Spot frequency is in kHz.
+         */
 
-                if (frequency) {
+        if (frequency) {
 
             const spotFrequency =
                 Number(
                     spot.frequency
                 );
 
-            frequency.textContent =
+            frequency.value =
                 Number.isFinite(
                     spotFrequency
                 )
                     ? spotFrequency.toFixed(3)
-                    : "—";
+                    : "";
+
         }
 
 
-        if (mode) {
-            mode.textContent =
-                spot.mode || "—";
-        }
-
+        /*
+         * BAND
+         *
+         * Accept:
+         *   20
+         *   20m
+         */
 
         if (band) {
-            band.textContent =
-                spot.band || "—";
+
+            const spotBand =
+                String(
+                    spot.band || ""
+                )
+                .trim()
+                .replace(
+                    /m$/i,
+                    ""
+                );
+
+            const bandOption =
+                Array.from(
+                    band.options
+                ).find(
+                    option =>
+                        option.value ===
+                        spotBand
+                );
+
+            if (bandOption) {
+
+                band.value =
+                    spotBand;
+
+                localStorage.setItem(
+                    "contest.lastBand",
+                    spotBand
+                );
+
+            }
+
+        }
+
+
+        /*
+         * MODE
+         */
+
+        if (mode) {
+
+            const spotMode =
+                String(
+                    spot.mode || ""
+                )
+                .trim()
+                .toUpperCase();
+
+            const modeOption =
+                Array.from(
+                    mode.options
+                ).find(
+                    option =>
+                        option.value.toUpperCase() ===
+                        spotMode
+                );
+
+            if (modeOption) {
+
+                mode.value =
+                    modeOption.value;
+
+                localStorage.setItem(
+                    "contest.lastMode",
+                    modeOption.value
+                );
+
+            }
+
+        }
+
+
+        /*
+         * QRZ:
+         * Name / Country / Locator
+         */
+
+        lookupContestSpotCallsign(
+            spot.call || ""
+        );
+
+
+        /*
+         * Back to CALLSIGN.
+         */
+
+        if (call) {
+
+            call.focus();
+            call.select();
+
         }
 
     }
@@ -1249,16 +1351,43 @@ async function loadContestRecentQsos() {
         return;
     }
 
+
+    const sessionId =
+        Number(
+            window.contestSessionId ||
+            window.contestSession?.id ||
+            0
+        );
+
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+
+        body.innerHTML = `
+            <tr>
+                <td
+                    colspan="7"
+                    class="contest-empty"
+                >
+                    No active contest session
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
     try {
 
         const response =
             await fetch(
-                "/api/qso?_=" +
+                `/api/contests/session/${sessionId}/qso?_=` +
                 Date.now(),
                 {
                     cache: "no-store"
                 }
             );
+
 
         if (!response.ok) {
 
@@ -1268,37 +1397,30 @@ async function loadContestRecentQsos() {
 
         }
 
+
         const data =
             await response.json();
 
-/*
- * Active contest session is required.
- *
- * The contest_id stored in the QSO is the
- * contest SESSION id, not the definition id.
- */
-
 
         const qsos =
-            Array.isArray(data.qsos)
-                ? data.qsos
+            Array.isArray(data)
+                ? data
                 : [];
 
 
-        updateContestBandStatistics(qsos);
-	updateContestSerialNumber(qsos);
+        updateContestBandStatistics(
+            qsos
+        );
+
+
+        updateContestSerialNumber(
+            qsos
+        );
 
 
         const contestQsos =
             qsos
-                .filter(
-                    qso =>
-                        qso.contest_id !== null &&
-                        qso.contest_id !== undefined &&
-                        String(
-                            qso.contest_id
-                        ).trim() !== ""
-                )
+                .slice()
                 .sort(
                     (a, b) => {
 
@@ -1339,40 +1461,15 @@ async function loadContestRecentQsos() {
                 .map(
                     qso => {
 
-                        const notes =
+                        const exchange =
                             String(
-                                qso.notes || ""
+                                qso.exchange_received || ""
                             );
-
-                        let exchange = "";
-
-                        const received =
-                            notes.match(
-                                /Contest Exchange Received:\s*([^\n;]+)/i
-                            );
-
-                        const sent =
-                            notes.match(
-                                /Contest Exchange Sent:\s*([^\n;]+)/i
-                            );
-
-                        if (received) {
-
-                            exchange =
-                                received[1].trim();
-
-                        }
-                        else if (sent) {
-
-                            exchange =
-                                sent[1].trim();
-
-                        }
 
 
                         /*
                          * Points are not stored in the
-                         * normal QSO schema yet.
+                         * contest QSO schema yet.
                          */
                         const points = "—";
 
@@ -1442,7 +1539,6 @@ async function loadContestRecentQsos() {
     }
 
 }
-
 
 function isHelvetiaContest() {
 

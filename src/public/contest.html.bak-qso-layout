@@ -476,209 +476,161 @@
 
 <div class="contest-qso-entry">
 
-    <!-- ROW 1: CALL / FREQUENCY / QRZ -->
+    <div class="contest-entry-field">
+        <label for="contest-call">
+            Callsign
+        </label>
 
-    <div class="contest-qso-row contest-qso-row-main">
-
-        <div class="contest-entry-field contest-entry-call">
-            <label for="contest-call">
-                Callsign
-            </label>
-            <input
-                id="contest-call"
-                type="text"
-                autocomplete="off"
-                autocapitalize="characters"
-                spellcheck="false"
-                placeholder="CALLSIGN"
-            >
-        </div>
-
-
-        <div class="contest-entry-field contest-entry-frequency">
-            <label for="contest-frequency-input">
-                Frequency
-            </label>
-            <input
-                id="contest-frequency-input"
-                type="text"
-                inputmode="decimal"
-                autocomplete="off"
-                placeholder="kHz"
-            >
-        </div>
-
-
-        <div class="contest-entry-field contest-entry-name">
-            <label for="contest-name">
-                Name from QRZ
-            </label>
-            <input
-                id="contest-name"
-                type="text"
-                autocomplete="off"
-                spellcheck="false"
-            >
-        </div>
-
-
-        <div class="contest-entry-field contest-entry-country">
-            <label for="contest-country">
-                Country
-            </label>
-            <input
-                id="contest-country"
-                type="text"
-                autocomplete="off"
-                spellcheck="false"
-            >
-        </div>
-
+        <input
+            id="contest-call"
+            type="text"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            placeholder="CALLSIGN"
+        >
     </div>
 
 
-    <!-- ROW 2: CONTEST DATA -->
+    <div class="contest-entry-field">
+        <label for="contest-name">
+            Name
+        </label>
 
-    <div class="contest-qso-row contest-qso-row-data">
-
-        <div class="contest-entry-inline">
-            <label for="contest-band-input">
-                Band
-            </label>
-            <select id="contest-band-input">
-                <option value="">—</option>
-                <option value="160">160m</option>
-                <option value="80">80m</option>
-                <option value="40">40m</option>
-                <option value="20">20m</option>
-                <option value="15">15m</option>
-                <option value="10">10m</option>
-            </select>
-        </div>
-
-
-        <div class="contest-entry-inline">
-            <label for="contest-mode-input">
-                Mode
-            </label>
-            <select id="contest-mode-input">
-                <option value="SSB">SSB</option>
-                <option value="CW">CW</option>
-                <option value="RTTY">RTTY</option>
-                <option value="FT8">FT8</option>
-            </select>
-        </div>
-
-
-        <div class="contest-entry-inline contest-entry-locator">
-            <label for="contest-locator">
-                Locator
-            </label>
-            <input
-                id="contest-locator"
-                type="text"
-                autocomplete="off"
-                autocapitalize="characters"
-                spellcheck="false"
-            >
-        </div>
-
-
-        <div class="contest-entry-inline contest-entry-rst">
-            <label for="contest-rst-sent">
-                RST
-            </label>
-            <input
-                id="contest-rst-sent"
-                type="text"
-                value="599"
-                maxlength="3"
-                aria-label="RST Sent"
-            >
-            <input
-                id="contest-rst-received"
-                type="text"
-                value="599"
-                maxlength="3"
-                aria-label="RST Received"
-            >
-        </div>
-
-
-        <div class="contest-entry-inline contest-entry-exchange">
-            <label for="contest-exchange-sent">
-                Exchange
-            </label>
-            <input
-                id="contest-exchange-sent"
-                type="text"
-                autocomplete="off"
-                aria-label="Exchange Sent"
-            >
-            <input
-                id="contest-exchange-received"
-                type="text"
-                autocomplete="off"
-                aria-label="Exchange Received"
-            >
-        </div>
-
-
-        <div
-            id="contest-canton-field"
-            class="contest-entry-inline"
-            hidden
+        <input
+            id="contest-name"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
         >
-            <label for="contest-canton">
-                Canton
-            </label>
-            <select
-                id="contest-canton"
-                autocomplete="off"
-            >
-                <option value="">—</option>
-                <option value="AG">AG</option>
-                <option value="AI">AI</option>
-                <option value="AR">AR</option>
-                <option value="BE">BE</option>
-                <option value="BL">BL</option>
-                <option value="BS">BS</option>
-                <option value="FR">FR</option>
-                <option value="GE">GE</option>
-                <option value="GL">GL</option>
-                <option value="GR">GR</option>
-                <option value="JU">JU</option>
-                <option value="LU">LU</option>
-                <option value="NE">NE</option>
-                <option value="NW">NW</option>
-                <option value="OW">OW</option>
-                <option value="SG">SG</option>
-                <option value="SH">SH</option>
-                <option value="SO">SO</option>
-                <option value="SZ">SZ</option>
-                <option value="TG">TG</option>
-                <option value="TI">TI</option>
-                <option value="UR">UR</option>
-                <option value="VD">VD</option>
-                <option value="VS">VS</option>
-                <option value="ZG">ZG</option>
-                <option value="ZH">ZH</option>
-            </select>
-        </div>
-
-
-        <button
-            id="contest-log-button"
-            class="button primary contest-log-button"
-            type="button"
-        >
-            LOG QSO
-        </button>
-
     </div>
+
+
+    <div class="contest-entry-field">
+        <label for="contest-locator">
+            Locator
+        </label>
+
+        <input
+            id="contest-locator"
+            type="text"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+        >
+    </div>
+
+
+    <div class="contest-entry-field">
+        <label for="contest-rst-sent">
+            RST Sent
+        </label>
+
+        <input
+            id="contest-rst-sent"
+            type="text"
+            value="599"
+            maxlength="3"
+        >
+    </div>
+
+
+    <div class="contest-entry-field">
+        <label for="contest-rst-received">
+            RST Received
+        </label>
+
+        <input
+            id="contest-rst-received"
+            type="text"
+            value="599"
+            maxlength="3"
+        >
+    </div>
+
+
+    <div class="contest-entry-field">
+        <label for="contest-exchange-sent">
+            Exchange Sent
+        </label>
+
+        <input
+            id="contest-exchange-sent"
+            type="text"
+            autocomplete="off"
+        >
+    </div>
+
+
+    <div class="contest-entry-field">
+        <label for="contest-exchange-received">
+            Exchange Received
+        </label>
+
+        <input
+            id="contest-exchange-received"
+            type="text"
+            autocomplete="off"
+        >
+    </div>
+
+
+    <div
+        id="contest-canton-field"
+        class="contest-entry-field"
+        hidden
+    >
+        <label for="contest-canton">
+            Canton
+        </label>
+
+        <select
+            id="contest-canton"
+            autocomplete="off"
+        >
+            <option value="">
+                Select Canton...
+            </option>
+
+            <option value="AG">AG</option>
+            <option value="AI">AI</option>
+            <option value="AR">AR</option>
+            <option value="BE">BE</option>
+            <option value="BL">BL</option>
+            <option value="BS">BS</option>
+            <option value="FR">FR</option>
+            <option value="GE">GE</option>
+            <option value="GL">GL</option>
+            <option value="GR">GR</option>
+            <option value="JU">JU</option>
+            <option value="LU">LU</option>
+            <option value="NE">NE</option>
+            <option value="NW">NW</option>
+            <option value="OW">OW</option>
+            <option value="SG">SG</option>
+            <option value="SH">SH</option>
+            <option value="SO">SO</option>
+            <option value="SZ">SZ</option>
+            <option value="TG">TG</option>
+            <option value="TI">TI</option>
+            <option value="UR">UR</option>
+            <option value="VD">VD</option>
+            <option value="VS">VS</option>
+            <option value="ZG">ZG</option>
+            <option value="ZH">ZH</option>
+        </select>
+    </div>
+
+
+    <button
+        id="contest-log-button"
+        class="button primary contest-log-button"
+        type="button"
+    >
+        LOG QSO
+    </button>
 
 </div>
-
 
                 <!-- RECENT QSOs -->
 

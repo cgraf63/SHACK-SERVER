@@ -357,6 +357,36 @@
     cursor: pointer;
 }
 
+/* Operator / table action buttons */
+
+.contest-page .table-container .button.small {
+    padding: 5px 10px;
+    min-height: 30px;
+    border: 1px solid #3a4b56;
+    border-radius: 5px;
+    background: #18262f;
+    color: #d7e0e5;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.contest-page .table-container .button.small:hover {
+    background: #223640;
+    border-color: #00d9ff;
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(0, 217, 255, 0.15);
+}
+
+.contest-page .table-container .button.small:active {
+    transform: translateY(1px);
+}
+
 .contest-page .button.primary {
     color: #ffffff;
     background: #b56cff;
