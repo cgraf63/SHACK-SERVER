@@ -25,6 +25,11 @@ const contestVersion =
 const contestEnabled =
     document.getElementById("contest-enabled");
 
+const contestStationCallsign =
+    document.getElementById(
+        "contest-station-callsign"
+    );
+
 const contestDescription =
     document.getElementById("contest-description");
 
@@ -289,6 +294,13 @@ function buildRules() {
 
     return {
 
+        station_callsign:
+            contestStationCallsign
+                ? contestStationCallsign.value
+                    .trim()
+                    .toUpperCase()
+                : "",
+
         bands:
             getCheckedValues(
                 "contest-band"
@@ -356,6 +368,16 @@ function applyRules(
         typeof rules === "object"
             ? rules
             : {};
+
+
+    if (contestStationCallsign) {
+        contestStationCallsign.value =
+            String(
+                safeRules.station_callsign || ""
+            )
+            .trim()
+            .toUpperCase();
+    }
 
 
     setCheckedValues(
@@ -426,6 +448,11 @@ function resetEditor() {
 
     contestEnabled.value =
         "true";
+
+    if (contestStationCallsign) {
+        contestStationCallsign.value =
+            "";
+    }
 
     contestDescription.value =
         "";
@@ -735,6 +762,23 @@ async function saveDefinition(
         alert(
             "Contest name and Short ID are required."
         );
+
+        return;
+
+    }
+
+
+    if (
+        !rules.station_callsign
+    ) {
+
+        alert(
+            "Station Callsign is required."
+        );
+
+        if (contestStationCallsign) {
+            contestStationCallsign.focus();
+        }
 
         return;
 

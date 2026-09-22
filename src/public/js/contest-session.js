@@ -339,6 +339,13 @@ async function loadContestSession() {
             session || null;
 
         /*
+         * Make the complete active session available
+         * to the Contest QSO logger.
+         */
+        window.contestSession =
+            activeContestSession;
+
+        /*
          * Make the active session ID available
          * to the QSO logger.
          */
@@ -712,6 +719,11 @@ function renderContestSession() {
             "contest-club"
         );
 
+    const callsign =
+        contestSessionElement(
+            "contest-callsign"
+        );
+
     const grid =
         contestSessionElement(
             "contest-grid"
@@ -769,14 +781,19 @@ function renderContestSession() {
      * Session information
      *
      * Active Operator is handled separately.
-     * Callsign is no longer displayed here.
      */
 
     if (session) {
 
+        if (callsign) {
+            callsign.textContent =
+                session.station_callsign ||
+                "—";
+        }
+
         if (club) {
             club.textContent =
-                session.club ||
+                session.station_callsign ||
                 "—";
         }
 
@@ -798,6 +815,10 @@ function renderContestSession() {
     }
     else {
 
+        if (callsign) {
+            callsign.textContent = "—";
+        }
+
         if (club) {
             club.textContent = "—";
         }
@@ -816,14 +837,14 @@ function renderContestSession() {
     /*
      * Active Operator selector.
      *
-     * The options are populated by
-     * loadContestSessionOperators().
+     * The options and enabled state are handled
+     * exclusively by loadContestSessionOperators().
+     *
+     * The Active Operator is client-local and
+     * remains selectable while the contest is
+     * READY, RUNNING or PAUSED.
      */
 
-    if (operator) {
-        operator.disabled =
-            !session;
-    }
 
 
     /*
@@ -1140,9 +1161,50 @@ async function createContestSession() {
             station.name ||
             "";
 
-        const stationCallsign =
-            station.callsign ||
-            "";
+        /*
+         * Contest station callsign comes from the
+         * selected contest definition.
+         */
+        const selectedDefinition =
+            contestDefinitions.find(
+                definition =>
+                    Number(definition.id) ===
+                    definitionId
+            );
+
+        let stationCallsign = "";
+
+        if (selectedDefinition) {
+
+            try {
+
+                const rules =
+                    typeof selectedDefinition.rules_json === "string"
+                        ? JSON.parse(
+                            selectedDefinition.rules_json
+                        )
+                        : (
+                            selectedDefinition.rules_json ||
+                            {}
+                        );
+
+                stationCallsign =
+                    String(
+                        rules.station_callsign ||
+                        ""
+                    ).trim().toUpperCase();
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Contest definition rules:",
+                    error
+                );
+
+            }
+
+        }
 
         const stationGrid =
             station.locator ||
@@ -1221,6 +1283,14 @@ async function createContestSession() {
         activeContestSession =
             data;
 
+        // Session erfolgreich erstellt:
+        // Erfolg sofort anzeigen, bevor Operatoren
+        // zugeordnet und geladen werden.
+        showContestSessionMessage(
+            `✓ Session ${data.id} created`,
+            "success"
+        );
+
         const operatorCheckboxes =
             document.querySelectorAll(
                 ".contest-create-operator-checkbox:checked"
@@ -1267,12 +1337,14 @@ async function createContestSession() {
 
         updateContestId();
 
-        renderContestSession();
+        /*
+         * Load the operators assigned to the newly
+         * created session so the Active Operator
+         * selector is populated immediately.
+         */
+        await loadContestSessionOperators();
 
-        showContestSessionMessage(
-            `Session ${data.id} created`,
-            "success"
-        );
+        renderContestSession();
 
     }
     catch (error) {
@@ -1400,6 +1472,26 @@ async function contestSessionAction(
                 : null;
 
         renderContestSession();
+
+        const actionMessages = {
+            start: "started",
+            pause: "paused",
+            resume: "resumed",
+            finish: "finished"
+        };
+
+        const actionMessage =
+            actionMessages[action] || action;
+
+        if (
+            activeContestSession &&
+            activeContestSession.id
+        ) {
+            showContestSessionMessage(
+                `✓ Session ${activeContestSession.id} ${actionMessage}`,
+                "success"
+            );
+        }
 
     }
     catch (error) {

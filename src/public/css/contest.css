@@ -112,20 +112,37 @@
 
 .contest-session-message {
     min-height: 18px;
-    margin-top: 0;
     margin-left: 4px;
+
+    padding: 8px 12px;
+
+    border: 1px solid #2ecc71;
+    border-radius: 5px;
+
+    background: #0b2418;
 
     font-size: 13px;
     font-weight: 600;
 
     white-space: nowrap;
 
-    color: #00e5ff;
+    color: #2ecc71;
+
+    box-sizing: border-box;
 }
 
 
 .contest-session-message.success {
-    color: #00e5ff;
+    color: #2ecc71;
+    border-color: #2ecc71;
+    background: #0b2418;
+}
+
+
+.contest-session-message.error {
+    color: #e74c3c;
+    border-color: #e74c3c;
+    background: #2a1010;
 }
 
 
@@ -1575,5 +1592,52 @@ display: none;
     color: #4da3ff !important;
     border-color: #4da3ff !important;
     background: #0b1d2a !important;
+}
+
+
+/* Contest: move global UTC clock to the right */
+body:has(#contest-session) #utcClock {
+    margin-left: auto;
+    margin-right: 20px;
+}
+
+
+/* Contest: hide global header row */
+body:has(#contest-session) #header {
+    display: none;
+}
+
+/* Contest: position UTC clock separately */
+body:has(#contest-session) .page-header {
+    position: relative;
+}
+
+body:has(#contest-session) #utcClock {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+
+/* Contest navigation - UTC clock on the far right */
+.contest-tabs {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+#contest-utc-clock {
+    margin-left: auto;
+    padding-right: 12px;
+    color: #4da3ff;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+#contest-utc-clock #utcClock {
+    color: #4da3ff;
 }
 

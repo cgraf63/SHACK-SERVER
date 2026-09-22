@@ -507,6 +507,9 @@ function updateUTCClock() {
 
     const clock =
         document.getElementById(
+            "contest-utc-clock"
+        ) ||
+        document.getElementById(
             "utcClock"
         );
 
@@ -514,11 +517,20 @@ function updateUTCClock() {
         return;
     }
 
-    clock.textContent =
+    const time =
         new Date()
             .toISOString()
             .substring(11, 19)
         + " UTC";
+
+    const target =
+        clock.querySelector("#utcClock");
+
+    if (target) {
+        target.textContent = time;
+    } else {
+        clock.textContent = time;
+    }
 }
 
 

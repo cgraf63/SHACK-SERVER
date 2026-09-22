@@ -1340,6 +1340,33 @@ function updateContestSerialNumber(qsos) {
 
 }
 
+function updateContestExchangeSent() {
+
+    const exchangeInput =
+        document.getElementById(
+            "contest-exchange-sent"
+        );
+
+    if (!exchangeInput) {
+        return;
+    }
+
+    const exchangeType =
+        String(
+            window.contestExchangeSent || "none"
+        )
+        .trim()
+        .toLowerCase();
+
+    if (exchangeType === "cq_zone") {
+
+        exchangeInput.value = "14";
+
+    }
+
+}
+
+
 async function loadContestRecentQsos() {
 
     const body =
@@ -1417,6 +1444,8 @@ async function loadContestRecentQsos() {
             qsos
         );
 
+        updateContestExchangeSent();
+
 
         const contestQsos =
             qsos
@@ -1492,6 +1521,14 @@ async function loadContestRecentQsos() {
                                 <td>
                                     ${escapeContestHtml(
                                         qso.band || ""
+                                    )}
+                                </td>
+
+                                <td>
+                                    ${escapeContestHtml(
+                                        Number(
+                                            qso.frequency
+                                        ).toFixed(3)
                                     )}
                                 </td>
 
@@ -1653,36 +1690,58 @@ async function logContestQso() {
 
     const frequencyText =
         document.getElementById(
-            "contest-frequency"
-        )?.textContent
+            "contest-frequency-input"
+        )?.value
         .trim() || "";
 
 
     const mode =
         document.getElementById(
-            "contest-mode"
-        )?.textContent
+            "contest-mode-input"
+        )?.value
         .trim() || "";
 
 
     const band =
         document.getElementById(
-            "contest-band"
-        )?.textContent
+            "contest-band-input"
+        )?.value
         .trim() || "";
 
 
     /*
-     * Frequency shown by the Contest Console
-     * is in kHz.
+     * Frequency input:
+     *
+     * 14345   = kHz
+     * 14.345  = MHz
+     *
+     * Internally the contest log uses kHz.
      */
-    const frequency =
+
+    let frequency =
         Number(
-            frequencyText
+            frequencyText.replace(
+                ",",
+                "."
+            )
         );
 
 
-    if (!Number.isFinite(frequency)) {
+    if (
+        Number.isFinite(frequency) &&
+        frequency > 0 &&
+        frequency < 1000
+    ) {
+
+        frequency *= 1000;
+
+    }
+
+
+    if (
+        !Number.isFinite(frequency) ||
+        frequency <= 0
+    ) {
 
         alert(
             "Invalid frequency."
@@ -1829,6 +1888,58 @@ console.log(
 );
 
 
+    /*
+     * Contest QSO
+     *
+     * Contest QSOs are stored exclusively in
+     * contest_qsos via the contest API.
+     */
+
+    if (!window.contestSessionId) {
+
+        alert(
+            "No active contest session."
+        );
+
+        return;
+    }
+
+
+    if (!activeContestOperatorId) {
+
+        alert(
+            "Please select an active operator."
+        );
+
+        return;
+    }
+
+
+    const operatorSelect =
+        document.getElementById(
+            "contest-operator"
+        );
+
+
+    const selectedOperator =
+        operatorSelect?.selectedOptions?.[0];
+
+
+    const operator =
+        selectedOperator?.textContent
+            ?.trim() || "";
+
+
+    if (!operator) {
+
+        alert(
+            "Invalid active operator."
+        );
+
+        return;
+    }
+
+
     const qso = {
 
         qso_date:
@@ -1837,83 +1948,40 @@ console.log(
         time_on_utc:
             timeUtc,
 
-        time_off_utc:
-            timeUtc,
-
-        call:
-
-            call,
-
         frequency:
-
             frequency,
 
         band:
-
             band,
 
         mode:
-
             mode.toUpperCase(),
 
-        rst_sent:
+        call:
+            call,
 
+        rst_sent:
             rstSent,
 
         rst_rcvd:
-
             rstReceived,
 
-        my_callsign:
+        exchange_sent:
+            exchangeSent,
 
+        exchange_received:
+            exchangeReceived,
+
+        operator:
+            operator,
+
+        station_callsign:
             String(
-                stationConfig.callsign
-            )
-            .trim()
-            .toUpperCase(),
-
-        my_grid:
-
-            String(
-                stationConfig.locator
-            )
-            .trim()
-            .toUpperCase(),
-
-        operator_name:
-
-            String(
-                stationConfig.operator_name ||
-                stationConfig.name ||
+                window.contestSession?.station_callsign ||
                 ""
             )
-            .trim(),
-
-        name:
-
-            name || null,
-
-        dx_grid:
-
-            locator || null,
-
-country:
-    contestQrzCountry || null,
-
-
-        notes:
-
-            exchangeParts.length
-                ? exchangeParts.join(
-                    " | "
-                )
-                : null,
-
-        contest_id:
-
-    	window.contestId ||
-		"999"
-    
+            .trim()
+            .toUpperCase()
 
     };
 
@@ -1922,7 +1990,7 @@ country:
 
         const response =
             await fetch(
-                "/api/qso",
+                `/api/contests/session/${window.contestSessionId}/qso`,
                 {
                     method: "POST",
 
@@ -1953,7 +2021,7 @@ country:
 
         console.log(
             "Contest QSO logged:",
-            data.qso
+            data
         );
 
 await loadContestRecentQsos();

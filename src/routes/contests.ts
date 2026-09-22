@@ -1569,16 +1569,26 @@ router.post(
                         "READY",
 
                     operator_name:
-                        "",
+                        String(
+                            req.body?.operator_name || ""
+                        ).trim(),
 
                     station_callsign:
-                        "",
+                        String(
+                            req.body?.station_callsign || ""
+                        ).trim()
+                        .toUpperCase(),
 
                     club:
-                        "",
+                        String(
+                            req.body?.club || ""
+                        ).trim(),
 
                     station_grid:
-                        ""
+                        String(
+                            req.body?.station_grid || ""
+                        ).trim()
+                        .toUpperCase()
 
                 });
 

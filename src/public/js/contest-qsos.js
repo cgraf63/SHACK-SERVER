@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 body.innerHTML = `
                     <tr>
-                        <td colspan="8" class="contest-empty">
+                        <td colspan="9" class="contest-empty">
                             No active contest session
                         </td>
                     </tr>
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 body.innerHTML = `
                     <tr>
-                        <td colspan="8" class="contest-empty">
+                        <td colspan="9" class="contest-empty">
                             No contest QSOs
                         </td>
                     </tr>
@@ -105,6 +105,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             <td>${escapeHtml(qso.time_on_utc || "")}</td>
                             <td><strong>${escapeHtml(qso.call || "")}</strong></td>
                             <td>${escapeHtml(qso.band || "")}</td>
+                            <td>${escapeHtml(
+                                Number(qso.frequency || 0) > 1000
+                                    ? (Number(qso.frequency) / 1000).toFixed(3)
+                                    : qso.frequency || ""
+                            )}</td>
                             <td>${escapeHtml(qso.mode || "")}</td>
                             <td>${escapeHtml(rstSent)}/${escapeHtml(rstReceived)}</td>
                             <td>${escapeHtml(qso.exchange_received || "")}</td>
@@ -130,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             body.innerHTML = `
                 <tr>
-                    <td colspan="8" class="contest-empty">
+                    <td colspan="9" class="contest-empty">
                         Error loading contest QSOs
                     </td>
                 </tr>
