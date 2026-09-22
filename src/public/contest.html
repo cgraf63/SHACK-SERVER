@@ -106,6 +106,14 @@
         <button
             type="button"
             class="contest-tab"
+            data-contest-view="qso-history"
+        >
+            QSO HISTORY
+        </button>
+
+        <button
+            type="button"
+            class="contest-tab"
             data-contest-view="sessions"
         >
             SESSIONS
@@ -927,6 +935,205 @@
     </div>
 
 
+    <!-- QSO HISTORY VIEW -->
+
+    <div
+        id="contest-view-qso-history"
+        class="contest-view"
+        hidden
+    >
+
+        <div class="contest-qso-list">
+
+            <div class="contest-qso-list-header">
+
+                <div>
+                    <h2>QSO History</h2>
+                    <span id="contest-qso-history-count">0 QSOs</span>
+                </div>
+
+            </div>
+
+
+            <!-- FILTERS -->
+
+            <div class="contest-session-filter">
+
+                <label for="contest-history-contest">
+                    Contest
+                </label>
+
+                <select
+                    id="contest-history-contest"
+                    class="contest-session-select"
+                >
+                    <option value="">
+                        All Contests
+                    </option>
+                </select>
+
+
+                <label for="contest-history-session">
+                    Session
+                </label>
+
+                <select
+                    id="contest-history-session"
+                    class="contest-session-select"
+                >
+                    <option value="">
+                        All Sessions
+                    </option>
+                </select>
+
+
+                <label for="contest-history-operator">
+                    Operator
+                </label>
+
+                <select
+                    id="contest-history-operator"
+                    class="contest-session-select"
+                >
+                    <option value="">
+                        All Operators
+                    </option>
+                </select>
+
+
+                <label for="contest-history-station">
+                    Station
+                </label>
+
+                <select
+                    id="contest-history-station"
+                    class="contest-session-select"
+                >
+                    <option value="">
+                        All Stations
+                    </option>
+                </select>
+
+
+                <label for="contest-history-band">
+                    Band
+                </label>
+
+                <select
+                    id="contest-history-band"
+                    class="contest-session-select"
+                >
+                    <option value="">
+                        All Bands
+                    </option>
+                </select>
+
+
+                <label for="contest-history-mode">
+                    Mode
+                </label>
+
+                <select
+                    id="contest-history-mode"
+                    class="contest-session-select"
+                >
+                    <option value="">
+                        All Modes
+                    </option>
+                </select>
+
+
+                <label for="contest-history-call">
+                    Call
+                </label>
+
+                <input
+                    id="contest-history-call"
+                    class="contest-session-select"
+                    type="text"
+                    autocomplete="off"
+                    spellcheck="false"
+                    placeholder="CALL"
+                >
+
+            </div>
+
+
+            <!-- TABLE -->
+
+            <div class="contest-table-wrapper">
+
+                <table class="contest-table">
+
+                    <thead>
+                        <tr>
+
+                            <th data-history-sort="time_on_utc">
+                                UTC
+                            </th>
+
+                            <th data-history-sort="call">
+                                CALL
+                            </th>
+
+                            <th data-history-sort="band">
+                                BAND
+                            </th>
+
+                            <th data-history-sort="frequency">
+                                FREQUENCY
+                            </th>
+
+                            <th data-history-sort="mode">
+                                MODE
+                            </th>
+
+                            <th>
+                                RST S/R
+                            </th>
+
+                            <th data-history-sort="exchange_received">
+                                EXCHANGE
+                            </th>
+
+                            <th data-history-sort="operator">
+                                OPERATOR
+                            </th>
+
+                            <th data-history-sort="station_callsign">
+                                STATION
+                            </th>
+
+                            <th data-history-sort="session_id">
+                                SESSION
+                            </th>
+
+                        </tr>
+                    </thead>
+
+
+                    <tbody id="contest-qso-history-body">
+
+                        <tr>
+                            <td
+                                colspan="10"
+                                class="contest-empty"
+                            >
+                                No contest QSOs
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
     <!-- SESSIONS VIEW -->
 
     <div
@@ -1048,6 +1255,7 @@
     </div>
 
 <script src="js/contest-navigation.js"></script>
+<script src="js/qso-history.js?v=1"></script>
 <script src="js/contest-qsos.js"></script>
 <script src="js/contest-sessions.js?v=3"></script>
 <script src="js/contest-session.js"></script>

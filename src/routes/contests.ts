@@ -171,6 +171,44 @@ router.get(
 
 
 /*
+ * GET /api/contests/qso-history
+ *
+ * Return all contest QSOs across all sessions,
+ * including contest definition information.
+ */
+router.get(
+    "/qso-history",
+    (
+        _req: Request,
+        res: Response
+    ) => {
+
+        try {
+
+            return res.json(
+                contestService.getContestQsoHistory()
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Failed to load contest QSO history:",
+                error
+            );
+
+            return res.status(500).json({
+                error:
+                    "Failed to load contest QSO history"
+            });
+
+        }
+
+    }
+);
+
+
+/*
  * GET /api/contests/definitions/:id
  */
 router.get(

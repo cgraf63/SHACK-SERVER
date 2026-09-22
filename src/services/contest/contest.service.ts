@@ -1843,6 +1843,61 @@ export class ContestService {
     }
 
 
+    getContestQsoHistory(): Array<
+        ContestQso & {
+            contest_definition_id: number;
+            contest_name: string;
+            contest_short_name: string;
+        }
+    > {
+
+        const rows =
+            this.db.prepare(`
+                SELECT
+                    q.id,
+                    q.session_id,
+                    q.qso_date,
+                    q.time_on_utc,
+                    q.frequency,
+                    q.band,
+                    q.mode,
+                    q.call,
+                    q.rst_sent,
+                    q.rst_rcvd,
+                    q.exchange_sent,
+                    q.exchange_received,
+                    q.operator,
+                    q.station_callsign,
+                    q.created_at,
+
+                    s.contest_definition_id,
+
+                    d.name AS contest_name,
+                    d.short_name AS contest_short_name
+
+                FROM contest_qsos q
+
+                INNER JOIN contest_sessions s
+                    ON s.id = q.session_id
+
+                INNER JOIN contest_definitions d
+                    ON d.id = s.contest_definition_id
+
+                ORDER BY
+                    q.id DESC
+            `).all() as unknown as Array<
+                ContestQso & {
+                    contest_definition_id: number;
+                    contest_name: string;
+                    contest_short_name: string;
+                }
+            >;
+
+        return rows;
+
+    }
+
+
     getContestQsos(
         sessionId: number
     ): ContestQso[] {

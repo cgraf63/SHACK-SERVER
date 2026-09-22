@@ -29,6 +29,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (
+                target === "qso-history" &&
+                typeof window.loadContestQsoHistory === "function"
+            ) {
+                window.loadContestQsoHistory();
+            }
+
+            if (
                 target === "sessions" &&
                 typeof window.loadContestSessions === "function"
             ) {
