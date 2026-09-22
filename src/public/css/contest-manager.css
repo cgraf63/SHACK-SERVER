@@ -359,7 +359,7 @@
 
 /* Operator / table action buttons */
 
-.contest-page .table-container .button.small {
+.contest-app .table-container .button.small {
     padding: 5px 10px;
     min-height: 30px;
     border: 1px solid #3a4b56;
@@ -376,14 +376,14 @@
         box-shadow 0.15s ease;
 }
 
-.contest-page .table-container .button.small:hover {
+.contest-app .table-container .button.small:hover {
     background: #223640;
     border-color: #00d9ff;
     color: #ffffff;
     box-shadow: 0 0 8px rgba(0, 217, 255, 0.15);
 }
 
-.contest-page .table-container .button.small:active {
+.contest-app .table-container .button.small:active {
     transform: translateY(1px);
 }
 
@@ -503,4 +503,45 @@
     }
 
 }
+cd ~/SHACK-SERVER
 
+cat >> src/public/css/contest-manager.css <<'EOF'
+
+
+/* QSO History action buttons
+ * Same visual style as qso-log.html
+ */
+
+.qso-history-action {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 17px;
+    padding: 4px 7px;
+}
+
+.qso-history-action:hover {
+    transform: scale(1.1);
+}
+
+.qso-history-actions {
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* QSO History actions - match qso-log exactly */
+.qso-history-action {
+    border: none !important;
+    background: transparent !important;
+    color: inherit !important;
+    cursor: pointer !important;
+    font-size: 17px !important;
+    padding: 4px 7px !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+.qso-history-action:hover {
+    background: transparent !important;
+    transform: scale(1.1);
+}

@@ -171,6 +171,255 @@ router.get(
 
 
 /*
+ * PUT /api/contests/qso/:id
+ *
+ * Update an existing contest QSO.
+ *
+ * The session assignment remains unchanged.
+ */
+router.put(
+    "/qso/:id",
+    (
+        req: Request,
+        res: Response
+    ) => {
+
+        const id =
+            parseId(
+                req.params.id
+            );
+
+
+        if (id === null) {
+
+            return res.status(400).json({
+
+                error:
+                    "Invalid contest QSO ID"
+
+            });
+
+        }
+
+
+        const {
+            qso_date,
+            time_on_utc,
+            frequency,
+            band,
+            mode,
+            call,
+            rst_sent,
+            rst_rcvd,
+            exchange_sent,
+            exchange_received,
+            operator,
+            station_callsign
+        } = req.body;
+
+
+        if (
+            typeof qso_date !== "string" ||
+            typeof time_on_utc !== "string" ||
+            typeof frequency !== "number" ||
+            typeof band !== "string" ||
+            typeof mode !== "string" ||
+            typeof call !== "string" ||
+            typeof rst_sent !== "string" ||
+            typeof rst_rcvd !== "string" ||
+            typeof exchange_sent !== "string" ||
+            typeof exchange_received !== "string" ||
+            typeof operator !== "string" ||
+            typeof station_callsign !== "string"
+        ) {
+
+            return res.status(400).json({
+
+                error:
+                    "Invalid contest QSO data"
+
+            });
+
+        }
+
+
+        try {
+
+            const qso =
+                contestService.updateContestQso(
+                    id,
+                    {
+                        session_id: 0,
+                        qso_date,
+                        time_on_utc,
+                        frequency,
+                        band,
+                        mode,
+                        call,
+                        rst_sent,
+                        rst_rcvd,
+                        exchange_sent,
+                        exchange_received,
+                        operator,
+                        station_callsign
+                    }
+                );
+
+
+            if (!qso) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Contest QSO not found"
+
+                });
+
+            }
+
+
+            return res.json(
+                qso
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Failed to update contest QSO:",
+                error
+            );
+
+
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Failed to update contest QSO";
+
+
+            if (
+                message ===
+                "Duplicate contest QSO"
+            ) {
+
+                return res.status(409).json({
+
+                    error:
+                        message
+
+                });
+
+            }
+
+
+            if (
+                message ===
+                "Required contest QSO fields are missing"
+            ) {
+
+                return res.status(400).json({
+
+                    error:
+                        message
+
+                });
+
+            }
+
+
+            return res.status(500).json({
+
+                error:
+                    "Failed to update contest QSO"
+
+            });
+
+        }
+
+    }
+);
+
+
+/*
+ * DELETE /api/contests/qso/:id
+ *
+ * Delete an existing contest QSO.
+ */
+router.delete(
+    "/qso/:id",
+    (
+        req: Request,
+        res: Response
+    ) => {
+
+        const id =
+            parseId(
+                req.params.id
+            );
+
+
+        if (id === null) {
+
+            return res.status(400).json({
+
+                error:
+                    "Invalid contest QSO ID"
+
+            });
+
+        }
+
+
+        try {
+
+            const deleted =
+                contestService.deleteContestQso(
+                    id
+                );
+
+
+            if (!deleted) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Contest QSO not found"
+
+                });
+
+            }
+
+
+            return res.json({
+
+                success:
+                    true
+
+            });
+
+        }
+        catch (error) {
+
+            console.error(
+                "Failed to delete contest QSO:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                error:
+                    "Failed to delete contest QSO"
+
+            });
+
+        }
+
+    }
+);
+
+
+/*
  * GET /api/contests/qso-history
  *
  * Return all contest QSOs across all sessions,

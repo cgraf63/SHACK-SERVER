@@ -602,7 +602,7 @@ document.addEventListener("DOMContentLoaded", () => {
             body.innerHTML = `
                 <tr>
                     <td
-                        colspan="10"
+                        colspan="11"
                         class="contest-empty"
                     >
                         No contest QSOs
@@ -690,6 +690,30 @@ document.addEventListener("DOMContentLoaded", () => {
                                 )}
                             </td>
 
+                            <td class="qso-history-actions">
+
+                                <button
+                                    type="button"
+                                    class="qso-history-action qso-history-edit" style="border:none!important;background:transparent!important;color:inherit!important;cursor:pointer!important;font-size:17px!important;padding:4px 7px!important;margin:0!important;box-shadow:none!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;"
+                                    data-qso-id="${escapeHtml(qso.id)}"
+                                    title="Edit QSO"
+                                    aria-label="Edit QSO"
+                                >
+                                    ✏️
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="qso-history-action qso-history-delete" style="border:none!important;background:transparent!important;color:inherit!important;cursor:pointer!important;font-size:17px!important;padding:4px 7px!important;margin:0!important;box-shadow:none!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;"
+                                    data-qso-id="${escapeHtml(qso.id)}"
+                                    title="Delete QSO"
+                                    aria-label="Delete QSO"
+                                >
+                                    🗑️
+                                </button>
+
+                            </td>
+
                         </tr>
                     `;
 
@@ -700,6 +724,310 @@ document.addEventListener("DOMContentLoaded", () => {
         updateSortHeaders();
 
     }
+
+
+
+    async function editQsoHistory(qsoId) {
+
+        const qso =
+            qsos.find(
+                item =>
+                    Number(item.id) ===
+                    Number(qsoId)
+            );
+
+        if (!qso) {
+            alert("Contest QSO not found.");
+            return;
+        }
+
+
+        const call =
+            prompt("CALL:", qso.call ?? "");
+
+        if (call === null) return;
+
+
+        const band =
+            prompt("BAND:", qso.band ?? "");
+
+        if (band === null) return;
+
+
+        const frequency =
+            prompt(
+                "FREQUENCY (kHz):",
+                qso.frequency ?? ""
+            );
+
+        if (frequency === null) return;
+
+
+        const mode =
+            prompt("MODE:", qso.mode ?? "");
+
+        if (mode === null) return;
+
+
+        const rstSent =
+            prompt(
+                "RST SENT:",
+                qso.rst_sent ?? ""
+            );
+
+        if (rstSent === null) return;
+
+
+        const rstReceived =
+            prompt(
+                "RST RECEIVED:",
+                qso.rst_rcvd ?? ""
+            );
+
+        if (rstReceived === null) return;
+
+
+        const exchangeSent =
+            prompt(
+                "EXCHANGE SENT:",
+                qso.exchange_sent ?? ""
+            );
+
+        if (exchangeSent === null) return;
+
+
+        const exchangeReceived =
+            prompt(
+                "EXCHANGE RECEIVED:",
+                qso.exchange_received ?? ""
+            );
+
+        if (exchangeReceived === null) return;
+
+
+        const operator =
+            prompt(
+                "OPERATOR:",
+                qso.operator ?? ""
+            );
+
+        if (operator === null) return;
+
+
+        const station =
+            prompt(
+                "STATION:",
+                qso.station_callsign ?? ""
+            );
+
+        if (station === null) return;
+
+
+        const frequencyNumber =
+            Number(frequency);
+
+
+        if (!Number.isFinite(frequencyNumber)) {
+
+            alert("Invalid frequency.");
+
+            return;
+
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/contests/qso/${qso.id}`,
+                    {
+                        method: "PUT",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+
+                                qso_date:
+                                    qso.qso_date,
+
+                                time_on_utc:
+                                    qso.time_on_utc,
+
+                                frequency:
+                                    frequencyNumber,
+
+                                band,
+                                mode,
+                                call,
+
+                                rst_sent:
+                                    rstSent,
+
+                                rst_rcvd:
+                                    rstReceived,
+
+                                exchange_sent:
+                                    exchangeSent,
+
+                                exchange_received:
+                                    exchangeReceived,
+
+                                operator,
+
+                                station_callsign:
+                                    station
+
+                            })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    `HTTP ${response.status}`
+                );
+
+            }
+
+
+            await loadQsoHistory();
+
+        }
+        catch (error) {
+
+            console.error(
+                "Edit contest QSO:",
+                error
+            );
+
+            alert(
+                "Could not update contest QSO:\n\n" +
+                error.message
+            );
+
+        }
+
+    }
+
+
+    async function deleteQsoHistory(qsoId) {
+
+        const qso =
+            qsos.find(
+                item =>
+                    Number(item.id) ===
+                    Number(qsoId)
+            );
+
+        if (!qso) {
+            alert("Contest QSO not found.");
+            return;
+        }
+
+
+        const confirmed =
+            confirm(
+                `Delete contest QSO #${qso.id}?\n\n` +
+                `${qso.call || ""}\n` +
+                `${qso.band || ""}\n` +
+                `${frequencyDisplay(qso.frequency)} kHz\n` +
+                `${qso.contest_name || ""}`
+            );
+
+        if (!confirmed) return;
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/contests/qso/${qso.id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    `HTTP ${response.status}`
+                );
+
+            }
+
+
+            await loadQsoHistory();
+
+        }
+        catch (error) {
+
+            console.error(
+                "Delete contest QSO:",
+                error
+            );
+
+            alert(
+                "Could not delete contest QSO:\n\n" +
+                error.message
+            );
+
+        }
+
+    }
+
+
+    body.addEventListener(
+        "click",
+        event => {
+
+            const editButton =
+                event.target.closest(
+                    ".qso-history-edit"
+                );
+
+            if (editButton) {
+
+                editQsoHistory(
+                    editButton.dataset.qsoId
+                );
+
+                return;
+
+            }
+
+
+            const deleteButton =
+                event.target.closest(
+                    ".qso-history-delete"
+                );
+
+            if (deleteButton) {
+
+                deleteQsoHistory(
+                    deleteButton.dataset.qsoId
+                );
+
+            }
+
+        }
+    );
 
 
     async function loadQsoHistory() {
@@ -755,7 +1083,7 @@ document.addEventListener("DOMContentLoaded", () => {
             body.innerHTML = `
                 <tr>
                     <td
-                        colspan="10"
+                        colspan="11"
                         class="contest-empty"
                     >
                         Error loading QSO history

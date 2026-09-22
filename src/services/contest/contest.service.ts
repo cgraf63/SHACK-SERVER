@@ -1843,6 +1843,165 @@ export class ContestService {
     }
 
 
+    updateContestQso(
+        id: number,
+        qso: ContestQso
+    ): ContestQso | null {
+
+        const existing =
+            this.getContestQsoById(
+                id
+            );
+
+        if (!existing) {
+
+            return null;
+
+        }
+
+
+        const call =
+            qso.call
+                .trim()
+                .toUpperCase();
+
+        const band =
+            qso.band
+                .trim()
+                .toUpperCase();
+
+        const mode =
+            qso.mode
+                .trim()
+                .toUpperCase();
+
+        const operator =
+            qso.operator
+                .trim();
+
+        const stationCallsign =
+            qso.station_callsign
+                .trim()
+                .toUpperCase();
+
+
+        if (
+            !qso.qso_date.trim() ||
+            !qso.time_on_utc.trim() ||
+            !call ||
+            !band ||
+            !mode ||
+            !qso.rst_sent.trim() ||
+            !qso.rst_rcvd.trim() ||
+            !qso.exchange_sent.trim() ||
+            !qso.exchange_received.trim() ||
+            !operator ||
+            !stationCallsign
+        ) {
+
+            throw new Error(
+                "Required contest QSO fields are missing"
+            );
+
+        }
+
+
+        /*
+         * session_id is deliberately not editable.
+         * The QSO remains assigned to its original session.
+         */
+
+        const duplicate =
+            this.db.prepare(`
+                SELECT id
+                FROM contest_qsos
+                WHERE
+                    session_id = ?
+                    AND call = ?
+                    AND band = ?
+                    AND id != ?
+                LIMIT 1
+            `).get(
+                existing.session_id,
+                call,
+                band,
+                id
+            ) as {
+                id: number;
+            } | undefined;
+
+
+        if (duplicate) {
+
+            throw new Error(
+                "Duplicate contest QSO"
+            );
+
+        }
+
+
+        this.db.prepare(`
+            UPDATE contest_qsos
+
+            SET
+                qso_date = ?,
+                time_on_utc = ?,
+                frequency = ?,
+                band = ?,
+                mode = ?,
+                call = ?,
+                rst_sent = ?,
+                rst_rcvd = ?,
+                exchange_sent = ?,
+                exchange_received = ?,
+                operator = ?,
+                station_callsign = ?
+
+            WHERE id = ?
+        `).run(
+
+            qso.qso_date.trim(),
+            qso.time_on_utc.trim(),
+            qso.frequency,
+            band,
+            mode,
+            call,
+            qso.rst_sent.trim(),
+            qso.rst_rcvd.trim(),
+            qso.exchange_sent.trim(),
+            qso.exchange_received.trim(),
+            operator,
+            stationCallsign,
+            id
+
+        );
+
+
+        return this.getContestQsoById(
+            id
+        );
+
+    }
+
+
+    deleteContestQso(
+        id: number
+    ): boolean {
+
+        const result =
+            this.db.prepare(`
+                DELETE FROM contest_qsos
+                WHERE id = ?
+            `).run(
+                id
+            );
+
+
+        return result.changes > 0;
+
+    }
+
+
     getContestQsoHistory(): Array<
         ContestQso & {
             contest_definition_id: number;
