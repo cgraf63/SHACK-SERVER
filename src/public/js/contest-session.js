@@ -287,6 +287,21 @@ async function loadContestDefinitions() {
 
                 }
             );
+                        <td>
+                            <button
+                                type="button"
+                                class="button small contest-session-edit-operators"
+                                data-session-id="${session.id}">
+                                Edit
+                            </button>
+
+                            <button
+                                type="button"
+                                class="button small contest-session-delete"
+                                data-session-id="${session.id}">
+                                Delete
+                            </button>
+                        </td>
 
     }
     catch (error) {

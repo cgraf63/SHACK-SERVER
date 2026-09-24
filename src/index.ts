@@ -23,14 +23,7 @@ import {
 import "./services/rbn/rbn-instance.js";
 
 import "./services/telnet/telnet-server.js";
-import {
-    tx5drService
-} from "./services/ft8/tx5dr.service.js";
-
 radioManager.start();
-
-tx5drService.start();
-
 
 sotaPotaService.start();
 

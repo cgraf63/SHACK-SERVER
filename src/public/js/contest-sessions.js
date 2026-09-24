@@ -293,6 +293,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                 data-session-id="${session.id}">
                                 Edit
                             </button>
+
+                            <button
+                                type="button"
+                                class="button small contest-session-delete"
+                                data-session-id="${session.id}">
+                                Delete
+                            </button>
                         </td>
 
                     </tr>
@@ -377,6 +384,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
             })
         );
+
+    }
+
+
+    async function deleteSession(
+        sessionId
+    ) {
+
+        const id =
+            Number(sessionId);
+
+        if (
+            !Number.isInteger(id) ||
+            id <= 0
+        ) {
+            return;
+        }
+
+        if (
+            !window.confirm(
+                "Delete this session?\n\n" +
+                "Operator assignments will be removed. QSOs are not affected."
+            )
+        ) {
+            return;
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/contests/session/${id}`,
+                    { method: "DELETE" }
+                );
+
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+            }
+
+            await loadContestSessions();
+
+        }
+        catch (error) {
+
+            console.error(
+                "Delete session failed:",
+                error
+            );
+
+        }
 
     }
 
@@ -761,6 +820,18 @@ document.addEventListener("DOMContentLoaded", () => {
     body.addEventListener(
         "click",
         event => {
+
+            const deleteButton =
+                event.target.closest(
+                    ".contest-session-delete"
+                );
+
+            if (deleteButton) {
+                deleteSession(
+                    deleteButton.dataset.sessionId
+                );
+                return;
+            }
 
             const button =
                 event.target.closest(

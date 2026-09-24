@@ -57,3 +57,12 @@ data/geo-cache.db
 data/geo-cache.db-shm
 data/geo-cache.db-wal
 
+*.bak
+*.bak-*
+*.old
+*.before-*
+/0
+/Frequenz
+/neues
+data/geo-cache.db-shm
+data/geo-cache.db-wal

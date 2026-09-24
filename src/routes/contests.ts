@@ -1410,6 +1410,101 @@ router.post(
 
 
 /*
+ * DELETE /api/contests/operators/:id
+ *
+ * Delete a contest operator.
+ */
+router.delete(
+    "/operators/:id",
+    (
+        req: Request,
+        res: Response
+    ) => {
+
+        const id =
+            parseId(
+                req.params.id
+            );
+
+
+        if (id === null) {
+
+            return res.status(400).json({
+
+                error:
+                    "Invalid operator ID"
+
+            });
+
+        }
+
+
+        try {
+
+            const deleted =
+                contestService.deleteOperator(
+                    id
+                );
+
+
+            if (!deleted) {
+
+                return res.status(404).json({
+
+                    error:
+                        "Contest operator not found"
+
+                });
+
+            }
+
+
+            return res.json({
+
+                success:
+                    true
+
+            });
+
+        }
+        catch (error) {
+
+            if (
+                error instanceof Error &&
+                error.message ===
+                    "Operator is assigned to contest sessions"
+            ) {
+
+                return res.status(409).json({
+
+                    error:
+                        "Operator is assigned to contest sessions"
+
+                });
+
+            }
+
+
+            console.error(
+                "Failed to delete contest operator:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                error:
+                    "Failed to delete contest operator"
+
+            });
+
+        }
+
+    }
+);
+
+
+/*
  * GET /api/contests/session/:id/operators
  *
  * Return operators assigned to a contest session.
@@ -1750,6 +1845,59 @@ router.get(
     }
 );
 
+/*
+ * DELETE /api/contests/session/:id
+ *
+ * Delete a contest session and its operator assignments.
+ */
+router.delete(
+    "/session/:id",
+    (
+        req: Request,
+        res: Response
+    ) => {
+
+        const id =
+            Number(req.params.id);
+
+        if (
+            !Number.isInteger(id) ||
+            id <= 0
+        ) {
+            return res.status(400).json({
+                error: "Invalid session id"
+            });
+        }
+
+        try {
+
+            const deleted =
+                contestService.deleteSession(id);
+
+            if (!deleted) {
+                return res.status(404).json({
+                    error: "Session not found"
+                });
+            }
+
+            return res.json({ ok: true });
+
+        }
+        catch (error) {
+
+            console.error(
+                "Failed to delete contest session:",
+                error
+            );
+
+            return res.status(500).json({
+                error: "Failed to delete contest session"
+            });
+
+        }
+
+    }
+);
 
 /*
  * POST /api/contests/session

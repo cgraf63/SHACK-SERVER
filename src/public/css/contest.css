@@ -116,10 +116,10 @@
 
     padding: 8px 12px;
 
-    border: 1px solid #2ecc71;
+    border: 1px solid transparent;
     border-radius: 5px;
 
-    background: #0b2418;
+    background: transparent;
 
     font-size: 13px;
     font-weight: 600;
@@ -1140,24 +1140,31 @@ display: none;
 }
 
 .contest-tab {
-    border: 1px solid var(--border-color);
-    background: var(--panel-background);
-    color: var(--text-secondary);
-    padding: 0.55rem 1rem;
+    border: 1px solid #2b424e;
+    border-radius: 5px;
+    background: #101f29;
+    color: #9fb0ba;
+    padding: 0.55rem 1.1rem;
     cursor: pointer;
     font-size: 0.85rem;
     font-weight: 600;
     letter-spacing: 0.04em;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
 }
 
 .contest-tab:hover {
-    color: var(--text-primary);
+    color: #ffffff;
+    border-color: #3a5462;
+    background: #16262f;
 }
 
 .contest-tab.active {
-    color: var(--text-primary);
-    border-color: var(--accent-color);
-    background: var(--panel-background);
+    color: #C77DFF;
+    border-color: rgba(155, 81, 224, 0.65);
+    background: rgba(155, 81, 224, 0.14);
 }
 
 .contest-view {
@@ -1641,3 +1648,116 @@ body:has(#contest-session) #utcClock {
     color: #4da3ff;
 }
 
+
+/* ------------------------------------------------------------
+ * Action button color variants
+ * ---------------------------------------------------------- */
+
+.button.purple {
+    background: rgba(155, 81, 224, 0.12);
+    border: 1px solid rgba(155, 81, 224, 0.45);
+    color: #C77DFF;
+}
+
+.button.purple:hover {
+    background: rgba(155, 81, 224, 0.22);
+    border-color: rgba(155, 81, 224, 0.70);
+}
+
+.button.petrol {
+    background: rgba(0, 212, 200, 0.12);
+    border: 1px solid rgba(0, 212, 200, 0.45);
+    color: #5EEAD4;
+}
+
+.button.petrol:hover {
+    background: rgba(0, 212, 200, 0.22);
+    border-color: rgba(0, 212, 200, 0.70);
+}
+
+
+/* ------------------------------------------------------------
+ * Action button color variants
+ * (Spezifitaet >= .contest-console .button.primary/secondary)
+ * ---------------------------------------------------------- */
+
+.button.purple,
+.contest-console .button.purple,
+.contest-page .button.purple {
+    background: rgba(155, 81, 224, 0.12) !important;
+    border: 1px solid rgba(155, 81, 224, 0.45) !important;
+    color: #C77DFF !important;
+}
+
+.button.purple:hover,
+.contest-console .button.purple:hover,
+.contest-page .button.purple:hover {
+    background: rgba(155, 81, 224, 0.22) !important;
+    border-color: rgba(155, 81, 224, 0.70) !important;
+}
+
+.button.petrol,
+.contest-console .button.petrol,
+.contest-page .button.petrol {
+    background: rgba(0, 212, 200, 0.12) !important;
+    border: 1px solid rgba(0, 212, 200, 0.45) !important;
+    color: #5EEAD4 !important;
+}
+
+.button.petrol:hover,
+.contest-console .button.petrol:hover,
+.contest-page .button.petrol:hover {
+    background: rgba(0, 212, 200, 0.22) !important;
+    border-color: rgba(0, 212, 200, 0.70) !important;
+}
+
+
+/* ------------------------------------------------------------
+ * Session table & operator editor buttons
+ * ---------------------------------------------------------- */
+
+.contest-console .button.small {
+    background: #16262f;
+    border: 1px solid #3a4b56;
+    color: #d7e0e5;
+}
+
+.contest-console .button.small:hover {
+    background: #223640;
+    border-color: #00d9ff;
+    color: #ffffff;
+}
+
+.contest-console .button.small.contest-session-edit-operators {
+    background: rgba(0, 212, 200, 0.12);
+    border: 1px solid rgba(0, 212, 200, 0.45);
+    color: #5EEAD4;
+}
+
+.contest-console .button.small.contest-session-edit-operators:hover {
+    background: rgba(0, 212, 200, 0.22);
+    border-color: rgba(0, 212, 200, 0.70);
+}
+
+.contest-console #contest-session-operator-save {
+    background: rgba(155, 81, 224, 0.12);
+    border: 1px solid rgba(155, 81, 224, 0.45);
+    color: #C77DFF;
+}
+
+.contest-console #contest-session-operator-save:hover {
+    background: rgba(155, 81, 224, 0.22);
+    border-color: rgba(155, 81, 224, 0.70);
+}
+
+.contest-console .button.small.contest-session-delete {
+    background: rgba(255, 82, 82, 0.10);
+    border: 1px solid rgba(255, 82, 82, 0.45);
+    color: #ff7a7a;
+}
+
+.contest-console .button.small.contest-session-delete:hover {
+    background: rgba(255, 82, 82, 0.22);
+    border-color: rgba(255, 82, 82, 0.70);
+    color: #ffffff;
+}

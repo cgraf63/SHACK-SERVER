@@ -694,22 +694,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 <button
                                     type="button"
-                                    class="qso-history-action qso-history-edit" style="border:none!important;background:transparent!important;color:inherit!important;cursor:pointer!important;font-size:17px!important;padding:4px 7px!important;margin:0!important;box-shadow:none!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;"
+                                    class="button small petrol qso-history-action qso-history-edit"
                                     data-qso-id="${escapeHtml(qso.id)}"
                                     title="Edit QSO"
                                     aria-label="Edit QSO"
                                 >
-                                    ✏️
+                                    Edit
                                 </button>
 
                                 <button
                                     type="button"
-                                    class="qso-history-action qso-history-delete" style="border:none!important;background:transparent!important;color:inherit!important;cursor:pointer!important;font-size:17px!important;padding:4px 7px!important;margin:0!important;box-shadow:none!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;"
+                                    class="button small contest-session-delete qso-history-action qso-history-delete"
                                     data-qso-id="${escapeHtml(qso.id)}"
                                     title="Delete QSO"
                                     aria-label="Delete QSO"
                                 >
-                                    🗑️
+                                    Delete
                                 </button>
 
                             </td>

@@ -143,10 +143,10 @@ main { max-width:none !important; }
 .qso-log-search:focus { border-color:#607d8b; }
 .qso-log-table-wrapper { display:block !important; width:100% !important; min-width:0 !important; max-width:none !important; overflow-x:auto !important; overflow-y:hidden; box-sizing:border-box; }
 .qso-log-table { width:100% !important; min-width:1100px !important; max-width:none !important; border-collapse:collapse; background:#0b151e; }
-.qso-log-table th { text-align:left; padding:12px 14px; border-bottom:1px solid #344754; color:#9fb1bd; font-size:13px; white-space:nowrap; cursor:pointer; user-select:none; }
+.qso-log-table th { text-align:left; padding:6px 10px; border-bottom:1px solid #344754; color:#9fb1bd; font-size:13px; white-space:nowrap; cursor:pointer; user-select:none; }
 .qso-log-table th:hover { color:white; }
 .qso-log-table th.no-sort { cursor:default; }
-.qso-log-table td { padding:12px 14px; border-bottom:1px solid #24343f; white-space:nowrap; }
+.qso-log-table td { padding:4px 10px; line-height:1.25; border-bottom:1px solid #24343f; white-space:nowrap; }
 .qso-log-table tbody tr:hover { background:rgba(255,255,255,.04); }
 .qso-log-call { font-weight:600; }
 .qsl-status { text-align:center; font-size:16px; width:45px; }
@@ -157,6 +157,35 @@ main { max-width:none !important; }
 }
 .qso-log-actions { text-align:right; }
 .qso-log-action { border:none; background:transparent; cursor:pointer; font-size:17px; padding:4px 7px; }
+/* QSO-Log Action-Buttons (match Contest Manager styling) */
+.qso-log-action {
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    padding: 5px 12px;
+    margin-left: 6px;
+    transition: background 0.15s, color 0.15s;
+}
+.qso-log-action-edit {
+    color: #0e7c86;
+    border-color: #0e7c86;
+}
+.qso-log-action-edit:hover {
+    background: #0e7c86;
+    color: #fff;
+}
+.qso-log-action-delete {
+    color: #c0392b;
+    border-color: #c0392b;
+}
+.qso-log-action-delete:hover {
+    background: #c0392b;
+    color: #fff;
+}
 .qso-log-action:hover { transform:scale(1.1); }
 .qso-log-empty { padding:35px !important; text-align:center; color:#71838f; }
 .dx-flag { width:20px; height:14px; vertical-align:middle; margin-right:6px; object-fit:cover; }
@@ -276,15 +305,6 @@ main { max-width:none !important; }
                 autocomplete="off"
             >
 
-            <select
-                id="qso-log-contest-filter"
-                class="qso-log-contest-filter"
-            >
-                <option value="">
-                    All Contests
-                </option>
-            </select>
-
         </div>
 
     </div>
@@ -301,7 +321,6 @@ main { max-width:none !important; }
 <th data-sort="name">Name</th>
 <th data-sort="band">Band</th>
 <th data-sort="mode">Mode</th>
-<th data-sort="contest_id">Contest</th>
 <th data-sort="frequency">Frequency</th>
 <th data-sort="rst_sent">RST</th>
 <th data-sort="country">Country</th>
@@ -310,7 +329,7 @@ main { max-width:none !important; }
 <th data-sort="qsl_received" title="QSL Received">QR</th>
 <th class="no-sort">Actions</th>
 </tr></thead>
-<tbody id="qso-log-body"><tr><td colspan="14" class="qso-log-empty">Loading QSOs...</td></tr></tbody>
+<tbody id="qso-log-body"><tr><td colspan="13" class="qso-log-empty">Loading QSOs...</td></tr></tbody>
 </table>
 </div>
 </section>
@@ -320,7 +339,6 @@ main { max-width:none !important; }
 let qsoRecords = [];
 let sortField = "qso_date";
 let sortDirection = "desc";
-let contestFilter = "";
 
 async function loadQsoLog() {
     const body = document.getElementById("qso-log-body");
@@ -330,8 +348,6 @@ async function loadQsoLog() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         qsoRecords = Array.isArray(data.qsos) ? data.qsos : [];
-
-        populateContestFilter();
 
         renderQsoLog();
     } catch (error) {
@@ -363,79 +379,6 @@ function updateCabrilloButton() {
 }
 
 
-function populateContestFilter() {
-
-    const select =
-        document.getElementById(
-            "qso-log-contest-filter"
-        );
-
-    if (!select) {
-        return;
-    }
-
-    const contests =
-        [...new Set(
-            qsoRecords
-                .map(
-                    qso =>
-                        qso.contest_id
-                )
-                .filter(
-                    value =>
-                        value !== null &&
-                        value !== undefined &&
-                        String(value).trim() !== ""
-                )
-                .map(
-                    value =>
-                        String(value).trim()
-                )
-        )]
-        .sort(
-            (a, b) =>
-                a.localeCompare(
-                    b,
-                    "de",
-                    {
-                        numeric: true,
-                        sensitivity: "base"
-                    }
-                )
-        );
-
-    select.innerHTML =
-        '<option value="">All Contests</option>';
-
-    contests.forEach(
-        contestId => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-            option.value =
-                contestId;
-
-            option.textContent =
-                contestId;
-
-            select.appendChild(
-                option
-            );
-
-        }
-    );
-
-    select.value =
-        contestFilter;
-
-    updateCabrilloButton();
-
-}
-
-
 function renderQsoLog() {
     const body = document.getElementById("qso-log-body");
     const count = document.getElementById("qso-log-count");
@@ -452,27 +395,9 @@ function renderQsoLog() {
     const searchText =
         search.value.trim().toLowerCase();
 
-    const selectedContest =
-        contestSelect
-            ? contestSelect.value
-            : "";
-
-    contestFilter =
-        selectedContest;
-
     const filtered =
         qsoRecords.filter(
             qso => {
-
-                if (
-                    contestFilter &&
-                    String(
-                        qso.contest_id ?? ""
-                    ).trim() !==
-                    contestFilter
-                ) {
-                    return false;
-                }
 
                 if (!searchText) {
                     return true;
@@ -484,7 +409,6 @@ function renderQsoLog() {
                     qso.country,
                     qso.band,
                     qso.mode,
-                    qso.contest_id,
                     qso.dx_grid
                 ]
                     .filter(
@@ -523,7 +447,6 @@ function renderQsoLog() {
     <td>${escapeHtml(qso.name || "")}</td>
     <td>${escapeHtml(qso.band || "")}</td>
     <td>${escapeHtml(qso.mode || "")}</td>
-    <td>${escapeHtml(qso.contest_id || "—")}</td>
     <td>${formatFrequency(qso.frequency)}</td>
     <td>${escapeHtml(qso.rst_sent || "")}/${escapeHtml(qso.rst_rcvd || "")}</td>
     <td>${qso.country_code ? `<img class="dx-flag" src="/assets/flags/${escapeHtml(qso.country_code)}.svg" alt="">` : ""}${escapeHtml(qso.country || "")}</td>
@@ -531,8 +454,8 @@ function renderQsoLog() {
     <td class="qsl-status">${Number(qso.qsl_sent) === 1 ? "✓" : "—"}</td>
     <td class="qsl-status">${Number(qso.qsl_received) === 1 ? "✓" : "—"}</td>
     <td class="qso-log-actions">
-        <button class="qso-log-action" title="Edit QSO" data-action="edit" data-id="${qso.id}">✏️</button>
-        <button class="qso-log-action" title="Delete QSO" data-action="delete" data-id="${qso.id}">🗑️</button>
+        <button class="qso-log-action qso-log-action-edit" title="Edit QSO" data-action="edit" data-id="${qso.id}">Edit</button>
+        <button class="qso-log-action qso-log-action-delete" title="Delete QSO" data-action="delete" data-id="${qso.id}">Delete</button>
     </td>
 </tr>
 
@@ -724,18 +647,6 @@ document.getElementById(
 ).addEventListener(
     "input",
     renderQsoLog
-);
-
-document.getElementById(
-    "qso-log-contest-filter"
-).addEventListener(
-    "change",
-    () => {
-
-        renderQsoLog();
-        updateCabrilloButton();
-
-    }
 );
 
 document.querySelectorAll(

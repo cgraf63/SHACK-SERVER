@@ -182,7 +182,7 @@ function renderDefinitions() {
 
                                 <button
                                     type="button"
-                                    class="button small"
+                                    class="button small blue"
                                     data-action="edit"
                                     data-id="${definition.id}"
                                 >
@@ -191,7 +191,7 @@ function renderDefinitions() {
 
                                 <button
                                     type="button"
-                                    class="button small"
+                                    class="button small muted"
                                     data-action="copy"
                                     data-id="${definition.id}"
                                 >
@@ -200,7 +200,11 @@ function renderDefinitions() {
 
                                 <button
                                     type="button"
-                                    class="button small"
+                                    class="button small ${
+                                        definition.enabled
+                                            ? "warning"
+                                            : "muted"
+                                    }"
                                     data-action="toggle"
                                     data-id="${definition.id}"
                                 >
@@ -1333,7 +1337,7 @@ function renderOperators() {
 
                                 <button
                                     type="button"
-                                    class="button small"
+                                    class="button small blue"
                                     data-operator-action="edit"
                                     data-id="${operator.id}"
                                 >
@@ -1342,7 +1346,11 @@ function renderOperators() {
 
                                 <button
                                     type="button"
-                                    class="button small"
+                                    class="button small ${
+                                        operator.active
+                                            ? "warning"
+                                            : "muted"
+                                    }"
                                     data-operator-action="toggle"
                                     data-id="${operator.id}"
                                 >
@@ -1351,6 +1359,15 @@ function renderOperators() {
                                             ? "Disable"
                                             : "Enable"
                                     }
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="button small danger"
+                                    data-operator-action="delete"
+                                    data-id="${operator.id}"
+                                >
+                                    Delete
                                 </button>
 
                             </td>
@@ -1556,6 +1573,73 @@ async function saveOperator(
 
 
 /*
+ * Delete operator
+ */
+
+async function deleteOperator(
+    id
+) {
+
+    const operator =
+        operators.find(
+            item =>
+                Number(item.id) ===
+                Number(id)
+        );
+
+    if (!operator) {
+        return;
+    }
+
+    if (
+        !confirm(
+            `Delete operator "${operator.callsign}"?`
+        )
+    ) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/contests/operators/${id}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error ||
+                `HTTP ${response.status}`
+            );
+        }
+
+        await loadOperators();
+
+    }
+    catch (error) {
+
+        console.error(
+            "Failed to delete contest operator:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Failed to delete operator."
+        );
+
+    }
+
+}
+
+
+/*
  * Operator table actions
  */
 
@@ -1605,6 +1689,15 @@ operatorsBody.addEventListener(
             openOperatorEditor(
                 operator
             );
+
+            return;
+
+        }
+
+
+        if (action === "delete") {
+
+            deleteOperator(id);
 
             return;
 

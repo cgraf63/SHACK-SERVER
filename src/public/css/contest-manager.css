@@ -508,40 +508,112 @@ cd ~/SHACK-SERVER
 cat >> src/public/css/contest-manager.css <<'EOF'
 
 
-/* QSO History action buttons
- * Same visual style as qso-log.html
- */
+/* ------------------------------------------------------------
+ * Action button color variants (Design System palette)
+ *
+ * Edit    -> Accent Blue  #2D7CFF
+ * Delete  -> Danger       #EA5455
+ * Toggle  -> Warning      #FFB020 / Muted
+ * Start   -> Success      #28C76F
+ * Pause   -> Warning      #FFB020
+ * Finish  -> Danger       #EA5455
+ * Default -> Primary Orange #FF9F1C (Projekt-Akzent)
+ * ---------------------------------------------------------- */
 
-.qso-history-action {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 17px;
-    padding: 4px 7px;
+.contest-page .table-container .button.small {
+    background: rgba(255, 159, 28, 0.10);
+    border: 1px solid rgba(255, 159, 28, 0.35);
+    color: #FF9F1C;
 }
 
-.qso-history-action:hover {
-    transform: scale(1.1);
+.contest-page .table-container .button.small:hover {
+    background: rgba(255, 159, 28, 0.20);
+    border-color: rgba(255, 159, 28, 0.60);
 }
 
-.qso-history-actions {
-    text-align: right;
-    white-space: nowrap;
+.contest-page .table-container .button.small.blue {
+    background: rgba(45, 124, 255, 0.10);
+    border: 1px solid rgba(45, 124, 255, 0.35);
+    color: #5B95FF;
 }
 
-/* QSO History actions - match qso-log exactly */
-.qso-history-action {
-    border: none !important;
-    background: transparent !important;
-    color: inherit !important;
-    cursor: pointer !important;
-    font-size: 17px !important;
-    padding: 4px 7px !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
+.contest-page .table-container .button.small.blue:hover {
+    background: rgba(45, 124, 255, 0.20);
+    border-color: rgba(45, 124, 255, 0.60);
 }
 
-.qso-history-action:hover {
-    background: transparent !important;
-    transform: scale(1.1);
+.contest-page .table-container .button.small.danger {
+    background: rgba(234, 84, 85, 0.10);
+    border: 1px solid rgba(234, 84, 85, 0.35);
+    color: #F27A7B;
+}
+
+.contest-page .table-container .button.small.danger:hover {
+    background: rgba(234, 84, 85, 0.20);
+    border-color: rgba(234, 84, 85, 0.60);
+}
+
+.contest-page .table-container .button.small.warning {
+    background: rgba(255, 176, 32, 0.10);
+    border: 1px solid rgba(255, 176, 32, 0.35);
+    color: #FFB020;
+}
+
+.contest-page .table-container .button.small.warning:hover {
+    background: rgba(255, 176, 32, 0.20);
+    border-color: rgba(255, 176, 32, 0.60);
+}
+
+.contest-page .table-container .button.small.success {
+    background: rgba(40, 199, 111, 0.10);
+    border: 1px solid rgba(40, 199, 111, 0.35);
+    color: #4EDD8F;
+}
+
+.contest-page .table-container .button.small.success:hover {
+    background: rgba(40, 199, 111, 0.20);
+    border-color: rgba(40, 199, 111, 0.60);
+}
+
+.contest-page .table-container .button.small.muted {
+    background: rgba(122, 135, 152, 0.10);
+    border: 1px solid rgba(122, 135, 152, 0.35);
+    color: #A8B3C2;
+}
+
+.contest-page .table-container .button.small.muted:hover {
+    background: rgba(122, 135, 152, 0.20);
+    border-color: rgba(122, 135, 152, 0.60);
+}
+
+
+/* ------------------------------------------------------------
+ * Purple action button variant
+ * ---------------------------------------------------------- */
+
+.contest-page .button.purple {
+    background: rgba(155, 81, 224, 0.12);
+    border: 1px solid rgba(155, 81, 224, 0.45);
+    color: #C77DFF;
+}
+
+.contest-page .button.purple:hover {
+    background: rgba(155, 81, 224, 0.22);
+    border-color: rgba(155, 81, 224, 0.70);
+}
+
+
+/* ------------------------------------------------------------
+ * Contest definitions card header layout
+ * ---------------------------------------------------------- */
+
+.contest-page .card .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.contest-page .card .card-header .button {
+    flex-shrink: 0;
 }

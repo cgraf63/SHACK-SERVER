@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "/usr/local/include/sdrplay_api.h"
+#include <pthread.h>
 
 #define SAMPLE_RATE 2000000.0
 #define CENTER_FREQ 14100000.0
@@ -20,6 +21,23 @@ static sdrplay_api_DeviceT device;
 static sdrplay_api_DeviceParamsT *deviceParams = NULL;
 static int deviceSelected = 0;
 static int apiOpened = 0;
+
+/*
+ * Laufende Konfiguration, per stdin-Kommando aenderbar.
+ */
+static pthread_mutex_t cfgMutex = PTHREAD_MUTEX_INITIALIZER;
+
+static volatile int sweepActive = 0;
+static volatile int sweepThreadRunning = 0;
+static volatile int wantSweepFrame = 0;
+static double sweepStart = 1000000.0;
+static double sweepStop = 1000000000.0;
+static double sweepStep = 2000000.0;
+
+static double currentFreq = CENTER_FREQ;
+static double currentFs = SAMPLE_RATE;
+static int currentGRdB = GAIN_REDUCTION;
+static int currentLNA = 0;
 
 static double window[FFT_SIZE];
 static double fftRe[FFT_SIZE];
@@ -176,6 +194,39 @@ static void process_samples(
             fft_compute();
 
             /*
+             * Sweep mode: compact frame with the hop's
+             * center frequency appended, normal stream
+             * suppressed.
+             */
+            if (sweepActive) {
+
+                if (wantSweepFrame) {
+
+                    uint16_t sb = 512;
+
+                    fwrite(&sb, sizeof(sb), 1, stdout);
+
+                    for (int i = 0; i < sb; i++) {
+
+                        float db =
+                            (float)power[i * (FFT_SIZE / 512)];
+
+                        fwrite(&db, sizeof(db), 1, stdout);
+                    }
+
+                    float cf = (float)currentFreq;
+
+                    fwrite(&cf, sizeof(cf), 1, stdout);
+                    fflush(stdout);
+
+                    wantSweepFrame = 0;
+                }
+
+                buffered = FFT_SIZE / 2;
+                return;
+            }
+
+            /*
              * Binary frame:
              *
              * uint16_t number of bins
@@ -225,6 +276,187 @@ static void process_samples(
             buffered = FFT_SIZE / 2;
         }
     }
+}
+
+static void apply_config(void)
+{
+    sdrplay_api_ErrT err;
+
+    deviceParams->devParams->fsFreq.fsHz = currentFs;
+
+    deviceParams->rxChannelA->tunerParams.rfFreq.rfHz =
+        currentFreq;
+
+    deviceParams->rxChannelA->tunerParams.gain.gRdB =
+        currentGRdB;
+
+    deviceParams->rxChannelA->tunerParams.gain.LNAstate =
+        currentLNA;
+
+    err = sdrplay_api_Update(
+        device.dev,
+        sdrplay_api_Tuner_A,
+        sdrplay_api_Update_Dev_Fs |
+            sdrplay_api_Update_Tuner_Frf |
+            sdrplay_api_Update_Tuner_Gr,
+        sdrplay_api_Update_Ext1_None
+    );
+
+    if (err != sdrplay_api_Success) {
+        fprintf(
+            stderr,
+            "SDR Update failed: %d\n",
+            err
+        );
+    } else {
+        fprintf(
+            stderr,
+            "SDR config: %.3f MHz, %.3f MSPS, gRdB=%d, LNA=%d\n",
+            currentFreq / 1000000.0,
+            currentFs / 1000000.0,
+            currentGRdB,
+            currentLNA
+        );
+    }
+}
+
+/*
+ * stdin-Kommandos, eine Zeile pro Kommando:
+ *
+ *   freq <Hz>
+ *   gain <gRdB> <LNAstate>
+ *   fs <Hz>
+ *   stop
+ *
+ * stdout ist der binaere FFT-Stream und bleibt unberuehrt.
+ */
+static void *sweep_thread(void *arg)
+{
+    (void)arg;
+
+    double f = sweepStart;
+
+    while (running && sweepActive) {
+
+        pthread_mutex_lock(&cfgMutex);
+
+        currentFreq = f;
+        apply_config();
+        wantSweepFrame = 1;
+
+        pthread_mutex_unlock(&cfgMutex);
+
+        /*
+         * Wait for the sweep frame of this hop.
+         */
+        int waited = 0;
+
+        while (running && wantSweepFrame && waited < 400) {
+            usleep(10000);
+            waited += 10;
+        }
+
+        f += sweepStep;
+
+        if (f > sweepStop) {
+            f = sweepStart;
+        }
+    }
+
+    sweepThreadRunning = 0;
+    return NULL;
+}
+
+static void *stdin_thread(void *arg)
+{
+    (void)arg;
+
+    char line[256];
+
+    while (running && fgets(line, sizeof(line), stdin)) {
+
+        if (strncmp(line, "sweep_stop", 10) == 0) {
+
+            sweepActive = 0;
+
+        } else if (strncmp(line, "sweep ", 6) == 0) {
+
+            double s1 = 0;
+            double s2 = 0;
+            double s3 = 0;
+
+            if (sscanf(line + 6, "%lf %lf %lf", &s1, &s2, &s3) == 3) {
+
+                sweepStart = s1;
+                sweepStop = s2;
+
+                sweepStep = s3;
+
+                if (sweepStep < 100000.0) {
+                    sweepStep = 100000.0;
+                }
+
+                sweepActive = 1;
+
+                if (!sweepThreadRunning) {
+
+                    sweepThreadRunning = 1;
+
+                    pthread_t tid;
+
+                    if (pthread_create(&tid, NULL,
+                                       sweep_thread, NULL) == 0) {
+                        pthread_detach(tid);
+                    } else {
+                        sweepThreadRunning = 0;
+                    }
+                }
+
+                fprintf(stderr,
+                        "SDR sweep: %.0f - %.0f Hz step %.0f\n",
+                        sweepStart, sweepStop, sweepStep);
+            }
+
+        } else if (strncmp(line, "freq ", 5) == 0) {
+
+            pthread_mutex_lock(&cfgMutex);
+            currentFreq = strtod(line + 5, NULL);
+            apply_config();
+            pthread_mutex_unlock(&cfgMutex);
+
+        } else if (strncmp(line, "gain ", 5) == 0) {
+
+            int grdb = 0;
+            int lna = 0;
+
+            if (sscanf(line + 5, "%d %d", &grdb, &lna) >= 1) {
+
+                if (grdb >= 0 && grdb <= 59) {
+                    currentGRdB = grdb;
+                }
+                if (lna >= 0 && lna <= 8) {
+                    currentLNA = lna;
+                }
+
+                pthread_mutex_lock(&cfgMutex);
+                apply_config();
+                pthread_mutex_unlock(&cfgMutex);
+            }
+
+        } else if (strncmp(line, "fs ", 3) == 0) {
+
+            pthread_mutex_lock(&cfgMutex);
+            currentFs = strtod(line + 3, NULL);
+            apply_config();
+            pthread_mutex_unlock(&cfgMutex);
+
+        } else if (strncmp(line, "stop", 4) == 0) {
+
+            running = 0;
+        }
+    }
+
+    return NULL;
 }
 
 static void stream_callback(
@@ -506,9 +738,20 @@ int main(void)
         FFT_SIZE
     );
 
+    pthread_t stdinTid;
+
+    if (pthread_create(&stdinTid, NULL, stdin_thread, NULL) != 0) {
+        fprintf(
+            stderr,
+            "SDR: stdin thread failed\n"
+        );
+    }
+
     while (running) {
         usleep(100000);
     }
+
+    running = 0;
 
     sdrplay_api_Uninit(
         device.dev

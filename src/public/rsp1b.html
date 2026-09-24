@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHACK-SERVER — RSP1B SDR</title>
+<link rel="stylesheet" href="/css/rsp1b.css">
+
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">SHACK-SERVER / RSP1B SDR</div>
+  <div class="toolbar">
+    <button class="btn" id="connect">CONNECT</button>
+    <button class="btn" id="freeze">FREEZE</button>
+    <button class="btn" id="peak">PEAK HOLD</button>
+    <button class="btn" id="scan">FULL SCAN</button>
+  </div>
+  <div class="status"><span class="dot" id="dot"></span><span id="status">DISCONNECTED</span></div>
+</header>
+
+<div class="main">
+<aside class="sidebar">
+
+<div class="section">
+<h3>AMATEUR RADIO</h3>
+
+<div class="band-group-title">HF</div>
+<div class="bandgrid">
+  <button class="btn band" data-f="1.9">160m</button>
+  <button class="btn band" data-f="3.65">80m</button>
+  <button class="btn band" data-f="7.1">40m</button>
+  <button class="btn band" data-f="10.12">30m</button>
+  <button class="btn band" data-f="14.074">20m</button>
+  <button class="btn band" data-f="18.1">17m</button>
+  <button class="btn band" data-f="21.074">15m</button>
+  <button class="btn band" data-f="24.915">12m</button>
+  <button class="btn band" data-f="28.2">10m</button>
+  <button class="btn band" data-f="50.313">6m</button>
+</div>
+
+<div class="band-group-title secondary">VHF / UHF</div>
+<div class="bandgrid secondary-bands">
+  <button class="btn band" data-f="144.3">2m</button>
+  <button class="btn band" data-f="432.2">70cm</button>
+</div>
+</div>
+
+<div class="section">
+<h3>RECEIVER</h3>
+<div class="row"><span class="label">Sample rate</span></div>
+<select id="sample">
+<option value="250000">250 kS/s</option>
+<option value="500000">500 kS/s</option>
+<option value="1000000">1 MS/s</option>
+<option value="2000000" selected>2 MS/s</option>
+<option value="6000000">6 MS/s</option>
+<option value="8000000">8 MS/s</option>
+<option value="10000000">10 MS/s</option>
+</select>
+<div class="row"><span class="label">Span</span><span class="value" id="spanValue">2 MHz</span></div>
+<input id="span" type="range" min="0" max="6" value="3">
+<div class="row"><span class="label">LNA</span><span class="value" id="lnaValue">0</span></div>
+<input id="lna" type="range" min="0" max="8" value="0">
+<div class="row"><span class="label">IF gain reduction</span><span class="value" id="ifValue">30 dB</span></div>
+<input id="ifgr" type="range" min="0" max="59" value="30">
+</div>
+
+<div class="section">
+<h3>DEMOD</h3>
+<select id="demod">
+<option>WFM</option><option>NFM</option><option>AM</option><option>USB</option>
+<option>LSB</option><option>CW</option><option>SAM</option>
+</select>
+<div class="row"><span class="label">Bandwidth</span><span class="value" id="bwValue">12 kHz</span></div>
+<input id="bw" type="range" min="200" max="200000" step="100" value="12000">
+</div>
+
+<div class="section">
+<h3>SPECTRUM</h3>
+<div class="row"><span class="label">Reference</span><span class="value" id="refValue">−30 dB</span></div>
+<input id="ref" type="range" min="-120" max="20" value="-30">
+<div class="row"><span class="label">Base</span><span class="value" id="baseValue">−120 dB</span></div>
+<input id="base" type="range" min="-160" max="0" value="-120">
+<div class="row"><span class="label">Zoom</span><span class="value" id="zoomValue">1×</span></div>
+<input id="zoom" type="range" min="1" max="8" value="1">
+</div>
+
+<div class="section">
+<h3>FULL RANGE SCAN</h3>
+<div class="row"><span class="label">Start</span><span class="value">1 MHz</span></div>
+<div class="row"><span class="label">Stop</span><span class="value">1000 MHz</span></div>
+<div class="row"><span class="label">Step</span><select id="scanStep">
+<option value="1000000">1 MHz</option>
+<option value="2000000" selected>2 MHz</option>
+<option value="5000000">5 MHz</option>
+<option value="10000000">10 MHz</option>
+</select></div>
+<div class="scanline" id="scanStatus">SCAN STOPPED</div>
+</div>
+
+</aside>
+
+<section class="mainview">
+<div class="tuningbar">
+  <div class="mode" id="mode">OVERVIEW</div>
+  <div class="freq" id="freq">14.074000 MHz</div>
+  <button class="btn" id="minus">−</button>
+  <button class="btn" id="plus">+</button>
+  <button class="btn" id="center">CENTER</button>
+  <div style="text-align:right;color:var(--muted);font-size:10px" id="range">13.074–15.074 MHz</div>
+</div>
+
+<div class="card"><canvas id="spectrum"></canvas>
+<div class="overlay"><span id="leftLabel">13.074 MHz</span><span id="rightLabel">15.074 MHz</span></div>
+</div>
+
+<div class="card"><canvas id="waterfall"></canvas>
+<div class="waterlabel">RSP1B · LIVE WATERFALL · CLICK TO TUNE SDR</div></div>
+
+<div class="metrics">
+  <div class="metric"><h4>SIGNAL POWER</h4><div class="bar"><div class="fill" id="powerFill"></div></div><p id="power">-- dBm</p></div>
+  <div class="metric"><h4>SNR</h4><div class="bar"><div class="fill" id="snrFill"></div></div><p id="snr">-- dB</p></div>
+  <div class="metric"><h4>SDR STATUS</h4><p id="deviceStatus">LOCAL RSP1B</p><p class="help" id="deviceInfo">1 MHz – 1 GHz overview / sweep</p></div>
+  <div class="metric"><h4>EVENT LOG</h4><div class="log" id="log"></div></div>
+</div>
+</section>
+</div>
+</div>
+
+<script src="/js/bandplan-data.js?v=20260924-1"></script>
+<script src="/js/rsp1b.js?v=20260925-8"></script>
+
+</body>
+</html>

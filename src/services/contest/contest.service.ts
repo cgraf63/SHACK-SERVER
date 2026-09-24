@@ -1340,6 +1340,66 @@ export class ContestService {
 
     }
 
+    deleteSession(sessionId: number): boolean {
+
+        const id =
+            Number(sessionId);
+
+        if (
+            !Number.isInteger(id) ||
+            id <= 0
+        ) {
+            return false;
+        }
+
+        this.db.prepare(`
+            DELETE FROM
+                contest_session_operators
+            WHERE session_id = ?
+        `).run(id);
+
+        const result =
+            this.db.prepare(`
+                DELETE FROM
+                    contest_sessions
+                WHERE id = ?
+            `).run(id);
+
+        return result.changes > 0;
+
+    }
+
+
+    deleteOperator(operatorId: number): boolean {
+
+        const id =
+            Number(operatorId);
+
+        if (
+            !Number.isInteger(id) ||
+            id <= 0
+        ) {
+            return false;
+        }
+
+        this.db.prepare(`
+            DELETE FROM
+                contest_session_operators
+            WHERE operator_id = ?
+        `).run(id);
+
+        const result =
+            this.db.prepare(`
+                DELETE FROM
+                    contest_operators
+                WHERE id = ?
+            `).run(id);
+
+        return result.changes > 0;
+
+    }
+
+
 
     getSessionById(
         id: number
