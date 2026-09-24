@@ -87,3 +87,216 @@ pointer-events:none;font-size:10px;color:var(--muted)}
 .log{font:9px ui-monospace,Consolas,monospace;color:#76939d;overflow:auto;white-space:pre-wrap;height:100%}
 .help{font-size:9px;color:var(--muted);line-height:1.4}
 .scanline{color:var(--yellow);font-size:10px;margin-top:6px}
+
+
+/* =========================================================
+   DESIGN UPGRADE — Glow / Glass / Neon-Slider
+   Nur Farben & Effekte, KEINE Layout-Regeln.
+   ========================================================= */
+
+:root{
+  --accent2:#b56cff;            /* violetter Zweitakzent */
+  --panel-glass:rgba(10,26,33,.72);
+}
+
+/* Hintergrund: zwei sanfte Farbrauschen */
+body{
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(181,108,255,.08), transparent 60%),
+    radial-gradient(1000px 500px at 10% 110%, rgba(0,217,255,.07), transparent 60%),
+    var(--bg);
+}
+
+/* Header: Verlauf + Glass */
+header{
+  background:linear-gradient(90deg, rgba(0,217,255,.10), rgba(181,108,255,.08) 55%, #08171d);
+  border-bottom-color:rgba(0,217,255,.18);
+  box-shadow:0 0 24px rgba(0,217,255,.06);
+}
+
+/* Brand: Cyan->Violett-Verlauf mit Glow */
+.brand{
+  background:linear-gradient(90deg,var(--cyan),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 30px rgba(0,217,255,.30);
+}
+
+/* Buttons: Glow statt nur Farbwechsel (ueberschreibt die nth-child-Akzente) */
+.btn{
+  border-radius:6px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.btn:hover{
+  box-shadow:0 0 14px rgba(0,217,255,.30), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.btn.active{
+  box-shadow:0 0 14px rgba(0,217,255,.35), inset 0 0 10px rgba(0,217,255,.12);
+}
+/* Violetter Aktions-Button (START SDR) */
+.btn.hot{
+  color:#d9b8ff;
+  border-color:rgba(181,108,255,.45);
+  background:rgba(181,108,255,.08);
+}
+.btn.hot:hover{
+  color:#f2e4ff;
+  border-color:var(--accent2);
+  box-shadow:0 0 16px rgba(181,108,255,.45);
+}
+.btn.hot.active{
+  color:#f2e4ff;
+  border-color:var(--accent2);
+  background:rgba(181,108,255,.18);
+  box-shadow:0 0 18px rgba(181,108,255,.5), inset 0 0 10px rgba(181,108,255,.15);
+}
+
+/* Live-Dot pulsiert */
+.dot.on{animation:dotpulse 2s infinite}
+@keyframes dotpulse{50%{opacity:.45}}
+
+/* Sidebar & Metrics: Glass-Panels */
+.sidebar,.metric,.tuningbar{
+  background:var(--panel-glass);
+  backdrop-filter:blur(8px);
+  box-shadow:0 4px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+/* Frequenzanzeige: Neon */
+.freq{
+  color:var(--cyan);
+  text-shadow:0 0 18px rgba(0,217,255,.5);
+}
+.mode{
+  color:#d9b8ff;
+  text-shadow:0 0 12px rgba(181,108,255,.4);
+}
+
+/* Canvas-Rahmen leuchtet im Live-Betrieb (JS setzt .live am Spectrum-Card) */
+.card.live{
+  border-color:rgba(0,217,255,.45);
+  box-shadow:0 0 30px rgba(0,217,255,.14), inset 0 0 40px rgba(0,217,255,.04);
+}
+
+/* Metrics: Gradient-Progressbar */
+.fill{
+  background:linear-gradient(90deg,var(--cyan),var(--accent2));
+  box-shadow:0 0 12px rgba(0,217,255,.5);
+  transition:width .2s ease;
+}
+
+/* =========================================================
+   NEON SLIDER
+   ========================================================= */
+input[type=range]{
+  --val:50%;
+  -webkit-appearance:none;appearance:none;
+  height:20px;background:transparent;cursor:pointer;
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:5px;border-radius:3px;
+  background:
+    linear-gradient(90deg, var(--cyan), var(--accent2) var(--val)) no-repeat,
+    #0d1c26;
+  background-size:var(--val) 100%;
+  box-shadow:inset 0 0 4px rgba(0,0,0,.6), 0 0 8px rgba(0,217,255,.12);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:15px;height:15px;border-radius:50%;
+  margin-top:-5px;
+  background:radial-gradient(circle at 35% 35%, #eafcff, var(--cyan) 60%);
+  border:1px solid rgba(255,255,255,.5);
+  box-shadow:0 0 10px rgba(0,217,255,.8), 0 0 22px rgba(0,217,255,.35), 0 1px 3px rgba(0,0,0,.6);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.15)}
+input[type=range]:active::-webkit-slider-thumb{
+  transform:scale(1.25);
+  box-shadow:0 0 14px rgba(181,108,255,.9), 0 0 30px rgba(181,108,255,.45);
+}
+input[type=range]::-moz-range-track{height:5px;border-radius:3px;background:#0d1c26}
+input[type=range]::-moz-range-progress{
+  height:5px;border-radius:3px;
+  background:linear-gradient(90deg,var(--cyan),var(--accent2));
+  box-shadow:0 0 8px rgba(0,217,255,.3);
+}
+input[type=range]::-moz-range-thumb{
+  width:15px;height:15px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #eafcff, var(--cyan) 60%);
+  border:1px solid rgba(255,255,255,.5);
+  box-shadow:0 0 10px rgba(0,217,255,.8), 0 0 22px rgba(0,217,255,.35);
+}
+
+
+/* =========================================================
+   ACTION COLORS — Steuer-Buttons violett, Band-Buttons pink
+   ========================================================= */
+
+:root{
+  --violet:#b56cff;
+  --pink:#ff4fd8;
+}
+
+/* --- Connect / Freeze / Peak Hold / Full Scan: violett --- */
+#connect,#freeze,#peak,#scan{
+  color:#e3ccff;
+  border-color:rgba(181,108,255,.45) !important;
+  background:rgba(181,108,255,.08) !important;
+}
+#connect:hover,#freeze:hover,#peak:hover,#scan:hover{
+  color:#f4e9ff !important;
+  border-color:var(--violet) !important;
+  background:rgba(181,108,255,.18) !important;
+  box-shadow:0 0 16px rgba(181,108,255,.45) !important;
+}
+#connect.active,#freeze.active,#peak.active,#scan.active{
+  color:#f4e9ff !important;
+  border-color:var(--violet) !important;
+  background:rgba(181,108,255,.22) !important;
+  box-shadow:0 0 18px rgba(181,108,255,.5), inset 0 0 10px rgba(181,108,255,.15) !important;
+}
+
+/* --- Band-Buttons: Neon-Pink (wie qso-log.html Titel #ff4fd8) --- */
+.band{
+  color:#ffd9f5 !important;
+  border-color:rgba(255,79,216,.45) !important;
+  background:rgba(255,79,216,.07) !important;
+}
+.band:hover{
+  color:#fff0fa !important;
+  border-color:var(--pink) !important;
+  background:rgba(255,79,216,.16) !important;
+  box-shadow:0 0 14px rgba(255,79,216,.45), 0 0 28px rgba(255,79,216,.20) !important;
+}
+.band.active{
+  color:#fff0fa !important;
+  border-color:var(--pink) !important;
+  background:rgba(255,79,216,.22) !important;
+  box-shadow:0 0 16px rgba(255,79,216,.55), 0 0 32px rgba(255,79,216,.25), inset 0 0 10px rgba(255,79,216,.15) !important;
+  text-shadow:0 0 10px rgba(255,79,216,.8);
+}
+
+
+/* =========================================================
+   COMPACT SIDEBAR — kein Scroll bei 1920er Hoehe
+   ========================================================= */
+
+/* Dropdowns flacher */
+select{
+  padding:3px 6px;
+  min-height:0;
+  line-height:1.2;
+}
+
+/* Band-Buttons etwas flacher */
+.bandgrid .btn{
+  min-height:22px;
+  padding:2px 2px;
+}
+
+/* Sektionen enger */
+.section{padding-bottom:8px;margin-bottom:8px}
+.section h3{margin:2px 0 6px}
+
+/* Slider etwas flacher (wirkt auf Zeilenhoehe, nicht auf den Griff) */
+input[type=range]{height:16px}

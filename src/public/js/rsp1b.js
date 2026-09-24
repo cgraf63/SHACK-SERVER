@@ -902,3 +902,28 @@ log("No audio / no CAT / no transceiver control");
 
 connectSdr();
 
+
+/* =========================================================
+   DESIGN HOOKS
+   ========================================================= */
+
+/* Slider-Fuellung (--val) initial + bei jeder Bewegung */
+function paintRange(el){
+    const pct = (el.value - el.min) / (el.max - el.min) * 100;
+    el.style.setProperty("--val", pct + "%");
+}
+document.querySelectorAll('input[type=range]').forEach(el => {
+    paintRange(el);
+    el.addEventListener("input", () => paintRange(el));
+});
+
+/* Spectrum-Card leuchtet, sobald der Stream laeuft:
+   beobachtet den Status-Dot (.on) — kein Eingriff in die Stream-Logik. */
+(function(){
+    const dot = $("dot");
+    const card = $("spectrum") ? $("spectrum").closest(".card") : null;
+    if (!dot || !card) return;
+    const sync = () => card.classList.toggle("live", dot.classList.contains("on"));
+    new MutationObserver(sync).observe(dot, { attributes: true, attributeFilter: ["class"] });
+    sync();
+})();
