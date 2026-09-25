@@ -294,82 +294,6 @@ function setCheckedValues(
  * Build rules object
  */
 
-
-/*
- * Cabrillo category selects.
- * Injected into the form-grid that holds the
- * scoring selector, so no HTML edit is needed.
- */
-const CATEGORY_FIELDS = [
-    ["contest-category-operator",  "Category Operator", ["SINGLE-OP", "MULTI-OP", "CHECKLOG"]],
-    ["contest-category-assisted",  "Category Assisted", ["NON-ASSISTED", "ASSISTED"]],
-    ["contest-category-power",     "Category Power",    ["HIGH", "LOW", "QRP"]],
-    ["contest-category-station",   "Category Station",  ["FIXED", "PORTABLE", "MOBILE"]]
-];
-
-function ensureCategoryFields() {
-
-    if (document.getElementById("contest-category-operator")) {
-        return;
-    }
-
-    const anchor =
-        scoringType.closest(".form-grid") ||
-        document.getElementById("contest-form");
-
-    if (!anchor) {
-        return;
-    }
-
-    for (const [id, label, options] of CATEGORY_FIELDS) {
-
-        const group =
-            document.createElement("div");
-
-        group.className =
-            "form-group";
-
-        const labelEl =
-            document.createElement("label");
-
-        labelEl.htmlFor =
-            id;
-
-        labelEl.textContent =
-            label;
-
-        const select =
-            document.createElement("select");
-
-        select.id =
-            id;
-
-        for (const option of options) {
-
-            const opt =
-                document.createElement("option");
-
-            opt.value =
-                option;
-
-            opt.textContent =
-                option;
-
-            select.appendChild(opt);
-
-        }
-
-        select.value =
-            options[0];
-
-        group.appendChild(labelEl);
-        group.appendChild(select);
-        anchor.appendChild(group);
-
-    }
-
-}
-
 function buildRules() {
 
     return {
@@ -427,26 +351,6 @@ function buildRules() {
 
             receive:
                 receiveRst.checked
-
-        },
-
-        category: {
-
-            operator:
-                document.getElementById("contest-category-operator")?.value ||
-                "SINGLE-OP",
-
-            assisted:
-                document.getElementById("contest-category-assisted")?.value ||
-                "NON-ASSISTED",
-
-            power:
-                document.getElementById("contest-category-power")?.value ||
-                "LOW",
-
-            station:
-                document.getElementById("contest-category-station")?.value ||
-                "FIXED"
 
         }
 
@@ -524,32 +428,6 @@ function applyRules(
 
     receiveRst.checked =
         safeRules.rst?.receive !== false;
-
-
-    ensureCategoryFields();
-
-    const categorySelects = {
-        "contest-category-operator":
-            safeRules.category?.operator,
-        "contest-category-assisted":
-            safeRules.category?.assisted,
-        "contest-category-power":
-            safeRules.category?.power,
-        "contest-category-station":
-            safeRules.category?.station
-    };
-
-    for (const [id, value] of Object.entries(categorySelects)) {
-
-        const select =
-            document.getElementById(id);
-
-        if (select && value) {
-            select.value =
-                String(value).toUpperCase();
-        }
-
-    }
 
 }
 

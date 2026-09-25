@@ -158,4 +158,124 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.loadContestQsos = loadContestQsos;
 
-});
+});\n
+/*
+ * Cabrillo export button.
+ */
+(function initCabrilloExport() {
+
+    function ensureButton() {
+
+        const count =
+            document.getElementById(
+                "contest-qso-history-count"
+            );
+
+        if (!count || count.parentElement.querySelector(".cabrillo-export-button")) {
+            return;
+        }
+
+        const button =
+            document.createElement("button");
+
+        button.type = "button";
+
+        button.className =
+            "cabrillo-export-button";
+
+        button.textContent =
+            "CABRILLO EXPORT";
+
+        button.style.marginLeft = "10px";
+
+        button.addEventListener(
+            "click",
+            async () => {
+
+                /*
+                 * Active session id holen.
+                 */
+                let sessionId = null;
+
+                try {
+
+                    const sessionResponse =
+                        await fetch(
+                            `/api/contests/session?_=${Date.now()}`,
+                            { cache: "no-store" }
+                        );
+
+                    if (sessionResponse.ok) {
+
+                        const session =
+                            await sessionResponse.json();
+
+                        if (session && session.id) {
+                            sessionId = Number(session.id);
+                        }
+
+                    }
+
+                }
+                catch (error) {
+
+                    console.error(
+                        "Cabrillo: session load failed",
+                        error
+                    );
+
+                }
+
+                if (!sessionId) {
+
+                    alert(
+                        "Keine aktive Contest-Session."
+                    );
+
+                    return;
+
+                }
+
+                window.location.href =
+                    `/api/contests/session/${sessionId}/cabrillo`;
+
+            }
+        );
+
+        count.parentElement.appendChild(
+            button
+        );
+
+    }
+
+    const observer =
+        new MutationObserver(ensureButton);
+
+    function start() {
+
+        ensureButton();
+
+        const target =
+            document.getElementById(
+                "contest-qso-history-count"
+            );
+
+        if (target) {
+            observer.observe(
+                target.parentElement || document.body,
+                { childList: true }
+            );
+        }
+
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            start
+        );
+    } else {
+        start();
+    }
+
+})();
