@@ -23,10 +23,9 @@ Modern amateur radio operators receive information from many independent systems
 - SOTAWatch
 - POTA
 - Reverse Beacon Network
-- PSK Reporter
 - Radio CAT interfaces
-- WWV / WCY
-- Logbooks
+- SDR
+- and you need a logbook program and/or a contest software
 
 Each system provides only a fragment of the complete picture.
 
