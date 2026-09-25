@@ -152,3 +152,98 @@ router.get(
 
 
 export default router;
+
+
+/*
+ * System diagnosis: runs diagnose.sh --quiet
+ * and returns its output lines plus issue count.
+ */
+
+import { execFile } from "child_process";
+
+router.get(
+    "/system",
+    async (_req, res) => {
+
+        execFile(
+            "/bin/bash",
+            ["/home/admin/SHACK-SERVER/diagnose.sh", "--quiet"],
+            { timeout: 30000, maxBuffer: 1024 * 1024 },
+            (error, stdout, stderr) => {
+
+                if (error && !stdout) {
+
+                    console.error("diagnose.sh failed:", String(error.message));
+
+                    return res.status(500).json({
+                        error: "diagnose.sh failed",
+                        detail: String(error.message)
+                    });
+
+                }
+
+                const lines =
+                    String(stdout || "")
+                        .split("\n")
+                        .map(line => line.replace(/\x1b\[[0-9;]*m/g, "").trimEnd())
+                        .filter(line => line.length > 0);
+
+                const issues =
+                    lines.filter(line =>
+                        line.includes("WARN") || line.includes("FAIL")
+                    ).length;
+
+                res.json({
+                    issues,
+                    lines,
+                    at: new Date().toISOString()
+                });
+
+            }
+        );
+
+    }
+);
+
+
+router.get(
+    "/system",
+    async (_req, res) => {
+
+        execFile(
+            "/bin/bash",
+            ["/home/admin/SHACK-SERVER/diagnose.sh", "--quiet"],
+            { timeout: 30000, maxBuffer: 1024 * 1024 },
+            (error, stdout) => {
+
+                if (error && !stdout) {
+
+                    return res.status(500).json({
+                        error: "diagnose.sh failed",
+                        detail: String(error.message)
+                    });
+
+                }
+
+                const lines =
+                    String(stdout || "")
+                        .split("\n")
+                        .map(line => line.replace(/\x1b\[[0-9;]*m/g, "").trimEnd())
+                        .filter(line => line.length > 0);
+
+                const issues =
+                    lines.filter(line =>
+                        line.includes("WARN") || line.includes("FAIL")
+                    ).length;
+
+                res.json({
+                    issues,
+                    lines,
+                    at: new Date().toISOString()
+                });
+
+            }
+        );
+
+    }
+);

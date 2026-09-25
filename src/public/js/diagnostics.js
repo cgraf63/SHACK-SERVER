@@ -864,3 +864,118 @@ document.addEventListener(
 
     }
 );
+/*
+ * System diagnosis: runs diagnose.sh --quiet
+ * on the server and shows colored results.
+ */
+
+(function () {
+
+    const button =
+        document.getElementById(
+            "run-system-diagnosis"
+        );
+
+    if (!button) {
+        return;
+    }
+
+    const output =
+        document.getElementById(
+            "diagnosis-output"
+        );
+
+    const meta =
+        document.getElementById(
+            "diagnosis-meta"
+        );
+
+
+    function renderLine(line) {
+
+        if (line.includes("FAIL")) {
+
+            return `<div class="system-log-row"><span class="system-log-level" style="color:#ff8b96;">${line}</span></div>`;
+
+        }
+
+        if (line.includes("WARN")) {
+
+            return `<div class="system-log-row"><span class="system-log-level" style="color:#ffb347;">${line}</span></div>`;
+
+        }
+
+        return `<div class="system-log-row"><span class="system-log-message" style="color:#39d98a;white-space:normal;">${line}</span></div>`;
+
+    }
+
+
+    button.addEventListener(
+        "click",
+        async () => {
+
+            button.disabled = true;
+
+            meta.textContent =
+                "Running system check...";
+
+            output.style.display =
+                "block";
+
+            output.innerHTML =
+                `<div class="system-log-empty">Running...</div>`;
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/diagnostics/system",
+                        { cache: "no-store" }
+                    );
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "HTTP " + response.status
+                    );
+
+                }
+
+                const data =
+                    await response.json();
+
+                output.innerHTML =
+                    data.lines
+                        .map(renderLine)
+                        .join("");
+
+                meta.textContent =
+                    (data.issues === 0
+                        ? "All checks passed"
+                        : data.issues + " issue(s) found") +
+                    " · " +
+                    new Date(data.at)
+                        .toLocaleTimeString("de-CH");
+
+            }
+            catch (error) {
+
+                output.style.display =
+                    "none";
+
+                meta.textContent =
+                    "Diagnosis failed: " +
+                    error.message;
+
+            }
+            finally {
+
+                button.disabled =
+                    false;
+
+            }
+
+        }
+    );
+
+})();
