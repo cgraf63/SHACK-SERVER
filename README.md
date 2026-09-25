@@ -36,7 +36,9 @@ SHACK-SERVER transforms fragmented information into a unified, explainable knowl
 >
 > It is an **Amateur Radio Intelligence Platform.**
 
-SHACK-SERVER runs on a raspberry Pi 4 with 1GB Ram or higher
+SHACK-SERVER runs on a raspberry Pi 4 with 1GB Ram or higher. Transceivers and SDR are directly connected to the raspberry PI.
+Access to the PI is achieved using http witin the lan or https over the wan. On the router you need to open just 1 port: 443. 
+As an alternative you can secure the https using cloudflare.
 
 <img width="1896" height="1002" alt="image" src="https://github.com/user-attachments/assets/ca9f4a2f-af58-4ebb-9e4b-99c063e7a1ae" />
 
