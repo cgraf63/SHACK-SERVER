@@ -1085,12 +1085,144 @@ setFrequencyB(frequency: number): void {
         this.mode = normalizedMode;
     }
 
+    private sleep(ms: number): Promise<void> {
+        return new Promise(
+            resolve => setTimeout(resolve, ms)
+        );
+    }
+
+    /*
+        Wartet auf die naechste CAT-Antwort, die mit dem
+        gegebenen Prefix beginnt (z. B. "AC").
+        Gibt null zurueck bei Timeout.
+    */
+    private queryCat(
+        prefix: string,
+        timeoutMs = 3000
+    ): Promise<string | null> {
+
+        return new Promise(resolve => {
+
+            let buffer = "";
+
+            const cleanup = () => {
+
+                this.port.removeListener(
+                    "data",
+                    onData
+                );
+
+                clearTimeout(timer);
+
+            };
+
+            const onData = (data: Buffer) => {
+
+                buffer += data.toString("ascii");
+
+                const index =
+                    buffer.indexOf(prefix);
+
+                if (index === -1) {
+                    return;
+                }
+
+                const end =
+                    buffer.indexOf(";", index);
+
+                if (end === -1) {
+                    return;
+                }
+
+                const response =
+                    buffer.slice(index, end + 1);
+
+                cleanup();
+                resolve(response);
+
+            };
+
+            const timer = setTimeout(() => {
+
+                cleanup();
+                resolve(null);
+
+            }, timeoutMs);
+
+            this.port.on("data", onData);
+
+        });
+
+    }
+
+    /*
+        Sicherheit vor jedem Senden:
+        Tuner starten, warten, Status lesen (AC;).
+        Nur Tuner ON (Antwort beginnt mit "AC01")
+        laesst Senden zu.
+    */
+    async ensureTunerReady(): Promise<boolean> {
+
+        if (!this.port.isOpen) {
+            return false;
+        }
+
+        console.log("FTDX10: tuner safety check");
+
+        /*
+            Kein erneutes Tunen hier: Die Route (/radio/cw-memory)
+            ruft bereits tune() auf. Wir pruefen nur den Status.
+        */
+
+        const response =
+            await this.queryCat("AC", 3000);
+
+        if (response === null) {
+
+            console.error(
+                "FTDX10: tuner status timeout, blocking transmit"
+            );
+
+            return false;
+
+        }
+
+        const status =
+            response.replace(/;$/, "").trim();
+
+        console.log("FTDX10: tuner status:", status);
+
+        if (status.startsWith("AC01")) {
+            return true;
+        }
+
+        return false;
+
+    }
+
     async playCwMemory(
         memory: number
     ): Promise<boolean> {
 
         if (!this.port.isOpen) {
             return false;
+        }
+
+        /*
+            Sicherheits-Check: Nur senden, wenn der
+            Tuner bereit ist (SWR im Rahmen).
+        */
+        const tunerOk =
+            await this.ensureTunerReady();
+
+        if (!tunerOk) {
+
+            console.error(
+                "FTDX10: CW memory blocked, tuner not ready"
+            );
+
+            return false;
+
         }
 
         const commands: Record<number, string> = {

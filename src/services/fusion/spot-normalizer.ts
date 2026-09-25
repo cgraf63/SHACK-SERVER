@@ -959,6 +959,9 @@ EH:"es",
     // Chile
     CE:"cl",
 
+    //Costa Rica
+    TI:"cr", 
+
     // Uruguay
     CX:"uy",
 
@@ -1091,6 +1094,7 @@ EH:"es",
 
     // Japan
     
+    JA:"jp",
     JB:"jp",
     JC:"jp",
     JD:"jp",

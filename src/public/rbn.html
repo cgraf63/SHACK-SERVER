@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHACK-SERVER — RBN</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/rbn.css">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+</head>
+
+<body>
+
+<main style="max-width:1100px;margin:30px auto;padding:0 20px">
+
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px">
+        <a href="/index.html" class="rbn-back-link">&larr; Dashboard</a>
+        <h1 style="font-size:20px;margin:0">RBN &amp; MEMORY</h1>
+    </div>
+
+    <!-- ===== OBEN: Memory-Buttons (2x5) + Frequenz/Mode ===== -->
+    <section class="rbn-memory-section">
+
+        <div style="display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap">
+            <h2 style="margin:0">TRANSCEIVER MEMORY</h2>
+
+            <!-- Frequenz-Eingabe + Mode-Anzeige: gefuellt aus CAT,
+                 Aenderung geht an den TRX -->
+            <div style="display:flex;align-items:flex-start;gap:8px;margin-left:auto">
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+                    <input
+                        id="trx-frequency"
+                        type="text"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        style="
+                            width:200px;
+                            background:#07161c;
+                            border:1px solid var(--border,#284650);
+                            border-radius:6px;
+                            color:var(--cyan,#00d9ff);
+                            font-size:26px;
+                            font-weight:800;
+                            font-variant-numeric:tabular-nums;
+                            text-align:right;
+                            padding:4px 10px;
+                        "
+                    >
+                    <div id="trx-mode"
+                        style="
+                            font-size:12px;
+                            font-weight:700;
+                            letter-spacing:.14em;
+                            color:var(--muted,#718d98);
+                            padding-right:12px;
+                            min-height:15px;
+                        "
+                    >&nbsp;</div>
+                </div>
+                <span style="font-size:14px;color:var(--muted)">MHz</span>
+            </div>
+        </div>
+
+        <div class="memory-panel-page">
+
+            <div class="memory-row">
+                <span class="memory-label">CW</span>
+                <div class="memory-buttons">
+                    <button type="button" class="memory-button cw-memory">1</button>
+                    <button type="button" class="memory-button cw-memory">2</button>
+                    <button type="button" class="memory-button cw-memory">3</button>
+                    <button type="button" class="memory-button cw-memory">4</button>
+                    <button type="button" class="memory-button cw-memory">5</button>
+                </div>
+            </div>
+
+            <div class="memory-row">
+                <span class="memory-label">SSB</span>
+                <div class="memory-buttons">
+                    <button type="button" class="memory-button ssb-memory">1</button>
+                    <button type="button" class="memory-button ssb-memory">2</button>
+                    <button type="button" class="memory-button ssb-memory">3</button>
+                    <button type="button" class="memory-button ssb-memory">4</button>
+                    <button type="button" class="memory-button ssb-memory">5</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="cw-memory-status"
+            style="
+                margin-top:10px;
+                font-size:13px;
+                font-weight:600;
+                min-height:18px;
+            "
+        >&nbsp;</div>
+    </section>
+
+    <!-- ===== UNTEN: RBN ===== -->
+    <section class="rbn-section">
+
+        <div class="rbn-title-inline">
+            <h2>RBN SPOTS</h2>
+            <button
+                id="rbn-map-btn"
+                class="rbn-map-button"
+                type="button"
+                title="Show RBN Spotters on map"
+            >&#128506; MAP</button>
+        </div>
+
+        <div id="rbn-content" class="rbn-inline-content">
+            Loading...
+        </div>
+
+    </section>
+
+</main>
+
+<script src="js/system-status.js"></script>
+<script src="js/station.js"></script>
+<script src="/js/bandplan-data.js"></script>
+<script src="/js/bandplan.js"></script>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="js/rbn.js"></script>
+
+<script>
+// RBN auf dieser Seite ohne Popup: direkt laden + alle 5s refreshen
+window.addEventListener("componentsLoaded", () => {});
+
+window.addEventListener("load", async () => {
+
+    await loadRbnData();
+
+    setInterval(loadRbnData, 5000);
+
+});
+</script>
+
+<script>
+// TRX-Frequenz: Anzeige aus /api/radio (Hz), Schreiben an /api/radio/tune (Hz)
+(() => {
+
+    const input = document.getElementById("trx-frequency");
+    const modeEl = document.getElementById("trx-mode");
+    if (!input) return;
+
+    let pollTimer = null;
+
+    function displayFromHz(hz) {
+
+        return (hz / 1e6).toFixed(6);   // 28.055000
+
+    }
+
+    function hzFromDisplay(text) {
+
+        const mhz = Number(String(text).replace(",", ".").trim());
+
+        if (!Number.isFinite(mhz) || mhz <= 0) return null;
+
+        return Math.round(mhz * 1e6);
+
+    }
+
+    async function refreshDisplay() {
+
+        // Nicht ins Tippfenster greifen:
+        if (document.activeElement === input) return;
+
+        try {
+
+            const response = await fetch("/api/radio", {
+                cache: "no-store"
+            });
+
+            if (!response.ok) return;
+
+            const data = await response.json();
+
+            const hz = Number(data.frequency);
+
+            if (
+                Number.isFinite(hz) &&
+                hz > 0 &&
+                document.activeElement !== input
+            ) {
+                input.value = displayFromHz(hz);
+            }
+
+            if (modeEl) {
+                modeEl.textContent =
+                    String(data.mode || "").trim() || "\u00a0";
+            }
+
+        }
+        catch (error) {
+
+            console.error("TRX frequency read failed:", error);
+
+        }
+
+    }
+
+    input.addEventListener("focus", () => {
+
+        // Polling pausieren, solange getippt wird:
+        if (pollTimer) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+        }
+
+    });
+
+    input.addEventListener("keydown", event => {
+
+        if (event.key === "Enter") {
+            event.preventDefault();
+            input.blur();   // loest change + blur aus
+        }
+
+    });
+
+    input.addEventListener("change", async () => {
+
+        const hz = hzFromDisplay(input.value);
+
+        if (hz === null) {
+            await refreshDisplay();     // ungueltige Eingabe -> zuruecksetzen
+            return;
+        }
+
+        try {
+
+            const response = await fetch("/api/radio/tune", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    frequency: hz,
+                    mode: "CW-L"
+                })
+            });
+
+            if (!response.ok) {
+                console.error("Tune failed:", await response.text());
+            }
+
+        }
+        catch (error) {
+
+            console.error("Tune request failed:", error);
+
+        }
+        finally {
+
+            await refreshDisplay();     // echte Frequenz vom TRX zuruecklesen
+
+        }
+
+    });
+
+    input.addEventListener("blur", () => {
+
+        if (!pollTimer) {
+            pollTimer = setInterval(refreshDisplay, 2000);
+        }
+
+        refreshDisplay();
+
+    });
+
+    refreshDisplay();
+    pollTimer = setInterval(refreshDisplay, 2000);
+
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,127 @@
+:root{
+  --cyan:#00d9ff;
+  --pink:#ff4fd8;
+  --violet:#b56cff;
+}
+body{
+  background:#061016;
+  color:#d9e9ee;
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+h2{
+  font-size:12px;
+  letter-spacing:.16em;
+  color:var(--cyan);
+  margin:0 0 12px;
+}
+.rbn-back-link{
+  color:#7ceaff;
+  text-decoration:none;
+  font-size:13px;
+}
+.rbn-back-link:hover{text-shadow:0 0 10px rgba(0,217,255,.6)}
+
+.rbn-memory-section,.rbn-section{
+  background:rgba(10,26,33,.72);
+  border:1px solid rgba(0,217,255,.15);
+  border-radius:12px;
+  padding:24px;
+  margin-bottom:22px;
+}
+
+/* Memory-Buttons */
+.memory-panel-page{display:flex;flex-direction:column;gap:18px}
+.memory-row{display:flex;align-items:center;gap:18px}
+.memory-label{
+  width:44px;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.1em;
+  color:#7ceaff;
+}
+.memory-buttons{display:flex;gap:10px}
+.memory-button{
+  width:56px;
+  height:48px;
+  border-radius:8px;
+  font-size:18px;
+  font-weight:700;
+  color:#e3ccff;
+  background:rgba(181,108,255,.10);
+  border:1px solid rgba(181,108,255,.45);
+  cursor:pointer;
+  transition:all .15s ease;
+}
+.memory-button:hover{
+  color:#f4e9ff;
+  border-color:var(--violet);
+  background:rgba(181,108,255,.20);
+  box-shadow:0 0 16px rgba(181,108,255,.5);
+}
+.memory-button:active{
+  transform:scale(.94);
+  box-shadow:0 0 22px rgba(181,108,255,.7);
+}
+.ssb-memory{
+  color:#ffd9f5;
+  background:rgba(255,79,216,.08);
+  border-color:rgba(255,79,216,.45);
+}
+.ssb-memory:hover{
+  color:#fff0fa;
+  border-color:var(--pink);
+  background:rgba(255,79,216,.18);
+  box-shadow:0 0 16px rgba(255,79,216,.5);
+}
+
+/* RBN inline */
+.rbn-title-inline{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:14px;
+}
+.rbn-title-inline h2{margin:0}
+.rbn-map-button{
+  background:rgba(0,217,255,.08);
+  border:1px solid rgba(0,217,255,.45);
+  color:#7ceaff;
+  border-radius:6px;
+  padding:7px 14px;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+}
+.rbn-map-button:hover{
+  box-shadow:0 0 14px rgba(0,217,255,.4);
+}
+.rbn-inline-content{min-height:120px}
+
+/* RBN-Tabelle im Neon-Stil (ehem. Popup-Look, inline) */
+.rbn-table{
+  border:1px solid #23434d;
+  border-radius:8px;
+  overflow:hidden;
+  font-size:13px;
+}
+.rbn-table-header,.rbn-table-row{
+  display:grid;
+  grid-template-columns:1.2fr 1fr .6fr .6fr 1.2fr .8fr .7fr;
+  gap:8px;
+  padding:8px 12px;
+  align-items:center;
+}
+.rbn-table-header{
+  background:#0d232c;
+  color:#718d98;
+  font-size:10px;
+  letter-spacing:.1em;
+  font-weight:700;
+}
+.rbn-table-row{
+  border-top:1px solid #16333c;
+  color:#d9e9ee;
+  font-variant-numeric:tabular-nums;
+}
+.rbn-table-row:hover{background:rgba(0,217,255,.05)}
+.rbn-flag{width:18px;height:12px;vertical-align:middle;margin-right:5px}

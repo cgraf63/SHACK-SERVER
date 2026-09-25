@@ -1585,7 +1585,7 @@
 
     display:grid;
 
-    grid-template-columns:repeat(5,1fr);
+    grid-template-columns:repeat(4,1fr);
 
 }
 
@@ -3492,3 +3492,55 @@ D.sidebar.collapsed {
 
 }
 
+
+
+/* =========================================================
+   COMMAND STRIP V2 — farbige Info-Kacheln
+   ========================================================= */
+
+.command-strip .command-item{
+  flex-direction:column;
+  align-items:flex-start;
+  gap:6px;
+  padding:12px 18px;
+  border-radius:8px;
+  border:1px solid;
+}
+
+.command-strip .command-icon{font-size:18px}
+.command-strip .command-item span{color:rgba(255,255,255,.65);letter-spacing:.08em;font-size:10px}
+.command-strip .command-item strong{margin-top:0;font-size:15px}
+
+/* Best Opportunity — violett */
+.command-item.tile-opportunity{
+  background:rgba(181,108,255,.10);
+  border-color:rgba(181,108,255,.45);
+}
+.command-item.tile-opportunity strong{color:#d9b8ff;text-shadow:0 0 12px rgba(181,108,255,.5)}
+
+/* Best Band — gelb */
+.command-item.tile-band{
+  background:rgba(255,196,0,.08);
+  border-color:rgba(255,196,0,.40);
+}
+.command-item.tile-band strong{color:#ffe27a;text-shadow:0 0 12px rgba(255,196,0,.45)}
+
+/* Actual Propagation — cyan */
+.command-item.tile-propagation{
+  background:rgba(0,217,255,.08);
+  border-color:rgba(0,217,255,.40);
+}
+.command-item.tile-propagation strong{color:#7ceaff;text-shadow:0 0 12px rgba(0,217,255,.45)}
+
+/* Station Ready — gruen */
+.command-item.tile-station{
+  background:rgba(88,227,145,.08);
+  border-color:rgba(88,227,145,.40);
+}
+.command-item.tile-station strong{color:#8affbd;text-shadow:0 0 12px rgba(88,227,145,.45)}
+
+
+/* =========================================================
+   COMMAND STRIP V3 — ohne Icons
+   ========================================================= */
+.command-strip .command-icon{display:none}

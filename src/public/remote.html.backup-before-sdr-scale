@@ -676,9 +676,9 @@
             </div>
 
             <div class="sdr-frequency-scale">
-                <span id="sdr-scale-start">--.--- MHz</span>
-                <span id="sdr-scale-boundary">--.--- MHz</span>
-                <span id="sdr-scale-end">--.--- MHz</span>
+                <span>14.000 MHz</span>
+                <span>14.175 MHz</span>
+                <span>14.350 MHz</span>
             </div>
 
         </div>

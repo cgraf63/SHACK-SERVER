@@ -6,19 +6,23 @@ let rbnRefreshTimer = null;
 
 function setupRbn() {
 
+    /*
+        rbn-btn ist jetzt ein Link auf /rbn.html.
+        Kein Popup-Handler mehr noetig - Link
+        navigiert normal. Fallback: falls doch
+        noch ein Button existiert, Popup.
+    */
+
     const rbnButton =
         document.getElementById("rbn-btn");
 
     if (!rbnButton) {
-
-        console.warn(
-            "RBN button not found"
-        );
-
         return;
-
     }
 
+    if (rbnButton.tagName === "A") {
+        return;
+    }
 
     rbnButton.addEventListener(
         "click",
@@ -32,7 +36,6 @@ function setupRbn() {
     );
 
 }
-
 
 function createRbnModal() {
 

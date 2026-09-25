@@ -85,26 +85,6 @@ function updateCwMemoryTooltips(cwMemories) {
 }
 
 
-function setCwMemoryStatus(message, isError) {
-
-    const el =
-        document.getElementById(
-            "cw-memory-status"
-        );
-
-    if (!el) {
-        return;
-    }
-
-    el.textContent =
-        message;
-
-    el.style.color =
-        isError ? "#ff5252" : "#00c853";
-
-}
-
-
 let cwMemoryBusy = false;
 
 
@@ -175,39 +155,6 @@ document.addEventListener(
 
             const data =
                 await response.json();
-
-            if (!response.ok) {
-
-                setCwMemoryStatus(
-                    data.error ||
-                    `HTTP ${response.status}`,
-                    true
-                );
-
-                throw new Error(
-                    data.error ||
-                    `HTTP ${response.status}`
-                );
-
-            }
-
-            if (data.success === false) {
-
-                setCwMemoryStatus(
-                    "Tuner-Check fehlgeschlagen \u2014 Nachricht NICHT gesendet",
-                    true
-                );
-
-                throw new Error(
-                    "Tuner check failed - CW message NOT sent"
-                );
-
-            }
-
-            setCwMemoryStatus(
-                `CW Memory ${memory} gesendet`,
-                false
-            );
 
             if (!response.ok) {
 
