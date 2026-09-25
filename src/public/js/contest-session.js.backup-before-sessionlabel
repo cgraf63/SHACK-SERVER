@@ -778,54 +778,6 @@ function renderContestSession() {
 
 
     /*
-     * Session label: contest name + session ID
-     * next to the status badge.
-     */
-
-    const sessionLabel =
-        contestSessionElement(
-            "contest-session-label"
-        ) ||
-        (() => {
-
-            if (!statusElement || !statusElement.parentElement) {
-                return null;
-            }
-
-            const label =
-                document.createElement(
-                    "span"
-                );
-
-            label.id =
-                "contest-session-label";
-
-            label.className =
-                "contest-session-label";
-
-            statusElement.insertAdjacentElement(
-                "afterend",
-                label
-            );
-
-            return label;
-
-        })();
-
-    if (sessionLabel) {
-
-        sessionLabel.textContent =
-            session && session.id
-                ? `#${session.id} · ${session.name || ""}`.trim()
-                : "";
-
-        sessionLabel.hidden =
-            !(session && session.id);
-
-    }
-
-
-    /*
      * Session information
      *
      * Active Operator is handled separately.

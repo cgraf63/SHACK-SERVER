@@ -1193,7 +1193,13 @@ function updateContestBandStatistics(qsos) {
         points[band] = 0;
     });
 
+    const contestId =
+        String(window.contestId || "999").trim();
+
     qsos
+        .filter(qso =>
+            String(qso.contest_id ?? "").trim() === contestId
+        )
         .forEach(qso => {
 
             const band =

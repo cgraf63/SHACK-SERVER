@@ -430,6 +430,44 @@
                 <div class="contest-stat-grid">
 
 
+                    <div class="contest-stat">
+
+                        <span>
+                            Band
+                        </span>
+
+                        <strong id="contest-band">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="contest-stat">
+
+                        <span>
+                            Mode
+                        </span>
+
+                        <strong id="contest-mode">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="contest-stat">
+
+                        <span>
+                            Frequency
+                        </span>
+
+                        <strong id="contest-frequency">
+                            —
+                        </strong>
+
+                    </div>
+
 
 
 

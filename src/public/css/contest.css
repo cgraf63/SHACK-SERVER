@@ -1761,3 +1761,32 @@ body:has(#contest-session) #utcClock {
     border-color: rgba(255, 82, 82, 0.70);
     color: #ffffff;
 }
+
+
+/*
+ * Contest session label: turquoise-violet gradient text.
+ */
+
+.contest-session-label {
+
+    margin-left: 0.75rem;
+
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    letter-spacing: 0.02em;
+
+    background: linear-gradient(
+        90deg,
+        #40e0d0 0%,
+        #8a7cff 55%,
+        #c06cff 100%
+    );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+
+}
