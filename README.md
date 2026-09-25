@@ -36,7 +36,7 @@ SHACK-SERVER transforms fragmented information into a unified, explainable knowl
 >
 > It is an **Amateur Radio Intelligence Platform.**
 
-# SHACK-SERVER runs on a raspberry Pi 4 with 1GB Ram or higher
+SHACK-SERVER runs on a raspberry Pi 4 with 1GB Ram or higher
 
 <img width="1896" height="1002" alt="image" src="https://github.com/user-attachments/assets/ca9f4a2f-af58-4ebb-9e4b-99c063e7a1ae" />
 
