@@ -734,9 +734,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             <td>
                                 ${escapeHtml(
-                                    (qso.qso_date || "") +
-                                    " " +
-                                    (qso.time_on_utc || "")
+                                    qso.time_on_utc || ""
                                 )}
                             </td>
 

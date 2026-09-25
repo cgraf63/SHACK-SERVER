@@ -1,8 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-        initCabrilloExport();
-
-
     const body =
         document.getElementById(
             "contest-qso-history-body"
@@ -63,111 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let sortField = "id";
 
     let sortDirection = "desc";
-
-
-
-    /*
-     * Cabrillo export for the selected
-     * contest session.
-     */
-    function initCabrilloExport() {
-
-        const sessionSelect =
-            document.getElementById(
-                "contest-history-session"
-            );
-
-        if (!sessionSelect) {
-            return;
-        }
-
-        if (document.getElementById("contest-history-cabrillo")) {
-            return;
-        }
-
-        const button =
-            document.createElement("button");
-
-        button.type = "button";
-        button.id = "contest-history-cabrillo";
-        button.className = "contest-session-select";
-        button.textContent = "EXPORT CABRILLO";
-
-        button.addEventListener("click", async () => {
-
-            const sessionId = sessionSelect.value;
-
-            if (!sessionId) {
-                alert("Please select a session first.");
-                return;
-            }
-
-            button.disabled = true;
-
-            try {
-
-                const response =
-                    await fetch(
-                        "/api/contests/session/" + sessionId + "/cabrillo",
-                        { cache: "no-store" }
-                    );
-
-                if (!response.ok) {
-                    throw new Error("HTTP " + response.status);
-                }
-
-                const text = await response.text();
-
-                function headerValue(name) {
-
-                    for (const line of text.split("\n")) {
-
-                        if (line.startsWith(name + ":")) {
-                            return line.slice(name.length + 1).trim();
-                        }
-
-                    }
-
-                    return "";
-
-                }
-
-                const callsign =
-                    headerValue("CALLSIGN").replace(/\s+/g, "-") || "station";
-
-                const contest =
-                    headerValue("CONTEST").replace(/\s+/g, "-") || "contest";
-
-                const blob = new Blob([text], { type: "text/plain" });
-
-                const url = URL.createObjectURL(blob);
-
-                const link = document.createElement("a");
-
-                link.href = url;
-                link.download = callsign + "-" + contest + ".log";
-
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                URL.revokeObjectURL(url);
-
-            }
-            catch (error) {
-
-                console.error("Cabrillo export:", error);
-                alert("Cabrillo export failed: " + error.message);
-
-            }
-            finally {
-                button.disabled = false;
-            }
-
-        });
-
-        sessionSelect.insertAdjacentElement("afterend", button);
-
-    }
 
 
     function escapeHtml(value) {
@@ -734,9 +626,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             <td>
                                 ${escapeHtml(
-                                    (qso.qso_date || "") +
-                                    " " +
-                                    (qso.time_on_utc || "")
+                                    qso.time_on_utc || ""
                                 )}
                             </td>
 

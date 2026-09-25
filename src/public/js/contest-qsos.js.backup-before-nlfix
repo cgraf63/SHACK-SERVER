@@ -158,8 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.loadContestQsos = loadContestQsos;
 
-});
-
+});\n
 /*
  * Cabrillo export button.
  */
