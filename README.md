@@ -38,6 +38,18 @@ SHACK-SERVER transforms fragmented information into a unified, explainable knowl
 
 <img width="1896" height="1002" alt="image" src="https://github.com/user-attachments/assets/ca9f4a2f-af58-4ebb-9e4b-99c063e7a1ae" />
 
+Super Easy to use Contest Console
+<img width="1890" height="1003" alt="image" src="https://github.com/user-attachments/assets/e48e78a9-9e3f-41e2-a906-6b38bd90a0a3" />
+
+Remote Control for Yaesu (including audio: Mic and Speaker) and CTR2-MIDI Integration Spectrum and Waterfall plus Remote Control over https !
+<img width="1916" height="1023" alt="image" src="https://github.com/user-attachments/assets/df0f8760-18f0-4cea-9812-695419125b43" />
+
+<img width="1916" height="1023" alt="image" src="https://github.com/user-attachments/assets/d09b5335-c229-483b-a5b9-99be8e16d3ff" />
+
+
+Fully blown internal SDR (SDR Receiver needed of Course)
+<img width="1907" height="1021" alt="image" src="https://github.com/user-attachments/assets/2669fc8c-9eed-4804-9768-0d2d8181cf65" />
+
 
 # Architecture
 
@@ -96,14 +108,3 @@ SHACK-SERVER transforms fragmented information into a unified, explainable knowl
             Dashboard      Telnet Server    REST API     WebSocket
 
 
-Super Easy to use Contest Console
-<img width="1890" height="1003" alt="image" src="https://github.com/user-attachments/assets/e48e78a9-9e3f-41e2-a906-6b38bd90a0a3" />
-
-Remote Control for Yaesu (including audio: Mic and Speaker) and CTR2-MIDI Integration Spectrum and Waterfall plus Remote Control over https !
-<img width="1916" height="1023" alt="image" src="https://github.com/user-attachments/assets/df0f8760-18f0-4cea-9812-695419125b43" />
-
-<img width="1916" height="1023" alt="image" src="https://github.com/user-attachments/assets/d09b5335-c229-483b-a5b9-99be8e16d3ff" />
-
-
-Fully blown internal SDR (SDR Receiver needed of Course)
-<img width="1907" height="1021" alt="image" src="https://github.com/user-attachments/assets/2669fc8c-9eed-4804-9768-0d2d8181cf65" />
