@@ -3554,9 +3554,7 @@ let sdrSocket = null;
         }
 
         spectrumContext.strokeStyle =
-            document.documentElement.dataset.skin === "grey-orange"
-                ? "#ff9d32"
-                : "#39b8e8";
+            "#ff8a18";
 
         spectrumContext.lineWidth = 1.2;
 
@@ -3588,93 +3586,38 @@ let sdrSocket = null;
             spectrumContext.save();
 
             spectrumContext.strokeStyle =
-                document.documentElement.dataset.skin === "grey-orange"
-                    ? "rgba(255, 157, 50, 0.38)"
-                    : "rgba(57, 184, 232, 0.38)";
+                "rgba(255, 138, 24, 0.38)";
 
             spectrumContext.lineWidth = 1;
 
-            for (
-                let i = 1;
-                i < currentBand.segments.length;
-                i++
-            ) {
+            if (currentBand.segments.length > 1) {
 
                 const boundary =
-                    currentBand.segments[i].start *
+                    currentBand.segments[1].start *
                     1000000;
 
                 if (
-                    boundary <= bandRange.start ||
-                    boundary >= bandRange.end
+                    boundary > bandRange.start &&
+                    boundary < bandRange.end
                 ) {
-                    continue;
-                }
 
-                const x =
-                    (
-                        (boundary - bandRange.start) /
-                        bandWidth
-                    ) *
-                    width;
+                    const x =
+                        (
+                            (boundary - bandRange.start) /
+                            bandWidth
+                        ) *
+                        width;
 
-                spectrumContext.beginPath();
-                spectrumContext.moveTo(
-                    Math.round(x) + 0.5,
-                    0
-                );
-                spectrumContext.lineTo(
-                    Math.round(x) + 0.5,
-                    height
-                );
-                spectrumContext.stroke();
-
-                /*
-                 * Labels: mode left and right
-                 * of the boundary, same colour
-                 * as the line.
-                 */
-                spectrumContext.fillStyle =
-                    document.documentElement.dataset.skin === "grey-orange"
-                        ? "rgba(255, 157, 50, 0.85)"
-                        : "rgba(57, 184, 232, 0.85)";
-
-                spectrumContext.font =
-                    "9px monospace";
-
-                spectrumContext.textBaseline =
-                    "top";
-
-                const leftLabel =
-                    currentBand.segments[i - 1].mode ||
-                    "";
-
-                const rightLabel =
-                    currentBand.segments[i].mode ||
-                    "";
-
-                if (leftLabel) {
-
-                    spectrumContext.textAlign =
-                        "right";
-
-                    spectrumContext.fillText(
-                        leftLabel,
-                        x - 3,
-                        3
+                    spectrumContext.beginPath();
+                    spectrumContext.moveTo(
+                        Math.round(x) + 0.5,
+                        0
                     );
-                }
-
-                if (rightLabel) {
-
-                    spectrumContext.textAlign =
-                        "left";
-
-                    spectrumContext.fillText(
-                        rightLabel,
-                        x + 3,
-                        3
+                    spectrumContext.lineTo(
+                        Math.round(x) + 0.5,
+                        height
                     );
+                    spectrumContext.stroke();
                 }
             }
 
@@ -4125,7 +4068,6 @@ let sdrSocket = null;
             drawWaterfall(data);
             updateVfoMarker();
             updateSdrFrequency();
-            updateSdrBandScale();
 
 
             if (
@@ -4239,9 +4181,6 @@ let sdrSocket = null;
 
             sdrRadioState =
                 await response.json();
-
-            updateSdrBandScale();
-            updateVfoMarker();
 
         } catch (error) {
 
