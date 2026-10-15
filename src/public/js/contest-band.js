@@ -1083,6 +1083,16 @@ contestQrzCountry =
                 qrz.name || "";
         }
 
+        const countryInput =
+            document.getElementById(
+                "contest-country"
+            );
+
+        if (countryInput) {
+            countryInput.value =
+                qrz.country || "";
+        }
+
         if (locatorInput) {
             locatorInput.value =
                 qrz.locator || "";
@@ -2095,6 +2105,35 @@ function setupContestQsoLogger() {
         "click",
         logContestQso
     );
+
+    const callInput =
+        document.getElementById(
+            "contest-call"
+        );
+
+    if (callInput) {
+
+        callInput.addEventListener(
+            "change",
+            () => {
+
+                const call =
+                    callInput.value
+                        .trim()
+                        .toUpperCase();
+
+                if (call) {
+
+                    lookupContestSpotCallsign(
+                        call
+                    );
+
+                }
+
+            }
+        );
+
+    }
 
 }
 
