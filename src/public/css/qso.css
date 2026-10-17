@@ -519,3 +519,44 @@
 .qso-source strong {
     font-size: 11px;
 }
+
+
+/* QSO form: keep the Send QSL label beside its checkbox. */
+.qso-checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qso-checkbox-field label {
+    display: inline;
+    margin: 0;
+}
+
+.qso-checkbox-field input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    flex: 0 0 auto;
+}
+
+
+/* QSO PATCH: inline SEND QSL checkbox */
+.qso-field:has(#qso-qsl-sent) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 24px;
+}
+
+.qso-field:has(#qso-qsl-sent) label {
+    display: inline-block;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.qso-field:has(#qso-qsl-sent) input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    flex: 0 0 auto;
+}

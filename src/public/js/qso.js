@@ -327,10 +327,6 @@ const formQslSent =
     Number(editQso?.qsl_sent) === 1 ||
     editQso?.qsl_sent === true;
 
-const formQslReceived =
-    Number(editQso?.qsl_received) === 1 ||
-    editQso?.qsl_received === true;
-
 const formName =
     editQso
         ? (editQso.name || "")
@@ -602,18 +598,7 @@ const formMyGrid =
                     </div>
 
 
-                    <div class="qso-field">
-
-                        <label>
-                            QSL RECEIVED
-                        </label>
-
-                        <input
-                            id="qso-qsl-received"
-                            type="checkbox"
-                            ${formQslReceived ? "checked" : ""}>
-
-                    </div>
+                    
 
 
                 </div>
