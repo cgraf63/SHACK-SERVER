@@ -1421,6 +1421,31 @@ function renderLiveSpots() {
                 row
             );
 
+            /* CLICK CELLS TO TUNE RADIO */
+            const tuneCellsButton =
+                row.querySelector(".tune-btn");
+
+            if (tuneCellsButton) {
+                // Columns: CALL=0, FREQ=1 ... SCORE=8, ACTIONS=9.
+                for (let i = 1; i <= 8; i++) {
+                    const cell = row.cells[i];
+                    if (!cell) continue;
+
+                    cell.style.cursor = "pointer";
+                    cell.title = "Click to tune radio";
+
+                    cell.addEventListener("click", event => {
+                        // Do not interfere with buttons or other controls.
+                        if (event.target.closest("button, a, input, select")) {
+                            return;
+                        }
+
+                        tuneCellsButton.click();
+                    });
+                }
+            }
+
+
 
 /*
     View details button
