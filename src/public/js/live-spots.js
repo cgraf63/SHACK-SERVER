@@ -181,7 +181,8 @@ function sortSpots(spots) {
         "distance",
         "azimuth",
         "age",
-        "confidence"
+        "confidence",
+        "score"
     ]);
 
 
@@ -189,10 +190,14 @@ function sortSpots(spots) {
         (a, b) => {
 
             let valueA =
-                a[sortField];
+                sortField === "score"
+                    ? calculateSpotScore(a)
+                    : a[sortField];
 
             let valueB =
-                b[sortField];
+                sortField === "score"
+                    ? calculateSpotScore(b)
+                    : b[sortField];
 
 
             /*
@@ -1377,8 +1382,8 @@ function renderLiveSpots() {
 
 
 
-                <td class="confidence">
-                    ${spot.confidence}%
+                <td class="score" title="Berechneter DX-Score">
+                    ${Math.round(calculateSpotScore(spot))}
                 </td>
 
 
@@ -1390,7 +1395,7 @@ function renderLiveSpots() {
 	data-action="details"
 	data-call="${spot.call}"
 	title="View details">
-        👀
+        VIEW
     </button>
 
     <button
@@ -1399,13 +1404,13 @@ function renderLiveSpots() {
     data-mode="${spot.mode}"
     data-call="${spot.call}"
     title="Tune radio">
-    🎯
+    TUNE
 </button>
 
 <button
     class="spot-btn qso-btn"
     title="Log QSO">
-    📝
+    LOG
 </button>
 
 
@@ -1826,6 +1831,96 @@ if (tuneButton) {
         
                
 
+
+function calculateSpotScore(spot) {
+
+    let score = 0;
+    const worked = getWorkedStatus(spot);
+
+    if (worked === "new") {
+        score += 100;
+    } else if (worked === "country") {
+        score += 0;
+    } else if (worked === "station") {
+        score -= 20;
+    } else if (worked === "country-band") {
+        score += 60;
+    } else if (worked === "station-band") {
+        score -= 80;
+    }
+
+    if (
+        spot.countryCode &&
+        workedStatus.countries.has(
+            spot.countryCode.toLowerCase()
+        ) &&
+        !workedStatus.countriesOnBand.has(
+            `${spot.countryCode.toLowerCase()}|${String(spot.band || "").toUpperCase()}`
+        )
+    ) {
+        score += 60;
+    }
+
+    if (
+        workedStatus.calls.has(
+            String(spot.call).trim().toUpperCase()
+        ) &&
+        !workedStatus.callsOnBand.has(
+            `${String(spot.call).trim().toUpperCase()}|${String(spot.band || "").toUpperCase()}`
+        )
+    ) {
+        score += 30;
+    }
+
+    if (worked === "new") {
+        score += 15;
+    }
+
+    if (
+        Array.isArray(spot.sources) &&
+        spot.sources.length >= 2
+    ) {
+        score += 20;
+    }
+
+    const confidence = Number(spot.confidence);
+
+    if (Number.isFinite(confidence)) {
+        score += Math.max(0, Math.min(100, confidence)) * 0.15;
+    }
+
+    const age = parseInt(
+        String(spot.age || "").replace(/[^0-9]/g, ""),
+        10
+    );
+
+    if (Number.isFinite(age)) {
+        if (age < 60) {
+            score += 15;
+        } else if (age < 180) {
+            score += 10;
+        } else if (age < 300) {
+            score += 5;
+        }
+    }
+
+    const distance = Number(spot.distance);
+
+    if (Number.isFinite(distance)) {
+        if (distance > 8000) {
+            score += 15;
+        } else if (distance > 5000) {
+            score += 11;
+        } else if (distance > 2000) {
+            score += 7;
+        } else {
+            score += 3;
+        }
+    }
+
+    return score;
+}
+
 function updateDxOpportunity() {
 
     const element =
@@ -1846,213 +1941,10 @@ function updateDxOpportunity() {
                     spot.call
             )
             .map(
-                spot => {
-
-                    let score = 0;
-
-                    const worked =
-                        getWorkedStatus(spot);
-
-
-                    /*
-                        Worked status
-                    */
-
-                    if (worked === "new") {
-
-                        score += 100;
-
-                    }
-                    else if (worked === "country") {
-
-                        score += 0;
-
-                    }
-                    else if (worked === "station") {
-
-                        score -= 20;
-
-                    }
-                    else if (worked === "country-band") {
-
-                        score += 60;
-
-                    }
-                    else if (worked === "station-band") {
-
-                        score -= 80;
-
-                    }
-
-
-                    /*
-                        New band
-                    */
-
-                    if (
-                        spot.countryCode &&
-                        workedStatus.countries.has(
-                            spot.countryCode.toLowerCase()
-                        ) &&
-                        !workedStatus.countriesOnBand.has(
-                            `${spot.countryCode.toLowerCase()}|${String(spot.band || "").toUpperCase()}`
-                        )
-                    ) {
-
-                        score += 60;
-
-                    }
-
-
-                    /*
-                        New station on band
-                    */
-
-                    if (
-                        workedStatus.calls.has(
-                            String(spot.call)
-                                .trim()
-                                .toUpperCase()
-                        ) &&
-                        !workedStatus.callsOnBand.has(
-                            `${String(spot.call).trim().toUpperCase()}|${String(spot.band || "").toUpperCase()}`
-                        )
-                    ) {
-
-                        score += 30;
-
-                    }
-
-
-                    /*
-                        New station
-                    */
-
-                    if (worked === "new") {
-
-                        score += 15;
-
-                    }
-
-
-                    /*
-                        Multi-cluster
-                    */
-
-                    if (
-                        Array.isArray(spot.sources) &&
-                        spot.sources.length >= 2
-                    ) {
-
-                        score += 20;
-
-                    }
-
-
-                    /*
-                        Confidence
-                    */
-
-                    const confidence =
-                        Number(
-                            spot.confidence
-                        );
-
-                    if (
-                        Number.isFinite(confidence)
-                    ) {
-
-                        score +=
-                            Math.max(
-                                0,
-                                Math.min(
-                                    100,
-                                    confidence
-                                )
-                            ) * 0.15;
-
-                    }
-
-
-                    /*
-                        Spot age
-                    */
-
-                    const age =
-                        parseInt(
-                            String(
-                                spot.age || ""
-                            ).replace(
-                                /[^0-9]/g,
-                                ""
-                            ),
-                            10
-                        );
-
-                    if (Number.isFinite(age)) {
-
-                        if (age < 60) {
-
-                            score += 15;
-
-                        }
-                        else if (age < 180) {
-
-                            score += 10;
-
-                        }
-                        else if (age < 300) {
-
-                            score += 5;
-
-                        }
-
-                    }
-
-
-                    /*
-                        Distance
-                    */
-
-                    const distance =
-                        Number(
-                            spot.distance
-                        );
-
-                    if (
-                        Number.isFinite(distance)
-                    ) {
-
-                        if (distance > 8000) {
-
-                            score += 15;
-
-                        }
-                        else if (distance > 5000) {
-
-                            score += 11;
-
-                        }
-                        else if (distance > 2000) {
-
-                            score += 7;
-
-                        }
-                        else {
-
-                            score += 3;
-
-                        }
-
-                    }
-
-
-                    return {
-                        spot,
-                        score
-                    };
-
-                }
+                spot => ({
+                    spot,
+                    score: calculateSpotScore(spot)
+                })
             )
             .sort(
                 (a, b) =>
