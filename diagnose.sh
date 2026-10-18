@@ -62,18 +62,22 @@ fi
 section "4. PM2 / SHACK-SERVER"
 PM2_STATUS=$(pm2 jlist 2>/dev/null | python3 -c "
 import json,sys
-try:
-    apps = json.load(sys.stdin)
-    for a in apps:
-        if a['name']=='shack-server':
-            print(a['pm2_env']['status'], a['pm2_env']['restarts'])
-except: pass
+apps = json.load(sys.stdin)
+for a in apps:
+    if a.get('name') == 'shack-server':
+        env = a.get('pm2_env') or {}
+        status = env.get('status') or 'unknown'
+        restarts = env.get('restart_time')
+        if restarts is None:
+            restarts = 0
+        print(status, restarts)
+        break
 " 2>/dev/null)
 STATUS=$(echo "$PM2_STATUS" | awk '{print $1}')
 RESTARTS=$(echo "$PM2_STATUS" | awk '{print $2}')
-[ "$STATUS" = "online" ] && ok "PM2 status: online (restarts: $RESTARTS)" || fail "PM2 status: $STATUS"
+[ "$STATUS" = "online" ] && ok "PM2 status: online (restarts: ${RESTARTS:-unknown})" || fail "PM2 status: ${STATUS:-unknown}"
 # Hohe Restart-Zahl = Crash-Loop
-if [ -n "$RESTARTS" ] && [ "$RESTARTS" -gt 300 ]; then
+if [[ "$RESTARTS" =~ ^[0-9]+$ ]] && [ "$RESTARTS" -gt 300 ]; then
     warn "$RESTARTS Restarts -> haeufige Crashes? (pm2 logs pruefen)"
 fi
 
