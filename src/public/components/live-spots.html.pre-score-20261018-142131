@@ -1,0 +1,206 @@
+<div class="card live-card">
+
+    <div class="card-header">
+        <h2>LIVE SPOT ACTIVITY</h2>
+    </div>
+
+
+    <div class="spot-filters">
+
+
+        <div class="spot-search">
+
+            <span class="search-icon">
+                🔍
+            </span>
+
+            <input
+                id="spotSearch"
+                type="text"
+                placeholder="Search..."
+            >
+
+        </div>
+
+
+
+        <select id="bandFilter">
+            <option value="">
+                ALL BANDS
+            </option>
+        </select>
+
+
+
+        <div
+            id="modeFilter"
+            class="mode-filter"
+        >
+            <button
+                type="button"
+                id="modeFilterButton"
+                class="mode-filter-button"
+            >
+                ALL MODES
+            </button>
+
+            <div
+                id="modeFilterMenu"
+                class="mode-filter-menu"
+                hidden
+            ></div>
+        </div>
+
+
+
+        <select id="countryFilter">
+            <option value="">
+                ALL COUNTRIES
+            </option>
+        </select>
+
+
+
+        <select id="sourceFilter">
+            <option value="">
+                ALL SOURCES
+            </option>
+        </select>
+
+
+
+        <select id="confidenceFilter">
+
+            <option value="">
+                ALL SCORE
+            </option>
+
+            <option value="80">
+                ≥ 80%
+            </option>
+
+            <option value="70">
+                ≥ 70%
+            </option>
+
+            <option value="60">
+                ≥ 60%
+            </option>
+
+        </select>
+
+	<button id="resetView" class="reset-button">
+    	↺ RESET FILTERS
+	</button>
+
+	<button id="getNewSpots" class="reset-button">
+    	↓ GET NEW SPOTS
+	</button>
+
+    </div>
+
+
+<div class="live-spots-container">
+
+    <div class="live-spots-table-area">
+
+    <table class="live-table">
+
+
+        <thead>
+
+            <tr>
+                <th data-sort="call">
+    <button
+        id="worked-help-btn"
+        class="worked-help-btn"
+        type="button"
+        title="Worked-Status">
+        ?
+    </button>
+
+    CALL <span class="sort-icon">↕</span>
+</th>
+
+                <th data-sort="frequency">
+                    FREQ <span class="sort-icon">↕</span>
+                </th>
+
+
+                <th data-sort="mode">
+                    MODE <span class="sort-icon">↕</span>
+                </th>
+	<th>
+    COMMENT
+</th>
+
+                <th data-sort="distance">
+                    DIST <span class="sort-icon">↕</span>
+                </th>
+
+
+                <th data-sort="azimuth">
+                    AZ <span class="sort-icon">↕</span>
+                </th>
+
+
+                <th>
+                    SOURCE
+                </th>
+
+
+                <th data-sort="age">
+                    AGE <span class="sort-icon">↕</span>
+                </th>
+
+
+                <th data-sort="confidence">
+                    SCORE <span class="sort-icon">↕</span>
+                </th>
+
+
+                <th>
+    		ACTIONS
+		</th>
+
+
+            </tr>
+
+        </thead>
+
+
+
+        <tbody id="spotTableBody">
+
+
+            <tr>
+
+                <td colspan="10">
+                    Waiting for data
+                </td>
+
+            </tr>
+
+
+        </tbody>
+
+
+    </table>
+
+    </div>
+
+    <input
+        id="liveSpotsSlider"
+        class="live-spots-slider"
+        type="range"
+        min="0"
+        max="0"
+        value="0"
+        step="1"
+        aria-label="Live spots navigation"
+    >
+
+</div>
+
+</div>
+

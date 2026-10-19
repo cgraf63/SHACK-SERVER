@@ -408,7 +408,7 @@ export class QRZService {
         const frequencyMHz =
             (
                 qso.frequency /
-                1_000_000
+                1_000
             ).toFixed(6);
 
 

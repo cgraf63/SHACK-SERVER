@@ -79,6 +79,9 @@ let contestBand =
 
 let contestSpots = [];
 
+/* Contest QSOs already worked in the current session, grouped by band. */
+let contestWorkedByBand = new Map();
+
 
 /*
  * Escape HTML for spot labels.
@@ -251,6 +254,55 @@ async function loadContestRadio() {
 
 
 /*
+ * Load the current session's contest QSOs and build a worked lookup.
+ * A station is WORKED only if its callsign was logged on this band
+ * in this contest session. The normal QSO log is deliberately not used.
+ */
+async function loadContestWorkedStatus() {
+
+    const sessionId = Number(
+        window.contestSessionId ||
+        window.contestSession?.id ||
+        0
+    );
+
+    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+        contestWorkedByBand = new Map();
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/contests/session/${sessionId}/qso?_=${Date.now()}`,
+            { cache: "no-store" }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const qsos = Array.isArray(data) ? data : [];
+        const worked = new Map();
+
+        for (const qso of qsos) {
+            const call = String(qso.call || "").trim().toUpperCase();
+            const bandValue = String(qso.band || "").trim().toLowerCase();
+            const band = bandValue.endsWith("m") ? bandValue : `${bandValue}m`;
+            if (!call || !band) continue;
+
+            if (!worked.has(band)) worked.set(band, new Set());
+            worked.get(band).add(call);
+        }
+
+        contestWorkedByBand = worked;
+    }
+    catch (error) {
+        console.error("Contest band worked-status loading failed:", error);
+    }
+}
+
+/*
  * Load live spots.
  */
 async function loadContestSpots() {
@@ -276,6 +328,7 @@ async function loadContestSpots() {
                 ? spots
                 : [];
 
+        await loadContestWorkedStatus();
         renderContestBand();
 
     }
@@ -646,7 +699,11 @@ item.style.setProperty(
 
             item.innerHTML = `
 
-                <span class="spot-dot spot-new"></span>
+                <span class="spot-dot ${
+                    contestWorkedByBand.get(contestBand)?.has(
+                        String(spot.call || "").trim().toUpperCase()
+                    ) ? "spot-worked" : "spot-new"
+                }"></span>
 
                 <span class="spot-label">
 
@@ -667,10 +724,15 @@ item.style.setProperty(
             `;
 
 
+            const isWorked = contestWorkedByBand
+                .get(contestBand)
+                ?.has(String(spot.call || "").trim().toUpperCase()) || false;
+
             item.title =
                 `${spot.call} · ` +
                 `${spot.frequency} kHz · ` +
-                `${spot.mode || ""}`;
+                `${spot.mode || ""} · ` +
+                `${isWorked ? "WORKED on this band" : "NEW on this band"}`;
 
 
 item.addEventListener(
