@@ -1,4 +1,6 @@
 import { Router, Request, Response } from "express";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 import {
     contestService,
@@ -7,6 +9,18 @@ import {
 
 
 const router = Router();
+
+/* Contest-only read access to the local CTY database. */
+router.get("/cty.dat", async (_req, res) => {
+    try {
+        const file = path.resolve(process.cwd(), "data", "cty.dat");
+        const content = await readFile(file, "utf8");
+        res.type("text/plain; charset=utf-8").send(content);
+    } catch (error) {
+        console.error("Contest CTY data unavailable:", error);
+        res.status(500).json({ error: "Contest CTY data unavailable" });
+    }
+});
 
 
 function parseId(

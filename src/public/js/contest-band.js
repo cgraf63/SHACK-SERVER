@@ -82,6 +82,124 @@ let contestSpots = [];
 /* Contest QSOs already worked in the current session, grouped by band. */
 let contestWorkedByBand = new Map();
 
+/*
+ * Contest-local CTY lookup.
+ * This does not change the shared spot API or global resolver.
+ */
+let contestCtyPromise = null;
+let contestCty = null;
+
+async function loadContestCtyDatabase() {
+    if (contestCty) return contestCty;
+    if (contestCtyPromise) return contestCtyPromise;
+
+    contestCtyPromise = (async () => {
+        const response = await fetch("/api/contests/cty.dat", {
+            cache: "no-store"
+        });
+        if (!response.ok) throw new Error(`CTY HTTP ${response.status}`);
+
+        const text = await response.text();
+        const exact = new Map();
+        const prefixes = [];
+        let entity = null;
+
+        function addAlias(alias, info) {
+            const value = String(alias || "").trim().toUpperCase();
+            if (!value) return;
+
+            if (value.startsWith("=")) {
+                exact.set(value.slice(1), info);
+            } else if (!value.includes("/")) {
+                prefixes.push({ prefix: value, info });
+            }
+        }
+
+        for (const line of text.split(/\r?\n/)) {
+            if (!line.trim()) continue;
+
+            if (!/^\s/.test(line) && line.includes(":")) {
+                const fields = line.split(":");
+                const name = (fields[0] || "").trim();
+                const continent = (fields[3] || "").trim().toUpperCase();
+                const primaryPrefix = (fields[7] || "").trim();
+
+                entity = {
+                    entity: name,
+                    continent
+                };
+
+                if (name && continent) addAlias(primaryPrefix, entity);
+                continue;
+            }
+
+            if (entity) {
+                const aliases = line.trim().replace(/;$/, "");
+                for (const alias of aliases.split(",")) {
+                    addAlias(alias, entity);
+                }
+            }
+        }
+
+        prefixes.sort((a, b) => b.prefix.length - a.prefix.length);
+        contestCty = { exact, prefixes };
+        return contestCty;
+    })();
+
+    try {
+        return await contestCtyPromise;
+    } catch (error) {
+        contestCtyPromise = null;
+        console.error("Contest CTY loading failed:", error);
+        return null;
+    }
+}
+
+function resolveContestCty(callsign) {
+    if (!contestCty || !callsign) return null;
+
+    const call = String(callsign).trim().toUpperCase();
+    if (!call) return null;
+
+    if (contestCty.exact.has(call)) return contestCty.exact.get(call);
+
+    // Portable calls: check components from left to right.
+    const components = call.split("/").filter(Boolean);
+    for (const component of components) {
+        const match = contestCty.prefixes.find(
+            entry => component.startsWith(entry.prefix)
+        );
+        if (match) return match.info;
+    }
+
+    return null;
+}
+
+function getContestSpotColorClass(callsign) {
+    const call = String(callsign || "").trim().toUpperCase();
+
+    // Worked status always wins over geographic classification.
+    if (contestWorkedByBand.get(contestBand)?.has(call)) {
+        return "spot-worked";
+    }
+
+    const ownCall = String(
+        window.contestSession?.station_callsign ||
+        window.stationConfig?.callsign ||
+        ""
+    ).trim().toUpperCase();
+
+    const own = resolveContestCty(ownCall);
+    const other = resolveContestCty(call);
+
+    // Unknown callsigns get a neutral fallback, not a guessed category.
+    if (!own || !other) return "spot-unknown";
+    if (own.entity === other.entity) return "spot-same-country";
+    if (own.continent === other.continent) return "spot-same-continent";
+    return "spot-other-continent";
+}
+
+
 
 /*
  * Escape HTML for spot labels.
@@ -329,6 +447,7 @@ async function loadContestSpots() {
                 : [];
 
         await loadContestWorkedStatus();
+        await loadContestCtyDatabase();
         renderContestBand();
 
     }
@@ -700,9 +819,7 @@ item.style.setProperty(
             item.innerHTML = `
 
                 <span class="spot-dot ${
-                    contestWorkedByBand.get(contestBand)?.has(
-                        String(spot.call || "").trim().toUpperCase()
-                    ) ? "spot-worked" : "spot-new"
+                    getContestSpotColorClass(spot.call)
                 }"></span>
 
                 <span class="spot-label">
