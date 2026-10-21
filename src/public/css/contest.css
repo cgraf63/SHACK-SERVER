@@ -555,7 +555,7 @@
     grid-template-columns: minmax(0, 65fr) minmax(420px, 35fr);
     grid-template-areas: "main right";
     gap: 12px;
-    align-items: start;
+    align-items: stretch;
     width: 100%;
 }
 
@@ -570,7 +570,7 @@
     flex-direction: column;
     gap: 12px;
     min-width: 0;
-    align-self: start;
+    align-self: stretch;
 }
 
 .contest-main > #contest-selection,
