@@ -1298,273 +1298,111 @@ display: none;
 
 
 /* =========================================================
- * QSO ENTRY - FINAL TWO ROW LAYOUT
+ * QSO ENTRY - compact two-row contest layout
  * ========================================================= */
-
 .contest-qso-entry {
     display: flex !important;
     flex-direction: column !important;
-    gap: 8px !important;
-
-    padding: 10px 12px !important;
+    gap: 6px !important;
+    padding: 8px 10px !important;
 }
-
-
-/* ---------------------------------------------------------
- * ROW 1
- * CALLSIGN | FREQUENCY | NAME FROM QRZ | COUNTRY
- * --------------------------------------------------------- */
 
 .contest-qso-row-main {
     display: grid !important;
-
-    grid-template-columns:
-        minmax(180px, 1.0fr)
-        minmax(130px, 0.65fr)
-        minmax(200px, 1.15fr)
-        minmax(150px, 0.85fr) !important;
-
-    gap: 10px !important;
-
+    grid-template-columns: minmax(180px, 1.25fr) minmax(115px, .8fr) minmax(105px, .65fr) minmax(155px, 1fr) !important;
+    gap: 8px !important;
     width: 100%;
 }
-
-
-/* ---------------------------------------------------------
- * ROW 2
- * Band | Mode | Locator | RST | Exchange | LOG QSO
- * --------------------------------------------------------- */
 
 .contest-qso-row-data {
     display: grid !important;
-
-    grid-template-columns:
-        auto
-        auto
-        minmax(150px, 1fr)
-        auto
-        minmax(170px, 1.1fr)
-        auto !important;
-
+    grid-template-columns: 65px 70px 88px minmax(105px, .8fr) minmax(270px, 2fr) auto !important;
     align-items: center !important;
-
-    gap: 10px !important;
-
+    gap: 8px !important;
     width: 100%;
 }
-
-
-/* ---------------------------------------------------------
- * Main-row fields
- * --------------------------------------------------------- */
 
 .contest-qso-row-main .contest-entry-field {
     display: flex !important;
     flex-direction: column !important;
-
     min-width: 0 !important;
 }
-
 
 .contest-qso-row-main .contest-entry-field label {
     display: block !important;
-
-    margin: 0 0 4px 0 !important;
-
+    margin: 0 0 3px !important;
     color: #00e5ff !important;
-
     font-size: 10px !important;
-    line-height: 14px !important;
+    line-height: 13px !important;
     font-weight: 600 !important;
-
     text-transform: uppercase !important;
 }
 
-
-.contest-qso-row-main input {
-    width: 100% !important;
+.contest-qso-entry input,
+.contest-qso-entry select {
     min-width: 0 !important;
-
-    height: 34px !important;
+    width: 100%;
+    height: 32px !important;
     box-sizing: border-box !important;
-}
-
-
-/* ---------------------------------------------------------
- * Second row: labels NEXT TO fields
- * --------------------------------------------------------- */
-
-.contest-qso-row-data .contest-entry-inline {
-    display: flex !important;
-
-    flex-direction: row !important;
-
-    align-items: center !important;
-
-    gap: 5px !important;
-
-    min-width: 0 !important;
-}
-
-
-.contest-qso-row-data .contest-entry-inline > label {
-    display: inline-block !important;
-
-    margin: 0 !important;
-
-    white-space: nowrap !important;
-
-    color: #ffffff !important;
-
-    font-size: 13px !important;
-    font-weight: 400 !important;
-
-    text-transform: none !important;
-}
-
-
-/* ---------------------------------------------------------
- * Second-row controls
- * --------------------------------------------------------- */
-
-.contest-qso-row-data input,
-.contest-qso-row-data select {
-    height: 34px !important;
-
-    box-sizing: border-box !important;
-
-    min-width: 0 !important;
-
-    padding: 6px 8px !important;
-
-    color: #ffffff !important;
+    padding: 5px 7px !important;
+    color: #fff !important;
     background: #101f29 !important;
-
     border: 1px solid #2b424e !important;
     border-radius: 5px !important;
-
     font-family: inherit !important;
     font-size: 13px !important;
 }
 
-
-/* Band */
-
-.contest-qso-row-data
-.contest-entry-inline:nth-child(1) select {
-    width: 65px !important;
-}
-
-
-/* Mode */
-
-.contest-qso-row-data
-.contest-entry-inline:nth-child(2) select {
-    width: 70px !important;
-}
-
-
-/* Locator */
-
-.contest-entry-locator input {
-    width: 105px !important;
-}
-
-
-/* RST */
-
-.contest-entry-rst {
-    display: grid !important;
-
-    grid-template-columns:
-        auto
-        58px
-        58px !important;
-
+.contest-qso-row-data .contest-entry-inline {
+    display: flex !important;
+    flex-direction: row !important;
     align-items: center !important;
-
-    gap: 5px !important;
-}
-
-
-.contest-entry-rst input {
-    width: 58px !important;
-}
-
-
-/* Exchange */
-
-.contest-entry-exchange {
-    display: grid !important;
-
-    grid-template-columns:
-        auto
-        75px
-        75px !important;
-
-    align-items: center !important;
-
-    gap: 5px !important;
-}
-
-
-.contest-entry-exchange input {
-    width: 75px !important;
-}
-
-
-/* LOG QSO */
-
-.contest-qso-row-data .contest-log-button {
-    height: 34px !important;
-
-    min-width: 105px !important;
-
-    white-space: nowrap !important;
-}
-
-
-/* ---------------------------------------------------------
- * Keep fields from stretching the whole page
- * --------------------------------------------------------- */
-
-.contest-qso-row-main > *,
-.contest-qso-row-data > * {
+    gap: 4px !important;
     min-width: 0 !important;
 }
 
-
-/* ---------------------------------------------------------
- * Mobile
- * --------------------------------------------------------- */
-
-@media (max-width: 850px) {
-
-    .contest-qso-row-main {
-        grid-template-columns:
-            1fr 1fr !important;
-    }
-
-    .contest-qso-row-data {
-        grid-template-columns:
-            1fr 1fr !important;
-    }
-
+.contest-qso-row-data .contest-entry-inline > label {
+    display: inline-block !important;
+    margin: 0 !important;
+    color: #fff !important;
+    font-size: 11px !important;
+    font-weight: 400 !important;
+    white-space: nowrap !important;
 }
 
+.contest-qso-row-data .contest-entry-band select { width: 65px !important; }
+.contest-qso-row-data .contest-entry-mode select { width: 70px !important; }
+.contest-qso-row-data .contest-entry-rst-sent input { width: 48px !important; }
+.contest-qso-row-data .contest-entry-exchange-sent input { width: 100% !important; }
 
-@media (max-width: 600px) {
+.contest-qso-row-data .contest-entry-qrz {
+    display: grid !important;
+    grid-template-columns: auto minmax(70px, 1fr) minmax(75px, 1fr) minmax(70px, .8fr) !important;
+}
+.contest-qso-row-data .contest-entry-qrz input { width: 100% !important; }
 
-    .contest-qso-row-main {
-        grid-template-columns:
-            1fr !important;
-    }
+.contest-qso-row-data .contest-log-button {
+    height: 32px !important;
+    min-width: 100px !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+}
 
-    .contest-qso-row-data {
-        grid-template-columns:
-            1fr !important;
-    }
+.contest-qso-row-main > *,
+.contest-qso-row-data > * { min-width: 0 !important; }
 
+@media (max-width: 1050px) {
+    .contest-qso-row-main { grid-template-columns: minmax(150px, 1fr) minmax(105px, .7fr) minmax(100px, .7fr) minmax(135px, 1fr) !important; }
+    .contest-qso-row-data { grid-template-columns: 65px 70px 82px minmax(95px, .8fr) minmax(220px, 1.5fr) auto !important; gap: 5px !important; }
+    .contest-qso-row-data .contest-entry-qrz { grid-template-columns: auto minmax(55px, 1fr) minmax(60px, 1fr) minmax(55px, .8fr) !important; }
+}
+
+@media (max-width: 760px) {
+    .contest-qso-entry { gap: 8px !important; }
+    .contest-qso-row-main { grid-template-columns: 1fr 1fr !important; }
+    .contest-qso-row-data { grid-template-columns: 1fr 1fr !important; }
+    .contest-qso-row-data .contest-entry-qrz { grid-column: 1 / -1; }
+    .contest-qso-row-data .contest-log-button { justify-self: start; }
 }
 
 
@@ -1861,4 +1699,154 @@ body:has(#contest-session) #utcClock {
 .contest-band-legend .spot-dot.spot-other-continent {
     background: #b56cff;
     box-shadow: 0 0 6px rgba(181, 108, 255, 0.7);
+}
+
+
+/* =========================================================
+ * Callsign: uppercase + dupe indicator
+ * ========================================================= */
+
+#contest-call {
+    text-transform: uppercase;
+}
+
+#contest-call::placeholder {
+    text-transform: uppercase;
+}
+
+.contest-call-status {
+    margin-left: 6px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.contest-call-status.dupe {
+    color: #ff5252;
+}
+
+.contest-call-status.worked-other {
+    color: #ffc400;
+}
+
+.contest-call-status.new {
+    color: #2ecc71;
+}
+
+.contest-qso-entry #contest-call.contest-call-dupe {
+    border-color: #ff5252 !important;
+    background: #2a1010 !important;
+    box-shadow: 0 0 0 1px rgba(255, 82, 82, 0.35);
+}
+
+
+/* =========================================================
+ * QSO ENTRY - row 2 layout fix
+ * Band / Mode / RST / Exch get their natural width,
+ * QRZ (Name + Country) takes the remaining space.
+ * ========================================================= */
+
+.contest-qso-row-data {
+    grid-template-columns: auto auto auto auto minmax(0, 1fr) auto !important;
+    gap: 12px !important;
+}
+
+.contest-qso-row-data .contest-entry-inline > label {
+    color: #00e5ff !important;
+    font-weight: 600 !important;
+}
+
+.contest-qso-row-data .contest-entry-band select { width: 78px !important; }
+.contest-qso-row-data .contest-entry-mode select { width: 82px !important; }
+.contest-qso-row-data .contest-entry-rst-sent input { width: 52px !important; }
+.contest-qso-row-data .contest-entry-exchange-sent input { width: 52px !important; }
+
+.contest-qso-row-data .contest-entry-qrz {
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) 88px !important;
+    gap: 6px !important;
+}
+
+@media (max-width: 1250px) {
+    /* QRZ group on its own line, LOG QSO beside it */
+    .contest-qso-row-data {
+        grid-template-columns: auto auto auto auto minmax(0, 1fr) auto !important;
+        row-gap: 6px !important;
+    }
+    .contest-qso-row-data .contest-entry-qrz { grid-column: 1 / 6; }
+    .contest-qso-row-data .contest-log-button { grid-column: 6; }
+}
+
+@media (max-width: 760px) {
+    .contest-qso-row-data { grid-template-columns: auto auto auto auto !important; }
+    .contest-qso-row-data .contest-entry-qrz { grid-column: 1 / -1; }
+    .contest-qso-row-data .contest-log-button { grid-column: 1 / -1; justify-self: start; }
+}
+
+
+/* =========================================================
+ * Band / Mode selects styled like the petrol (Resume) button
+ * ========================================================= */
+
+.contest-qso-entry .contest-entry-band select,
+.contest-qso-entry .contest-entry-mode select {
+    color: #5EEAD4 !important;
+    background-color: rgba(0, 212, 200, 0.12) !important;
+    border: 1px solid rgba(0, 212, 200, 0.45) !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+}
+
+.contest-qso-entry .contest-entry-band select:hover,
+.contest-qso-entry .contest-entry-mode select:hover,
+.contest-qso-entry .contest-entry-band select:focus,
+.contest-qso-entry .contest-entry-mode select:focus {
+    background-color: rgba(0, 212, 200, 0.22) !important;
+    border-color: rgba(0, 212, 200, 0.70) !important;
+    outline: none;
+}
+
+.contest-qso-entry .contest-entry-band select option,
+.contest-qso-entry .contest-entry-mode select option {
+    color: #5EEAD4;
+    background: #0b1821;
+}
+
+
+/* =========================================================
+ * QSO entry: turquoise frame to highlight the logging area
+ * ========================================================= */
+
+.contest-qso-entry {
+    border: 1px solid rgba(0, 212, 200, 0.60) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 0 0 1px rgba(0, 212, 200, 0.12),
+                0 0 12px rgba(0, 212, 200, 0.10) !important;
+}
+
+
+/* =========================================================
+ * Title and navigation tabs on one line
+ * ========================================================= */
+
+.contest-tabs {
+    gap: 0.35rem;
+    margin-bottom: 12px;
+}
+
+.contest-title {
+    margin: 0 18px 0 0;
+    color: #ff4fa3;
+    font-size: 1.6rem;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .contest-tabs { flex-wrap: wrap; }
+    .contest-title { flex: 1 0 100%; margin-bottom: 6px; }
+}
+
+
+/* Contest selection card hidden while a session is running */
+#contest-selection[hidden] {
+    display: none !important;
 }

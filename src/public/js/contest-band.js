@@ -1291,9 +1291,61 @@ contestQrzCountry =
 
 
 
+/*
+ * Hide the contest selection card (contest, create session, operators)
+ * while a session is RUNNING or PAUSED. It reappears for READY/FINISHED.
+ * Driven by the text of #contest-status, so contest-session.js
+ * does not need to know about it.
+ */
+function updateContestSelectionVisibility() {
+
+    const status =
+        document.getElementById("contest-status");
+
+    const selection =
+        document.getElementById("contest-selection");
+
+    if (!status || !selection) {
+        return;
+    }
+
+    const text =
+        String(status.textContent || "")
+            .trim()
+            .toUpperCase();
+
+    selection.hidden =
+        /RUNNING|PAUSED/.test(text);
+
+}
+
+function setupContestSelectionVisibility() {
+
+    const status =
+        document.getElementById("contest-status");
+
+    if (!status) {
+        return;
+    }
+
+    new MutationObserver(
+        updateContestSelectionVisibility
+    ).observe(status, {
+        childList: true,
+        characterData: true,
+        subtree: true
+    });
+
+    updateContestSelectionVisibility();
+
+}
+
+
 function initContestBandViewer() {
 
     setupContestBandSelector();
+
+    setupContestSelectionVisibility();
 
 
     updateContestCantonField();
@@ -1955,6 +2007,23 @@ async function logContestQso() {
 
 
     /*
+     * Dupe check (same call, same band, this session).
+     */
+    if (await checkContestDupe()) {
+
+        const proceed =
+            confirm(
+                `${call} is a DUPE on ${band}m.\n\nLog anyway?`
+            );
+
+        if (!proceed) {
+            return;
+        }
+
+    }
+
+
+    /*
      * Load station configuration.
      */
     let stationConfig = {};
@@ -2208,6 +2277,8 @@ console.log(
         );
 
 await loadContestRecentQsos();
+        await loadContestWorkedStatus();
+        renderContestBand();
 
         /*
          * Prepare next QSO.
@@ -2224,6 +2295,18 @@ await loadContestRecentQsos();
             "contest-locator"
         ).value = "";
 
+        const countryField =
+            document.getElementById(
+                "contest-country"
+            );
+
+        if (countryField) {
+            countryField.value = "";
+        }
+
+        contestQrzCountry = "";
+        setContestCallStatus("", "");
+
         document.getElementById(
             "contest-exchange-received"
         ).value = "";
@@ -2237,6 +2320,8 @@ await loadContestRecentQsos();
             cantonField.value = "";
         }
 
+
+        setContestFrequencyPreset(true);
 
         document.getElementById(
             "contest-call"
@@ -2263,6 +2348,213 @@ await loadContestRecentQsos();
 
 
 /*
+ * Band-specific default frequency (kHz). Spot clicks may temporarily
+ * replace the field; after logging, restore the selected band's preset.
+ */
+const CONTEST_FREQUENCY_PRESETS = {
+    "160": "1800",
+    "80": "3500",
+    "40": "7000",
+    "20": "14000",
+    "15": "21000",
+    "10": "28000"
+};
+
+function setContestFrequencyPreset(force = false) {
+    const bandInput = document.getElementById("contest-band-input");
+    const frequencyInput = document.getElementById("contest-frequency-input");
+    if (!bandInput || !frequencyInput) return;
+
+    const preset = CONTEST_FREQUENCY_PRESETS[String(bandInput.value || "")];
+    if (preset && (force || !frequencyInput.value.trim())) {
+        frequencyInput.value = preset;
+    }
+}
+
+
+/*
+ * Callsign status label (DUPE / worked on other band / NEW).
+ */
+function setContestCallStatus(text, type) {
+
+    const status =
+        document.getElementById(
+            "contest-call-status"
+        );
+
+    const callInput =
+        document.getElementById(
+            "contest-call"
+        );
+
+    if (status) {
+        status.textContent = text;
+        status.className =
+            "contest-call-status" + (type ? ` ${type}` : "");
+    }
+
+    if (callInput) {
+        callInput.classList.toggle(
+            "contest-call-dupe",
+            type === "dupe"
+        );
+    }
+
+}
+
+
+/*
+ * Dupe check against the current contest session.
+ *
+ * DUPE = same callsign already logged on the selected band
+ * in this session. Returns true for a dupe.
+ */
+async function checkContestDupe({ refresh = true } = {}) {
+
+    const callInput =
+        document.getElementById(
+            "contest-call"
+        );
+
+    const bandInput =
+        document.getElementById(
+            "contest-band-input"
+        );
+
+    const call =
+        String(callInput?.value || "")
+            .trim()
+            .toUpperCase();
+
+    if (!call) {
+        setContestCallStatus("", "");
+        return false;
+    }
+
+    if (refresh) {
+        await loadContestWorkedStatus();
+    }
+
+    // User may have typed a new call while we were loading.
+    if (
+        String(callInput?.value || "").trim().toUpperCase() !== call
+    ) {
+        return false;
+    }
+
+    const band =
+        String(bandInput?.value || "").trim();
+
+    const bandKey =
+        band ? `${band}m` : "";
+
+    const isDupe =
+        !!bandKey &&
+        (contestWorkedByBand.get(bandKey)?.has(call) || false);
+
+    const otherBands =
+        [...contestWorkedByBand.entries()]
+            .filter(
+                ([key, calls]) =>
+                    key !== bandKey && calls.has(call)
+            )
+            .map(([key]) => key);
+
+    if (isDupe) {
+        setContestCallStatus(
+            `DUPE (${bandKey})`,
+            "dupe"
+        );
+    }
+    else if (otherBands.length) {
+        setContestCallStatus(
+            `worked: ${otherBands.join(", ")}`,
+            "worked-other"
+        );
+    }
+    else {
+        setContestCallStatus(
+            "NEW",
+            "new"
+        );
+    }
+
+    return isDupe;
+
+}
+
+
+/*
+ * ESC resets the entry form for the next QSO:
+ * Callsign, Exchange Received, Name, Country, Locator cleared,
+ * frequency back to the band preset, RST sent/received back to 599.
+ */
+function resetContestQsoEntry() {
+
+    [
+        "contest-call",
+        "contest-exchange-received",
+        "contest-name",
+        "contest-country",
+        "contest-locator",
+        "contest-canton"
+    ].forEach(id => {
+        const field = document.getElementById(id);
+        if (field) field.value = "";
+    });
+
+    const rstSent =
+        document.getElementById("contest-rst-sent");
+    const rstReceived =
+        document.getElementById("contest-rst-received");
+
+    if (rstSent) rstSent.value = "599";
+    if (rstReceived) rstReceived.value = "599";
+
+    contestQrzCountry = "";
+
+    setContestFrequencyPreset(true);
+    setContestCallStatus("", "");
+
+    const callInput =
+        document.getElementById("contest-call");
+
+    if (callInput) callInput.focus();
+
+}
+
+
+function handleContestEscape(event) {
+
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    // Only on the console view.
+    const consoleView =
+        document.getElementById("contest-view-console");
+
+    if (!consoleView || consoleView.hidden) {
+        return;
+    }
+
+    // Only when focus is in the entry form (or nowhere in particular).
+    const active = document.activeElement;
+    const inEntry =
+        !active ||
+        active === document.body ||
+        !!active.closest?.(".contest-qso-entry");
+
+    if (!inEntry) {
+        return;
+    }
+
+    event.preventDefault();
+    resetContestQsoEntry();
+
+}
+
+/*
  * Connect LOG QSO button.
  */
 function setupContestQsoLogger() {
@@ -2279,6 +2571,11 @@ function setupContestQsoLogger() {
 
     }
 
+    const bandInput = document.getElementById("contest-band-input");
+    if (bandInput) {
+        bandInput.addEventListener("change", () => setContestFrequencyPreset(true));
+    }
+    setContestFrequencyPreset(false);
 
     button.addEventListener(
         "click",
@@ -2292,6 +2589,31 @@ function setupContestQsoLogger() {
 
     if (callInput) {
 
+        /*
+         * Always uppercase while typing (caret position preserved).
+         */
+        callInput.addEventListener(
+            "input",
+            () => {
+
+                const start = callInput.selectionStart;
+                const end = callInput.selectionEnd;
+                const upper = callInput.value.toUpperCase();
+
+                if (callInput.value !== upper) {
+                    callInput.value = upper;
+                    callInput.setSelectionRange(start, end);
+                }
+
+                // Any edit invalidates the previous dupe result.
+                setContestCallStatus("", "");
+
+            }
+        );
+
+        /*
+         * QRZ lookup when the value was changed.
+         */
         callInput.addEventListener(
             "change",
             () => {
@@ -2312,7 +2634,35 @@ function setupContestQsoLogger() {
             }
         );
 
+        /*
+         * Dupe check when leaving the callsign field.
+         */
+        callInput.addEventListener(
+            "blur",
+            () => {
+                checkContestDupe();
+            }
+        );
+
     }
+
+    /*
+     * Band change: re-check dupe for the new band.
+     */
+    if (bandInput) {
+        bandInput.addEventListener(
+            "change",
+            () => checkContestDupe({ refresh: false })
+        );
+    }
+
+    /*
+     * ESC: reset entry for the next QSO.
+     */
+    document.addEventListener(
+        "keydown",
+        handleContestEscape
+    );
 
 }
 
@@ -2328,16 +2678,6 @@ document.addEventListener(
     }
 );
 
-
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        setupContestQsoLogger();
-        loadContestRecentQsos();
-
-    }
-);
 
 document.addEventListener(
     "DOMContentLoaded",
