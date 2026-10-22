@@ -482,6 +482,33 @@ function applyContestWorkedStatus(qsos) {
 
 }
 
+/*
+ * Session QSOs from the server plus locally queued ones.
+ * If the server is unreachable, the last known server list is used,
+ * so dupe check and Recent QSOs keep working offline.
+ */
+async function getContestSessionQsosForDisplay() {
+
+    let qsos;
+
+    try {
+        qsos = await fetchContestSessionQsos();
+    }
+    catch (error) {
+
+        console.warn("Contest session QSOs unavailable, using cache:", error);
+
+        qsos =
+            contestSessionQsoCache.sessionId === getContestSessionId()
+                ? contestSessionQsoCache.qsos
+                : [];
+
+    }
+
+    return withContestPendingQsos(qsos || []);
+
+}
+
 async function loadContestWorkedStatus() {
 
     if (!getContestSessionId()) {
@@ -489,13 +516,9 @@ async function loadContestWorkedStatus() {
         return;
     }
 
-    try {
-        const qsos = await fetchContestSessionQsos();
-        if (qsos) applyContestWorkedStatus(qsos);
-    }
-    catch (error) {
-        console.error("Contest band worked-status loading failed:", error);
-    }
+    applyContestWorkedStatus(
+        await getContestSessionQsosForDisplay()
+    );
 
 }
 
@@ -513,17 +536,11 @@ async function refreshContestSessionView() {
         return;
     }
 
-    try {
-        const qsos = await fetchContestSessionQsos();
-        if (!qsos) return;
+    const qsos = await getContestSessionQsosForDisplay();
 
-        applyContestWorkedStatus(qsos);
-        updateContestBandStatistics(qsos);
-        renderContestRecentQsos(qsos);
-    }
-    catch (error) {
-        console.error("Contest session refresh failed:", error);
-    }
+    applyContestWorkedStatus(qsos);
+    updateContestBandStatistics(qsos);
+    renderContestRecentQsos(qsos);
 
 }
 
@@ -1745,9 +1762,23 @@ function renderContestRecentQsos(qsos) {
 
                 const frequency = Number(qso.frequency);
 
+                const rowClass =
+                    qso._pending === "rejected"
+                        ? "contest-row-rejected"
+                        : qso._pending
+                            ? "contest-row-pending"
+                            : "";
+
+                const marker =
+                    qso._pending === "rejected"
+                        ? '<span class="contest-row-flag" title="Rejected by server">✖</span>'
+                        : qso._pending
+                            ? '<span class="contest-row-flag" title="Not yet saved on the server">⏳</span>'
+                            : "";
+
                 return `
-                    <tr>
-                        <td>${escapeContestHtml(qso.time_on_utc || "")}</td>
+                    <tr class="${rowClass}">
+                        <td>${marker}${escapeContestHtml(qso.time_on_utc || "")}</td>
                         <td>${escapeContestHtml(qso.call || "")}</td>
                         <td>${escapeContestHtml(qso.band || "")}</td>
                         <td>${escapeContestHtml(
@@ -1779,35 +1810,435 @@ async function loadContestRecentQsos() {
         return;
     }
 
+    const qsos = await getContestSessionQsosForDisplay();
+
+    applyContestWorkedStatus(qsos);
+    updateContestBandStatistics(qsos);
+    updateContestSerialNumber(qsos);
+    updateContestExchangeSent();
+    renderContestRecentQsos(qsos);
+
+}
+
+
+
+
+
+/* =========================================================================
+ * PENDING QSO QUEUE (no QSO loss on network / server problems)
+ *
+ * Every QSO is first written to localStorage, then sent to the server.
+ *  - Sent OK                 -> removed from the queue
+ *  - Network error / HTTP 5xx -> stays queued, retried automatically
+ *  - HTTP 4xx (server says no)-> marked "rejected", not retried
+ *                               (shown in the queue bar, can be discarded)
+ *
+ * Before a QSO is re-sent, the session log is checked for an entry with
+ * the same call, band, date and UTC time. If the first attempt actually
+ * reached the server (only the answer was lost), it is NOT sent again.
+ * ========================================================================= */
+
+const CONTEST_QUEUE_KEY = "contest.pendingQsos";
+const CONTEST_QUEUE_RETRY_MS = 5000;
+
+const contestQueueInFlight = new Set();
+let contestQueueFlushing = false;
+
+
+function readContestQueue() {
+
+    try {
+        const data = JSON.parse(
+            localStorage.getItem(CONTEST_QUEUE_KEY) || "[]"
+        );
+        return Array.isArray(data) ? data : [];
+    }
+    catch {
+        return [];
+    }
+
+}
+
+function writeContestQueue(queue) {
+
+    try {
+        localStorage.setItem(
+            CONTEST_QUEUE_KEY,
+            JSON.stringify(queue)
+        );
+    }
+    catch (error) {
+        console.error("Contest queue could not be saved:", error);
+    }
+
+    renderContestQueueStatus();
+
+}
+
+function enqueueContestQso(sessionId, qso) {
+
+    const item = {
+        uid:
+            Date.now().toString(36) +
+            Math.random().toString(36).slice(2, 8),
+        sessionId,
+        qso,
+        createdAt: new Date().toISOString(),
+        attempts: 0,
+        status: "pending",   // "pending" | "rejected"
+        lastError: ""
+    };
+
+    const queue = readContestQueue();
+    queue.push(item);
+    writeContestQueue(queue);
+
+    return item;
+
+}
+
+function updateContestQueueItem(uid, changes) {
+
+    const queue = readContestQueue();
+    const item = queue.find(entry => entry.uid === uid);
+
+    if (item) {
+        Object.assign(item, changes);
+        writeContestQueue(queue);
+    }
+
+}
+
+function removeContestQueueItem(uid) {
+
+    writeContestQueue(
+        readContestQueue().filter(entry => entry.uid !== uid)
+    );
+
+}
+
+
+/*
+ * Same QSO already in the server log? (call + band + date + UTC time)
+ */
+function contestQsoMatches(a, b) {
+
+    const norm = value => String(value ?? "").trim().toUpperCase();
+    const band = value => norm(value).replace(/M$/, "");
+
+    return (
+        norm(a.call) === norm(b.call) &&
+        band(a.band) === band(b.band) &&
+        norm(a.qso_date) === norm(b.qso_date) &&
+        norm(a.time_on_utc).slice(0, 8) === norm(b.time_on_utc).slice(0, 8)
+    );
+
+}
+
+async function contestQsoAlreadyOnServer(item) {
+
+    const response = await fetch(
+        `/api/contests/session/${item.sessionId}/qso?_=${Date.now()}`,
+        { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const qsos = Array.isArray(data) ? data : [];
+
+    return qsos.some(qso => contestQsoMatches(qso, item.qso));
+
+}
+
+
+/*
+ * Send one queued QSO.
+ * Returns { ok: true } or { ok: false, permanent: bool, error: string }.
+ */
+async function sendContestQueueItem(item, { checkServerFirst = true } = {}) {
+
+    if (contestQueueInFlight.has(item.uid)) {
+        return { ok: false, permanent: false, error: "in flight" };
+    }
+
+    contestQueueInFlight.add(item.uid);
+
     try {
 
-        const qsos =
-            await fetchContestSessionQsos();
-
-        if (!qsos) {
-            return;
+        // A retry may hit a QSO that already arrived: never log it twice.
+        if (checkServerFirst && item.attempts > 0) {
+            if (await contestQsoAlreadyOnServer(item)) {
+                removeContestQueueItem(item.uid);
+                return { ok: true };
+            }
         }
 
-        applyContestWorkedStatus(qsos);
-        updateContestBandStatistics(qsos);
-        updateContestSerialNumber(qsos);
-        updateContestExchangeSent();
-        renderContestRecentQsos(qsos);
+        updateContestQueueItem(item.uid, {
+            attempts: (item.attempts || 0) + 1
+        });
+
+        const response = await fetch(
+            `/api/contests/session/${item.sessionId}/qso`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(item.qso)
+            }
+        );
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        }
+        catch {
+            // Non-JSON body
+        }
+
+        if (response.ok) {
+            removeContestQueueItem(item.uid);
+            return { ok: true };
+        }
+
+        const error = data.error || `HTTP ${response.status}`;
+        const permanent = response.status >= 400 && response.status < 500;
+
+        updateContestQueueItem(item.uid, {
+            lastError: error,
+            status: permanent ? "rejected" : "pending"
+        });
+
+        return { ok: false, permanent, error };
 
     }
     catch (error) {
 
-        console.error(
-            "Contest recent QSOs:",
-            error
-        );
+        // Network error, server down, timeout ...
+        updateContestQueueItem(item.uid, {
+            lastError: error.message || "Network error"
+        });
+
+        return {
+            ok: false,
+            permanent: false,
+            error: error.message || "Network error"
+        };
+
+    }
+    finally {
+
+        contestQueueInFlight.delete(item.uid);
 
     }
 
 }
 
 
+/*
+ * Send all pending QSOs, oldest first. Stops at the first network
+ * failure (server still unreachable), keeps the order intact.
+ */
+async function flushContestQueue() {
 
+    if (contestQueueFlushing) {
+        return;
+    }
+
+    const pending =
+        readContestQueue().filter(item => item.status === "pending");
+
+    if (!pending.length) {
+        return;
+    }
+
+    contestQueueFlushing = true;
+
+    let sentAny = false;
+    let sentCount = 0;
+
+    try {
+
+        for (const item of pending) {
+
+            const result = await sendContestQueueItem(item);
+
+            if (result.ok) {
+                sentAny = true;
+                sentCount++;
+                continue;
+            }
+
+            if (!result.permanent) {
+                break;
+            }
+
+        }
+
+    }
+    finally {
+
+        contestQueueFlushing = false;
+
+    }
+
+    if (sentAny) {
+
+        await loadContestRecentQsos();
+        renderContestBand();
+
+        // Replace a "saved locally" warning by a confirmation.
+        const box = document.getElementById("contest-entry-message");
+
+        if (!box || !box.classList.contains("error")) {
+            showContestEntryMessage(
+                `${sentCount} queued QSO${sentCount > 1 ? "s" : ""} ` +
+                "saved on the server.",
+                "success"
+            );
+        }
+
+    }
+
+    renderContestQueueStatus();
+
+}
+
+
+/*
+ * Pending QSOs of the current session, shaped like server QSOs.
+ * They count for dupe check / worked status and show in Recent QSOs.
+ */
+function getContestPendingQsos() {
+
+    const sessionId = getContestSessionId();
+
+    return readContestQueue()
+        .filter(item => item.sessionId === sessionId)
+        .map(item => ({
+            ...item.qso,
+            _pending: item.status,
+            _uid: item.uid
+        }));
+
+}
+
+function withContestPendingQsos(qsos) {
+
+    const pending = getContestPendingQsos();
+
+    if (!pending.length) {
+        return qsos;
+    }
+
+    // Skip pending QSOs that the server list already contains.
+    const extra = pending.filter(
+        p => !(qsos || []).some(q => contestQsoMatches(q, p))
+    );
+
+    return [...(qsos || []), ...extra];
+
+}
+
+
+/*
+ * Queue status bar in the entry area.
+ */
+function renderContestQueueStatus() {
+
+    const bar = document.getElementById("contest-queue-status");
+
+    if (!bar) {
+        return;
+    }
+
+    const queue = readContestQueue();
+    const pending = queue.filter(item => item.status === "pending");
+    const rejected = queue.filter(item => item.status === "rejected");
+
+    if (!queue.length) {
+        bar.hidden = true;
+        bar.innerHTML = "";
+        return;
+    }
+
+    const parts = [];
+
+    if (pending.length) {
+        parts.push(
+            `<span class="contest-queue-pending">` +
+            `⏳ ${pending.length} QSO${pending.length > 1 ? "s" : ""} ` +
+            `not yet saved on the server – retrying automatically` +
+            (pending[0].lastError
+                ? ` (${escapeContestHtml(pending[0].lastError)})`
+                : "") +
+            `</span>` +
+            `<button type="button" class="contest-queue-retry">Retry now</button>`
+        );
+    }
+
+    if (rejected.length) {
+        const list = rejected
+            .map(item =>
+                `${escapeContestHtml(item.qso.call)} ` +
+                `${escapeContestHtml(item.qso.time_on_utc)} ` +
+                `(${escapeContestHtml(item.lastError)})`
+            )
+            .join(", ");
+
+        parts.push(
+            `<span class="contest-queue-rejected">` +
+            `✖ Rejected by server: ${list}` +
+            `</span>` +
+            `<button type="button" class="contest-queue-discard">Discard</button>`
+        );
+    }
+
+    bar.innerHTML = parts.join("");
+    bar.hidden = false;
+
+}
+
+function setupContestQueue() {
+
+    const bar = document.getElementById("contest-queue-status");
+
+    if (bar) {
+        bar.addEventListener("click", event => {
+
+            if (event.target.closest(".contest-queue-retry")) {
+                flushContestQueue();
+            }
+
+            if (event.target.closest(".contest-queue-discard")) {
+                writeContestQueue(
+                    readContestQueue().filter(item => item.status !== "rejected")
+                );
+                refreshContestSessionView().then(renderContestBand);
+            }
+
+        });
+    }
+
+    renderContestQueueStatus();
+
+    // Retry automatically, and immediately when the network comes back.
+    setInterval(flushContestQueue, CONTEST_QUEUE_RETRY_MS);
+    window.addEventListener("online", flushContestQueue);
+
+    // Another tab of the same browser changed the queue.
+    window.addEventListener("storage", event => {
+        if (event.key === CONTEST_QUEUE_KEY) {
+            renderContestQueueStatus();
+        }
+    });
+
+    // Left over from a crash / closed browser: send now.
+    flushContestQueue();
+
+}
 
 
 /*
@@ -2102,36 +2533,34 @@ async function logContestQso() {
         };
 
 
-        const response =
-            await fetch(
-                `/api/contests/session/${window.contestSessionId}/qso`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(qso)
-                }
+        /*
+         * Write to the local queue first (survives network errors and
+         * browser crashes), then try to send it right away.
+         */
+        const item =
+            enqueueContestQso(
+                Number(window.contestSessionId),
+                qso
             );
 
-        let data = {};
+        const result =
+            await sendContestQueueItem(item, { checkServerFirst: false });
 
-        try {
-            data = await response.json();
-        }
-        catch {
-            // Non-JSON error body: fall back to HTTP status below.
-        }
+        if (!result.ok && result.permanent) {
 
-        if (!response.ok) {
-            throw new Error(
-                data.error ||
-                `HTTP ${response.status}`
+            // Server refused the data itself: keep the form for correction.
+            removeContestQueueItem(item.uid);
+
+            showContestEntryMessage(
+                `Could not save QSO: ${result.error}`,
+                "error"
             );
+
+            return;
         }
 
 
-        // Fresh data after our own insert.
+        // Fresh data after our own insert (pending QSOs included).
         await loadContestRecentQsos();
         renderContestBand();
 
@@ -2154,10 +2583,23 @@ async function logContestQso() {
         setContestCallStatus("", "");
         setContestFrequencyPreset(true);
 
-        showContestEntryMessage(
-            `${call} logged on ${band}m.`,
-            "success"
-        );
+        if (result.ok) {
+
+            showContestEntryMessage(
+                `${call} logged on ${band}m.`,
+                "success"
+            );
+
+        }
+        else {
+
+            showContestEntryMessage(
+                `${call} saved locally – server not reachable, ` +
+                "it will be sent automatically.",
+                "warn"
+            );
+
+        }
 
         document.getElementById("contest-call")?.focus();
 
@@ -2677,6 +3119,7 @@ function setupContestQsoLogger() {
 
     setupContestEnterToLog();
     setupContestBandSync();
+    setupContestQueue();
 
 }
 
