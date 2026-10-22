@@ -1850,3 +1850,209 @@ body:has(#contest-session) #utcClock {
 #contest-selection[hidden] {
     display: none !important;
 }
+
+
+/* =========================================================
+ * Inline entry messages (replace alert popups)
+ * ========================================================= */
+
+.contest-entry-message {
+    align-self: stretch;
+    box-sizing: border-box;
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.contest-entry-message:empty {
+    display: none;
+}
+
+.contest-entry-message.error {
+    color: #ff7a7a;
+    border-color: rgba(255, 82, 82, 0.55);
+    background: #2a1010;
+}
+
+.contest-entry-message.warn {
+    color: #ffc400;
+    border-color: rgba(255, 196, 0, 0.55);
+    background: #2a2208;
+}
+
+.contest-entry-message.success {
+    color: #2ecc71;
+    border-color: rgba(46, 204, 113, 0.55);
+    background: #0b2418;
+}
+
+.contest-log-button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+
+/* Section titles in turquoise (matches entry frame / petrol buttons) */
+.contest-qso-by-band-title,
+.contest-recent-title {
+    color: #5EEAD4 !important;
+}
+
+
+/* =========================================================
+ * Recent QSOs: 9 visible rows, then scroll; header stays visible
+ * ========================================================= */
+
+.contest-recent .contest-table-wrapper {
+    max-height: calc(var(--recent-header-h, 34px) + 9 * var(--recent-row-h, 33px));
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+.contest-recent .contest-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+
+/* =========================================================
+ * Right column (Live Band) as tall as the left column
+ * ========================================================= */
+
+.contest-layout {
+    align-items: stretch;
+}
+
+.contest-right {
+    padding-bottom: 10px;            /* matches .contest-card margin-bottom */
+    box-sizing: border-box;
+}
+
+.contest-band-card {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.contest-band-card .contest-bandplan {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 320px;
+}
+
+
+/* =========================================================
+ * Discreet scrollbars with turquoise -> violet gradient
+ * (Live Band, Recent QSOs, all contest tables)
+ * ========================================================= */
+
+.contest-console .contest-bandplan::-webkit-scrollbar,
+.contest-console .contest-table-wrapper::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.contest-console .contest-bandplan::-webkit-scrollbar-track,
+.contest-console .contest-table-wrapper::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+}
+
+.contest-console .contest-bandplan::-webkit-scrollbar-thumb,
+.contest-console .contest-table-wrapper::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+        180deg,
+        rgba(64, 224, 208, 0.55) 0%,
+        rgba(138, 124, 255, 0.55) 55%,
+        rgba(192, 108, 255, 0.55) 100%
+    );
+    border-radius: 6px;
+}
+
+.contest-console .contest-bandplan::-webkit-scrollbar-thumb:hover,
+.contest-console .contest-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+        180deg,
+        #40e0d0 0%,
+        #8a7cff 55%,
+        #c06cff 100%
+    );
+}
+
+.contest-console .contest-table-wrapper::-webkit-scrollbar-thumb:horizontal {
+    background: linear-gradient(
+        90deg,
+        rgba(64, 224, 208, 0.55) 0%,
+        rgba(138, 124, 255, 0.55) 55%,
+        rgba(192, 108, 255, 0.55) 100%
+    );
+}
+
+.contest-console .contest-bandplan::-webkit-scrollbar-button,
+.contest-console .contest-table-wrapper::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+    width: 0;
+}
+
+.contest-console .contest-bandplan::-webkit-scrollbar-corner,
+.contest-console .contest-table-wrapper::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Firefox: no gradients possible, thin turquoise thumb instead.
+   (Only for Firefox - in Chrome these properties would disable
+   the gradient styling above.) */
+@supports (-moz-appearance: none) {
+    .contest-console .contest-bandplan,
+    .contest-console .contest-table-wrapper {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(64, 224, 208, 0.55) transparent;
+    }
+}
+
+
+/* =========================================================
+ * Scrollbar thumb in slider style:
+ * vivid turquoise -> violet, glowing cyan cap at the end
+ * ========================================================= */
+
+.contest-console .contest-bandplan::-webkit-scrollbar-thumb,
+.contest-console .contest-table-wrapper::-webkit-scrollbar-thumb {
+    background:
+        radial-gradient(circle at 50% calc(100% - 3px),
+            #7ff3ff 0, #22d3ee 2px, transparent 3.5px),
+        linear-gradient(180deg, #1fb5c9 0%, #6d7cf0 55%, #a35ee8 100%);
+    border-radius: 6px;
+}
+
+.contest-console .contest-bandplan::-webkit-scrollbar-thumb:hover,
+.contest-console .contest-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background:
+        radial-gradient(circle at 50% calc(100% - 3px),
+            #ffffff 0, #22d3ee 2.5px, transparent 4px),
+        linear-gradient(180deg, #22d3ee 0%, #7c8cff 55%, #b56cff 100%);
+}
+
+.contest-console .contest-table-wrapper::-webkit-scrollbar-thumb:horizontal {
+    background:
+        radial-gradient(circle at calc(100% - 3px) 50%,
+            #7ff3ff 0, #22d3ee 2px, transparent 3.5px),
+        linear-gradient(90deg, #1fb5c9 0%, #6d7cf0 55%, #a35ee8 100%);
+}
+
+.contest-console .contest-bandplan::-webkit-scrollbar-track,
+.contest-console .contest-table-wrapper::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+@supports (-moz-appearance: none) {
+    .contest-console .contest-bandplan,
+    .contest-console .contest-table-wrapper {
+        scrollbar-color: #22d3ee transparent;
+    }
+}

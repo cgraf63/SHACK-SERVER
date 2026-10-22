@@ -372,11 +372,21 @@ async function loadContestRadio() {
 
 
 /*
- * Load the current session's contest QSOs and build a worked lookup.
- * A station is WORKED only if its callsign was logged on this band
- * in this contest session. The normal QSO log is deliberately not used.
+ * Shared loader for the current session's contest QSOs.
+ *
+ * Worked status, dupe check, statistics and the recent-QSO table all
+ * use this one request. Parallel callers share the request in flight,
+ * and callers can accept a short-lived cached result via maxAge (ms).
  */
-async function loadContestWorkedStatus() {
+let contestSessionQsoCache = {
+    sessionId: 0,
+    time: 0,
+    qsos: []
+};
+
+let contestSessionQsoRequest = null;
+
+function getContestSessionId() {
 
     const sessionId = Number(
         window.contestSessionId ||
@@ -384,12 +394,36 @@ async function loadContestWorkedStatus() {
         0
     );
 
-    if (!Number.isInteger(sessionId) || sessionId <= 0) {
-        contestWorkedByBand = new Map();
-        return;
+    return Number.isInteger(sessionId) && sessionId > 0
+        ? sessionId
+        : 0;
+
+}
+
+async function fetchContestSessionQsos({ maxAge = 0 } = {}) {
+
+    const sessionId = getContestSessionId();
+
+    if (!sessionId) {
+        return null;
     }
 
-    try {
+    if (
+        contestSessionQsoCache.sessionId === sessionId &&
+        Date.now() - contestSessionQsoCache.time <= maxAge
+    ) {
+        return contestSessionQsoCache.qsos;
+    }
+
+    if (
+        contestSessionQsoRequest &&
+        contestSessionQsoRequest.sessionId === sessionId
+    ) {
+        return contestSessionQsoRequest.promise;
+    }
+
+    const promise = (async () => {
+
         const response = await fetch(
             `/api/contests/session/${sessionId}/qso?_=${Date.now()}`,
             { cache: "no-store" }
@@ -401,27 +435,101 @@ async function loadContestWorkedStatus() {
 
         const data = await response.json();
         const qsos = Array.isArray(data) ? data : [];
-        const worked = new Map();
 
-        for (const qso of qsos) {
-            const call = String(qso.call || "").trim().toUpperCase();
-            const bandValue = String(qso.band || "").trim().toLowerCase();
-            const band = bandValue.endsWith("m") ? bandValue : `${bandValue}m`;
-            if (!call || !band) continue;
+        contestSessionQsoCache = {
+            sessionId,
+            time: Date.now(),
+            qsos
+        };
 
-            if (!worked.has(band)) worked.set(band, new Set());
-            worked.get(band).add(call);
+        return qsos;
+
+    })();
+
+    contestSessionQsoRequest = { sessionId, promise };
+
+    try {
+        return await promise;
+    }
+    finally {
+        if (contestSessionQsoRequest?.promise === promise) {
+            contestSessionQsoRequest = null;
         }
+    }
 
-        contestWorkedByBand = worked;
+}
+
+/*
+ * Build the worked lookup (band -> set of calls) from session QSOs.
+ * A station is WORKED only if its callsign was logged on this band
+ * in this contest session. The normal QSO log is deliberately not used.
+ */
+function applyContestWorkedStatus(qsos) {
+
+    const worked = new Map();
+
+    for (const qso of qsos || []) {
+        const call = String(qso.call || "").trim().toUpperCase();
+        const bandValue = String(qso.band || "").trim().toLowerCase();
+        const band = bandValue.endsWith("m") ? bandValue : `${bandValue}m`;
+        if (!call || !bandValue) continue;
+
+        if (!worked.has(band)) worked.set(band, new Set());
+        worked.get(band).add(call);
+    }
+
+    contestWorkedByBand = worked;
+
+}
+
+async function loadContestWorkedStatus() {
+
+    if (!getContestSessionId()) {
+        contestWorkedByBand = new Map();
+        return;
+    }
+
+    try {
+        const qsos = await fetchContestSessionQsos();
+        if (qsos) applyContestWorkedStatus(qsos);
     }
     catch (error) {
         console.error("Contest band worked-status loading failed:", error);
     }
+
 }
 
 /*
- * Load live spots.
+ * Periodic refresh: one request updates worked status, band statistics
+ * and the recent-QSO table (QSOs from other operators appear as well).
+ * The exchange-sent field is NOT touched here, so a value being edited
+ * is never overwritten.
+ */
+async function refreshContestSessionView() {
+
+    if (!getContestSessionId()) {
+        contestWorkedByBand = new Map();
+        renderContestRecentQsos(null);
+        return;
+    }
+
+    try {
+        const qsos = await fetchContestSessionQsos();
+        if (!qsos) return;
+
+        applyContestWorkedStatus(qsos);
+        updateContestBandStatistics(qsos);
+        renderContestRecentQsos(qsos);
+    }
+    catch (error) {
+        console.error("Contest session refresh failed:", error);
+    }
+
+}
+
+/*
+ * Load live spots and refresh the session view.
+ * A failing spot feed no longer blocks the session refresh.
  */
 async function loadContestSpots() {
 
@@ -431,11 +539,7 @@ async function loadContestSpots() {
             await fetch("/api/spots");
 
         if (!response.ok) {
-
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-
+            throw new Error(`HTTP ${response.status}`);
         }
 
         const spots =
@@ -446,10 +550,6 @@ async function loadContestSpots() {
                 ? spots
                 : [];
 
-        await loadContestWorkedStatus();
-        await loadContestCtyDatabase();
-        renderContestBand();
-
     }
     catch (error) {
 
@@ -459,6 +559,10 @@ async function loadContestSpots() {
         );
 
     }
+
+    await refreshContestSessionView();
+    await loadContestCtyDatabase();
+    renderContestBand();
 
 }
 
@@ -1348,7 +1452,6 @@ function initContestBandViewer() {
     setupContestSelectionVisibility();
 
 
-    updateContestCantonField();
 
 
 
@@ -1417,92 +1520,45 @@ else {
 
 function updateContestBandStatistics(qsos) {
 
-    const bands = [
-        "160",
-        "80",
-        "40",
-        "20",
-        "15",
-        "10"
-    ];
+    const bands = ["160", "80", "40", "20", "15", "10"];
+    const counts = Object.fromEntries(bands.map(band => [band, 0]));
 
-    const counts = {};
-    const points = {};
+    for (const qso of qsos || []) {
 
-    bands.forEach(band => {
-        counts[band] = 0;
-        points[band] = 0;
-    });
+        const band =
+            String(qso.band || "")
+                .toLowerCase()
+                .replace("m", "")
+                .trim();
 
-    qsos
-        .forEach(qso => {
-
-            const band =
-                String(qso.band || "")
-                    .toLowerCase()
-                    .replace("m", "")
-                    .trim();
-
-            if (!(band in counts)) {
-                return;
-            }
-
+        if (band in counts) {
             counts[band]++;
-
-            /*
-             * Points are not implemented yet.
-             */
-            points[band] += Number(qso.points) || 0;
-        });
-
-    let totalQsos = 0;
-    let totalPoints = 0;
-
-    bands.forEach(band => {
-
-        const qsoElement =
-            document.getElementById(
-                `contest-band-qso-${band}`
-            );
-
-        const pointsElement =
-            document.getElementById(
-                `contest-band-points-${band}`
-            );
-
-        if (qsoElement) {
-            qsoElement.textContent =
-                counts[band];
         }
 
-        if (pointsElement) {
-            pointsElement.textContent =
-                points[band];
+    }
+
+    let total = 0;
+
+    for (const band of bands) {
+
+        const element =
+            document.getElementById(`contest-band-qso-${band}`);
+
+        if (element) {
+            element.textContent = counts[band];
         }
 
-        totalQsos += counts[band];
-        totalPoints += points[band];
-    });
+        total += counts[band];
 
-    const totalQsoElement =
-        document.getElementById(
-            "contest-band-qso-total"
-        );
-
-    const totalPointsElement =
-        document.getElementById(
-            "contest-band-points-total"
-        );
-
-    if (totalQsoElement) {
-        totalQsoElement.textContent =
-            totalQsos;
     }
 
-    if (totalPointsElement) {
-        totalPointsElement.textContent =
-            totalPoints;
+    const totalElement =
+        document.getElementById("contest-band-qso-total");
+
+    if (totalElement) {
+        totalElement.textContent = total;
     }
+
 }
 
 function updateContestSerialNumber(qsos) {
@@ -1602,7 +1658,35 @@ function updateContestExchangeSent() {
 }
 
 
-async function loadContestRecentQsos() {
+/*
+ * Render the recent-QSO table (newest first, scrollable).
+ * qsos === null means: no active session.
+ */
+/*
+ * Size the recent-QSO list to exactly 9 visible rows,
+ * using the real rendered header/row heights (font independent).
+ */
+function fitContestRecentRows(body) {
+
+    const wrapper = body?.closest(".contest-table-wrapper");
+    const headerRow = wrapper?.querySelector("thead tr");
+    const firstRow = body?.querySelector("tr");
+
+    if (!wrapper || !headerRow || !firstRow) {
+        return;
+    }
+
+    const headerHeight = headerRow.getBoundingClientRect().height;
+    const rowHeight = firstRow.getBoundingClientRect().height;
+
+    if (headerHeight > 0 && rowHeight > 0) {
+        wrapper.style.setProperty("--recent-header-h", `${headerHeight}px`);
+        wrapper.style.setProperty("--recent-row-h", `${rowHeight}px`);
+    }
+
+}
+
+function renderContestRecentQsos(qsos) {
 
     const body =
         document.getElementById(
@@ -1613,23 +1697,11 @@ async function loadContestRecentQsos() {
         return;
     }
 
-
-    const sessionId =
-        Number(
-            window.contestSessionId ||
-            window.contestSession?.id ||
-            0
-        );
-
-
-    if (!Number.isInteger(sessionId) || sessionId <= 0) {
+    if (qsos === null) {
 
         body.innerHTML = `
             <tr>
-                <td
-                    colspan="7"
-                    class="contest-empty"
-                >
+                <td colspan="7" class="contest-empty">
                     No active contest session
                 </td>
             </tr>
@@ -1638,167 +1710,89 @@ async function loadContestRecentQsos() {
         return;
     }
 
+    const contestQsos =
+        qsos
+            .slice()
+            .sort((a, b) => {
+
+                const aTime =
+                    `${a.qso_date || ""} ${a.time_on_utc || ""}`;
+
+                const bTime =
+                    `${b.qso_date || ""} ${b.time_on_utc || ""}`;
+
+                return bTime.localeCompare(aTime);
+
+            })
+            .slice(0, 500); // all session QSOs, list scrolls after 9 rows
+
+    if (!contestQsos.length) {
+
+        body.innerHTML = `
+            <tr>
+                <td colspan="7" class="contest-empty">
+                    No contest QSOs
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    body.innerHTML =
+        contestQsos
+            .map(qso => {
+
+                const frequency = Number(qso.frequency);
+
+                return `
+                    <tr>
+                        <td>${escapeContestHtml(qso.time_on_utc || "")}</td>
+                        <td>${escapeContestHtml(qso.call || "")}</td>
+                        <td>${escapeContestHtml(qso.band || "")}</td>
+                        <td>${escapeContestHtml(
+                            Number.isFinite(frequency) ? frequency.toFixed(3) : ""
+                        )}</td>
+                        <td>${escapeContestHtml(qso.mode || "")}</td>
+                        <td>${escapeContestHtml(qso.rst_sent || "")}/${escapeContestHtml(qso.rst_rcvd || "")}</td>
+                        <td>${escapeContestHtml(qso.exchange_received || "")}</td>
+                    </tr>
+                `;
+
+            })
+            .join("");
+
+    fitContestRecentRows(body);
+
+}
+
+
+/*
+ * Full reload (initial load, session change, after logging):
+ * fresh data, table, statistics, worked status and exchange sent.
+ */
+async function loadContestRecentQsos() {
+
+    if (!getContestSessionId()) {
+        contestWorkedByBand = new Map();
+        renderContestRecentQsos(null);
+        return;
+    }
 
     try {
 
-        const response =
-            await fetch(
-                `/api/contests/session/${sessionId}/qso?_=` +
-                Date.now(),
-                {
-                    cache: "no-store"
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
         const qsos =
-            Array.isArray(data)
-                ? data
-                : [];
+            await fetchContestSessionQsos();
 
-
-        updateContestBandStatistics(
-            qsos
-        );
-
-
-        updateContestSerialNumber(
-            qsos
-        );
-
-        updateContestExchangeSent();
-
-
-        const contestQsos =
-            qsos
-                .slice()
-                .sort(
-                    (a, b) => {
-
-                        const aTime =
-                            `${a.qso_date || ""} ${a.time_on_utc || ""}`;
-
-                        const bTime =
-                            `${b.qso_date || ""} ${b.time_on_utc || ""}`;
-
-                        return bTime.localeCompare(
-                            aTime
-                        );
-
-                    }
-                )
-                .slice(0, 10);
-
-
-        if (!contestQsos.length) {
-
-            body.innerHTML = `
-                <tr>
-                    <td
-                        colspan="7"
-                        class="contest-empty"
-                    >
-                        No contest QSOs
-                    </td>
-                </tr>
-            `;
-
+        if (!qsos) {
             return;
         }
 
-
-        body.innerHTML =
-            contestQsos
-                .map(
-                    qso => {
-
-                        const exchange =
-                            String(
-                                qso.exchange_received || ""
-                            );
-
-
-                        /*
-                         * Points are not stored in the
-                         * contest QSO schema yet.
-                         */
-                        const points = "—";
-
-
-                        return `
-                            <tr>
-
-                                <td>
-                                    ${escapeContestHtml(
-                                        qso.time_on_utc || ""
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeContestHtml(
-                                        qso.call || ""
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeContestHtml(
-                                        qso.band || ""
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeContestHtml(
-                                        Number(
-                                            qso.frequency
-                                        ).toFixed(3)
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeContestHtml(
-                                        qso.mode || ""
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeContestHtml(
-                                        qso.rst_sent || ""
-                                    )}/${escapeContestHtml(
-                                        qso.rst_rcvd || ""
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeContestHtml(
-                                        exchange
-                                    )}
-                                </td>
-
-                                <td>
-                                    ${escapeContestHtml(
-                                        points
-                                    )}
-                                </td>
-
-                            </tr>
-                        `;
-
-                    }
-                )
-                .join("");
+        applyContestWorkedStatus(qsos);
+        updateContestBandStatistics(qsos);
+        updateContestSerialNumber(qsos);
+        updateContestExchangeSent();
+        renderContestRecentQsos(qsos);
 
     }
     catch (error) {
@@ -1812,136 +1806,165 @@ async function loadContestRecentQsos() {
 
 }
 
-function isHelvetiaContest() {
-
-    const contestId =
-        String(
-            window.contestId || ""
-        ).trim();
-
-    return contestId.startsWith("123-");
-}
 
 
-function updateContestCantonField() {
 
-    const field =
+
+/*
+ * Inline message in the QSO entry area (replaces alert()).
+ * type: "error" | "warn" | "success" | "" (clear)
+ */
+let contestEntryMessageTimer = null;
+
+function showContestEntryMessage(text, type = "error") {
+
+    const box =
         document.getElementById(
-            "contest-canton-field"
+            "contest-entry-message"
         );
 
-    const select =
-        document.getElementById(
-            "contest-canton"
-        );
-
-    if (!field || !select) {
+    if (!box) {
+        if (text) console.warn("Contest:", text);
         return;
     }
 
-    if (isHelvetiaContest()) {
+    clearTimeout(contestEntryMessageTimer);
 
-        field.hidden = false;
+    box.textContent = text || "";
+    box.className =
+        "contest-entry-message" + (text && type ? ` ${type}` : "");
 
-    }
-    else {
-
-        field.hidden = true;
-        select.value = "";
-
+    // Success messages disappear by themselves.
+    if (text && type === "success") {
+        contestEntryMessageTimer =
+            setTimeout(() => showContestEntryMessage(""), 3000);
     }
 
 }
+
+function contestEntryError(text, focusId) {
+
+    showContestEntryMessage(text, "error");
+
+    const field =
+        focusId && document.getElementById(focusId);
+
+    if (field) {
+        field.focus();
+        if (typeof field.select === "function") field.select();
+    }
+
+}
+
+
+/*
+ * Station callsign: from the running session; only if that is missing,
+ * /api/station is asked once and cached (no request per QSO any more).
+ */
+let contestStationConfigCache = null;
+
+async function getContestStationCallsign() {
+
+    const sessionCall =
+        String(window.contestSession?.station_callsign || "")
+            .trim()
+            .toUpperCase();
+
+    if (sessionCall) {
+        return sessionCall;
+    }
+
+    if (!contestStationConfigCache) {
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/station?_=" + Date.now(),
+                    { cache: "no-store" }
+                );
+
+            if (response.ok) {
+                contestStationConfigCache =
+                    await response.json();
+            }
+
+        }
+        catch (error) {
+
+            console.error(
+                "Contest station lookup failed:",
+                error
+            );
+
+        }
+
+    }
+
+    return String(contestStationConfigCache?.callsign || "")
+        .trim()
+        .toUpperCase();
+
+}
+
+
+/*
+ * Dupe confirmation without popup: the first LOG on a dupe shows a
+ * warning, a second LOG for the same call/band logs it anyway.
+ */
+let contestDupeConfirmKey = "";
+
+let contestLogging = false;
 
 
 async function logContestQso() {
 
+    // Prevent double submits (double click, Enter + click).
+    if (contestLogging) {
+        return;
+    }
+
     const call =
-        document.getElementById(
-            "contest-call"
-        )?.value
+        String(
+            document.getElementById("contest-call")?.value || ""
+        )
         .trim()
         .toUpperCase();
 
     if (!call) {
-
-        alert(
-            "Please enter a callsign."
+        return contestEntryError(
+            "Please enter a callsign.",
+            "contest-call"
         );
-
-        return;
     }
 
-
-    const name =
-        document.getElementById(
-            "contest-name"
-        )?.value
-        .trim() || "";
-
-
-    const locator =
-        document.getElementById(
-            "contest-locator"
-        )?.value
-        .trim()
-        .toUpperCase() || "";
-
-
     const rstSent =
-        document.getElementById(
-            "contest-rst-sent"
-        )?.value
-        .trim() || "599";
-
+        document.getElementById("contest-rst-sent")
+            ?.value.trim() || "599";
 
     const rstReceived =
-        document.getElementById(
-            "contest-rst-received"
-        )?.value
-        .trim() || "599";
-
+        document.getElementById("contest-rst-received")
+            ?.value.trim() || "599";
 
     const exchangeSent =
-        document.getElementById(
-            "contest-exchange-sent"
-        )?.value
-        .trim() || "";
-
+        document.getElementById("contest-exchange-sent")
+            ?.value.trim() || "";
 
     const exchangeReceived =
-        document.getElementById(
-            "contest-exchange-received"
-        )?.value
-        .trim() || "";
-
-    const canton =
-        document.getElementById(
-            "contest-canton"
-        )?.value
-        .trim()
-        .toUpperCase() || "";
-
+        document.getElementById("contest-exchange-received")
+            ?.value.trim() || "";
 
     const frequencyText =
-        document.getElementById(
-            "contest-frequency-input"
-        )?.value
-        .trim() || "";
-
+        document.getElementById("contest-frequency-input")
+            ?.value.trim() || "";
 
     const mode =
-        document.getElementById(
-            "contest-mode-input"
-        )?.value
-        .trim() || "";
-
+        document.getElementById("contest-mode-input")
+            ?.value.trim() || "";
 
     const band =
-        document.getElementById(
-            "contest-band-input"
-        )?.value
-        .trim() || "";
+        document.getElementById("contest-band-input")
+            ?.value.trim() || "";
 
 
     /*
@@ -1952,381 +1975,191 @@ async function logContestQso() {
      *
      * Internally the contest log uses kHz.
      */
-
     let frequency =
-        Number(
-            frequencyText.replace(
-                ",",
-                "."
-            )
-        );
-
+        Number(frequencyText.replace(",", "."));
 
     if (
         Number.isFinite(frequency) &&
         frequency > 0 &&
         frequency < 1000
     ) {
-
         frequency *= 1000;
-
     }
 
-
-    if (
-        !Number.isFinite(frequency) ||
-        frequency <= 0
-    ) {
-
-        alert(
-            "Invalid frequency."
+    if (!Number.isFinite(frequency) || frequency <= 0) {
+        return contestEntryError(
+            "Invalid frequency.",
+            "contest-frequency-input"
         );
-
-        return;
     }
-
 
     if (!band || band === "—") {
-
-        alert(
-            "No band available."
+        return contestEntryError(
+            "Please select a band.",
+            "contest-band-input"
         );
-
-        return;
     }
-
 
     if (!mode || mode === "—") {
-
-        alert(
-            "No mode available."
+        return contestEntryError(
+            "Please select a mode.",
+            "contest-mode-input"
         );
-
-        return;
     }
-
-
-    /*
-     * Dupe check (same call, same band, this session).
-     */
-    if (await checkContestDupe()) {
-
-        const proceed =
-            confirm(
-                `${call} is a DUPE on ${band}m.\n\nLog anyway?`
-            );
-
-        if (!proceed) {
-            return;
-        }
-
-    }
-
-
-    /*
-     * Load station configuration.
-     */
-    let stationConfig = {};
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/station?_=" +
-                Date.now(),
-                {
-                    cache: "no-store"
-                }
-            );
-
-
-        if (response.ok) {
-
-            stationConfig =
-                await response.json();
-
-        }
-
-    }
-    catch (error) {
-
-        console.error(
-            "Contest station lookup failed:",
-            error
-        );
-
-    }
-
-
-    if (!stationConfig.callsign) {
-
-        alert(
-            "Station callsign is not configured."
-        );
-
-        return;
-    }
-
-
-    if (!stationConfig.locator) {
-
-        alert(
-            "Station grid is not configured."
-        );
-
-        return;
-    }
-
-
-    /*
-     * UTC timestamp.
-     */
-    const now =
-        new Date();
-
-
-    const qsoDate =
-        now.toISOString()
-            .slice(0, 10);
-
-
-    const timeUtc =
-        now.toISOString()
-            .slice(11, 19);
-
-
-    /*
-     * Exchange information goes into notes
-     * until the normal QSO schema gets
-     * dedicated exchange fields.
-     */
-    const exchangeParts = [];
-
-
-    if (exchangeSent) {
-
-        exchangeParts.push(
-            `Contest Exchange Sent: ${exchangeSent}`
-        );
-
-    }
-
-
-    if (exchangeReceived) {
-
-        exchangeParts.push(
-            `Contest Exchange Received: ${exchangeReceived}`
-        );
-
-    }
-
-    if (canton) {
-
-        exchangeParts.push(
-            `Contest Canton: ${canton}`
-        );
-
-    }
-
-
-console.log(
-    "Contest QSO QRZ data:",
-    {
-        call,
-        name,
-        locator,
-        contestQrzCountry
-    }
-);
-
-
-    /*
-     * Contest QSO
-     *
-     * Contest QSOs are stored exclusively in
-     * contest_qsos via the contest API.
-     */
 
     if (!window.contestSessionId) {
-
-        alert(
+        return contestEntryError(
             "No active contest session."
         );
-
-        return;
     }
 
-
-    if (!activeContestOperatorId) {
-
-        alert(
-            "Please select an active operator."
-        );
-
-        return;
-    }
-
-
-    const operatorSelect =
-        document.getElementById(
+    if (
+        typeof activeContestOperatorId === "undefined" ||
+        !activeContestOperatorId
+    ) {
+        return contestEntryError(
+            "Please select an active operator.",
             "contest-operator"
         );
-
-
-    const selectedOperator =
-        operatorSelect?.selectedOptions?.[0];
-
+    }
 
     const operator =
-        selectedOperator?.textContent
+        document.getElementById("contest-operator")
+            ?.selectedOptions?.[0]
+            ?.textContent
             ?.trim() || "";
 
-
     if (!operator) {
-
-        alert(
-            "Invalid active operator."
+        return contestEntryError(
+            "Invalid active operator.",
+            "contest-operator"
         );
-
-        return;
     }
 
 
-    const qso = {
+    contestLogging = true;
 
-        qso_date:
-            qsoDate,
+    const logButton =
+        document.getElementById("contest-log-button");
 
-        time_on_utc:
-            timeUtc,
-
-        frequency:
-            frequency,
-
-        band:
-            band,
-
-        mode:
-            mode.toUpperCase(),
-
-        call:
-            call,
-
-        rst_sent:
-            rstSent,
-
-        rst_rcvd:
-            rstReceived,
-
-        exchange_sent:
-            exchangeSent,
-
-        exchange_received:
-            exchangeReceived,
-
-        operator:
-            operator,
-
-        station_callsign:
-            String(
-                window.contestSession?.station_callsign ||
-                ""
-            )
-            .trim()
-            .toUpperCase()
-
-    };
-
+    if (logButton) logButton.disabled = true;
 
     try {
+
+        /*
+         * Dupe check (same call, same band, this session).
+         */
+        const dupeKey = `${call}|${band}`;
+
+        if (await checkContestDupe()) {
+
+            if (contestDupeConfirmKey !== dupeKey) {
+
+                contestDupeConfirmKey = dupeKey;
+
+                showContestEntryMessage(
+                    `${call} is a DUPE on ${band}m. ` +
+                    "Press LOG QSO again to log anyway, ESC to cancel.",
+                    "warn"
+                );
+
+                return;
+            }
+
+        }
+
+        contestDupeConfirmKey = "";
+
+
+        const stationCallsign =
+            await getContestStationCallsign();
+
+        if (!stationCallsign) {
+            return contestEntryError(
+                "Station callsign is not configured."
+            );
+        }
+
+
+        /*
+         * UTC timestamp.
+         */
+        const now = new Date();
+
+        const qso = {
+            qso_date: now.toISOString().slice(0, 10),
+            time_on_utc: now.toISOString().slice(11, 19),
+            frequency: frequency,
+            band: band,
+            mode: mode.toUpperCase(),
+            call: call,
+            rst_sent: rstSent,
+            rst_rcvd: rstReceived,
+            exchange_sent: exchangeSent,
+            exchange_received: exchangeReceived,
+            operator: operator,
+            station_callsign: stationCallsign
+        };
+
 
         const response =
             await fetch(
                 `/api/contests/session/${window.contestSessionId}/qso`,
                 {
                     method: "POST",
-
                     headers: {
-                        "Content-Type":
-                            "application/json"
+                        "Content-Type": "application/json"
                     },
-
-                    body:
-                        JSON.stringify(qso)
+                    body: JSON.stringify(qso)
                 }
             );
 
+        let data = {};
 
-        const data =
-            await response.json();
-
+        try {
+            data = await response.json();
+        }
+        catch {
+            // Non-JSON error body: fall back to HTTP status below.
+        }
 
         if (!response.ok) {
-
             throw new Error(
                 data.error ||
                 `HTTP ${response.status}`
             );
-
         }
 
 
-        console.log(
-            "Contest QSO logged:",
-            data
-        );
-
-await loadContestRecentQsos();
-        await loadContestWorkedStatus();
+        // Fresh data after our own insert.
+        await loadContestRecentQsos();
         renderContestBand();
+
 
         /*
          * Prepare next QSO.
          */
-        document.getElementById(
-            "contest-call"
-        ).value = "";
-
-        document.getElementById(
-            "contest-name"
-        ).value = "";
-
-        document.getElementById(
-            "contest-locator"
-        ).value = "";
-
-        const countryField =
-            document.getElementById(
-                "contest-country"
-            );
-
-        if (countryField) {
-            countryField.value = "";
-        }
+        [
+            "contest-call",
+            "contest-name",
+            "contest-country",
+            "contest-locator",
+            "contest-exchange-received"
+        ].forEach(id => {
+            const field = document.getElementById(id);
+            if (field) field.value = "";
+        });
 
         contestQrzCountry = "";
         setContestCallStatus("", "");
-
-        document.getElementById(
-            "contest-exchange-received"
-        ).value = "";
-
-        const cantonField =
-            document.getElementById(
-                "contest-canton"
-            );
-
-        if (cantonField) {
-            cantonField.value = "";
-        }
-
-
         setContestFrequencyPreset(true);
 
-        document.getElementById(
-            "contest-call"
-        ).focus();
+        showContestEntryMessage(
+            `${call} logged on ${band}m.`,
+            "success"
+        );
 
+        document.getElementById("contest-call")?.focus();
 
     }
     catch (error) {
@@ -2336,11 +2169,17 @@ await loadContestRecentQsos();
             error
         );
 
-
-        alert(
-            "Could not save QSO:\n\n" +
-            error.message
+        showContestEntryMessage(
+            `Could not save QSO: ${error.message}`,
+            "error"
         );
+
+    }
+    finally {
+
+        contestLogging = false;
+
+        if (logButton) logButton.disabled = false;
 
     }
 
@@ -2496,8 +2335,7 @@ function resetContestQsoEntry() {
         "contest-exchange-received",
         "contest-name",
         "contest-country",
-        "contest-locator",
-        "contest-canton"
+        "contest-locator"
     ].forEach(id => {
         const field = document.getElementById(id);
         if (field) field.value = "";
@@ -2515,6 +2353,8 @@ function resetContestQsoEntry() {
 
     setContestFrequencyPreset(true);
     setContestCallStatus("", "");
+    showContestEntryMessage("");
+    contestDupeConfirmKey = "";
 
     const callInput =
         document.getElementById("contest-call");
@@ -2551,6 +2391,176 @@ function handleContestEscape(event) {
 
     event.preventDefault();
     resetContestQsoEntry();
+
+}
+
+/*
+ * Enter in any entry field logs the QSO (like N1MM).
+ *
+ * Registered on document in the CAPTURE phase, so it runs before any
+ * other script can intercept Enter on the inputs (stopPropagation,
+ * form handlers etc.). Registered once, directly at script load.
+ */
+function handleContestEnterKey(event) {
+
+    if (
+        event.key !== "Enter" ||
+        event.isComposing ||
+        event.shiftKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.metaKey
+    ) {
+        return;
+    }
+
+    const target = event.target;
+
+    if (!target?.closest?.(".contest-qso-entry")) {
+        return;
+    }
+
+    const tag = target.tagName;
+
+    if (tag !== "INPUT" && tag !== "SELECT" && tag !== "BUTTON") {
+        return;
+    }
+
+    // Handle it here, also for the LOG button (no extra click event).
+    event.preventDefault();
+    event.stopPropagation();
+
+    logContestQso();
+
+}
+
+function setupContestEnterToLog() {
+
+    if (window.__contestEnterToLogInstalled) {
+        return;
+    }
+
+    window.__contestEnterToLogInstalled = true;
+
+    document.addEventListener(
+        "keydown",
+        handleContestEnterKey,
+        true
+    );
+
+}
+
+setupContestEnterToLog();
+
+
+/*
+ * Keep the entry band (e.g. "20") and the live band view ("20m") in sync.
+ * Values are set directly (no synthetic change events), so there is no loop.
+ */
+function setContestLiveBand(bandValue) {
+
+    const liveBand = `${bandValue}m`;
+    const liveSelect =
+        document.getElementById("contest-band-select");
+
+    if (!liveSelect || !CONTEST_BANDS[liveBand]) {
+        return;
+    }
+
+    if (
+        ![...liveSelect.options].some(o => o.value === liveBand)
+    ) {
+        return;
+    }
+
+    if (contestBand === liveBand && liveSelect.value === liveBand) {
+        return;
+    }
+
+    liveSelect.value = liveBand;
+    contestBand = liveBand;
+    renderContestBand();
+
+}
+
+function setContestEntryBand(liveBand) {
+
+    const bandInput =
+        document.getElementById("contest-band-input");
+
+    if (!bandInput) {
+        return;
+    }
+
+    const bandValue =
+        String(liveBand || "").replace(/m$/i, "");
+
+    // WARC bands etc. are not in the contest entry list: leave entry as is.
+    if (
+        ![...bandInput.options].some(o => o.value === bandValue)
+    ) {
+        return;
+    }
+
+    if (bandInput.value === bandValue) {
+        return;
+    }
+
+    bandInput.value = bandValue;
+
+    try {
+        localStorage.setItem("contest.lastBand", bandValue);
+    }
+    catch {
+        // storage not available
+    }
+
+    setContestFrequencyPreset(true);
+    checkContestDupe({ refresh: false });
+
+}
+
+function setupContestBandSync() {
+
+    const bandInput =
+        document.getElementById("contest-band-input");
+
+    const liveSelect =
+        document.getElementById("contest-band-select");
+
+    if (!bandInput || !liveSelect) {
+        return;
+    }
+
+    // Entry -> live view
+    bandInput.addEventListener(
+        "change",
+        () => {
+            if (bandInput.value) {
+                try {
+                    localStorage.setItem("contest.lastBand", bandInput.value);
+                }
+                catch {
+                    // storage not available
+                }
+                setContestLiveBand(bandInput.value);
+            }
+        }
+    );
+
+    // Live view -> entry
+    liveSelect.addEventListener(
+        "change",
+        () => setContestEntryBand(liveSelect.value)
+    );
+
+    // Initial state: entry wins if set, otherwise take the live band.
+    if (bandInput.value) {
+        setContestLiveBand(bandInput.value);
+    }
+    else {
+        setContestEntryBand(liveSelect.value);
+    }
 
 }
 
@@ -2607,6 +2617,7 @@ function setupContestQsoLogger() {
 
                 // Any edit invalidates the previous dupe result.
                 setContestCallStatus("", "");
+                contestDupeConfirmKey = "";
 
             }
         );
@@ -2663,6 +2674,9 @@ function setupContestQsoLogger() {
         "keydown",
         handleContestEscape
     );
+
+    setupContestEnterToLog();
+    setupContestBandSync();
 
 }
 
