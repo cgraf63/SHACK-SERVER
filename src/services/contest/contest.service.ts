@@ -383,15 +383,9 @@ export class ContestService {
                     session_id
                 )
                 REFERENCES contest_sessions(id)
-                ON DELETE CASCADE,
+                ON DELETE CASCADE
 
-                UNIQUE (
-                    session_id,
-                    call,
-                    band
-                )
-
-            );
+		);
         `);
 
 
@@ -1740,15 +1734,6 @@ export class ContestService {
             } | undefined;
 
 
-        if (existing) {
-
-            throw new Error(
-                "Duplicate contest QSO"
-            );
-
-        }
-
-
         const createdAt =
             new Date().toISOString();
 
@@ -1989,15 +1974,6 @@ export class ContestService {
             ) as {
                 id: number;
             } | undefined;
-
-
-        if (duplicate) {
-
-            throw new Error(
-                "Duplicate contest QSO"
-            );
-
-        }
 
 
         this.db.prepare(`

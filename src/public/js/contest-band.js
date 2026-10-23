@@ -2339,12 +2339,6 @@ async function getContestStationCallsign() {
 }
 
 
-/*
- * Dupe confirmation without popup: the first LOG on a dupe shows a
- * warning, a second LOG for the same call/band logs it anyway.
- */
-let contestDupeConfirmKey = "";
-
 let contestLogging = false;
 
 
@@ -2479,27 +2473,10 @@ async function logContestQso() {
 
         /*
          * Dupe check (same call, same band, this session).
+         * A dupe is only flagged (red field + label), never blocked:
+         * the QSO is logged directly, like in N1MM.
          */
-        const dupeKey = `${call}|${band}`;
-
-        if (await checkContestDupe()) {
-
-            if (contestDupeConfirmKey !== dupeKey) {
-
-                contestDupeConfirmKey = dupeKey;
-
-                showContestEntryMessage(
-                    `${call} is a DUPE on ${band}m. ` +
-                    "Press LOG QSO again to log anyway, ESC to cancel.",
-                    "warn"
-                );
-
-                return;
-            }
-
-        }
-
-        contestDupeConfirmKey = "";
+        const isDupe = await checkContestDupe();
 
 
         const stationCallsign =
@@ -2586,8 +2563,10 @@ async function logContestQso() {
         if (result.ok) {
 
             showContestEntryMessage(
-                `${call} logged on ${band}m.`,
-                "success"
+                isDupe
+                    ? `${call} logged on ${band}m (DUPE).`
+                    : `${call} logged on ${band}m.`,
+                isDupe ? "warn" : "success"
             );
 
         }
@@ -2796,7 +2775,6 @@ function resetContestQsoEntry() {
     setContestFrequencyPreset(true);
     setContestCallStatus("", "");
     showContestEntryMessage("");
-    contestDupeConfirmKey = "";
 
     const callInput =
         document.getElementById("contest-call");
@@ -3059,7 +3037,6 @@ function setupContestQsoLogger() {
 
                 // Any edit invalidates the previous dupe result.
                 setContestCallStatus("", "");
-                contestDupeConfirmKey = "";
 
             }
         );
