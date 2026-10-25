@@ -79,6 +79,337 @@ let contestBand =
 
 let contestSpots = [];
 
+/* =========================================================================
+ * CAT CONTROL
+ *
+ * Read:  /api/radio is polled every second. When the transceiver's
+ *        frequency or mode CHANGES, frequency, band and mode of the entry
+ *        form follow. A value typed by hand stays until the rig changes.
+ * Write: clicking a spot in the Live Band tunes the active transceiver
+ *        to the spot frequency and mode (same as the dashboard).
+ * ========================================================================= */
+
+const CONTEST_CAT_POLL_MS = 1000;
+
+const CONTEST_CAT_ENABLED_KEY = "contest.catEnabled";
+
+/*
+ * CAT on/off is a per-browser setting (Multi-OP: only the position at
+ * the transceiver switches it on). Default: off.
+ */
+function isContestCatEnabled() {
+
+    try {
+        return localStorage.getItem(CONTEST_CAT_ENABLED_KEY) === "1";
+    }
+    catch {
+        return false;
+    }
+
+}
+
+function setContestCatEnabled(enabled) {
+
+    try {
+        localStorage.setItem(CONTEST_CAT_ENABLED_KEY, enabled ? "1" : "0");
+    }
+    catch {
+        // storage not available
+    }
+
+    renderContestCatToggle();
+
+    if (enabled) {
+        // Take over the transceiver state immediately.
+        contestCat.lastHz = null;
+        contestCat.lastMode = null;
+        pollContestCat();
+    }
+
+}
+
+function renderContestCatToggle() {
+
+    const button = document.getElementById("contest-cat-toggle");
+
+    if (!button) {
+        return;
+    }
+
+    const enabled = isContestCatEnabled();
+
+    button.classList.toggle("on", enabled);
+    button.setAttribute("aria-pressed", enabled ? "true" : "false");
+    button.textContent = enabled ? "CAT ON" : "CAT OFF";
+    button.title = enabled
+        ? "This position follows and tunes the transceiver. Click to switch off."
+        : "This position does not use the transceiver. Click to switch on.";
+
+}
+
+function setupContestCatToggle() {
+
+    const button = document.getElementById("contest-cat-toggle");
+
+    if (button) {
+        button.addEventListener("click", () =>
+            setContestCatEnabled(!isContestCatEnabled())
+        );
+    }
+
+    renderContestCatToggle();
+
+}
+
+const contestCat = {
+    connected: false,
+    hz: 0,
+    mode: "",
+    lastHz: null,
+    lastMode: null,
+    polling: false
+};
+
+
+/*
+ * Rig mode -> contest entry mode (SSB / CW / RTTY / FT8).
+ */
+function contestEntryModeFromRig(rigMode) {
+
+    const mode = String(rigMode || "").toUpperCase();
+
+    if (mode === "LSB" || mode === "USB") return "SSB";
+    if (mode.startsWith("CW")) return "CW";
+    if (mode.startsWith("RTTY")) return "RTTY";
+    if (mode.startsWith("DATA") || mode === "PSK") return "FT8";
+
+    return "";
+
+}
+
+
+/*
+ * Spot mode -> rig mode (identical to the dashboard):
+ * CW -> CW-L, everything else LSB below 10 MHz, USB above.
+ */
+function contestRigModeForSpot(spotMode, frequencyHz) {
+
+    const mode = String(spotMode || "").toUpperCase();
+
+    if (mode === "CW" || mode === "CW-R") {
+        return "CW-L";
+    }
+
+    return frequencyHz < 10000000 ? "LSB" : "USB";
+
+}
+
+
+/*
+ * kHz -> contest entry band ("160" ... "10"), "" outside contest bands.
+ */
+function contestEntryBandFromKHz(kHz) {
+
+    const mhz = Number(kHz) / 1000;
+
+    for (const band of ["160", "80", "40", "20", "15", "10"]) {
+        const range = CONTEST_BANDS[`${band}m`];
+        if (range && mhz >= range.min && mhz <= range.max) {
+            return band;
+        }
+    }
+
+    return "";
+
+}
+
+
+function formatContestKHz(hz) {
+
+    // 14205500 Hz -> "14205.5", 14200000 Hz -> "14200"
+    return String(Number((hz / 1000).toFixed(2)));
+
+}
+
+
+/*
+ * Write the transceiver state into the entry form.
+ */
+function applyContestCatToEntry() {
+
+    const frequencyInput =
+        document.getElementById("contest-frequency-input");
+
+    const bandInput =
+        document.getElementById("contest-band-input");
+
+    const modeInput =
+        document.getElementById("contest-mode-input");
+
+    const kHz = contestCat.hz / 1000;
+
+    // Do not overwrite a frequency the operator is typing right now.
+    if (
+        frequencyInput &&
+        document.activeElement !== frequencyInput
+    ) {
+        frequencyInput.value = formatContestKHz(contestCat.hz);
+    }
+
+    const band = contestEntryBandFromKHz(kHz);
+
+    if (bandInput && band && bandInput.value !== band) {
+
+        bandInput.value = band;
+
+        try {
+            localStorage.setItem("contest.lastBand", band);
+        }
+        catch {
+            // storage not available
+        }
+
+        setContestLiveBand(band);
+        checkContestDupe({ refresh: false });
+
+    }
+
+    const entryMode = contestEntryModeFromRig(contestCat.mode);
+
+    if (
+        modeInput &&
+        entryMode &&
+        [...modeInput.options].some(o => o.value === entryMode) &&
+        modeInput.value !== entryMode
+    ) {
+
+        modeInput.value = entryMode;
+
+        try {
+            localStorage.setItem("contest.lastMode", entryMode);
+        }
+        catch {
+            // storage not available
+        }
+
+    }
+
+}
+
+
+/*
+ * Poll the transceiver (also refreshes the STATION card).
+ */
+async function pollContestCat() {
+
+    if (contestCat.polling) {
+        return;
+    }
+
+    contestCat.polling = true;
+
+    try {
+
+        const state = await loadContestRadio();
+
+        if (!state || !state.connected || !(state.hz > 0)) {
+            contestCat.connected = false;
+            return;
+        }
+
+        contestCat.connected = true;
+        contestCat.hz = state.hz;
+        contestCat.mode = state.mode;
+
+        const changed =
+            contestCat.lastHz === null ||
+            Math.abs(state.hz - contestCat.lastHz) > 20 ||
+            state.mode !== contestCat.lastMode;
+
+        // While CAT is off, keep the "last seen" state unchanged, so that
+        // switching on takes over the current transceiver state.
+        if (isContestCatEnabled()) {
+            contestCat.lastHz = state.hz;
+            contestCat.lastMode = state.mode;
+        }
+
+        if (changed && isContestCatEnabled()) {
+            applyContestCatToEntry();
+        }
+
+    }
+    finally {
+
+        contestCat.polling = false;
+
+    }
+
+}
+
+
+/*
+ * Tune the active transceiver (spot click).
+ */
+async function tuneContestRadio(frequencyKHz, spotMode) {
+
+    if (!isContestCatEnabled() || !contestCat.connected) {
+        return;
+    }
+
+    const frequencyHz = Math.round(Number(frequencyKHz) * 1000);
+
+    if (!Number.isFinite(frequencyHz) || frequencyHz <= 0) {
+        return;
+    }
+
+    const rigMode = contestRigModeForSpot(spotMode, frequencyHz);
+
+    // The entry form already shows the spot values: the next poll must
+    // not overwrite them (e.g. an FT8 spot is tuned as USB).
+    contestCat.lastHz = frequencyHz;
+    contestCat.lastMode = rigMode;
+
+    try {
+
+        const response = await fetch("/api/radio/tune", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                frequency: frequencyHz,
+                mode: rigMode
+            })
+        });
+
+        if (!response.ok) {
+
+            let data = {};
+
+            try {
+                data = await response.json();
+            }
+            catch {
+                // Non-JSON body
+            }
+
+            throw new Error(data.error || `HTTP ${response.status}`);
+
+        }
+
+    }
+    catch (error) {
+
+        console.error("Contest radio tune failed:", error);
+
+        showContestEntryMessage(
+            `Radio tune failed: ${error.message}`,
+            "warn"
+        );
+
+    }
+
+}
+
+
 /* Contest QSOs already worked in the current session, grouped by band. */
 let contestWorkedByBand = new Map();
 
@@ -245,7 +576,7 @@ async function loadContestRadio() {
         );
 
     if (!container) {
-        return;
+        return null;
     }
 
 
@@ -293,7 +624,7 @@ async function loadContestRadio() {
                 </div>
             `;
 
-            return;
+            return null;
 
         }
 
@@ -352,6 +683,12 @@ async function loadContestRadio() {
             </div>
         `;
 
+        return {
+            connected: !!(data.connected ?? radio.connected),
+            hz: Number(data.frequency ?? radio.frequency) || 0,
+            mode: String(data.mode ?? radio.mode ?? "").toUpperCase()
+        };
+
     }
     catch (error) {
 
@@ -365,6 +702,8 @@ async function loadContestRadio() {
                 Radio unavailable
             </div>
         `;
+
+        return null;
 
     }
 
@@ -1015,21 +1354,18 @@ item.addEventListener(
         /*
          * FREQUENCY
          *
-         * Spot frequency is in kHz.
+         * In the band view spot.frequency was converted to MHz,
+         * the entry field and the radio use kHz.
          */
+
+        const spotKHz =
+            Number(spot.frequency) * 1000;
 
         if (frequency) {
 
-            const spotFrequency =
-                Number(
-                    spot.frequency
-                );
-
             frequency.value =
-                Number.isFinite(
-                    spotFrequency
-                )
-                    ? spotFrequency.toFixed(3)
+                Number.isFinite(spotKHz) && spotKHz > 0
+                    ? formatContestKHz(spotKHz * 1000)
                     : "";
 
         }
@@ -1123,6 +1459,15 @@ item.addEventListener(
 
         lookupContestSpotCallsign(
             spot.call || ""
+        );
+
+
+        /*
+         * CAT: tune the transceiver to the spot.
+         */
+        tuneContestRadio(
+            spotKHz,
+            spot.mode
         );
 
 
@@ -1479,7 +1824,12 @@ function initContestBandViewer() {
      */
     renderContestBand();
 
-   loadContestRadio();
+    /*
+     * CAT: read frequency/mode of the transceiver continuously.
+     */
+    setupContestCatToggle();
+    pollContestCat();
+    setInterval(pollContestCat, CONTEST_CAT_POLL_MS);
 
     loadContestSpots();
 
@@ -1703,6 +2053,18 @@ function fitContestRecentRows(body) {
 
 }
 
+/*
+ * Operator column: show only the callsign ("HB9ISO – Christoph" -> "HB9ISO"),
+ * the full name is in the tooltip.
+ */
+function contestOperatorCall(operator) {
+
+    return String(operator || "")
+        .split(/\s+[–-]\s+/)[0]
+        .trim();
+
+}
+
 function renderContestRecentQsos(qsos) {
 
     const body =
@@ -1718,7 +2080,7 @@ function renderContestRecentQsos(qsos) {
 
         body.innerHTML = `
             <tr>
-                <td colspan="7" class="contest-empty">
+                <td colspan="8" class="contest-empty">
                     No active contest session
                 </td>
             </tr>
@@ -1747,7 +2109,7 @@ function renderContestRecentQsos(qsos) {
 
         body.innerHTML = `
             <tr>
-                <td colspan="7" class="contest-empty">
+                <td colspan="8" class="contest-empty">
                     No contest QSOs
                 </td>
             </tr>
@@ -1787,6 +2149,7 @@ function renderContestRecentQsos(qsos) {
                         <td>${escapeContestHtml(qso.mode || "")}</td>
                         <td>${escapeContestHtml(qso.rst_sent || "")}/${escapeContestHtml(qso.rst_rcvd || "")}</td>
                         <td>${escapeContestHtml(qso.exchange_received || "")}</td>
+                        <td title="${escapeContestHtml(qso.operator || "")}">${escapeContestHtml(contestOperatorCall(qso.operator))}</td>
                     </tr>
                 `;
 
@@ -2607,6 +2970,7 @@ async function logContestQso() {
 }
 
 
+
 /*
  * Band-specific default frequency (kHz). Spot clicks may temporarily
  * replace the field; after logging, restore the selected band's preset.
@@ -2625,7 +2989,18 @@ function setContestFrequencyPreset(force = false) {
     const frequencyInput = document.getElementById("contest-frequency-input");
     if (!bandInput || !frequencyInput) return;
 
-    const preset = CONTEST_FREQUENCY_PRESETS[String(bandInput.value || "")];
+    // With CAT: the transceiver frequency wins when it is on the selected band.
+    const rigOnBand =
+        isContestCatEnabled() &&
+        contestCat.connected &&
+        contestCat.hz > 0 &&
+        contestEntryBandFromKHz(contestCat.hz / 1000) === String(bandInput.value || "");
+
+    const preset =
+        rigOnBand
+            ? formatContestKHz(contestCat.hz)
+            : CONTEST_FREQUENCY_PRESETS[String(bandInput.value || "")];
+
     if (preset && (force || !frequencyInput.value.trim())) {
         frequencyInput.value = preset;
     }

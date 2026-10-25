@@ -52,6 +52,22 @@ export class Ftdx10Service implements RadioService {
     private activeVfo = "A";
     private modeB = "UNKNOWN";
 
+    /*
+     * Automatic reconnect.
+     * The CP2105 USB chip of the FTDX10 is visible even when the
+     * transceiver is off, but the UART can only be opened while it is on
+     * ("cp210x_open - Unable to enable UART"). So: retry until it works,
+     * and reopen after a disconnect or when no data arrives any more.
+     */
+    private static readonly RECONNECT_DELAY_MS = 5000;
+    private static readonly RX_TIMEOUT_MS = 15000;
+
+    private pollTimer: ReturnType<typeof setInterval> | null = null;
+    private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    private lastOpenError = "";
+    private lastRxAt = 0;
+    private opening = false;
+
     private cwMemories: string[] = [
         "",
         "",
@@ -90,6 +106,8 @@ export class Ftdx10Service implements RadioService {
 
         this.port.on("close", () => {
             console.log("FTDX10 CAT disconnected");
+            this.stopPolling();
+            this.scheduleReconnect();
         });
     }
 
@@ -105,25 +123,82 @@ export class Ftdx10Service implements RadioService {
             return;
         }
 
-        if (this.port.isOpen) {
+        this.openPort();
+    }
+
+    private openPort(): void {
+        if (this.port.isOpen || this.opening) {
             return;
         }
 
+        this.opening = true;
+
         this.port.open((error) => {
+            this.opening = false;
+
             if (error) {
-                console.error(
-                    "FTDX10 CAT open error:",
-                    error.message
+                // Log each different error once, not every 5 seconds.
+                if (error.message !== this.lastOpenError) {
+                    console.error(
+                        "FTDX10 CAT open error:",
+                        error.message,
+                        `- retrying every ${Ftdx10Service.RECONNECT_DELAY_MS / 1000} s`
+                    );
+                    this.lastOpenError = error.message;
+                }
+
+                this.scheduleReconnect();
+                return;
+            }
+
+            this.lastOpenError = "";
+            this.lastRxAt = Date.now();
+            this.startPolling();
+        });
+    }
+
+    private scheduleReconnect(): void {
+        if (this.reconnectTimer) {
+            return;
+        }
+
+        this.reconnectTimer = setTimeout(() => {
+            this.reconnectTimer = null;
+            this.openPort();
+        }, Ftdx10Service.RECONNECT_DELAY_MS);
+    }
+
+    private startPolling(): void {
+        this.stopPolling();
+
+        this.poll();
+
+        this.pollTimer = setInterval(() => {
+            // Port open but the transceiver stopped answering:
+            // close it, the close handler reconnects.
+            if (
+                this.port.isOpen &&
+                Date.now() - this.lastRxAt > Ftdx10Service.RX_TIMEOUT_MS
+            ) {
+                console.warn(
+                    "FTDX10 CAT: no data for",
+                    Ftdx10Service.RX_TIMEOUT_MS / 1000,
+                    "s - reopening port"
                 );
+                this.lastRxAt = Date.now();
+                this.port.close();
                 return;
             }
 
             this.poll();
+        }, 1000);
+    }
 
-            setInterval(() => {
-                this.poll();
-            }, 1000);
-        });
+    private stopPolling(): void {
+        if (this.pollTimer) {
+            clearInterval(this.pollTimer);
+            this.pollTimer = null;
+        }
     }
 
     private poll(): void {
@@ -182,6 +257,7 @@ export class Ftdx10Service implements RadioService {
     }
 
     private handleData(data: string): void {
+        this.lastRxAt = Date.now();
         this.buffer += data;
 
         let endIndex: number;

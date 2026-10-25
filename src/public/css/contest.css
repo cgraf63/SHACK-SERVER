@@ -2124,3 +2124,48 @@ body:has(#contest-session) #utcClock {
     margin-right: 5px;
     font-style: normal;
 }
+
+
+/* =========================================================
+ * Station card: CAT on/off per operating position
+ * ========================================================= */
+
+.contest-station-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.contest-station-header .contest-station-title {
+    margin-bottom: 0;
+}
+
+.contest-cat-toggle {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    color: #84929b;
+    background: #101f29;
+    border: 1px solid #2b424e;
+}
+
+.contest-cat-toggle:hover {
+    color: #ffffff;
+    border-color: #3a5462;
+}
+
+.contest-cat-toggle.on {
+    color: #5EEAD4;
+    background: rgba(0, 212, 200, 0.12);
+    border-color: rgba(0, 212, 200, 0.45);
+}
+
+.contest-cat-toggle.on:hover {
+    background: rgba(0, 212, 200, 0.22);
+    border-color: rgba(0, 212, 200, 0.70);
+}
