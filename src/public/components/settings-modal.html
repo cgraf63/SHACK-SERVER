@@ -72,6 +72,145 @@
 
 
     <!-- =========================
+         TRANSCEIVERS
+         (saved immediately, independent of "Save Settings")
+         ========================= -->
+
+    <section class="settings-section radio-settings">
+
+        <h2>Transceivers</h2>
+
+        <p class="radio-settings-intro">
+            Changes in this section are applied immediately.
+            Use <strong>Test connection</strong> before saving.
+        </p>
+
+        <div
+            id="radio-list"
+            class="radio-list">
+        </div>
+
+        <button
+            id="radio-add"
+            class="settings-secondary-button"
+            type="button">
+
+            + Add Transceiver
+
+        </button>
+
+
+        <!-- Add / edit form -->
+
+        <div
+            id="radio-form"
+            class="radio-form"
+            hidden>
+
+            <div class="radio-form-title" id="radio-form-title">
+                Add Transceiver
+            </div>
+
+            <div class="radio-form-grid">
+
+                <label for="radio-name">Name</label>
+                <input
+                    id="radio-name"
+                    type="text"
+                    maxlength="60"
+                    placeholder="e.g. YAESU FTDX10">
+
+
+                <label for="radio-driver">Transceiver / driver</label>
+                <div>
+                    <select id="radio-driver"></select>
+                    <div id="radio-driver-models" class="radio-help"></div>
+                </div>
+
+
+                <label for="radio-port">Serial port</label>
+                <div>
+                    <div class="radio-port-row">
+                        <select id="radio-port"></select>
+                        <button
+                            id="radio-port-refresh"
+                            class="settings-secondary-button"
+                            type="button"
+                            title="Search for ports again (e.g. after plugging in)">
+                            Refresh
+                        </button>
+                    </div>
+                    <input
+                        id="radio-port-manual"
+                        type="text"
+                        placeholder="/dev/..."
+                        hidden>
+                    <div id="radio-port-help" class="radio-help"></div>
+                </div>
+
+
+                <label for="radio-baud">Baud rate</label>
+                <select id="radio-baud"></select>
+
+
+                <label for="radio-civ" class="radio-civ-field">CI-V address (hex)</label>
+                <input
+                    id="radio-civ"
+                    class="radio-civ-field"
+                    type="text"
+                    maxlength="2"
+                    placeholder="A4">
+
+
+                <label for="radio-enabled">Enabled</label>
+                <label class="radio-check">
+                    <input id="radio-enabled" type="checkbox" checked>
+                    <span>Connect this transceiver</span>
+                </label>
+
+            </div>
+
+            <div id="radio-driver-hint" class="radio-hint"></div>
+
+            <div class="radio-form-actions">
+
+                <button
+                    id="radio-test"
+                    class="settings-secondary-button radio-test-button"
+                    type="button">
+                    Test connection
+                </button>
+
+                <button
+                    id="radio-save"
+                    class="settings-save"
+                    type="button">
+                    Save transceiver
+                </button>
+
+                <button
+                    id="radio-cancel"
+                    class="settings-cancel"
+                    type="button">
+                    Cancel
+                </button>
+
+            </div>
+
+            <div
+                id="radio-result"
+                class="radio-result"
+                role="status"
+                aria-live="polite"
+                hidden>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
          DX SOURCES
          ========================= -->
 

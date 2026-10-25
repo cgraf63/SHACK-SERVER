@@ -1,9 +1,8 @@
-import { SerialPort } from "serialport";
+import { SerialRadioBase } from "./serial-radio-base.js";
 import type { RadioService } from "./radio.interface.js";
 import { FTDX10_CAT } from "./ftdx10/ftdx10.cat.js";
 
-export class Ftdx10Service implements RadioService {
-    private port: SerialPort;
+export class Ftdx10Service extends SerialRadioBase implements RadioService {
     private buffer = "";
     private frequency = 0;
     private frequencyB = 0;
@@ -52,22 +51,6 @@ export class Ftdx10Service implements RadioService {
     private activeVfo = "A";
     private modeB = "UNKNOWN";
 
-    /*
-     * Automatic reconnect.
-     * The CP2105 USB chip of the FTDX10 is visible even when the
-     * transceiver is off, but the UART can only be opened while it is on
-     * ("cp210x_open - Unable to enable UART"). So: retry until it works,
-     * and reopen after a disconnect or when no data arrives any more.
-     */
-    private static readonly RECONNECT_DELAY_MS = 5000;
-    private static readonly RX_TIMEOUT_MS = 15000;
-
-    private pollTimer: ReturnType<typeof setInterval> | null = null;
-    private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    private lastOpenError = "";
-    private lastRxAt = 0;
-    private opening = false;
-
     private cwMemories: string[] = [
         "",
         "",
@@ -76,132 +59,29 @@ export class Ftdx10Service implements RadioService {
         "",
     ];
 
-    constructor(
-        private readonly device: string,
-        private readonly baudRate: number
-    ) {
-        this.port = new SerialPort({
-            path: device,
+    constructor(device: string, baudRate: number) {
+        super({
+            name: "FTDX10 CAT",
+            device,
             baudRate,
             dataBits: 8,
             stopBits: 1,
             parity: "none",
-            autoOpen: false,
-	    rtscts: false,
-        });
-
-        this.port.on("data", (data: Buffer) => {
-            this.handleData(data.toString());
-        });
-
-        this.port.on("error", (error) => {
-            console.error("FTDX10 CAT error:", error.message);
-        });
-
-        this.port.on("open", () => {
-            console.log(
-                `FTDX10 CAT connected: ${this.device} @ ${this.baudRate}`
-            );
-        });
-
-        this.port.on("close", () => {
-            console.log("FTDX10 CAT disconnected");
-            this.stopPolling();
-            this.scheduleReconnect();
+            rtscts: false,
+            pollIntervalMs: 1000,
+            rxTimeoutMs: 15000,
         });
     }
 
-
-
-    isConnected(): boolean {
-        return this.port.isOpen;
+    protected onData(data: Buffer): void {
+        this.handleData(data.toString());
     }
 
-    start(): void {
-        if (!this.device) {
-            console.log("FTDX10: no CAT device configured");
-            return;
-        }
 
-        this.openPort();
-    }
 
-    private openPort(): void {
-        if (this.port.isOpen || this.opening) {
-            return;
-        }
 
-        this.opening = true;
 
-        this.port.open((error) => {
-            this.opening = false;
-
-            if (error) {
-                // Log each different error once, not every 5 seconds.
-                if (error.message !== this.lastOpenError) {
-                    console.error(
-                        "FTDX10 CAT open error:",
-                        error.message,
-                        `- retrying every ${Ftdx10Service.RECONNECT_DELAY_MS / 1000} s`
-                    );
-                    this.lastOpenError = error.message;
-                }
-
-                this.scheduleReconnect();
-                return;
-            }
-
-            this.lastOpenError = "";
-            this.lastRxAt = Date.now();
-            this.startPolling();
-        });
-    }
-
-    private scheduleReconnect(): void {
-        if (this.reconnectTimer) {
-            return;
-        }
-
-        this.reconnectTimer = setTimeout(() => {
-            this.reconnectTimer = null;
-            this.openPort();
-        }, Ftdx10Service.RECONNECT_DELAY_MS);
-    }
-
-    private startPolling(): void {
-        this.stopPolling();
-
-        this.poll();
-
-        this.pollTimer = setInterval(() => {
-            // Port open but the transceiver stopped answering:
-            // close it, the close handler reconnects.
-            if (
-                this.port.isOpen &&
-                Date.now() - this.lastRxAt > Ftdx10Service.RX_TIMEOUT_MS
-            ) {
-                console.warn(
-                    "FTDX10 CAT: no data for",
-                    Ftdx10Service.RX_TIMEOUT_MS / 1000,
-                    "s - reopening port"
-                );
-                this.lastRxAt = Date.now();
-                this.port.close();
-                return;
-            }
-
-            this.poll();
-        }, 1000);
-    }
-
-    private stopPolling(): void {
-        if (this.pollTimer) {
-            clearInterval(this.pollTimer);
-            this.pollTimer = null;
-        }
-    }
-
-    private poll(): void {
+    protected override poll(): void {
         this.send(FTDX10_CAT.vfoA.get);
         this.send(FTDX10_CAT.vfoB.get);
         this.send("VS;");
@@ -249,15 +129,10 @@ export class Ftdx10Service implements RadioService {
     }
 
     private send(command: string): void {
-        if (!this.port.isOpen) {
-            return;
-        }
-
-        this.port.write(command);
+        this.write(command);
     }
 
     private handleData(data: string): void {
-        this.lastRxAt = Date.now();
         this.buffer += data;
 
         let endIndex: number;
@@ -1183,7 +1058,7 @@ setFrequencyB(frequency: number): void {
 
             const cleanup = () => {
 
-                this.port.removeListener(
+                this.port?.removeListener(
                     "data",
                     onData
                 );
@@ -1225,7 +1100,7 @@ setFrequencyB(frequency: number): void {
 
             }, timeoutMs);
 
-            this.port.on("data", onData);
+            this.port?.on("data", onData);
 
         });
 
@@ -1239,7 +1114,7 @@ setFrequencyB(frequency: number): void {
     */
     async ensureTunerReady(): Promise<boolean> {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
             return false;
         }
 
@@ -1280,7 +1155,7 @@ setFrequencyB(frequency: number): void {
         memory: number
     ): Promise<boolean> {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
             return false;
         }
 
@@ -1326,7 +1201,7 @@ setFrequencyB(frequency: number): void {
     }
 
     async tune(): Promise<boolean> {
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
             return false;
         }
 
@@ -1344,7 +1219,7 @@ setFrequencyB(frequency: number): void {
     }
 
     async monitor(level: number): Promise<boolean> {
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
             return false;
         }
 
@@ -1442,7 +1317,7 @@ setFrequencyB(frequency: number): void {
     }
 
 	setPtt(enabled: boolean): void {
-    		if (!this.port.isOpen) {
+    		if (!this.isConnected()) {
         	return;
     }
 
@@ -1454,7 +1329,7 @@ setFrequencyB(frequency: number): void {
 }
 
     setSplit(enabled: boolean): void {
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
             return;
         }
 
@@ -1488,7 +1363,7 @@ setFrequencyB(frequency: number): void {
     }
 
     setPower(power: number): void {
-        if (!this.port.isOpen) return;
+        if (!this.isConnected()) return;
 
         const value = Math.max(
             5,
@@ -1507,7 +1382,7 @@ setFrequencyB(frequency: number): void {
     }
 
     setPowerState(enabled: boolean): void {
-        if (!this.port.isOpen) return;
+        if (!this.isConnected()) return;
 
         if (enabled) {
             // FTDX10 requires PS1; twice with 1–2 seconds interval.

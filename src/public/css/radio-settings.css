@@ -1,0 +1,316 @@
+/* =====================================================
+   SETTINGS → TRANSCEIVERS
+   (loaded by js/radio-settings.js)
+   ===================================================== */
+
+.radio-settings [hidden] {
+    display: none !important;
+}
+
+.radio-settings-intro {
+    margin: -8px 0 14px 0;
+    font-size: 13px;
+    opacity: 0.75;
+}
+
+.radio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.radio-empty {
+    padding: 14px;
+    border: 1px dashed var(--border-color, #303640);
+    border-radius: 8px;
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.radio-error-text {
+    color: #ff7a7a;
+    opacity: 1;
+}
+
+.radio-row {
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color, #303640);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.radio-row-disabled .radio-main {
+    opacity: 0.55;
+}
+
+.radio-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.radio-dot-ok   { background: #2ecc71; box-shadow: 0 0 6px rgba(46, 204, 113, 0.6); }
+.radio-dot-warn { background: #ffc400; }
+.radio-dot-err  { background: #ff5252; }
+.radio-dot-off  { background: #5d6b75; }
+
+.radio-main {
+    min-width: 0;
+}
+
+.radio-name {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.radio-badge {
+    margin-left: 6px;
+    padding: 1px 6px;
+    border: 1px solid rgba(0, 212, 200, 0.45);
+    border-radius: 3px;
+    background: rgba(0, 212, 200, 0.12);
+    color: #5EEAD4;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+}
+
+.radio-meta {
+    margin-top: 2px;
+    font-size: 12px;
+    opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.radio-status {
+    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.radio-status-ok   { color: #2ecc71; }
+.radio-status-warn { color: #ffc400; }
+.radio-status-err  { color: #ff7a7a; }
+.radio-status-off  { opacity: 0.6; }
+
+.radio-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.radio-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.radio-check input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.radio-row-button {
+    padding: 5px 10px;
+    border: 1px solid var(--border-color, #303640);
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.radio-row-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.radio-row-delete:hover,
+.radio-row-confirm {
+    border-color: rgba(255, 82, 82, 0.6);
+    background: rgba(255, 82, 82, 0.14);
+    color: #ff9a9a;
+}
+
+/* ---------- form ---------- */
+
+.radio-form {
+    margin-top: 14px;
+    padding: 16px;
+    border: 1px solid rgba(0, 212, 200, 0.45);
+    border-radius: 8px;
+    background: rgba(0, 212, 200, 0.04);
+}
+
+.radio-form-title {
+    margin-bottom: 14px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.radio-form-grid {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 10px 16px;
+    align-items: start;
+}
+
+.radio-form-grid > label {
+    padding-top: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.radio-form-grid input[type="text"],
+.radio-form-grid select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border: 1px solid var(--border-color, #303640);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.04);
+    color: inherit;
+    font: inherit;
+    font-size: 13px;
+}
+
+.radio-form-grid select option {
+    background: #15191f;
+    color: #e6edf3;
+}
+
+.radio-form-grid #radio-civ {
+    width: 70px;
+    text-transform: uppercase;
+}
+
+.radio-form-grid .radio-check {
+    padding-top: 6px;
+}
+
+.radio-port-row {
+    display: flex;
+    gap: 8px;
+}
+
+.radio-port-row select {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#radio-port-manual {
+    margin-top: 8px;
+}
+
+.radio-help {
+    margin-top: 4px;
+    font-size: 12px;
+    opacity: 0.7;
+    word-break: break-all;
+}
+
+.radio-hint {
+    margin-top: 14px;
+    padding: 8px 10px;
+    border-left: 3px solid rgba(0, 212, 200, 0.6);
+    background: rgba(0, 212, 200, 0.06);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.radio-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.radio-form-actions button:disabled {
+    opacity: 0.5;
+    cursor: wait;
+}
+
+.radio-test-button {
+    color: #5EEAD4;
+    border-color: rgba(0, 212, 200, 0.45);
+}
+
+.radio-result {
+    margin-top: 12px;
+    padding: 9px 12px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.radio-result div {
+    margin-top: 4px;
+}
+
+.radio-result-detail {
+    font-family: monospace;
+    font-size: 11px;
+    opacity: 0.75;
+    word-break: break-all;
+}
+
+.radio-result-ok   { color: #2ecc71; border-color: rgba(46, 204, 113, 0.55); background: #0b2418; }
+.radio-result-err  { color: #ff9a9a; border-color: rgba(255, 82, 82, 0.55);  background: #2a1010; }
+.radio-result-info { color: #b8cbd8; border-color: rgba(110, 160, 185, 0.4); background: rgba(65, 100, 120, 0.14); }
+
+@media (max-width: 700px) {
+
+    .radio-row {
+        grid-template-columns: 12px minmax(0, 1fr);
+    }
+
+    .radio-row-actions {
+        grid-column: 2;
+    }
+
+    .radio-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .radio-form-grid > label {
+        padding-top: 0;
+    }
+}
+
+
+/* =====================================================
+   Settings dialog: make the content scrollable.
+   The dialog contains #settings-content (wrapper from sidebar.html)
+   which contains header + .settings-content. Without these rules the
+   wrapper grows with its content and the dialog simply cuts it off
+   (DX Sources / Save buttons unreachable once the content is taller
+   than the screen).
+   ===================================================== */
+
+.settings-dialog > #settings-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.settings-dialog .settings-header {
+    flex: 0 0 auto;
+}
+
+.settings-dialog .settings-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}

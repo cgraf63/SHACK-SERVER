@@ -5,6 +5,7 @@ import compression from "compression";
 import cors from "cors";
 import bestBandRouter from "./routes/best-band.js";
 import radioRouter from "./routes/radio.js";
+import radioConfigRouter from "./routes/radio-config.js";
 import qsoRouter from "./routes/qso.js";
 import watchlistRouter from "./routes/watchlist.js";
 import systemRouter from "./routes/system.js";
@@ -94,6 +95,12 @@ app.use(
     bestBandRouter
 );
 
+
+// Transceiver configuration (Settings → Transceivers)
+app.use(
+    "/api/radios",
+    radioConfigRouter
+);
 
 // Radio
 app.use(

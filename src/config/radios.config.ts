@@ -35,11 +35,26 @@ export interface RadioConfig {
 
     port?: number;
 
+    /*
+     * Icom CI-V address of the transceiver (e.g. 0xA4 = IC-705).
+     * Only used by protocol "icom". Default: 0xA4.
+     */
+    civAddress?: number;
+
     enabled: boolean;
 
 }
 
 
+/*
+ * Initial transceiver list.
+ *
+ * Since the transceiver settings page exists, the configuration lives in
+ * data/radios.json and is edited in the web interface.
+ * This list is only used ONCE: when data/radios.json does not exist yet,
+ * it is created from these entries (so an existing installation keeps
+ * its transceivers). Later changes here have no effect.
+ */
 export const radios:
     RadioConfig[] = [
 

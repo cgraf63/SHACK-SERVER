@@ -1,6 +1,4 @@
-import {
-    SerialPort
-} from "serialport";
+import { SerialRadioBase } from "./serial-radio-base.js";
 
 import {
     RadioService
@@ -8,10 +6,10 @@ import {
 
 
 export class QmxService
+    extends SerialRadioBase
     implements RadioService {
 
 
-    private port: SerialPort;
 
     private frequency = 0;
 
@@ -20,96 +18,39 @@ export class QmxService
     private power = 0;
 
 
-    constructor(
-        private device: string,
-        private baudRate: number
-    ) {
+    constructor(device: string, baudRate: number) {
+        super({
+            name: "QMX CAT",
+            device,
+            baudRate,
+            pollIntervalMs: 2000,
+            rxTimeoutMs: 15000,
+        });
+    }
 
-        this.port =
-            new SerialPort({
+    protected onData(data: Buffer): void {
 
-                path:
-                    this.device,
+        const response =
+            data.toString(
+                "ascii"
+            );
 
-                baudRate:
-                    this.baudRate,
+        console.log(
+            "QMX CAT RX:",
+            response
+        );
 
-                autoOpen:
-                    false
-
-            });
-
-
-        this.port.on(
-            "data",
-            data => {
-
-                const response =
-                    data.toString(
-                        "ascii"
-                    );
-
-                console.log(
-                    "QMX CAT RX:",
-                    response
-                );
-
-                this.parseResponse(
-                    response
-                );
-
-            }
+        this.parseResponse(
+            response
         );
 
     }
 
-
-    start(): void {
-
-        this.port.open(
-            err => {
-
-                if (err) {
-
-                    console.error(
-                        "QMX CAT open failed:",
-                        this.device,
-                        err.message
-                    );
-
-                    return;
-
-                }
-
-
-                console.log(
-                    "QMX CAT connected:",
-                    this.device,
-                    this.baudRate
-                );
-
-
-                setInterval(
-                    () => {
-
-                        if (
-                            this.port.isOpen
-                        ) {
-
-                            this.port.write(
-                                "FA;MD;PC;"
-                            );
-
-                        }
-
-                    },
-                    2000
-                );
-
-            }
-        );
-
+    protected override poll(): void {
+        this.write("FA;MD;PC;");
     }
+
+
 
 
     private parseResponse(
@@ -285,7 +226,7 @@ export class QmxService
     ): void {
 
         if (
-            !this.port.isOpen
+            !this.isConnected()
         ) {
 
             console.warn(
@@ -308,7 +249,7 @@ export class QmxService
             );
 
 
-        this.port.write(
+        this.write(
             `FA${value};`
         );
 
@@ -357,7 +298,7 @@ export class QmxService
 
 
         if (
-            !this.port.isOpen
+            !this.isConnected()
         ) {
 
             console.warn(
@@ -369,7 +310,7 @@ export class QmxService
         }
 
 
-        this.port.write(
+        this.write(
             `MD${code};`
         );
 

@@ -1,4 +1,4 @@
-import { SerialPort } from "serialport";
+import { SerialRadioBase } from "./serial-radio-base.js";
 
 import {
     RadioService
@@ -10,6 +10,7 @@ import {
 
 
 export class IcomService
+    extends SerialRadioBase
     implements RadioService {
 
     private readonly controllerAddress =
@@ -23,14 +24,13 @@ export class IcomService
 
     private power = 0;
 
-    private port?: SerialPort;
 
     private rxBuffer: number[] = [];
 
 
     constructor(
-        private device: string,
-        private baudRate: number,
+        device: string,
+        baudRate: number,
         civAddress = 0xA4,
         private connection:
             "serial" |
@@ -39,13 +39,34 @@ export class IcomService
         private portNumber = 50002
     ) {
 
+        /*
+         * Icom does not poll (yet): no rx watchdog.
+         * Network transport is not implemented: no serial port then.
+         */
+        super({
+            name: "ICOM CI-V",
+            device: connection === "network" ? "" : device,
+            baudRate,
+            pollIntervalMs: 0,
+            rxTimeoutMs: 0,
+        });
+
         this.civAddress =
             civAddress;
 
     }
 
 
-    start(): void {
+    protected onData(data: Buffer): void {
+
+        this.handleIncomingData(
+            data
+        );
+
+    }
+
+
+    override start(): void {
 
         console.log(
             "ICOM CI-V service starting:"
@@ -97,104 +118,7 @@ export class IcomService
         }
 
 
-        if (!this.device) {
-
-            console.log(
-                "ICOM: no serial device configured."
-            );
-
-            return;
-        }
-
-
-        try {
-
-            this.port =
-                new SerialPort({
-                    path:
-                        this.device,
-
-                    baudRate:
-                        this.baudRate,
-
-                    autoOpen:
-                        false
-                });
-
-
-            this.port.on(
-                "data",
-                (data: Buffer) => {
-
-                    this.handleIncomingData(
-                        data
-                    );
-
-                }
-            );
-
-
-            this.port.on(
-                "error",
-                (error) => {
-
-                    console.error(
-                        "ICOM CI-V serial error:",
-                        error.message
-                    );
-
-                }
-            );
-
-
-            this.port.on(
-                "open",
-                () => {
-
-                    console.log(
-                        "ICOM CI-V serial port opened:",
-                        this.device
-                    );
-
-                }
-            );
-
-
-            this.port.on(
-                "close",
-                () => {
-
-                    console.log(
-                        "ICOM CI-V serial port closed."
-                    );
-
-                }
-            );
-
-
-            this.port.open(
-                (error) => {
-
-                    if (error) {
-
-                        console.error(
-                            "ICOM CI-V open failed:",
-                            error.message
-                        );
-
-                    }
-
-                }
-            );
-
-        } catch (error) {
-
-            console.error(
-                "ICOM CI-V initialization failed:",
-                error
-            );
-
-        }
+        super.start();
 
     }
 
@@ -419,18 +343,7 @@ export class IcomService
         );
 
 
-        if (!this.port) {
-
-            console.warn(
-                "ICOM CI-V: serial port is not initialized."
-            );
-
-            return;
-
-        }
-
-
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             console.warn(
                 "ICOM CI-V: serial port is not open."
@@ -441,20 +354,8 @@ export class IcomService
         }
 
 
-        this.port.write(
-            Buffer.from(frame),
-            (error) => {
-
-                if (error) {
-
-                    console.error(
-                        "ICOM CI-V write failed:",
-                        error.message
-                    );
-
-                }
-
-            }
+        this.write(
+            Buffer.from(frame)
         );
 
     }
@@ -534,6 +435,27 @@ export class IcomService
     }
 
 
+    /*
+     * Ask the transceiver for frequency and mode once.
+     * Icom does not poll; the connection test uses this.
+     */
+    requestStatus(): void {
+
+        this.sendFrame(
+            IcomCiv.readFrequency(
+                this.civAddress
+            )
+        );
+
+        this.sendFrame(
+            IcomCiv.readMode(
+                this.civAddress
+            )
+        );
+
+    }
+
+
     getFrequency(): number {
 
         return this.frequency;
@@ -557,22 +479,7 @@ export class IcomService
 
     close(): void {
 
-        if (
-            !this.port
-        ) {
-
-            return;
-
-        }
-
-
-        if (
-            this.port.isOpen
-        ) {
-
-            this.port.close();
-
-        }
+        this.stop();
 
     }
 

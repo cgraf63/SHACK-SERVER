@@ -195,6 +195,23 @@ await new Promise(resolve => {
         settingsScript
     );
 
+
+    /*
+        Transceiver settings (part of the settings modal)
+    */
+
+    const radioSettingsScript =
+        document.createElement(
+            "script"
+        );
+
+    radioSettingsScript.src =
+        "js/radio-settings.js?v=2";
+
+    document.body.appendChild(
+        radioSettingsScript
+    );
+
 }
 
 

@@ -1,13 +1,12 @@
-import { SerialPort } from "serialport";
+import { SerialRadioBase } from "./serial-radio-base.js";
 
 import {
     RadioService
 } from "./radio.interface.js";
 
 
-export class RgoOneService implements RadioService {
+export class RgoOneService extends SerialRadioBase implements RadioService {
 
-    private port: SerialPort;
 
     private frequency = 0;
     private frequencyB = 0;
@@ -55,7 +54,6 @@ export class RgoOneService implements RadioService {
 
     private buffer = "";
 
-    private pollTimer?: NodeJS.Timeout;
 
 
     constructor(
@@ -63,138 +61,36 @@ export class RgoOneService implements RadioService {
         baudRate: number
     ) {
 
-        this.port = new SerialPort({
-            path: device,
+        super({
+            name: "RGO CAT",
+            device,
             baudRate,
             dataBits: 8,
             stopBits: 1,
             parity: "none",
-            autoOpen: false
+            pollIntervalMs: 2000,
+            rxTimeoutMs: 15000,
         });
 
-
-        this.port.on(
-            "data",
-            (data: Buffer) => {
-
-                this.handleData(
-                    data.toString()
-                );
-
-            }
-        );
+    }
 
 
-        this.port.on(
-            "error",
-            error => {
+    protected onData(data: Buffer): void {
 
-                console.error(
-                    "RGO CAT error:",
-                    error.message
-                );
-
-            }
-        );
-
-
-        this.port.on(
-            "open",
-            () => {
-
-                console.log(
-                    `RGO CAT connected: ${device} @ ${baudRate}`
-                );
-
-            }
-        );
-
-
-        this.port.on(
-            "close",
-            () => {
-
-                console.log(
-                    "RGO CAT disconnected"
-                );
-
-            }
+        this.handleData(
+            data.toString()
         );
 
     }
 
 
-    isConnected(): boolean {
-
-        return this.port.isOpen;
-
-    }
 
 
-    start(): void {
-
-        if (this.port.isOpen) {
-
-            return;
-
-        }
 
 
-        this.port.open(
-            error => {
+    protected override poll(): void {
 
-                if (error) {
-
-                    console.error(
-                        "RGO CAT open error:",
-                        error.message
-                    );
-
-                    return;
-
-                }
-
-
-                console.log(
-                    "RGO CAT connected"
-                );
-
-
-                /*
-                 * First poll immediately.
-                 *
-                 * This deliberately follows the same
-                 * architecture as the working FTDX10:
-                 *
-                 *   poll()
-                 *   setInterval(() => poll())
-                 *
-                 * Commands are sent individually.
-                 * Never concatenate the CAT commands.
-                 */
-
-                this.poll();
-
-
-                this.pollTimer =
-                    setInterval(
-                        () => {
-
-                            this.poll();
-
-                        },
-                        2000
-                    );
-
-            }
-        );
-
-    }
-
-
-    private poll(): void {
-
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             return;
 
@@ -278,7 +174,7 @@ export class RgoOneService implements RadioService {
 
     private send(command: string): void {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             return;
 
@@ -291,7 +187,7 @@ export class RgoOneService implements RadioService {
         );
 
 
-        this.port.write(
+        this.write(
             command
         );
 
@@ -1048,7 +944,7 @@ export class RgoOneService implements RadioService {
         frequency: number
     ): void {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             console.error(
                 "RGO CAT not connected"
@@ -1089,7 +985,7 @@ export class RgoOneService implements RadioService {
         frequency: number
     ): void {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             console.error(
                 "RGO CAT not connected"
@@ -1118,7 +1014,7 @@ export class RgoOneService implements RadioService {
         vfo: number
     ): void {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             console.error(
                 "RGO CAT not connected"
@@ -1147,7 +1043,7 @@ export class RgoOneService implements RadioService {
         vfo: number
     ): void {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             console.error(
                 "RGO CAT not connected"
@@ -1174,7 +1070,7 @@ export class RgoOneService implements RadioService {
 
     bandUp(): void {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             console.error(
                 "RGO CAT not connected"
@@ -1193,7 +1089,7 @@ export class RgoOneService implements RadioService {
 
     bandDown(): void {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             console.error(
                 "RGO CAT not connected"
@@ -1214,7 +1110,7 @@ export class RgoOneService implements RadioService {
         enabled: boolean
     ): void {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             console.error(
                 "RGO CAT not connected"
@@ -1238,7 +1134,7 @@ export class RgoOneService implements RadioService {
         enabled: boolean
     ): void {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             console.error(
                 "RGO CAT not connected"
@@ -1263,7 +1159,7 @@ export class RgoOneService implements RadioService {
         frequency: number
     ): void {
 
-        if (!this.port.isOpen) {
+        if (!this.isConnected()) {
 
             console.error(
                 "RGO CAT not connected"
@@ -1514,7 +1410,7 @@ export class RgoOneService implements RadioService {
 
 setRitXitOffset(offset: number): void {
 
-    if (!this.port.isOpen) {
+    if (!this.isConnected()) {
         console.error("RGO CAT not connected");
         return;
     }
@@ -1599,7 +1495,7 @@ setSplit(
     enabled: boolean
 ): void {
 
-    if (!this.port.isOpen) {
+    if (!this.isConnected()) {
 
         console.error(
             "RGO CAT not connected"

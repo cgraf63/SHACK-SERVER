@@ -38,6 +38,11 @@ function openSettings() {
 
     loadSettings();
 
+    // Transceiver section (js/radio-settings.js)
+    if (typeof window.loadRadioSettings === "function") {
+        window.loadRadioSettings();
+    }
+
 const locator =
     document.getElementById(
         "settings-locator"
@@ -65,6 +70,10 @@ function closeSettings() {
     modal.classList.remove(
         "open"
     );
+
+    if (typeof window.closeRadioSettings === "function") {
+        window.closeRadioSettings();
+    }
 
 }
 

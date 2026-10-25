@@ -1,6 +1,4 @@
-import {
-    SerialPort
-} from "serialport";
+import { SerialRadioBase } from "./serial-radio-base.js";
 
 import {
     RadioService
@@ -8,10 +6,10 @@ import {
 
 
 export class Ftx1Service
+    extends SerialRadioBase
     implements RadioService {
 
 
-    private port: SerialPort;
 
     private frequency = 0;
 
@@ -20,105 +18,45 @@ export class Ftx1Service
     private power = 0;
 
 
-    constructor(
-        private device: string,
-        private baudRate: number
-    ) {
+    constructor(device: string, baudRate: number) {
+        super({
+            name: "YAESU CAT",
+            device,
+            baudRate,
+            pollIntervalMs: 2000,
+            rxTimeoutMs: 15000,
+        });
+    }
 
-        this.port =
-            new SerialPort({
+    protected onData(data: Buffer): void {
 
-                path:
-                    this.device,
+        const response =
+            data.toString();
 
-                baudRate:
-                    this.baudRate,
+        console.log(
+            "YAESU CAT RX:",
+            response
+        );
 
-                autoOpen:
-                    false
-
-            });
-
-
-        this.port.on(
-            "data",
-            data => {
-
-                const response =
-                    data.toString();
-
-                console.log(
-                    "YAESU CAT RX:",
-                    response
-                );
-
-                this.parseResponse(
-                    response
-                );
-
-            }
+        this.parseResponse(
+            response
         );
 
     }
 
-
-    start(): void {
-
-        this.port.open(
-            err => {
-
-                if (
-                    err
-                ) {
-
-                    console.error(
-                        "YAESU CAT open failed:",
-                        this.device,
-                        err.message
-                    );
-
-                    return;
-
-                }
-
-
-                console.log(
-                    "YAESU CAT connected:",
-                    this.device,
-                    this.baudRate
-                );
-
-
-                /*
-                 * Poll MAIN-side:
-                 *
-                 * FA;   Frequency
-                 * MD0;  Mode MAIN-side
-                 * PC;   Power
-                 * IF;   Complete MAIN-side information
-                 */
-
-                setInterval(
-                    () => {
-
-                        if (
-                            this.port.isOpen
-                        ) {
-
-                            this.port.write(
-                                "FA;MD0;PC;IF;"
-                            );
-
-                        }
-
-                    },
-                    2000
-                );
-
-            }
-        );
-
+    /*
+     * Poll MAIN-side:
+     *
+     * FA;   Frequency
+     * MD0;  Mode MAIN-side
+     * PC;   Power
+     * IF;   Complete MAIN-side information
+     */
+    protected override poll(): void {
+        this.write("FA;MD0;PC;IF;");
     }
+
+
 
 
     private parseResponse(
@@ -454,7 +392,7 @@ export class Ftx1Service
 
 
         if (
-            !this.port.isOpen
+            !this.isConnected()
         ) {
 
             console.error(
@@ -487,7 +425,7 @@ export class Ftx1Service
         );
 
 
-        this.port.write(
+        this.write(
             command
         );
 
@@ -501,7 +439,7 @@ export class Ftx1Service
 
 
         if (
-            !this.port.isOpen
+            !this.isConnected()
         ) {
 
             console.error(
@@ -636,7 +574,7 @@ export class Ftx1Service
         );
 
 
-        this.port.write(
+        this.write(
             command
         );
 
