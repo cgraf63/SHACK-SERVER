@@ -714,19 +714,40 @@ function updateBandFilter(spots) {
         select.value;
 
 
+    const bandSet =
+        new Set(
+            spots
+                .map(
+                    s => s.band
+                )
+                .filter(
+                    b => b
+                )
+        );
+
+    // Keep the selected band selectable even if it has no spots
+    // at the moment, otherwise the dropdown would jump to ALL BANDS
+    // while the filter is still active.
+    if (current) {
+        bandSet.add(current);
+    }
+
+    // Sort by frequency (160m ... 6m), not alphabetically.
+    const bandOrder = [
+        "160m", "80m", "60m", "40m", "30m", "20m",
+        "17m", "15m", "12m", "10m", "6m", "4m", "2m", "70cm"
+    ];
+
     const bands =
-        [
-            ...new Set(
-                spots
-                    .map(
-                        s => s.band
-                    )
-                    .filter(
-                        b => b
-                    )
-            )
-        ]
-        .sort();
+        [...bandSet]
+        .sort(
+            (a, b) => {
+                const ia = bandOrder.indexOf(a);
+                const ib = bandOrder.indexOf(b);
+                return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib) ||
+                    String(a).localeCompare(String(b));
+            }
+        );
 
 
     select.innerHTML =
@@ -2259,9 +2280,23 @@ if (resetView) {
             selectedConfidence = 0;
 
 
-            document.getElementById(
-                "modeFilter"
-            ).value = "";
+            /*
+             * Mode filter is a button + checkbox menu (not a select):
+             * rebuild it right away so the label shows ALL MODES and
+             * no checkbox stays ticked, and close the menu.
+             */
+            updateModeFilter(
+                currentSpots
+            );
+
+            const modeMenu =
+                document.getElementById(
+                    "modeFilterMenu"
+                );
+
+            if (modeMenu) {
+                modeMenu.hidden = true;
+            }
 
 
             document.getElementById(
@@ -2283,6 +2318,9 @@ if (resetView) {
                 "confidenceFilter"
             ).value = "";
 
+
+            // Show the unfiltered list immediately, then refresh.
+            renderLiveSpots();
 
             updateLiveSpots();
 
@@ -2356,6 +2394,33 @@ if (country) {
 
             selectedCountry =
                 country.value ||
+                "ALL";
+
+            renderLiveSpots();
+
+        }
+    );
+
+}
+
+/*
+ * Band filter (was missing: the dropdown changed, but selectedBand
+ * always stayed "ALL").
+ */
+const band =
+    document.getElementById(
+        "bandFilter"
+    );
+
+
+if (band) {
+
+    band.addEventListener(
+        "change",
+        () => {
+
+            selectedBand =
+                band.value ||
                 "ALL";
 
             renderLiveSpots();

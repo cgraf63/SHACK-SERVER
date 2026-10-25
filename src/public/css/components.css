@@ -3613,3 +3613,27 @@ D.sidebar.collapsed {
 .score-info:focus {
     color: #90caf9;
 }
+
+
+/* Manual QSO / Watch: VIEW text button instead of the eye emoji,
+   same look as the VIEW buttons in the live spot table */
+.manual-qso-qrz-button {
+    width: auto;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid rgba(110, 160, 185, 0.28);
+    border-radius: 4px;
+    background: rgba(65, 100, 120, 0.14);
+    color: #b8cbd8;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.manual-qso-qrz-button:hover {
+    background: rgba(90, 130, 150, 0.24);
+    border-color: rgba(130, 185, 210, 0.55);
+    color: #edf7fc;
+}
