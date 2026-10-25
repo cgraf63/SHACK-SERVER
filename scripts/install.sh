@@ -18,7 +18,7 @@
 #
 # Fresh installation (as the normal user, NOT as root):
 #
-#   curl -fsSL https://raw.githubusercontent.com/<OWNER>/<REPO>/main/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/cgraf63/SHACK-SERVER/main/scripts/install.sh | bash
 #
 # Update an existing installation:
 #
@@ -40,8 +40,8 @@ set -Eeuo pipefail
 # Defaults (can be set as environment variables as well)
 # ------------------------------------------------------------
 
-# Set this to the public repository URL before publishing.
-DEFAULT_REPO_URL="${SHACK_REPO_URL:-}"
+# Public repository (can be overridden with --repo or SHACK_REPO_URL).
+DEFAULT_REPO_URL="${SHACK_REPO_URL:-https://github.com/cgraf63/SHACK-SERVER.git}"
 
 INSTALL_DIR="${SHACK_DIR:-$HOME/SHACK-SERVER}"
 REPO_URL="$DEFAULT_REPO_URL"

@@ -40,7 +40,7 @@ Für die meisten Benutzer genügt ein einziger Befehl. Er richtet alles ein, was
 Als normaler Benutzer (nicht als root) im Terminal des Raspberry:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<OWNER>/<REPO>/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/cgraf63/SHACK-SERVER/main/scripts/install.sh | bash
 ```
 
 Der Installer
