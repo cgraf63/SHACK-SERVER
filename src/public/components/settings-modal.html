@@ -128,8 +128,46 @@
                 </div>
 
 
-                <label for="radio-port">Serial port</label>
-                <div>
+                <!-- Hamlib only -->
+                <label class="radio-hamlib-field">Connection</label>
+                <div class="radio-hamlib-field radio-connection">
+                    <label class="radio-check">
+                        <input type="radio" name="radio-connection" value="serial" checked>
+                        <span>USB / serial port - SHACK-SERVER starts rigctld</span>
+                    </label>
+                    <label class="radio-check">
+                        <input type="radio" name="radio-connection" value="network">
+                        <span>Existing rigctld (shared with WSJT-X, logbook, …)</span>
+                    </label>
+                </div>
+
+                <label class="radio-hamlib-model-field" for="radio-hamlib-mfg">Manufacturer</label>
+                <div class="radio-hamlib-model-field">
+                    <select id="radio-hamlib-mfg"></select>
+                    <div id="radio-hamlib-status" class="radio-help"></div>
+                </div>
+
+                <label class="radio-hamlib-model-field" for="radio-hamlib-model">Model</label>
+                <select id="radio-hamlib-model" class="radio-hamlib-model-field"></select>
+
+                <label class="radio-network-field" for="radio-host">rigctld host</label>
+                <input
+                    id="radio-host"
+                    class="radio-network-field"
+                    type="text"
+                    placeholder="127.0.0.1">
+
+                <label class="radio-network-field" for="radio-tcp-port">rigctld port</label>
+                <input
+                    id="radio-tcp-port"
+                    class="radio-network-field"
+                    type="text"
+                    inputmode="numeric"
+                    placeholder="4532">
+
+
+                <label class="radio-serial-field" for="radio-port">Serial port</label>
+                <div class="radio-serial-field">
                     <div class="radio-port-row">
                         <select id="radio-port"></select>
                         <button
@@ -149,8 +187,8 @@
                 </div>
 
 
-                <label for="radio-baud">Baud rate</label>
-                <select id="radio-baud"></select>
+                <label class="radio-serial-field" for="radio-baud">Baud rate</label>
+                <select id="radio-baud" class="radio-serial-field"></select>
 
 
                 <label for="radio-civ" class="radio-civ-field">CI-V address (hex)</label>

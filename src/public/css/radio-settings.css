@@ -314,3 +314,17 @@
     min-height: 0;
     overflow-y: auto;
 }
+
+
+/* ---------- Hamlib ---------- */
+
+.radio-connection {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 6px;
+}
+
+.radio-form-grid #radio-tcp-port {
+    width: 110px;
+}

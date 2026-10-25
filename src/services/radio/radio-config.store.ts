@@ -251,7 +251,11 @@ export function validateRadio(
         throw new RadioConfigError(`Unknown driver "${protocol}"`);
     }
 
-    const device = String(r.device ?? "").trim();
+    const isHamlib = protocol === "hamlib";
+    const network = isHamlib && r.connection === "network";
+
+    // network (existing rigctld): no serial port of our own
+    const device = network ? "" : String(r.device ?? "").trim();
     if (device && !device.startsWith("/dev/")) {
         throw new RadioConfigError("The serial port must start with /dev/");
     }
@@ -264,8 +268,32 @@ export function validateRadio(
     }
 
     const baudRate = Number(r.baudRate);
-    if (!Number.isInteger(baudRate) || baudRate < 1200 || baudRate > 1000000) {
+    const modelDefaultBaud = isHamlib && baudRate === 0;   // Hamlib picks it
+    if (!modelDefaultBaud && (!Number.isInteger(baudRate) || baudRate < 1200 || baudRate > 1000000)) {
         throw new RadioConfigError("Invalid baud rate");
+    }
+
+    // The model is needed to start rigctld ourselves. An existing rigctld
+    // already knows its model, so it is optional there.
+    let hamlibModel: number | undefined;
+    if (isHamlib && (!network || (r.hamlibModel !== undefined && r.hamlibModel !== "" && r.hamlibModel !== null))) {
+        hamlibModel = Number(r.hamlibModel);
+        if (!Number.isInteger(hamlibModel) || hamlibModel <= 0) {
+            throw new RadioConfigError("Please choose the transceiver model from the Hamlib list");
+        }
+    }
+
+    let host = "";
+    let tcpPort = 0;
+    if (network) {
+        host = String(r.host ?? "").trim() || "127.0.0.1";
+        if (!/^[A-Za-z0-9.\-:]+$/.test(host)) {
+            throw new RadioConfigError("Invalid rigctld host");
+        }
+        tcpPort = Number(r.port ?? 4532);
+        if (!Number.isInteger(tcpPort) || tcpPort < 1 || tcpPort > 65535) {
+            throw new RadioConfigError("Invalid rigctld port (1 … 65535)");
+        }
     }
 
     let id = keepId ?? String(r.id ?? "").trim();
@@ -297,14 +325,27 @@ export function validateRadio(
         radio.civAddress = civ;
     }
 
-    if (r.connection === "serial" || r.connection === "network") {
-        radio.connection = r.connection;
+    if (isHamlib) {
+        if (hamlibModel !== undefined) {
+            radio.hamlibModel = hamlibModel;
+        }
+        radio.connection = network ? "network" : "serial";
+        if (network) {
+            radio.host = host;
+            radio.port = tcpPort;
+        }
     }
-    if (typeof r.host === "string" && r.host) {
-        radio.host = r.host;
-    }
-    if (r.port !== undefined && Number.isInteger(Number(r.port))) {
-        radio.port = Number(r.port);
+    else {
+        // other drivers: keep optional fields as before
+        if (r.connection === "serial" || r.connection === "network") {
+            radio.connection = r.connection;
+        }
+        if (typeof r.host === "string" && r.host) {
+            radio.host = r.host;
+        }
+        if (r.port !== undefined && r.port !== "" && Number.isInteger(Number(r.port))) {
+            radio.port = Number(r.port);
+        }
     }
 
     return radio;

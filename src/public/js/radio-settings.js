@@ -17,7 +17,7 @@
     if (!document.querySelector('link[data-radio-settings]')) {
         const link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = "css/radio-settings.css?v=2";
+        link.href = "css/radio-settings.css?v=3";
         link.dataset.radioSettings = "1";
         document.head.appendChild(link);
     }
@@ -34,6 +34,8 @@
         nameTouched: false,
         statusTimer: null,
         busy: false,
+        hamlib: null,         // { installed, version, models, error } - loaded on demand
+        editingRadio: null,   // config of the radio being edited
     };
 
     const $ = id => document.getElementById(id);
@@ -113,6 +115,11 @@
             renderList();
             startStatusRefresh();
 
+            // model names for Hamlib transceivers in the list
+            if (state.radios.some(r => r.protocol === "hamlib")) {
+                loadHamlibModels().then(renderList);
+            }
+
         }
         catch (error) {
 
@@ -183,7 +190,7 @@
             return { cls: "off", text: "Disabled" };
         }
 
-        if (!radio.device) {
+        if (!radio.device && radio.connection !== "network") {
             return { cls: "off", text: "No port - display only" };
         }
 
@@ -205,6 +212,9 @@
         if (/input\/output|EIO|enable UART/i.test(e)) return { cls: "err", text: "Transceiver switched off?" };
         if (/permission|EACCES/i.test(e)) return { cls: "err", text: "No permission (dialout group)" };
         if (/busy|lock/i.test(e)) return { cls: "err", text: "Port used by another program" };
+        if (/not installed/i.test(e)) return { cls: "err", text: "Hamlib not installed" };
+        if (/cannot connect to rigctld/i.test(e)) return { cls: "err", text: "rigctld not running" };
+        if (/does not answer|timed out/i.test(e)) return { cls: "err", text: "Transceiver does not answer" };
         if (e) return { cls: "err", text: "Cannot open the port" };
 
         return { cls: "warn", text: "Connecting…" };
@@ -226,6 +236,39 @@
         return m
             ? `${m[1].replace(/_/g, " ")} · Interface ${Number(m[2])}`
             : name;
+
+    }
+
+    function hamlibModelName(id) {
+
+        const model = state.hamlib?.models?.find(m => m.id === Number(id));
+        return model ? `${model.mfg} ${model.model}` : `model ${id}`;
+
+    }
+
+    function metaOf(radio, driver) {
+
+        const parts = [driver ? driver.label : radio.protocol];
+
+        if (radio.protocol === "hamlib") {
+
+            if (radio.hamlibModel) parts.push(hamlibModelName(radio.hamlibModel));
+
+            if (radio.connection === "network") {
+                parts.push(`rigctld ${radio.host || "127.0.0.1"}:${radio.port || 4532}`);
+                return parts.join(" · ");
+            }
+
+        }
+
+        parts.push(portLabel(radio.device));
+        parts.push(radio.baudRate ? `${radio.baudRate} Bd` : "model default baud rate");
+
+        if (radio.protocol === "icom" && radio.civAddress !== undefined) {
+            parts.push(`CI-V ${hex2(radio.civAddress)}`);
+        }
+
+        return parts.join(" · ");
 
     }
 
@@ -257,13 +300,7 @@
                             ${esc(radio.name)}
                             ${active ? '<span class="radio-badge">ACTIVE</span>' : ""}
                         </div>
-                        <div class="radio-meta">
-                            ${esc(driver ? driver.label : radio.protocol)}
-                            · ${esc(portLabel(radio.device))}
-                            · ${esc(radio.baudRate)} Bd
-                            ${radio.protocol === "icom" && radio.civAddress !== undefined
-                                ? ` · CI-V ${hex2(radio.civAddress)}` : ""}
-                        </div>
+                        <div class="radio-meta">${esc(metaOf(radio, driver))}</div>
                         <div class="radio-status radio-status-${status.cls}">${esc(status.text)}</div>
                     </div>
 
@@ -392,6 +429,7 @@
         if (add) add.hidden = false;
 
         state.editingId = null;
+        state.editingRadio = null;
 
     }
 
@@ -409,7 +447,16 @@
             `<option value="${esc(d.protocol)}">${esc(d.label)}</option>`
         ).join("");
 
+        state.editingRadio = radio;
+
         $("radio-name").value = radio ? radio.name : "";
+
+        const connection = radio?.connection === "network" ? "network" : "serial";
+        document.querySelectorAll('input[name="radio-connection"]').forEach(el => {
+            el.checked = el.value === connection;
+        });
+        $("radio-host").value = radio?.host ?? "";
+        $("radio-tcp-port").value = radio?.port ? String(radio.port) : "";
         $("radio-driver").value = radio ? radio.protocol : state.drivers[0]?.protocol ?? "";
         $("radio-enabled").checked = radio ? radio.enabled : true;
 
@@ -448,7 +495,8 @@
 
         $("radio-baud").innerHTML = driver.baudRates.map(b =>
             `<option value="${b}" ${b === baud ? "selected" : ""}>` +
-            `${b}${b === driver.defaultBaudRate ? " (default)" : ""}</option>`
+            `${b === 0 ? "Model default (Hamlib)" : b}` +
+            `${b === driver.defaultBaudRate && b !== 0 ? " (default)" : ""}</option>`
         ).join("");
 
         $("radio-driver-models").textContent = `For: ${driver.models}`;
@@ -463,9 +511,116 @@
             $("radio-civ").value = hex2(driver.defaultCivAddress ?? 0xA4);
         }
 
-        // Suggest a name until the user typed one.
+        // Suggest a name until the user typed one
+        // (Hamlib: the name follows the chosen model instead).
         if (!state.nameTouched) {
-            $("radio-name").value = driver.label;
+            $("radio-name").value = driver.needsHamlibModel ? "" : driver.label;
+        }
+
+        applyFieldVisibility();
+
+        if (driver.needsHamlibModel) {
+            loadHamlibModels().then(() => renderHamlibModels(state.editingRadio?.hamlibModel));
+        }
+
+    }
+
+    function connectionValue() {
+
+        return document.querySelector('input[name="radio-connection"]:checked')?.value ?? "serial";
+
+    }
+
+    /* Show the fields that belong to the selected driver / connection. */
+    function applyFieldVisibility() {
+
+        const driver = driverOf($("radio-driver").value);
+        const hamlib = !!driver?.needsHamlibModel;
+        const network = hamlib && connectionValue() === "network";
+
+        const show = (selector, visible) =>
+            document.querySelectorAll(selector).forEach(el => { el.hidden = !visible; });
+
+        show(".radio-hamlib-field", hamlib);
+        show(".radio-hamlib-model-field", hamlib && !network);
+        show(".radio-network-field", network);
+        show(".radio-serial-field", !network);
+
+    }
+
+
+    /* ------------------------------------------------------------------
+       Hamlib model picker
+       ------------------------------------------------------------------ */
+
+    async function loadHamlibModels() {
+
+        if (state.hamlib?.installed) {
+            return state.hamlib;
+        }
+
+        try {
+            state.hamlib = await api("GET", "/api/radios/hamlib-models");
+        }
+        catch (error) {
+            state.hamlib = { installed: false, models: [], version: "", error: error.message };
+        }
+
+        return state.hamlib;
+
+    }
+
+    function renderHamlibModels(selectedId) {
+
+        const status = $("radio-hamlib-status");
+        const mfgSelect = $("radio-hamlib-mfg");
+        const list = state.hamlib;
+
+        if (!list?.installed || !list.models.length) {
+            mfgSelect.innerHTML = "";
+            $("radio-hamlib-model").innerHTML = "";
+            status.textContent = list?.error || "Hamlib model list not available";
+            status.classList.add("radio-error-text");
+            return;
+        }
+
+        status.classList.remove("radio-error-text");
+        status.textContent = `${list.models.length} models · ${list.version}`;
+
+        const mfgs = [...new Set(list.models.map(m => m.mfg))].sort((a, b) => a.localeCompare(b));
+        const selected = list.models.find(m => m.id === Number(selectedId));
+
+        mfgSelect.innerHTML =
+            '<option value="">- choose manufacturer -</option>' +
+            mfgs.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join("");
+
+        mfgSelect.value = selected ? selected.mfg : "";
+        renderHamlibModelOptions(selected ? selected.id : null);
+
+    }
+
+    function renderHamlibModelOptions(selectedId) {
+
+        const mfg = $("radio-hamlib-mfg").value;
+        const models = (state.hamlib?.models ?? []).filter(m => m.mfg === mfg);
+
+        $("radio-hamlib-model").innerHTML =
+            (mfg ? '<option value="">- choose model -</option>' : '<option value="">- choose manufacturer first -</option>') +
+            models.map(m =>
+                `<option value="${m.id}">${esc(m.model)}${m.status && m.status !== "Stable" ? ` (${esc(m.status)})` : ""}</option>`
+            ).join("");
+
+        $("radio-hamlib-model").value = selectedId ? String(selectedId) : "";
+
+    }
+
+    function onHamlibModelChange() {
+
+        const model = state.hamlib?.models?.find(m => m.id === Number($("radio-hamlib-model").value));
+
+        // Suggest "Manufacturer Model" as name until the user typed one.
+        if (model && !state.nameTouched) {
+            $("radio-name").value = `${model.mfg} ${model.model}`;
         }
 
     }
@@ -567,6 +722,22 @@
             config.civAddress = $("radio-civ").value.trim();
         }
 
+        if (driverOf(config.protocol)?.needsHamlibModel) {
+
+            config.connection = connectionValue();
+
+            if (config.connection === "network") {
+                config.device = "";
+                config.host = $("radio-host").value.trim() || "127.0.0.1";
+                config.port = $("radio-tcp-port").value.trim() || "4532";
+                config.baudRate = 0;
+            }
+            else {
+                config.hamlibModel = $("radio-hamlib-model").value;
+            }
+
+        }
+
         return config;
 
     }
@@ -601,13 +772,20 @@
 
         const config = collectForm();
 
-        if (!config.device) {
+        const hamlib = !!driverOf(config.protocol)?.needsHamlibModel;
+
+        if (!config.device && config.connection !== "network") {
             setResult("err", "Please choose a serial port first.");
             return;
         }
 
+        if (hamlib && config.connection !== "network" && !config.hamlibModel) {
+            setResult("err", "Please choose manufacturer and model first.");
+            return;
+        }
+
         setFormBusy(true);
-        setResult("info", "Testing… this takes up to 6 seconds. " +
+        setResult("info", `Testing… this takes up to ${hamlib ? 12 : 6} seconds. ` +
             "The other transceivers are paused during the test.");
 
         try {
@@ -639,6 +817,15 @@
     async function saveForm() {
 
         const config = collectForm();
+
+        if (
+            driverOf(config.protocol)?.needsHamlibModel &&
+            config.connection !== "network" &&
+            !config.hamlibModel
+        ) {
+            setResult("err", "✖ Please choose manufacturer and model first.");
+            return;
+        }
 
         setFormBusy(true);
 
@@ -685,6 +872,11 @@
 
         $("radio-driver").addEventListener("change", () => onDriverChange(null));
         $("radio-port").addEventListener("change", onPortChange);
+        $("radio-hamlib-mfg").addEventListener("change", () => renderHamlibModelOptions(null));
+        $("radio-hamlib-model").addEventListener("change", onHamlibModelChange);
+        document.querySelectorAll('input[name="radio-connection"]').forEach(el =>
+            el.addEventListener("change", applyFieldVisibility)
+        );
         $("radio-name").addEventListener("input", () => { state.nameTouched = true; });
 
         $("radio-port-refresh").addEventListener("click", async () => {

@@ -6,6 +6,7 @@ import { Ftx1Service } from "./ftx-1.service.js";
 import { RgoOneService } from "./rgo-one.service.js";
 import { IcomService } from "./icom.service.js";
 import { QmxService } from "./qmx.service.js";
+import { HamlibService } from "./hamlib.service.js";
 
 /*
  * Driver registry
@@ -40,6 +41,14 @@ export interface RadioDriverInfo {
     needsCivAddress?: boolean;
 
     defaultCivAddress?: number;
+
+    /* Driver needs a Hamlib model number */
+    needsHamlibModel?: boolean;
+
+    /* Driver can also connect to a network service (rigctld) */
+    supportsNetwork?: boolean;
+
+    defaultNetworkPort?: number;
 
 }
 
@@ -115,6 +124,31 @@ const DRIVERS: RadioDriver[] = [
         baudRates: [9600, 19200, 38400, 57600, 115200],
         hint: "USB connection to the QMX (virtual COM port).",
         create: c => new QmxService(c.device, c.baudRate),
+    },
+
+    {
+        protocol: "hamlib",
+        label: "Hamlib - other transceivers",
+        models: "Kenwood, Elecraft, Icom, Yaesu, Xiegu, FlexRadio, … (several hundred models)",
+        defaultBaudRate: 0,
+        baudRates: [0, 4800, 9600, 19200, 38400, 57600, 115200],
+        hint:
+            "Choose manufacturer and model from the Hamlib list. Leave the baud rate on " +
+            "\"model default\" unless you changed the CAT rate on the transceiver. " +
+            "To share the transceiver with WSJT-X or a logging program, run one rigctld " +
+            "and choose \"Existing rigctld\" here.",
+        needsHamlibModel: true,
+        supportsNetwork: true,
+        defaultNetworkPort: 4532,
+        create: c => new HamlibService({
+            name: `HAMLIB ${c.name}`,
+            model: c.hamlibModel ?? 1,
+            device: c.device,
+            baudRate: c.baudRate,
+            connection: c.connection ?? "serial",
+            host: c.host ?? "127.0.0.1",
+            port: c.port ?? 4532,
+        }),
     },
 
 ];

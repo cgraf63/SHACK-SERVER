@@ -31,6 +31,72 @@ Zusätzlich benötigt der Raspberry ausgehende TCP-Verbindungen zu den konfiguri
 
 ---
 
+# Schnellinstallation (empfohlen)
+
+Für die meisten Benutzer genügt ein einziger Befehl. Er richtet alles ein, was die folgenden Kapitel von Hand beschreiben.
+
+**Voraussetzungen:** Raspberry Pi mit **64-Bit** Raspberry Pi OS (Debian 13), Netzwerk, ein Benutzer mit `sudo`-Rechten.
+
+Als normaler Benutzer (nicht als root) im Terminal des Raspberry:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/<OWNER>/<REPO>/main/scripts/install.sh | bash
+```
+
+Der Installer
+
+1. prüft das System (64 Bit, Arbeitsspeicher, Internet),
+2. installiert die Systempakete inkl. **Hamlib** (für weitere Transceiver) und **Node.js 22**,
+3. installiert **pm2** und richtet den **Autostart** ein,
+4. gibt dem Benutzer Zugriff auf die seriellen Schnittstellen (Gruppe `dialout`),
+5. lädt SHACK-SERVER von GitHub nach `~/SHACK-SERVER` und baut ihn,
+6. startet den bestehenden Setup-Assistenten für `.env` / QRZ (`scripts/shack-server-setup`),
+7. richtet auf Wunsch **Caddy** für **HTTPS im Heimnetz** ein (`https://<IP>` und `https://<hostname>.local`) – optional zusätzlich einen **öffentlichen Hostnamen hinter Cloudflare**.
+
+Am Ende zeigt er die Adresse für den Browser an. Danach in den **Settings** Station und **Transceivers** einrichten.
+
+Wurde der Benutzer neu zur Gruppe `dialout` hinzugefügt, einmal neu starten (`sudo reboot`).
+
+### Update
+
+```bash
+bash ~/SHACK-SERVER/scripts/install.sh --update
+```
+
+Holt die neueste Version (`git pull`), baut sie und startet SHACK-SERVER neu. Lokale Änderungen an Dateien werden erkannt; der Installer fragt dann nach, bevor er etwas überschreibt.
+
+### Wichtige Optionen
+
+| Option | Wirkung |
+|---|---|
+| `--update` | Nur aktualisieren (ohne Fragen) |
+| `--no-caddy` | Caddy nicht einrichten |
+| `--dir DIR` | Anderes Installationsverzeichnis |
+| `--repo URL` | Andere Repository-Adresse |
+| `--dry-run` | Nur anzeigen, was gemacht würde |
+
+### Caddy und eine bestehende Konfiguration
+
+Eine **selbst gepflegte** `/etc/caddy/Caddyfile` wird **nie ohne Rückfrage** ersetzt (Standard: behalten). Der Installer legt dann einen Vorschlag in `~/SHACK-SERVER/Caddyfile.shack-server` ab.
+
+Eine vom Installer erzeugte Caddyfile beginnt mit der Zeile `# SHACK-SERVER: managed by scripts/install.sh` und wird bei jedem Lauf neu geschrieben (vorher Backup). Soll sie von Hand gepflegt werden: diese erste Zeile löschen.
+
+**Sicherheit:** SHACK-SERVER hat **keine eigene Anmeldung** und kann den Transceiver steuern, inklusive PTT und Remote-Mikrofon. Ein öffentlicher Zugang darf deshalb nur über einen geschützten Weg laufen, z. B. **Cloudflare Tunnel mit Cloudflare Access**.
+
+### Browser-Warnung im Heimnetz
+
+Caddy stellt im Heimnetz ein eigenes Zertifikat aus („tls internal“). Damit der Browser nicht warnt, das Stammzertifikat
+
+```
+/var/lib/caddy/.local/share/caddy/pki/authorities/local/root.crt
+```
+
+auf PC, Tablet und Handy als vertrauenswürdig installieren. Tipp: Im Router eine **feste IP** für den Raspberry vergeben.
+
+Die folgenden Kapitel beschreiben die manuelle Installation Schritt für Schritt.
+
+---
+
 # 2. Voraussetzungen
 
 Benötigt werden:

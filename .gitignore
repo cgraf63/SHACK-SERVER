@@ -66,3 +66,7 @@ data/geo-cache.db-wal
 /neues
 data/geo-cache.db-shm
 data/geo-cache.db-wal
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.backup-*

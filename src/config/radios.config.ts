@@ -9,7 +9,8 @@ export interface RadioConfig {
         | "ftx-1"
         | "ftdx10"
         | "icom"
-        | "qmx";
+        | "qmx"
+        | "hamlib";
 
     device: string;
 
@@ -40,6 +41,13 @@ export interface RadioConfig {
      * Only used by protocol "icom". Default: 0xA4.
      */
     civAddress?: number;
+
+    /*
+     * Hamlib rig model number (rigctl -l), only for protocol "hamlib".
+     * connection "serial":  SHACK-SERVER starts its own rigctld on device
+     * connection "network": use an existing rigctld at host:port
+     */
+    hamlibModel?: number;
 
     enabled: boolean;
 

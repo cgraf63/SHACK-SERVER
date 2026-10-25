@@ -7,6 +7,7 @@ import type { RadioManager } from "./radio-manager.js";
 
 import { RadioConfigError, validateRadio } from "./radio-config.store.js";
 import { createRadioService, getRadioDrivers } from "./radio-drivers.js";
+import { getHamlibModels } from "./hamlib-models.js";
 
 /*
  * Transceiver configuration API - framework independent.
@@ -56,6 +57,15 @@ export function listRadios(manager: RadioManager): ApiResult {
 export function listDrivers(): ApiResult {
 
     return ok(getRadioDrivers());
+
+}
+
+/* Hamlib transceiver models (rigctl -l), cached. */
+export async function listHamlibModels(
+    options: { rigctl?: string; refresh?: boolean } = {}
+): Promise<ApiResult> {
+
+    return ok(await getHamlibModels(options.rigctl, { refresh: options.refresh ?? false }));
 
 }
 
@@ -262,6 +272,17 @@ export interface RadioTestResult {
 /* Translate technical errors into something a beginner can act on. */
 export function explainOpenError(error: string): string {
 
+    if (/rigctld not found|hamlib is not installed/i.test(error)) {
+        return "Hamlib is not installed. On the Raspberry run: " +
+            "sudo apt install libhamlib-utils - then test again.";
+    }
+
+    if (/cannot connect to rigctld/i.test(error)) {
+        return "No rigctld is running at this address. Start rigctld first " +
+            "(or the program that provides it), or choose " +
+            "\"SHACK-SERVER starts rigctld\" instead.";
+    }
+
     if (/no such file|ENOENT/i.test(error)) {
         return "The port does not exist. Is the USB cable plugged in? " +
             "Click \"Refresh\" next to the port list after plugging in.";
@@ -272,18 +293,42 @@ export function explainOpenError(error: string): string {
             "sudo usermod -aG dialout $USER - then reboot.";
     }
 
-    if (/input\/output error|EIO|enable UART/i.test(error)) {
+    if (/busy|EBUSY|lock/i.test(error)) {
+        return "The port is used by another program (e.g. WSJT-X, flrig, rigctld). " +
+            "Close that program and test again - or share the transceiver via " +
+            "one rigctld (driver Hamlib, \"Existing rigctld\").";
+    }
+
+    if (/does not answer|timed out|timeout|Hamlib error -[56]\b/i.test(error)) {
+        return NO_ANSWER_HINT;
+    }
+
+    if (/input\/output error|EIO|enable UART|\bIO error/i.test(error)) {
         return "The port exists but cannot be opened. Usually the transceiver " +
             "is switched off (the USB chip is powered by USB, the radio is not). " +
             "Switch the transceiver on and test again.";
     }
 
-    if (/busy|EBUSY|lock/i.test(error)) {
-        return "The port is used by another program (e.g. WSJT-X, flrig, rigctld). " +
-            "Close that program and test again.";
+    return "The connection could not be established.";
+
+}
+
+/* Short headline for a connection error. */
+export function headlineForError(error: string, portOpen: boolean): string {
+
+    if (/does not answer|timed out|timeout|Hamlib error -[56]\b/i.test(error) || (portOpen && !error)) {
+        return "No answer from the transceiver";
     }
 
-    return "The port could not be opened.";
+    if (/rigctld not found|hamlib is not installed/i.test(error)) {
+        return "Hamlib is not installed";
+    }
+
+    if (/cannot connect to rigctld/i.test(error)) {
+        return "Cannot connect to rigctld";
+    }
+
+    return "Cannot open the serial port";
 
 }
 
@@ -292,7 +337,8 @@ const NO_ANSWER_HINT =
     "1) transceiver switched on, " +
     "2) baud rate matches the CAT setting in the transceiver menu, " +
     "3) the right port is selected (Yaesu CP2105: Interface 0), " +
-    "4) Icom: CI-V address matches.";
+    "4) Icom: CI-V address matches, " +
+    "5) Hamlib: the right model is selected.";
 
 const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -307,21 +353,24 @@ export async function testRadio(
     } = {}
 ): Promise<ApiResult> {
 
-    const timeoutMs = options.timeoutMs ?? 6000;
+    // Hamlib needs longer: rigctld start + rig_open (with retries)
+    const isHamlib = (body as { protocol?: string } | null)?.protocol === "hamlib";
+    const timeoutMs = options.timeoutMs ?? (isHamlib ? 12000 : 6000);
     const create = options.create ?? createRadioService;
 
     let config: RadioConfig;
 
     try {
         // Uniqueness is irrelevant for a test: validate against nothing.
-        const input = { name: "Test", ...(body as object) };
+        // A name is not needed for a test (the form may still be empty).
+        const input = { ...(body as object), name: "Test" };
         config = validateRadio(input, "test", []);
     }
     catch (error) {
         return configError(error);
     }
 
-    if (!config.device) {
+    if (!config.device && config.connection !== "network") {
         return fail(400, "Please choose a serial port");
     }
 
@@ -371,7 +420,7 @@ export async function testRadio(
             const connected = service.isConnected?.() ?? false;
 
             if (!connected && lastError) {
-                result.message = "Cannot open the serial port";
+                result.message = headlineForError(lastError, false);
                 result.hint = explainOpenError(lastError);
                 result.detail = lastError;
                 break;
@@ -386,11 +435,22 @@ export async function testRadio(
         }
 
         if (!result.ok && !result.message) {
+
             const connected = service.isConnected?.() ?? false;
-            result.message = connected
-                ? "No answer from the transceiver"
-                : "Cannot open the serial port";
-            result.hint = connected ? NO_ANSWER_HINT : explainOpenError("");
+            const lastError = service.getLastError?.() ?? "";
+
+            if (connected || !lastError) {
+                // port/rigctld open, but no frequency arrived
+                result.message = "No answer from the transceiver";
+                result.hint = NO_ANSWER_HINT;
+            }
+            else {
+                result.message = headlineForError(lastError, false);
+                result.hint = explainOpenError(lastError);
+            }
+
+            result.detail = lastError;
+
         }
 
     }

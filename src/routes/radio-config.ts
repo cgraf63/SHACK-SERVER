@@ -7,6 +7,7 @@ import {
     createRadio,
     deleteRadio,
     listDrivers,
+    listHamlibModels,
     listRadios,
     listSerialPorts,
     testRadio,
@@ -19,6 +20,7 @@ import {
  *   GET    /api/radios            configured transceivers + live status
  *   GET    /api/radios/drivers    available CAT drivers
  *   GET    /api/radios/ports      detected serial ports
+ *   GET    /api/radios/hamlib-models   Hamlib model list (?refresh=1)
  *   POST   /api/radios            add a transceiver
  *   PUT    /api/radios/:id        change a transceiver
  *   DELETE /api/radios/:id        remove a transceiver
@@ -46,6 +48,10 @@ router.get("/drivers", (_req, res) => {
 
 router.get("/ports", (_req, res) => {
     send(res, listSerialPorts(radioManager));
+});
+
+router.get("/hamlib-models", async (req, res) => {
+    send(res, await listHamlibModels({ refresh: req.query.refresh === "1" }));
 });
 
 router.post("/test", async (req, res) => {

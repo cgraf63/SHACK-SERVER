@@ -214,8 +214,10 @@ export class RadioManager {
             /*
              * A radio without a configured serial device is shown
              * in the UI, but no CAT service is started.
+             * Exception: network connections (existing rigctld) have
+             * no serial device of their own.
              */
-            if (!config.device) {
+            if (!config.device && config.connection !== "network") {
                 continue;
             }
 
