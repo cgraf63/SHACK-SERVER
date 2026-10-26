@@ -84,7 +84,7 @@ Eine **selbst gepflegte** `/etc/caddy/Caddyfile` wird **nie ohne Rückfrage** er
 
 Eine vom Installer erzeugte Caddyfile beginnt mit der Zeile `# SHACK-SERVER: managed by scripts/install.sh` und wird bei jedem Lauf neu geschrieben (vorher Backup). Soll sie von Hand gepflegt werden: diese erste Zeile löschen.
 
-**Sicherheit:** SHACK-SERVER hat **keine eigene Anmeldung** und kann den Transceiver steuern, inklusive PTT und Remote-Mikrofon. Ein öffentlicher Zugang darf deshalb nur über einen geschützten Weg laufen, z. B. **Cloudflare Tunnel mit Cloudflare Access**.
+**Sicherheit:** SHACK-SERVER hat **keine eigene Anmeldung** und kann den Transceiver steuern, inklusive PTT und Remote-Mikrofon. Ein öffentlicher Zugang darf deshalb nur über einen geschützten Weg laufen, z. B. **Cloudflare Tunnel mit Cloudflare Access** (siehe Kapitel 18).
 
 ### Browser-Warnung im Heimnetz
 
@@ -521,7 +521,40 @@ Die manuelle Einrichtung von Caddy ist in `docs/SETUP_RASPBERRY.md` beschrieben.
 
 ---
 
-# 18. HTTP-Port 3000 prüfen
+# 18. Zugriff von außen (optional)
+
+SHACK-SERVER ist für das Heimnetz gedacht. Wer ihn auch unterwegs nutzen möchte, braucht einen geschützten Zugang aus dem Internet. Die Einrichtung ist Sache des Benutzers und wird hier nicht Schritt für Schritt beschrieben. Bewährt hat sich **Cloudflare Tunnel** zusammen mit **Cloudflare Access**.
+
+### Wichtig: Sicherheit
+
+SHACK-SERVER hat **keine eigene Anmeldung**. Wer die Seite erreicht, kann den Transceiver steuern, inklusive PTT und Remote-Mikrofon. Deshalb:
+
+- **Keine Portweiterleitung** im Router auf Port 3000, 80 oder 443.
+- Den Zugang nur über einen Tunnel herstellen, der **immer eine Anmeldung davorschaltet** – bei Cloudflare eine **Access-Regel** (z. B. Login per E-Mail-Code, nur für die eigene Adresse).
+- Die Access-Regel **vor** dem ersten Test anlegen und danach aktiv lassen.
+
+### Prinzip mit Cloudflare
+
+1. Domain bei Cloudflare, ein **Tunnel** im Zero-Trust-Dashboard, und darin ein **öffentlicher Hostname** (z. B. `shack.example.com`).
+2. Auf dem Raspberry läuft der Tunnel-Connector `cloudflared`. Cloudflare zeigt beim Anlegen des Tunnels den passenden Befehl – wahlweise als **Debian-Paket** (Systemdienst) oder als **Docker-Container**. Beides funktioniert; für das Debian-Paket muss kein Docker installiert sein. Bei Docker `--restart unless-stopped` ergänzen, damit der Tunnel nach einem Neustart wieder läuft.
+3. Für denselben Hostnamen eine **Access-Application** mit passender Regel anlegen.
+
+### Zusammenspiel mit SHACK-SERVER
+
+- **Mit Caddy:** Der Installer fragt nach dem öffentlichen Hostnamen und legt dafür in der Caddyfile einen eigenen Eintrag `http://<hostname>` an. Im Tunnel als Ziel `http://localhost:80` eintragen.
+- **Ohne Caddy:** Im Tunnel als Ziel direkt `http://localhost:3000` eintragen.
+- Läuft `cloudflared` in **Docker**, bezeichnet `localhost` den Container selbst. Dann den Container mit `--network host` starten oder statt `localhost` die IP des Raspberry eintragen.
+
+HTTPS nach außen übernimmt Cloudflare.
+
+### Dokumentation
+
+- Cloudflare Tunnel einrichten: https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/get-started/create-remote-tunnel
+- Cloudflare Zero Trust (inkl. Access): https://developers.cloudflare.com/cloudflare-one/
+
+---
+
+# 19. HTTP-Port 3000 prüfen
 
 Auf dem Raspberry:
 
@@ -541,7 +574,7 @@ Wenn der Server korrekt läuft, wird eine JSON-Antwort zurückgegeben.
 
 ---
 
-# 19. Port 8000 prüfen
+# 20. Port 8000 prüfen
 
 SHACK-SERVER stellt selbst einen DX-Cluster-Telnet-Server auf Port 8000 bereit.
 
@@ -567,7 +600,7 @@ nc -vz <RASPBERRY-IP> 8000
 
 ---
 
-# 20. DXSpider-Verbindungen prüfen
+# 21. DXSpider-Verbindungen prüfen
 
 Die in den Settings konfigurierten externen DXSpider-Server müssen vom Raspberry aus erreichbar sein.
 
@@ -590,7 +623,7 @@ Beide Funktionen können gleichzeitig verwendet werden.
 
 ---
 
-# 21. Logs prüfen
+# 22. Logs prüfen
 
 PM2-Ausgabe:
 
@@ -618,7 +651,7 @@ pm2 logs shack-server --lines 300 --nostream | grep -E "CAT|CI-V|HAMLIB|RADIO" |
 
 ---
 
-# 22. Diagnose-API
+# 23. Diagnose-API
 
 Die Diagnose-API ist ein wichtiger Funktionstest:
 
@@ -653,7 +686,7 @@ Die tatsächlichen Werte ändern sich natürlich laufend.
 
 ---
 
-# 23. QRZ prüfen
+# 24. QRZ prüfen
 
 QRZ benötigt gültige Zugangsdaten in `.env`:
 
@@ -683,7 +716,7 @@ Ein nicht bei QRZ vorhandenes Rufzeichen ist **kein Serverfehler**. Nicht jedes 
 
 ---
 
-# 24. Firewall
+# 25. Firewall
 
 Wenn `ufw` oder eine andere Firewall verwendet wird, müssen die benötigten Ports freigegeben werden.
 
@@ -711,7 +744,7 @@ Die ausgehenden Verbindungen zu den externen DX-Cluster-Servern müssen ebenfall
 
 ---
 
-# 25. Neustart-Test
+# 26. Neustart-Test
 
 Nach erfolgreicher Installation sollte unbedingt ein vollständiger Neustart getestet werden:
 
@@ -752,7 +785,7 @@ https://<hostname>.local
 
 ---
 
-# 26. Abschluss-Checkliste
+# 27. Abschluss-Checkliste
 
 | Prüfung | Kommando |
 |---|---|
@@ -776,7 +809,7 @@ https://<hostname>.local
 
 ---
 
-# 27. Referenzsystem
+# 28. Referenzsystem
 
 Der derzeit funktionierende SHACK-SERVER läuft auf:
 
@@ -805,7 +838,7 @@ Die Konfigurationsdatei `.env` und das Verzeichnis `data/` enthalten standortspe
 
 ---
 
-# 28. Update einer bestehenden Installation
+# 29. Update einer bestehenden Installation
 
 Empfohlen – in einem Schritt:
 
@@ -835,7 +868,7 @@ Im Browser einmal **Ctrl+F5**, damit die neue Weboberfläche geladen wird.
 
 ---
 
-# 29. Wichtige Hinweise
+# 30. Wichtige Hinweise
 
 - `.env` enthält vertrauliche Daten und darf nicht veröffentlicht werden.
 - QRZ-Zugangsdaten gehören ausschließlich in `.env`.
