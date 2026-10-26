@@ -642,7 +642,18 @@ function escapeHtml(
     Initialize
 */
 
+let settingsModalInitialized = false;
+
 function initializeSettingsModal() {
+
+    /*
+        Runs from the componentsLoaded event and from the
+        fallback below - only initialize once, otherwise
+        every button gets two click handlers.
+    */
+    if (settingsModalInitialized) {
+        return;
+    }
 
     console.log(
         "Initializing Settings Modal"
@@ -695,6 +706,9 @@ function initializeSettingsModal() {
         return;
 
     }
+
+
+    settingsModalInitialized = true;
 
 
     settingsButton.addEventListener(

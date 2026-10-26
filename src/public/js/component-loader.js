@@ -17,7 +17,24 @@ async function loadComponent(id, file) {
 
 
 
-async function loadComponents() {
+/*
+    loadComponents() may be called several times (some pages call
+    it again on DOMContentLoaded). Load everything only once,
+    otherwise sidebar.js, settings-modal.js etc. run twice.
+*/
+let componentsLoadPromise = null;
+
+function loadComponents() {
+
+    if (!componentsLoadPromise) {
+        componentsLoadPromise = loadComponentsOnce();
+    }
+
+    return componentsLoadPromise;
+
+}
+
+async function loadComponentsOnce() {
 
     /*
         Sidebar
@@ -189,7 +206,7 @@ await new Promise(resolve => {
         );
 
     settingsScript.src =
-        "js/settings-modal.js";
+        "js/settings-modal.js?v=2";
 
     document.body.appendChild(
         settingsScript
