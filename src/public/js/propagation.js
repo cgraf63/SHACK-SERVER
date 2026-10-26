@@ -759,9 +759,20 @@ async function updateStationInline() {
             }
         );
 
-        wrapper.appendChild(
-            remoteButton
-        );
+        /*
+         * The remote page (remote.html) is made for the
+         * Yaesu FTDX10 - show the button only for it.
+         */
+        if (
+            String(activeRadio.protocol || "").toLowerCase() ===
+            "ftdx10"
+        ) {
+
+            wrapper.appendChild(
+                remoteButton
+            );
+
+        }
 
         station.appendChild(
             wrapper

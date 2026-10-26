@@ -169,6 +169,10 @@ export class RadioManager {
                     name:
                         config.name,
 
+                    /* Driver, e.g. "ftdx10" (dashboard: remote button). */
+                    protocol:
+                        config.protocol,
+
                     frequency:
                         service?.getFrequency() ?? 0,
 
