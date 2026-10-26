@@ -3164,26 +3164,45 @@ router.get(
 
             for (const qso of qsos) {
 
+                /*
+                 * Cabrillo date: yyyy-mm-dd.
+                 */
+                const dateDigits =
+                    String(qso.qso_date || "").replace(/\D/g, "");
+
                 const dateStr =
-                    String(qso.qso_date || "").replace(/-/g, "");
+                    dateDigits.length >= 8
+                        ? `${dateDigits.slice(0, 4)}-${dateDigits.slice(4, 6)}-${dateDigits.slice(6, 8)}`
+                        : String(qso.qso_date || "");
 
                 const timeStr =
                     String(qso.time_on_utc || "")
                         .replace(/:/g, "")
                         .slice(0, 4);
 
+                /*
+                 * Frequency in kHz. Stored values are usually
+                 * kHz (14025), older/edited entries may be MHz
+                 * (14.025) or Hz (14025000). Fallback: band
+                 * default.
+                 */
                 let freqkHz = 0;
 
                 const freqNum =
                     Number(qso.frequency);
 
-                if (
-                    Number.isFinite(freqNum) &&
-                    freqNum >= 1.5 &&
-                    freqNum <= 30
-                ) {
-                    freqkHz =
-                        Math.round(freqNum * 1000);
+                if (Number.isFinite(freqNum) && freqNum > 0) {
+
+                    if (freqNum >= 1.5 && freqNum <= 60) {
+                        freqkHz = Math.round(freqNum * 1000);
+                    }
+                    else if (freqNum >= 1500 && freqNum <= 60000) {
+                        freqkHz = Math.round(freqNum);
+                    }
+                    else if (freqNum >= 1500000 && freqNum <= 60000000) {
+                        freqkHz = Math.round(freqNum / 1000);
+                    }
+
                 }
 
                 if (!freqkHz) {
@@ -3209,9 +3228,14 @@ router.get(
 
                 lines.push(
                     [
+                        /*
+                         * Cabrillo 3.0 (cqww.com/cabrillo.htm):
+                         * QSO: freq mo date time call rst exch call rst exch
+                         * freq = kHz, right-aligned, 5 wide.
+                         */
                         "QSO:",
-                        pad(modeToCabrillo(qso.mode), 3),
-                        pad(freqkHz, 5),
+                        String(freqkHz).padStart(5),
+                        pad(modeToCabrillo(qso.mode), 2),
                         pad(dateStr, 10),
                         pad(timeStr, 4),
                         pad(callsign, 13),
