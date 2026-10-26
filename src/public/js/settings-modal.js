@@ -273,6 +273,27 @@ function renderDXSpiders() {
         settingsData?.dxspiders ?? [];
 
 
+    /*
+        Column headings
+    */
+
+    if (spiders.length) {
+
+        const head =
+            document.createElement("div");
+
+        head.className =
+            "dxspider-head";
+
+        head.innerHTML =
+            "<span></span><span>Name</span><span>Host</span>" +
+            "<span>Port</span><span>Password</span><span></span>";
+
+        list.appendChild(head);
+
+    }
+
+
     spiders.forEach(
         (spider, index) => {
 
@@ -319,11 +340,8 @@ function renderDXSpiders() {
 
                 <button
                     class="dxspider-remove"
-                    type="button">
-
-                    ×
-
-                </button>
+                    type="button"
+                    title="Remove">×</button>
 
             `;
 
@@ -407,11 +425,8 @@ function addDXSpider() {
 
         <button
             class="dxspider-remove"
-            type="button">
-
-            ×
-
-        </button>
+            type="button"
+            title="Remove">×</button>
 
     `;
 
@@ -428,9 +443,28 @@ function addDXSpider() {
     );
 
 
+    if (!list.querySelector(".dxspider-head")) {
+
+        const head =
+            document.createElement("div");
+
+        head.className =
+            "dxspider-head";
+
+        head.innerHTML =
+            "<span></span><span>Name</span><span>Host</span>" +
+            "<span>Port</span><span>Password</span><span></span>";
+
+        list.appendChild(head);
+
+    }
+
+
     list.appendChild(
         row
     );
+
+    row.querySelector(".dxspider-name")?.focus();
 
 }
 
@@ -479,6 +513,12 @@ function collectDXSpiders() {
                     ).checked
 
             })
+        )
+        /*
+            Ignore empty rows (added but never filled in).
+        */
+        .filter(
+            spider => spider.host !== ""
         );
 
 }

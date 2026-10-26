@@ -1,3 +1,65 @@
+<style>
+    /* Station: two fields per row, not full width */
+    .settings-grid {
+        grid-template-columns: 110px minmax(0, 1fr) 110px minmax(0, 1fr);
+        gap: 10px 16px;
+        max-width: 760px;
+    }
+    .settings-grid label { font-size: 13px; }
+    .settings-grid input { padding: 8px 10px; font-size: 13px; }
+
+    /* DXSpider rows: dark fields like the rest of the dialog */
+    .dxspider-head,
+    .dxspider-row {
+        display: grid;
+        grid-template-columns: 26px minmax(0, 1fr) minmax(0, 1.5fr) 80px minmax(0, 1fr) 34px;
+        gap: 8px;
+        align-items: center;
+    }
+    .dxspider-head {
+        margin: 4px 0 2px;
+        color: #8fa3b2;
+        font-size: 11px;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+    .dxspider-row { margin: 6px 0; }
+    .dxspider-row input[type="text"],
+    .dxspider-row input[type="number"],
+    .dxspider-row input[type="password"] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px 10px;
+        border: 1px solid var(--border-color, #303640);
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.04);
+        color: inherit;
+        font: inherit;
+        font-size: 13px;
+    }
+    .dxspider-row input:focus { outline: none; border-color: #607d8b; }
+    .dxspider-row input[type="checkbox"] { display: block; width: 16px; height: 16px; margin: 0 auto; cursor: pointer; accent-color: #00b4d8; }
+    .dxspider-remove {
+        height: 32px;
+        border: 1px solid var(--border-color, #303640);
+        border-radius: 5px;
+        background: transparent;
+        color: #8fa3b2;
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+    }
+    .dxspider-remove:hover { color: #ff6b6b; border-color: #7d2632; background: rgba(255, 82, 82, 0.08); }
+
+    @media (max-width: 700px) {
+        .settings-grid { grid-template-columns: 1fr; }
+        .dxspider-head { display: none; }
+        .dxspider-row { grid-template-columns: 26px minmax(0, 1fr) minmax(0, 1fr) 34px; }
+        .dxspider-row .dxspider-host,
+        .dxspider-row .dxspider-password { grid-column: 2 / 4; }
+    }
+</style>
+
 <div class="settings-header">
 
     <div class="settings-title">
