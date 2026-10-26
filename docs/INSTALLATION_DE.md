@@ -9,11 +9,13 @@ Zusätzlich kann SHACK-SERVER Stationen von DX Summit (`dxsummit.fi`) und HolyCl
 
 Für SOTA- und POTA-Aktivierungen wird neben dem Callsign ein kleines Dreieck angezeigt – grün für POTA und weiss für SOTA.
 
-Die Applikation kann die gefundenen Callsigns auf Wunsch auf einer zoombaren Karte darstellen. Zusätzlich beinhaltet SHACK-SERVER ein einfaches Logprogramm mit ADIF-Import und ADIF-Export.
+Die Applikation kann die gefundenen Callsigns auf Wunsch auf einer zoombaren Karte darstellen. Zusätzlich beinhaltet SHACK-SERVER ein einfaches Logprogramm mit ADIF-Import und ADIF-Export sowie eine Contest-Konsole.
+
+Transceiver werden per CAT angesteuert: mit eigenen Treibern (Yaesu FTDX10, Yaesu FTX-1, RGO-One, Icom CI-V, QRP Labs QMX) und über **Hamlib** für mehrere Hundert weitere Modelle.
 
 Diese Anleitung beschreibt die Installation auf einem Raspberry Pi mit:
 
-- Debian GNU/Linux 13 (Trixie)
+- Debian GNU/Linux 13 (Trixie) / Raspberry Pi OS Lite (64-bit)
 - ARM64 / `aarch64`
 - Node.js 22
 - npm 10
@@ -26,6 +28,7 @@ Diese Anleitung beschreibt die Installation auf einem Raspberry Pi mit:
 |---|---|
 | TCP 3000 | SHACK-SERVER Weboberfläche / REST API |
 | TCP 8000 | integrierter DX-Cluster-Telnet-Server |
+| TCP 80 / 443 | Caddy (HTTPS), falls eingerichtet |
 
 Zusätzlich benötigt der Raspberry ausgehende TCP-Verbindungen zu den konfigurierten DX-Cluster-Servern.
 
@@ -35,7 +38,7 @@ Zusätzlich benötigt der Raspberry ausgehende TCP-Verbindungen zu den konfiguri
 
 Für die meisten Benutzer genügt ein einziger Befehl. Er richtet alles ein, was die folgenden Kapitel von Hand beschreiben.
 
-**Voraussetzungen:** Raspberry Pi mit **64-Bit** Raspberry Pi OS (Debian 13), Netzwerk, ein Benutzer mit `sudo`-Rechten.
+**Voraussetzungen:** Raspberry Pi mit **64-Bit** Raspberry Pi OS (Debian 13), Netzwerk, ein Benutzer mit `sudo`-Rechten (siehe Kapitel 2).
 
 Als normaler Benutzer (nicht als root) im Terminal des Raspberry:
 
@@ -50,10 +53,10 @@ Der Installer
 3. installiert **pm2** und richtet den **Autostart** ein,
 4. gibt dem Benutzer Zugriff auf die seriellen Schnittstellen (Gruppe `dialout`),
 5. lädt SHACK-SERVER von GitHub nach `~/SHACK-SERVER` und baut ihn,
-6. startet den bestehenden Setup-Assistenten für `.env` / QRZ (`scripts/shack-server-setup`),
+6. startet den Setup-Assistenten für `.env` / QRZ (`scripts/shack-server-setup`),
 7. richtet auf Wunsch **Caddy** für **HTTPS im Heimnetz** ein (`https://<IP>` und `https://<hostname>.local`) – optional zusätzlich einen **öffentlichen Hostnamen hinter Cloudflare**.
 
-Am Ende zeigt er die Adresse für den Browser an. Danach in den **Settings** Station und **Transceivers** einrichten.
+Am Ende zeigt er die Adresse für den Browser an. Danach in den **Settings** Station und **Transceivers** einrichten (Kapitel 16).
 
 Wurde der Benutzer neu zur Gruppe `dialout` hinzugefügt, einmal neu starten (`sudo reboot`).
 
@@ -101,15 +104,24 @@ Die folgenden Kapitel beschreiben die manuelle Installation Schritt für Schritt
 
 Benötigt werden:
 
-- Raspberry Pi mit 64-Bit-Debian
+- Raspberry Pi (empfohlen: Raspberry Pi 4 oder 5) mit **64-Bit**-Betriebssystem
 - Netzwerkverbindung
 - SSH-Zugang
 - Benutzer mit `sudo`-Rechten
-- Git
-- Node.js >= 22
-- npm
-- PM2
-- Zugriff auf die benötigten externen Dienste
+- Zugriff auf die benötigten externen Dienste (GitHub, DX-Cluster, QRZ)
+
+### Empfohlenes Betriebssystem
+
+Für den SHACK-SERVER wird **Raspberry Pi OS Lite (64-bit)** empfohlen.
+
+Eine grafische Oberfläche wird nicht benötigt. Der SHACK-SERVER läuft als Serverdienst und wird über das Netzwerk bzw. einen Webbrowser administriert. Die Lite-Version benötigt weniger Ressourcen und installiert keine unnötigen Desktop-Komponenten.
+
+Beim Schreiben der SD-Karte mit dem **Raspberry Pi Imager** können direkt gesetzt werden:
+
+- Hostname (z. B. `shack-server`)
+- Benutzer und Passwort
+- WLAN (falls kein Netzwerkkabel)
+- **SSH aktivieren**
 
 Empfohlene Kontrolle des Systems:
 
@@ -125,6 +137,8 @@ Debian GNU/Linux 13
 aarch64
 ```
 
+Ein 32-Bit-System (`armv7l`) wird nicht unterstützt – für Node.js 22 gibt es dafür keine Pakete mehr.
+
 ---
 
 # 3. System aktualisieren
@@ -137,14 +151,27 @@ sudo apt upgrade -y
 Benötigte Grundpakete installieren:
 
 ```bash
-sudo apt install -y git curl build-essential netcat-openbsd
+sudo apt install -y git curl ca-certificates gnupg build-essential netcat-openbsd libhamlib-utils avahi-daemon
 ```
+
+| Paket | Wozu |
+|---|---|
+| `git` | Code von GitHub holen und aktualisieren |
+| `build-essential` | Fallback, falls ein npm-Paket kompiliert werden muss |
+| `netcat-openbsd` | Verbindungstests (`nc`) |
+| `libhamlib-utils` | Hamlib (`rigctl`, `rigctld`) für den Hamlib-Transceivertreiber |
+| `avahi-daemon` | Erreichbarkeit als `<hostname>.local` im Heimnetz |
 
 ---
 
-# 4. Node.js installieren
+# 4. Node.js 22 installieren
 
-SHACK-SERVER benötigt Node.js 22 oder neuer.
+SHACK-SERVER benötigt Node.js 22 oder neuer (`package.json`: `"engines": { "node": ">=22" }`). Auf Debian 13 ARM64 wird Node.js 22 über NodeSource installiert:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt install -y nodejs
+```
 
 Version prüfen:
 
@@ -153,20 +180,11 @@ node --version
 npm --version
 ```
 
-Auf dem Referenzsystem:
+Es sollte eine Node.js-Version `v22.x.x` angezeigt werden. Auf dem Referenzsystem:
 
 ```text
 Node.js v22.23.1
 npm 10.9.8
-```
-
-Falls Node.js noch nicht installiert ist, kann Node.js 22 über die gewünschte System-/Node-Installationsmethode eingerichtet werden.
-
-Nach der Installation erneut prüfen:
-
-```bash
-node --version
-npm --version
 ```
 
 ---
@@ -195,13 +213,37 @@ PM2 7.0.3
 
 ---
 
-# 6. SHACK-SERVER installieren
+# 6. Zugriff auf die Transceiver-Schnittstellen
+
+Transceiver werden über USB-Seriell-Schnittstellen (`/dev/ttyUSB…`, `/dev/ttyACM…`) angesprochen. Dafür muss der Benutzer, unter dem SHACK-SERVER läuft, Mitglied der Gruppe `dialout` sein:
+
+```bash
+sudo usermod -aG dialout $USER
+```
+
+Die Änderung wird erst nach einem **Neustart** (oder neuer Anmeldung) wirksam:
+
+```bash
+sudo reboot
+```
+
+Prüfen:
+
+```bash
+groups
+```
+
+In der Ausgabe muss `dialout` erscheinen. Ohne diese Gruppe meldet der Verbindungstest in den Settings „No permission for the serial port“.
+
+---
+
+# 7. SHACK-SERVER installieren
 
 Repository klonen:
 
 ```bash
 cd ~
-git clone <REPOSITORY-URL> SHACK-SERVER
+git clone https://github.com/cgraf63/SHACK-SERVER.git SHACK-SERVER
 cd ~/SHACK-SERVER
 ```
 
@@ -214,7 +256,7 @@ git pull
 
 ---
 
-# 7. Abhängigkeiten installieren
+# 8. Abhängigkeiten installieren
 
 Im Projektverzeichnis:
 
@@ -227,67 +269,47 @@ Danach sollte `node_modules` vorhanden sein.
 
 ---
 
-# 8. Umgebungsvariablen (.env)
+# 9. Grundkonfiguration (.env)
 
-SHACK-SERVER verwendet eine `.env`-Datei für standortspezifische Einstellungen und Zugangsdaten.
+In `.env` stehen nur noch **Zugangsdaten und technische Grundwerte**. Alles andere (Station, DX-Cluster, Transceiver) wird in der Weboberfläche eingestellt (Kapitel 10).
 
-Die Anwendung lädt `.env` über:
-
-```typescript
-import "dotenv/config";
-```
-
-in `src/app.ts`.
-
-Die Datei wird deshalb nicht über PM2 konfiguriert.
-
-Datei anlegen:
+Am einfachsten wird `.env` mit dem Setup-Assistenten angelegt:
 
 ```bash
-cd ~/SHACK-SERVER
-nano .env
+bash ~/SHACK-SERVER/scripts/shack-server-setup
 ```
 
-Beispielstruktur:
+Er legt vorher ein Backup an, fragt Port und QRZ-Zugangsdaten ab (Passwort und API-Key werden nicht angezeigt) und setzt die Dateirechte.
+
+Die Anwendung lädt `.env` über `import "dotenv/config";` in `src/app.ts` – die Datei wird deshalb nicht über PM2 konfiguriert.
+
+### Verwendete Variablen
+
+| Variable | Bedeutung | Pflicht |
+|---|---|---|
+| `PORT` | HTTP-Port des SHACK-SERVER (Standard: `3000`) | nein |
+| `QRZ_USER` | QRZ.com Benutzername | für QRZ-Daten |
+| `QRZ_PASSWORD` | QRZ.com Passwort | für QRZ-Daten |
+| `QRZ_API_KEY` | QRZ.com API-Key | für QRZ-Daten |
+| `CONTEST_CONTROL_KEY` | Schlüssel für geschützte Contest-Verwaltungsfunktionen. Ohne diesen Wert sind diese Funktionen gesperrt. | nein |
+
+Beispiel:
 
 ```env
-# Operator
-SHACK_CALLSIGN=HB9xxx
+PORT=3000
 
 # QRZ
 QRZ_USER=HB9xxx
 QRZ_PASSWORD=xxxxxxxxxx
+QRZ_API_KEY=xxxxxxxxxx
 
-
-# DXSpider #1
-DXSPIDER1_HOST=
-DXSPIDER1_PORT=7300
-DXSPIDER1_CALLSIGN=HB9xxx
-DXSPIDER1_PASSWORD=
-
-
-# DXSpider #2
-DXSPIDER2_HOST=
-DXSPIDER2_PORT=7300
-DXSPIDER2_CALLSIGN=HB9xxx
-DXSPIDER2_PASSWORD=
-
-
-# HolyCluster
-HOLYCLUSTER_HOST=
-HOLYCLUSTER_PORT=7300
-HOLYCLUSTER_CALLSIGN=HB9xxx
-HOLYCLUSTER_PASSWORD=
-
-
-# DX Summit
-DXSUMMIT_HOST=www.dxsummit.fi
-DXSUMMIT_ENABLED=true
+# Contest-Verwaltung (optional, frei wählbar)
+CONTEST_CONTROL_KEY=ein-langer-zufaelliger-wert
 ```
 
-Die oben gezeigten Werte sind nur Beispiele bzw. anonymisierte Werte.
+Die gezeigten Werte sind Beispiele und müssen durch die eigenen ersetzt werden.
 
-Die tatsächlichen Werte müssen für den jeweiligen Standort eingesetzt werden.
+**Hinweis:** Frühere Versionen dieser Anleitung enthielten Variablen wie `SHACK_CALLSIGN`, `DXSPIDER1_…`, `HOLYCLUSTER_…` oder `DXSUMMIT_…`. Diese werden **nicht mehr gelesen** und können aus einer bestehenden `.env` entfernt werden.
 
 ### Dateirechte
 
@@ -305,54 +327,47 @@ ls -l .env
 
 ---
 
-# 9. .env nicht in Git übernehmen
+# 10. Wo welche Einstellung liegt
 
-`.env` darf nicht in das Repository eingecheckt werden.
+| Was | Wo | Bearbeiten |
+|---|---|---|
+| QRZ-Zugangsdaten, Port, Contest-Schlüssel | `.env` | `scripts/shack-server-setup` oder Editor |
+| Callsign, Operator, Locator, Club | `data/settings.json` | Weboberfläche → **Settings** → Station |
+| DXSpider, HolyCluster, DX Summit | `data/settings.json` | Weboberfläche → **Settings** → DX Sources |
+| Transceiver (Treiber, Port, Baudrate, Hamlib) | `data/radios.json` | Weboberfläche → **Settings** → Transceivers |
+| Logbuch, Contest-Daten | `data/*.db` | Weboberfläche |
+
+Die Dateien unter `data/` werden beim ersten Start automatisch angelegt.
+
+Die Dateien unter `src/config/` (z. B. `settings.config.ts`, `radios.config.ts`) enthalten nur noch **Startwerte für eine neue Installation**. Änderungen dort haben bei einer bestehenden Installation keine Wirkung mehr – maßgeblich sind die Dateien unter `data/`.
+
+`.env` und `data/` gehören **nicht** ins Repository (siehe Kapitel 11).
+
+---
+
+# 11. .env und Daten nicht in Git übernehmen
+
+`.env` und die Datenbanken dürfen nicht in das Repository eingecheckt werden.
 
 `.gitignore` muss mindestens enthalten:
 
 ```gitignore
 .env
 .env.*
+data/*.db
+data/*.db-shm
+data/*.db-wal
 ```
 
 Prüfen:
 
 ```bash
-grep -n "^\.env" .gitignore
+grep -n -E "^\.env|^data/" .gitignore
 ```
 
 ---
 
-# 10. Konfiguration prüfen
-
-Aktuell existieren unter `src/config` unter anderem:
-
-```text
-src/config/location.config.ts
-src/config/operator.config.ts
-src/config/qrz.config.ts
-src/config/settings.config.ts
-```
-
-Die standortspezifischen Werte müssen beim neuen Raspberry kontrolliert werden.
-
-Besonders relevant sind:
-
-- Callsign
-- Operator
-- Locator
-- Shack-/Standortdaten
-- DXSpider-Verbindungen
-- QRZ-Zugangsdaten
-- HolyCluster
-- DX Summit
-
-Die `.env` und die TypeScript-Konfiguration müssen zum installierten Stand des Projekts passen.
-
----
-
-# 11. Build durchführen
+# 12. Build durchführen
 
 Vor dem ersten Start:
 
@@ -361,7 +376,7 @@ cd ~/SHACK-SERVER
 npm run build
 ```
 
-Der Build führt unter anderem TypeScript-Kompilierung durch und kopiert die Weboberfläche nach `dist/public`.
+Der Build führt die TypeScript-Kompilierung durch und kopiert die Weboberfläche nach `dist/public`.
 
 Nach erfolgreichem Build muss das Verzeichnis `dist` vorhanden sein:
 
@@ -369,9 +384,11 @@ Nach erfolgreichem Build muss das Verzeichnis `dist` vorhanden sein:
 ls -la dist
 ```
 
+**Wichtig:** PM2 startet `dist/index.js`. Jede Änderung unter `src/` – auch an HTML-, CSS- oder JavaScript-Dateien der Weboberfläche – wird erst nach `npm run build` und einem Neustart wirksam.
+
 ---
 
-# 12. SHACK-SERVER testweise starten
+# 13. SHACK-SERVER testweise starten
 
 Vor der Einrichtung von PM2 kann der Server testweise direkt gestartet werden:
 
@@ -386,7 +403,7 @@ Mit `Ctrl+C` wieder beenden.
 
 ---
 
-# 13. SHACK-SERVER mit PM2 starten
+# 14. SHACK-SERVER mit PM2 starten
 
 Server starten:
 
@@ -416,9 +433,11 @@ cwd:        /home/admin/SHACK-SERVER
 interpreter: node
 ```
 
+Das Arbeitsverzeichnis (`cwd`) muss `~/SHACK-SERVER` sein – dort liegen `.env` und `data/`.
+
 ---
 
-# 14. PM2 dauerhaft aktivieren
+# 15. PM2 dauerhaft aktivieren
 
 Aktuelle Prozesse speichern:
 
@@ -450,7 +469,59 @@ pm2 status
 
 ---
 
-# 15. HTTP-Port 3000 prüfen
+# 16. Transceiver einrichten
+
+Transceiver werden in der Weboberfläche eingerichtet – ohne Dateien zu bearbeiten:
+
+**Settings → Transceivers → + Add Transceiver**
+
+1. **Transceiver / driver** wählen:
+   - eigene Treiber: Yaesu FTDX10, Yaesu FTX-1, RGO-One, Icom CI-V, QRP Labs QMX
+   - **Hamlib - other transceivers** für alle weiteren Modelle (Hersteller und Modell aus der Liste wählen)
+2. **Serial port** wählen. Erkannte Schnittstellen werden mit lesbarem Namen angezeigt; bei Yaesu-Geräten mit CP2105-Chip ist der CAT-Port („Interface 0“) markiert.
+3. **Baud rate** – muss zur CAT-Einstellung im Menü des Transceivers passen. Bei Hamlib meist „Model default“.
+4. Bei Icom zusätzlich die **CI-V-Adresse**.
+5. **Test connection** – zeigt bei Erfolg die aktuelle Frequenz, sonst die Ursache im Klartext (Gerät aus, kein Zugriff, falsche Baudrate, Port belegt …).
+6. **Save transceiver** – wird sofort aktiv, ohne Neustart.
+
+Der Transceiver verbindet sich automatisch neu, wenn er eingeschaltet oder das USB-Kabel wieder eingesteckt wird.
+
+### Transceiver mit anderen Programmen teilen
+
+Eine serielle Schnittstelle kann nur von einem Programm gleichzeitig geöffnet werden. Soll der Transceiver zusätzlich von WSJT-X oder einem Logprogramm gesteuert werden, ein gemeinsames `rigctld` starten und in SHACK-SERVER beim Treiber **Hamlib** die Verbindung **„Existing rigctld“** (Host und Port, Standard 4532) wählen.
+
+### Prüfen
+
+```bash
+cat ~/SHACK-SERVER/data/radios.json
+curl -s http://localhost:3000/api/radios
+```
+
+Hamlib-Modellliste:
+
+```bash
+curl -s http://localhost:3000/api/radios/hamlib-models | head -c 300
+```
+
+---
+
+# 17. HTTPS mit Caddy (optional, empfohlen)
+
+Für Remote-Mikrofon und USB-Bedienteile im Browser (WebHID) verlangen moderne Browser HTTPS. Caddy stellt SHACK-SERVER per HTTPS bereit.
+
+Am einfachsten richtet der Installer Caddy ein:
+
+```bash
+bash ~/SHACK-SERVER/scripts/install.sh
+```
+
+(Der Installer überspringt bereits erledigte Schritte und fragt nach, bevor er eine bestehende Caddy-Konfiguration ersetzt.)
+
+Die manuelle Einrichtung von Caddy ist in `docs/SETUP_RASPBERRY.md` beschrieben.
+
+---
+
+# 18. HTTP-Port 3000 prüfen
 
 Auf dem Raspberry:
 
@@ -470,7 +541,7 @@ Wenn der Server korrekt läuft, wird eine JSON-Antwort zurückgegeben.
 
 ---
 
-# 16. Port 8000 prüfen
+# 19. Port 8000 prüfen
 
 SHACK-SERVER stellt selbst einen DX-Cluster-Telnet-Server auf Port 8000 bereit.
 
@@ -496,9 +567,9 @@ nc -vz <RASPBERRY-IP> 8000
 
 ---
 
-# 17. DXSpider-Verbindungen prüfen
+# 20. DXSpider-Verbindungen prüfen
 
-Die konfigurierten externen DXSpider-Server müssen vom Raspberry aus erreichbar sein.
+Die in den Settings konfigurierten externen DXSpider-Server müssen vom Raspberry aus erreichbar sein.
 
 Beispiel:
 
@@ -519,7 +590,7 @@ Beide Funktionen können gleichzeitig verwendet werden.
 
 ---
 
-# 18. Logs prüfen
+# 21. Logs prüfen
 
 PM2-Ausgabe:
 
@@ -539,9 +610,15 @@ Nur normale Ausgabe:
 tail -n 50 ~/.pm2/logs/shack-server-out.log
 ```
 
+Nur Meldungen der Transceiver-Anbindung:
+
+```bash
+pm2 logs shack-server --lines 300 --nostream | grep -E "CAT|CI-V|HAMLIB|RADIO" | grep -v " RX\| TX"
+```
+
 ---
 
-# 19. Diagnose-API
+# 22. Diagnose-API
 
 Die Diagnose-API ist ein wichtiger Funktionstest:
 
@@ -576,24 +653,25 @@ Die tatsächlichen Werte ändern sich natürlich laufend.
 
 ---
 
-# 20. QRZ prüfen
+# 23. QRZ prüfen
 
 QRZ benötigt gültige Zugangsdaten in `.env`:
 
 ```env
 QRZ_USER=...
 QRZ_PASSWORD=...
+QRZ_API_KEY=...
 ```
 
 Die Anwendung lädt diese über `dotenv`.
 
-Bei einem neuen Raspberry zuerst prüfen:
+Bei einem neuen Raspberry zuerst prüfen (zeigt nur die Namen, nicht die Werte):
 
 ```bash
-grep -n "QRZ" .env
+grep -o "^QRZ_[A-Z_]*" .env
 ```
 
-Dabei niemals das Passwort in Logs oder Screenshots veröffentlichen.
+Dabei niemals das Passwort oder den API-Key in Logs oder Screenshots veröffentlichen.
 
 Wenn QRZ nicht funktioniert, zunächst die PM2-Logs prüfen:
 
@@ -605,7 +683,7 @@ Ein nicht bei QRZ vorhandenes Rufzeichen ist **kein Serverfehler**. Nicht jedes 
 
 ---
 
-# 21. Firewall
+# 24. Firewall
 
 Wenn `ufw` oder eine andere Firewall verwendet wird, müssen die benötigten Ports freigegeben werden.
 
@@ -614,6 +692,13 @@ Beispiel für UFW:
 ```bash
 sudo ufw allow 3000/tcp
 sudo ufw allow 8000/tcp
+```
+
+Mit Caddy zusätzlich:
+
+```bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
 ```
 
 Danach:
@@ -626,7 +711,7 @@ Die ausgehenden Verbindungen zu den externen DX-Cluster-Servern müssen ebenfall
 
 ---
 
-# 22. Neustart-Test
+# 25. Neustart-Test
 
 Nach erfolgreicher Installation sollte unbedingt ein vollständiger Neustart getestet werden:
 
@@ -658,9 +743,16 @@ Anschließend die Weboberfläche von einem Rechner im Netzwerk öffnen:
 http://<RASPBERRY-IP>:3000
 ```
 
+bzw. mit Caddy:
+
+```text
+https://<RASPBERRY-IP>
+https://<hostname>.local
+```
+
 ---
 
-# 23. Abschluss-Checkliste
+# 26. Abschluss-Checkliste
 
 | Prüfung | Kommando |
 |---|---|
@@ -669,18 +761,22 @@ http://<RASPBERRY-IP>:3000
 | Node.js | `node --version` |
 | npm | `npm --version` |
 | PM2 | `pm2 --version` |
+| Hamlib | `rigctl --version` |
+| Gruppe dialout | `groups` |
 | Build | `npm run build` |
 | PM2 | `pm2 status` |
 | HTTP 3000 | `ss -lntp \| grep ':3000'` |
 | Telnet 8000 | `ss -lntp \| grep ':8000'` |
 | API | `curl -s http://localhost:3000/api/diagnostics` |
+| Transceiver | Settings → Transceivers → Test connection |
 | Logs | `pm2 logs shack-server --lines 50 --nostream` |
 | Autostart | `pm2 save` / Neustart testen |
 | DXSpider | `nc -vz <host> <port>` |
+| Caddy (optional) | `systemctl status caddy` |
 
 ---
 
-# 24. Referenzsystem
+# 27. Referenzsystem
 
 Der derzeit funktionierende SHACK-SERVER läuft auf:
 
@@ -690,6 +786,7 @@ Arch:     aarch64
 Node:     v22.23.1
 npm:      10.9.8
 PM2:      7.0.3
+Hamlib:   4.6.2
 
 Projekt:
 ~/SHACK-SERVER
@@ -704,134 +801,48 @@ PM2 Script:
 ~/SHACK-SERVER/dist/index.js
 ```
 
-Die Konfigurationsdatei `.env` enthält standortspezifische und vertrauliche Daten und wird **nicht** ins Repository übernommen.
+Die Konfigurationsdatei `.env` und das Verzeichnis `data/` enthalten standortspezifische und vertrauliche Daten und werden **nicht** ins Repository übernommen.
 
 ---
 
-# 25. Update einer bestehenden Installation
+# 28. Update einer bestehenden Installation
 
-Projekt aktualisieren:
+Empfohlen – in einem Schritt:
+
+```bash
+bash ~/SHACK-SERVER/scripts/install.sh --update
+```
+
+Manuell:
 
 ```bash
 cd ~/SHACK-SERVER
 git pull
-```
-
-Abhängigkeiten aktualisieren:
-
-```bash
 npm install
-```
-
-Neu bauen:
-
-```bash
 npm run build
-```
-
-Server neu starten:
-
-```bash
 pm2 restart shack-server
 ```
 
-Status prüfen:
+Danach prüfen:
 
 ```bash
 pm2 status
-```
-
-Diagnose prüfen:
-
-```bash
 curl -s http://localhost:3000/api/diagnostics
-```
-
-Logs:
-
-```bash
 pm2 logs shack-server --lines 50 --nostream
 ```
 
+Im Browser einmal **Ctrl+F5**, damit die neue Weboberfläche geladen wird.
+
 ---
 
-# 26. Wichtige Hinweise
+# 29. Wichtige Hinweise
 
 - `.env` enthält vertrauliche Daten und darf nicht veröffentlicht werden.
-- QRZ-Benutzerdaten gehören ausschließlich in `.env`.
+- QRZ-Zugangsdaten gehören ausschließlich in `.env`.
+- Station, DX-Cluster und Transceiver werden in der Weboberfläche (**Settings**) gepflegt und in `data/` gespeichert.
 - Die anonymisierten Werte in dieser Dokumentation sind durch die tatsächlichen Werte des jeweiligen Standorts zu ersetzen.
 - Port 3000 ist die Web-/API-Schnittstelle.
 - Port 8000 ist der integrierte DX-Cluster-Telnet-Server.
 - Externe DXSpider-Verbindungen verwenden die jeweils konfigurierte Zieladresse und den konfigurierten Zielport.
-- Nach Änderungen an TypeScript-Dateien ist `npm run build` erforderlich.
-- Nach einem neuen Build muss der laufende PM2-Prozess neu gestartet werden.
-
-
-## Node.js 22 installieren
-
-Der SHACK-SERVER benötigt Node.js 22 oder neuer. Auf Debian 13 ARM64 wird Node.js 22 über NodeSource installiert.
-
-### 1. System aktualisieren und curl installieren
-
-```bash
-sudo apt update
-sudo apt install -y curl
-```
-
-### 2. NodeSource für Node.js 22 einrichten
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-```
-
-### 3. Node.js installieren
-
-```bash
-sudo apt install -y nodejs
-```
-
-### 4. Installation prüfen
-
-```bash
-node --version
-npm --version
-```
-
-Es sollte eine Node.js-Version `v22.x.x` angezeigt werden.
-
-Der SHACK-SERVER definiert in `package.json`:
-
-```json
-"engines": {
-  "node": ">=22"
-}
-```
-
-### 5. PM2 installieren
-
-Nach Node.js wird PM2 global installiert:
-
-```bash
-sudo npm install -g pm2
-```
-
-Prüfen:
-
-```bash
-pm2 --version
-```
-
-## Voraussetzungen
-
-### Empfohlenes Betriebssystem
-
-Für den SHACK-SERVER wird **Raspberry Pi OS Lite (64-bit)** empfohlen.
-
-Eine grafische Oberfläche wird nicht benötigt. Der SHACK-SERVER läuft als Serverdienst und wird über das Netzwerk bzw. einen Webbrowser administriert. Dadurch ist die Lite-Version besonders geeignet, da sie weniger Ressourcen benötigt und keine unnötigen Desktop-Komponenten installiert.
-
-**Empfehlung:**
-- Raspberry Pi OS Lite (64-bit)
-- keine Desktop-/GUI-Installation erforderlich
-- Netzwerkverbindung zum Raspberry Pi
-- SSH-Zugriff für die Installation und Administration
-
+- Nach Änderungen unter `src/` ist `npm run build` erforderlich, danach muss der PM2-Prozess neu gestartet werden.
+- SHACK-SERVER hat keine eigene Anmeldung: Zugriff aus dem Internet nur über einen geschützten Weg (z. B. Cloudflare Access), nie durch direkte Portweiterleitung.
