@@ -837,6 +837,159 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+    /*
+     * Edit dialog for one contest QSO (replaces the
+     * former prompt() per field).
+     */
+    const EDIT_BANDS = [
+        "160", "80", "40", "20", "15", "10",
+        "60", "30", "17", "12", "6", "2"
+    ];
+
+    const EDIT_MODES = [
+        "SSB", "CW", "RTTY", "FT8", "FT4", "FM", "AM"
+    ];
+
+    function ensureEditDialogStyles() {
+
+        if (document.getElementById("qh-edit-styles")) {
+            return;
+        }
+
+        const style = document.createElement("style");
+        style.id = "qh-edit-styles";
+        style.textContent = `
+            .qh-edit-overlay {
+                position: fixed; inset: 0; z-index: 10000;
+                background: rgba(0, 0, 0, 0.65);
+                display: flex; align-items: center; justify-content: center;
+                padding: 16px;
+            }
+            .qh-edit-dialog {
+                width: 100%; max-width: 620px; max-height: 92vh; overflow: auto;
+                background: var(--panel, #0d1720);
+                border: 1px solid var(--cyan, #00e5ff);
+                border-radius: 10px;
+                box-shadow: 0 0 24px rgba(0, 229, 255, 0.25);
+                color: var(--text, #fff);
+                font-family: inherit;
+            }
+            .qh-edit-header {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 14px 18px;
+                border-bottom: 1px solid var(--panel-border, #1d3442);
+            }
+            .qh-edit-title {
+                color: var(--cyan, #00e5ff); font-weight: 700;
+                letter-spacing: 1px; font-size: 15px;
+            }
+            .qh-edit-close {
+                background: none; border: none; color: var(--muted, #9aa7b0);
+                font-size: 22px; cursor: pointer; line-height: 1;
+            }
+            .qh-edit-close:hover { color: var(--text, #fff); }
+            .qh-edit-grid {
+                display: grid; grid-template-columns: 1fr 1fr;
+                gap: 12px 16px; padding: 16px 18px;
+            }
+            .qh-edit-field { display: flex; flex-direction: column; gap: 4px; }
+            .qh-edit-field label {
+                font-size: 11px; letter-spacing: 1px;
+                color: var(--muted, #9aa7b0);
+            }
+            .qh-edit-field input,
+            .qh-edit-field select {
+                background: var(--background, #050b10);
+                border: 1px solid var(--panel-border, #1d3442);
+                border-radius: 6px; color: var(--text, #fff);
+                padding: 8px 10px; font-size: 14px; font-family: inherit;
+                min-width: 0;
+            }
+            .qh-edit-field input:focus,
+            .qh-edit-field select:focus {
+                outline: none; border-color: var(--cyan, #00e5ff);
+            }
+            .qh-edit-field input.qh-call { text-transform: uppercase; font-weight: 700; }
+            .qh-edit-error {
+                min-height: 18px; padding: 0 18px;
+                color: var(--red, #ff5252); font-size: 13px;
+            }
+            .qh-edit-actions {
+                display: flex; justify-content: flex-end; gap: 10px;
+                padding: 12px 18px 16px;
+            }
+            .qh-edit-actions button {
+                padding: 8px 18px; border-radius: 6px; cursor: pointer;
+                font-weight: 700; letter-spacing: 1px; font-family: inherit;
+            }
+            .qh-edit-cancel {
+                background: transparent; color: var(--muted, #9aa7b0);
+                border: 1px solid var(--panel-border, #1d3442);
+            }
+            .qh-edit-save {
+                background: transparent; color: var(--cyan, #00e5ff);
+                border: 1px solid var(--cyan, #00e5ff);
+            }
+            .qh-edit-save:hover { background: rgba(0, 229, 255, 0.12); }
+            .qh-edit-save:disabled { opacity: 0.5; cursor: default; }
+            @media (max-width: 520px) {
+                .qh-edit-grid { grid-template-columns: 1fr; }
+            }
+        `;
+
+        document.head.appendChild(style);
+
+    }
+
+    function normalizeEditDate(value) {
+
+        const digits = String(value || "").replace(/\D/g, "");
+
+        if (digits.length !== 8) {
+            return null;
+        }
+
+        return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+
+    }
+
+    function normalizeEditTime(value) {
+
+        const digits = String(value || "").replace(/\D/g, "");
+
+        if (digits.length !== 4 && digits.length !== 6) {
+            return null;
+        }
+
+        const hh = Number(digits.slice(0, 2));
+        const mm = Number(digits.slice(2, 4));
+        const ss = digits.length === 6 ? Number(digits.slice(4, 6)) : 0;
+
+        if (hh > 23 || mm > 59 || ss > 59) {
+            return null;
+        }
+
+        const two = (n) => String(n).padStart(2, "0");
+
+        return `${two(hh)}:${two(mm)}:${two(ss)}`;
+
+    }
+
+    function editOptions(list, current) {
+
+        const value = String(current ?? "");
+        const values = list.includes(value) || !value
+            ? list
+            : [value, ...list];
+
+        return values
+            .map(item =>
+                `<option value="${escapeHtml(item)}"${item === value ? " selected" : ""}>${escapeHtml(item)}</option>`
+            )
+            .join("");
+
+    }
+
     async function editQsoHistory(qsoId) {
 
         const qso =
@@ -851,182 +1004,196 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        ensureEditDialogStyles();
 
-        const call =
-            prompt("CALL:", qso.call ?? "");
+        document.querySelector(".qh-edit-overlay")?.remove();
 
-        if (call === null) return;
+        const field = (id, label, value, extra = "") => `
+            <div class="qh-edit-field">
+                <label for="qh-edit-${id}">${label}</label>
+                <input id="qh-edit-${id}" type="text" autocomplete="off"
+                       value="${escapeHtml(value ?? "")}" ${extra}>
+            </div>`;
 
+        const overlay = document.createElement("div");
+        overlay.className = "qh-edit-overlay";
+        overlay.innerHTML = `
+            <form class="qh-edit-dialog" novalidate>
+                <div class="qh-edit-header">
+                    <div class="qh-edit-title">EDIT QSO</div>
+                    <button type="button" class="qh-edit-close" title="Close">×</button>
+                </div>
+                <div class="qh-edit-grid">
+                    ${field("call", "CALL", qso.call, 'class="qh-call"')}
+                    ${field("frequency", "FREQUENCY (kHz)", qso.frequency, 'inputmode="decimal"')}
+                    <div class="qh-edit-field">
+                        <label for="qh-edit-band">BAND (m)</label>
+                        <select id="qh-edit-band">${editOptions(EDIT_BANDS, qso.band)}</select>
+                    </div>
+                    <div class="qh-edit-field">
+                        <label for="qh-edit-mode">MODE</label>
+                        <select id="qh-edit-mode">${editOptions(EDIT_MODES, String(qso.mode ?? "").toUpperCase())}</select>
+                    </div>
+                    ${field("date", "DATE UTC (YYYY-MM-DD)", qso.qso_date)}
+                    ${field("time", "TIME UTC (HH:MM)", String(qso.time_on_utc ?? "").slice(0, 5))}
+                    ${field("rst-sent", "RST SENT", qso.rst_sent)}
+                    ${field("rst-rcvd", "RST RECEIVED", qso.rst_rcvd)}
+                    ${field("exch-sent", "EXCHANGE SENT", qso.exchange_sent)}
+                    ${field("exch-rcvd", "EXCHANGE RECEIVED", qso.exchange_received)}
+                    ${field("operator", "OPERATOR", qso.operator)}
+                    ${field("station", "STATION", qso.station_callsign)}
+                </div>
+                <div class="qh-edit-error" aria-live="polite"></div>
+                <div class="qh-edit-actions">
+                    <button type="button" class="qh-edit-cancel">CANCEL</button>
+                    <button type="submit" class="qh-edit-save">SAVE</button>
+                </div>
+            </form>`;
 
-        const band =
-            prompt("BAND:", qso.band ?? "");
+        document.body.appendChild(overlay);
 
-        if (band === null) return;
+        const form = overlay.querySelector("form");
+        const errorBox = overlay.querySelector(".qh-edit-error");
+        const saveButton = overlay.querySelector(".qh-edit-save");
+        const value = (id) =>
+            String(overlay.querySelector(`#qh-edit-${id}`).value || "").trim();
 
+        const close = () => {
+            document.removeEventListener("keydown", onKey, true);
+            overlay.remove();
+        };
 
-        const frequency =
-            prompt(
-                "FREQUENCY (kHz):",
-                qso.frequency ?? ""
-            );
+        const onKey = (event) => {
+            if (event.key === "Escape") {
+                event.preventDefault();
+                event.stopPropagation();
+                close();
+            }
+        };
 
-        if (frequency === null) return;
+        document.addEventListener("keydown", onKey, true);
 
+        overlay.querySelector(".qh-edit-close").addEventListener("click", close);
+        overlay.querySelector(".qh-edit-cancel").addEventListener("click", close);
+        overlay.addEventListener("mousedown", (event) => {
+            if (event.target === overlay) close();
+        });
 
-        const mode =
-            prompt("MODE:", qso.mode ?? "");
+        const callInput = overlay.querySelector("#qh-edit-call");
+        callInput.addEventListener("input", () => {
+            const pos = callInput.selectionStart;
+            callInput.value = callInput.value.toUpperCase();
+            callInput.setSelectionRange(pos, pos);
+        });
+        callInput.focus();
+        callInput.select();
 
-        if (mode === null) return;
+        form.addEventListener("submit", async (event) => {
 
+            event.preventDefault();
+            errorBox.textContent = "";
 
-        const rstSent =
-            prompt(
-                "RST SENT:",
-                qso.rst_sent ?? ""
-            );
+            const call = value("call").toUpperCase();
+            const frequencyNumber = Number(value("frequency").replace(",", "."));
+            const qsoDate = normalizeEditDate(value("date"));
+            /*
+             * Keep the original seconds when the time
+             * was not changed.
+             */
+            const originalTime = String(qso.time_on_utc ?? "");
+            const timeOn =
+                value("time") === originalTime.slice(0, 5) &&
+                normalizeEditTime(originalTime)
+                    ? normalizeEditTime(originalTime)
+                    : normalizeEditTime(value("time"));
 
-        if (rstSent === null) return;
+            const payload = {
+                qso_date: qsoDate,
+                time_on_utc: timeOn,
+                frequency: frequencyNumber,
+                band: value("band"),
+                mode: value("mode"),
+                call,
+                rst_sent: value("rst-sent"),
+                rst_rcvd: value("rst-rcvd"),
+                exchange_sent: value("exch-sent"),
+                exchange_received: value("exch-rcvd"),
+                operator: value("operator"),
+                station_callsign: value("station").toUpperCase()
+            };
 
+            if (!call) {
+                errorBox.textContent = "Call is required.";
+                return;
+            }
+            if (!Number.isFinite(frequencyNumber) || frequencyNumber <= 0) {
+                errorBox.textContent = "Invalid frequency (kHz, e.g. 14025).";
+                return;
+            }
+            if (!qsoDate) {
+                errorBox.textContent = "Invalid date (YYYY-MM-DD).";
+                return;
+            }
+            if (!timeOn) {
+                errorBox.textContent = "Invalid time (HH:MM, UTC).";
+                return;
+            }
 
-        const rstReceived =
-            prompt(
-                "RST RECEIVED:",
-                qso.rst_rcvd ?? ""
-            );
+            const missing = Object.entries(payload)
+                .filter(([, v]) => typeof v === "string" && !v)
+                .map(([k]) => k.replace(/_/g, " "));
 
-        if (rstReceived === null) return;
+            if (missing.length) {
+                errorBox.textContent = "Please fill in: " + missing.join(", ") + ".";
+                return;
+            }
 
+            saveButton.disabled = true;
+            saveButton.textContent = "SAVING...";
 
-        const exchangeSent =
-            prompt(
-                "EXCHANGE SENT:",
-                qso.exchange_sent ?? ""
-            );
+            try {
 
-        if (exchangeSent === null) return;
+                const response =
+                    await fetch(
+                        `/api/contests/qso/${qso.id}`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(payload)
+                        }
+                    );
 
+                const data =
+                    await response.json().catch(() => ({}));
 
-        const exchangeReceived =
-            prompt(
-                "EXCHANGE RECEIVED:",
-                qso.exchange_received ?? ""
-            );
+                if (!response.ok) {
+                    throw new Error(
+                        data.error ||
+                        `HTTP ${response.status}`
+                    );
+                }
 
-        if (exchangeReceived === null) return;
+                close();
+                await loadQsoHistory();
 
+            }
+            catch (error) {
 
-        const operator =
-            prompt(
-                "OPERATOR:",
-                qso.operator ?? ""
-            );
-
-        if (operator === null) return;
-
-
-        const station =
-            prompt(
-                "STATION:",
-                qso.station_callsign ?? ""
-            );
-
-        if (station === null) return;
-
-
-        const frequencyNumber =
-            Number(frequency);
-
-
-        if (!Number.isFinite(frequencyNumber)) {
-
-            alert("Invalid frequency.");
-
-            return;
-
-        }
-
-
-        try {
-
-            const response =
-                await fetch(
-                    `/api/contests/qso/${qso.id}`,
-                    {
-                        method: "PUT",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify({
-
-                                qso_date:
-                                    qso.qso_date,
-
-                                time_on_utc:
-                                    qso.time_on_utc,
-
-                                frequency:
-                                    frequencyNumber,
-
-                                band,
-                                mode,
-                                call,
-
-                                rst_sent:
-                                    rstSent,
-
-                                rst_rcvd:
-                                    rstReceived,
-
-                                exchange_sent:
-                                    exchangeSent,
-
-                                exchange_received:
-                                    exchangeReceived,
-
-                                operator,
-
-                                station_callsign:
-                                    station
-
-                            })
-                    }
+                console.error(
+                    "Edit contest QSO:",
+                    error
                 );
 
-
-            const data =
-                await response.json();
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    data.error ||
-                    `HTTP ${response.status}`
-                );
+                errorBox.textContent =
+                    "Could not update contest QSO: " + error.message;
+                saveButton.disabled = false;
+                saveButton.textContent = "SAVE";
 
             }
 
-
-            await loadQsoHistory();
-
-        }
-        catch (error) {
-
-            console.error(
-                "Edit contest QSO:",
-                error
-            );
-
-            alert(
-                "Could not update contest QSO:\n\n" +
-                error.message
-            );
-
-        }
+        });
 
     }
 
