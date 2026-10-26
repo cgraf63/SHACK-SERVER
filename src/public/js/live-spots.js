@@ -1095,7 +1095,7 @@ function updateLiveSpotOrder(spots) {
         );
 
 
-    // Entfernte Spots aus der Historie entfernen
+    // Drop removed spots from the history
 
     liveSpotOrder =
         liveSpotOrder.filter(
@@ -1286,14 +1286,14 @@ function renderLiveSpots() {
 
     ${
         worked === "station-band"
-            ? `<span class="worked-indicator worked-station-band" title="Station auf diesem Band gearbeitet">●</span>`
+            ? `<span class="worked-indicator worked-station-band" title="Station worked on this band">●</span>`
             : worked === "country-band"
-                ? `<span class="worked-indicator worked-country-band" title="Land auf diesem Band gearbeitet">●</span>`
+                ? `<span class="worked-indicator worked-country-band" title="Country worked on this band">●</span>`
                 : worked === "station"
-                    ? `<span class="worked-indicator worked-station" title="Station bereits gearbeitet">●</span>`
+                    ? `<span class="worked-indicator worked-station" title="Station already worked">●</span>`
                     : worked === "country"
-                        ? `<span class="worked-indicator worked-country" title="Land bereits gearbeitet">●</span>`
-                        : `<span class="worked-indicator worked-new" title="Noch nicht gearbeitet">●</span>`
+                        ? `<span class="worked-indicator worked-country" title="Country already worked">●</span>`
+                        : `<span class="worked-indicator worked-new" title="Not worked yet">●</span>`
 
       }
 
@@ -2481,22 +2481,22 @@ function setupWorkedHelp() {
 
                 <div class="worked-help-row">
                     <span class="worked-help-dot worked-help-yellow">●</span>
-                    <span>Land + Band</span>
+                    <span>Country + Band</span>
                 </div>
 
                 <div class="worked-help-row">
                     <span class="worked-help-dot worked-help-blue">●</span>
-                    <span>Station bereits gearbeitet</span>
+                    <span>Station already worked</span>
                 </div>
 
                 <div class="worked-help-row">
                     <span class="worked-help-dot worked-help-purple">●</span>
-                    <span>Land bereits gearbeitet</span>
+                    <span>Country already worked</span>
                 </div>
 
                 <div class="worked-help-row">
                     <span class="worked-help-dot worked-help-new">●</span>
-                    <span>Neu</span>
+                    <span>New</span>
                 </div>
             `;
 

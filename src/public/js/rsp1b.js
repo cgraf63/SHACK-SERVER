@@ -758,12 +758,12 @@ document.querySelectorAll("[data-view]").forEach(button => {
         if (view === "ham") {
             hamView = true;
             setCenter(14074000, true);
-            log("View: HAM bands - Bandzonen eingeblendet");
+            log("View: HAM bands - band zones on");
         } else {
             hamView = false;
             redraw();
             setCenter(500000000, true);
-            log("View: overview 1-1000 MHz - Bandzonen aus");
+            log("View: overview 1-1000 MHz - band zones off");
         }
     };
 });

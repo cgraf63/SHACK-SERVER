@@ -136,7 +136,7 @@ function renderQsoLog() {
     });
 
     filtered.sort((a,b) => compareValues(a[sortField], b[sortField]) * (sortDirection === "asc" ? 1 : -1));
-    count.textContent = `${filtered.length} von ${qsoRecords.length} QSOs`;
+    count.textContent = `${filtered.length} of ${qsoRecords.length} QSOs`;
 
     if (!filtered.length) {
         body.innerHTML = `<tr><td colspan="11" class="qso-log-empty">No QSOs found.</td></tr>`;

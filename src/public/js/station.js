@@ -194,7 +194,7 @@ document.addEventListener(
             if (data.success === false) {
 
                 setCwMemoryStatus(
-                    "Tuner-Check fehlgeschlagen \u2014 Nachricht NICHT gesendet",
+                    "Tuner check failed \u2014 message NOT sent",
                     true
                 );
 
@@ -205,7 +205,7 @@ document.addEventListener(
             }
 
             setCwMemoryStatus(
-                `CW Memory ${memory} gesendet`,
+                `CW memory ${memory} sent`,
                 false
             );
 

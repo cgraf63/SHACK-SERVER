@@ -7,7 +7,7 @@ async function loadComponent(id, file) {
 
 
     const response =
-        await fetch(`components/${file}`);
+        await fetch(`components/${file}`, { cache: "no-cache" });
 
 
     element.innerHTML =

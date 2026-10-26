@@ -1985,7 +1985,7 @@ if (splitTxFrequencyInput) {
         document.getElementById("ctr2-status");
 
     if (!connectButton || !status) {
-        console.warn("CTR2: UI nicht gefunden");
+        console.warn("CTR2: UI not found");
         return;
     }
 
@@ -2062,7 +2062,7 @@ if (splitTxFrequencyInput) {
 
         if (!active) {
             console.warn(
-                "CTR2: keine aktive VFO-Frequenz verfügbar"
+                "CTR2: no active VFO frequency available"
             );
             return;
         }
@@ -2182,7 +2182,7 @@ if (splitTxFrequencyInput) {
         if (!navigator.hid) {
             setStatus("WEBHID UNAVAILABLE");
             console.error(
-                "CTR2: WebHID wird von diesem Browser nicht unterstützt"
+                "CTR2: WebHID is not supported by this browser"
             );
             return;
         }
@@ -2275,7 +2275,7 @@ if (splitTxFrequencyInput) {
     const audioButton = document.getElementById("audio-toggle");
 
     if (!audioButton) {
-        console.warn("AUDIO: #audio-toggle nicht gefunden");
+        console.warn("AUDIO: #audio-toggle not found");
         return;
     }
 
@@ -2790,7 +2790,7 @@ if (splitTxFrequencyInput) {
             !navigator.mediaDevices.getUserMedia
         ) {
             throw new Error(
-                "Mikrofonzugriff nicht verfügbar. HTTPS erforderlich."
+                "Microphone access not available. HTTPS required."
             );
         }
 
