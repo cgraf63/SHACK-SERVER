@@ -2,11 +2,10 @@ import { WebSocketServer, WebSocket } from "ws";
 import type { Server } from "node:http";
 import { spawn, type ChildProcessByStdio } from "node:child_process";
 import type { Readable, Writable } from "node:stream";
+import { SDR_BINARY } from "./sdr-binary.js";
 
 const clients = new Set<WebSocket>();
 
-const SDR_BINARY =
-    "/home/admin/SHACK-SERVER/src/services/sdr/native/shack-sdr";
 
 const FFT_SIZE = 8192;
 /*

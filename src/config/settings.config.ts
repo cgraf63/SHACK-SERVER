@@ -46,7 +46,15 @@ export interface ShackSettings {
     };
 
     dxspiders: DxSpiderSettings[];
-
+    /*
+     * Optional pages in the sidebar.
+     * rbn: RBN spots (+ memory keys for Yaesu transceivers)
+     * sdr: SDRplay RSP1B spectrum (needs the native shack-sdr binary)
+     */
+    modules: {
+        rbn: boolean;
+        sdr: boolean;
+    };
 }
 
 
@@ -82,8 +90,11 @@ export const shackSettings: ShackSettings = {
 
     },
 
+    modules: {
+        rbn: true,
+        sdr: false
+    },
     dxspiders: [
-
         {
             name: "HB9ON-8",
             host: "193.108.55.24",

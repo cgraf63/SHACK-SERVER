@@ -153,3 +153,76 @@ window.addEventListener(
     "componentsLoaded",
     setupSidebar
 );
+
+
+/*
+    Optional modules: show RBN / SDR in the sidebar only when
+    enabled in Settings → Optional Modules.
+*/
+
+function applySidebarModules(settings) {
+
+    const modules =
+        settings && settings.modules
+            ? settings.modules
+            : {};
+
+    const rbn =
+        document.getElementById("rbn-btn");
+
+    const sdr =
+        document.getElementById("sdr-btn");
+
+    if (rbn) {
+        rbn.style.display =
+            modules.rbn === false ? "none" : "";
+    }
+
+    if (sdr) {
+        sdr.style.display =
+            modules.sdr === true ? "" : "none";
+    }
+
+}
+
+
+async function loadSidebarModules() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/settings?_=" + Date.now(),
+                { cache: "no-store" }
+            );
+
+        if (!response.ok) {
+            return;
+        }
+
+        applySidebarModules(
+            await response.json()
+        );
+
+    }
+    catch (error) {
+
+        console.warn(
+            "Sidebar: could not load module settings",
+            error
+        );
+
+    }
+
+}
+
+
+window.addEventListener(
+    "componentsLoaded",
+    loadSidebarModules
+);
+
+window.addEventListener(
+    "settingsSaved",
+    event => applySidebarModules(event.detail)
+);

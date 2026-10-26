@@ -109,6 +109,27 @@ async function loadSettings() {
             await response.json();
 
 
+        /*
+            Optional modules (sidebar pages)
+        */
+
+        const moduleRbn =
+            document.getElementById("module-rbn");
+
+        const moduleSdr =
+            document.getElementById("module-sdr");
+
+        if (moduleRbn) {
+            moduleRbn.checked =
+                settingsData.modules?.rbn !== false;
+        }
+
+        if (moduleSdr) {
+            moduleSdr.checked =
+                settingsData.modules?.sdr === true;
+        }
+
+
         const callsign =
             document.getElementById(
                 "callsign"
@@ -511,7 +532,19 @@ async function saveSettings() {
         },
 
         dxspiders:
-            collectDXSpiders()
+            collectDXSpiders(),
+
+        modules: {
+
+            rbn:
+                document.getElementById("module-rbn")
+                    ?.checked ?? true,
+
+            sdr:
+                document.getElementById("module-sdr")
+                    ?.checked ?? false
+
+        }
 
     };
 
@@ -556,6 +589,18 @@ async function saveSettings() {
 
         showSettingsMessage(
             "Settings saved."
+        );
+
+
+        /*
+            Let the sidebar update (optional modules).
+        */
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "settingsSaved",
+                { detail: settingsData }
+            )
         );
 
 

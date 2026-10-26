@@ -5,6 +5,22 @@ import {
     ShackSettings,
     shackSettings
 } from "../../config/settings.config.js";
+import { sdrBinaryExists } from "../sdr/sdr-binary.js";
+
+
+/*
+ * Module defaults for settings files without "modules":
+ * RBN on, SDR on only if the native SDR program is installed
+ * (keeps existing installations with an RSP1B unchanged).
+ */
+function defaultModules(): ShackSettings["modules"] {
+
+    return {
+        rbn: shackSettings.modules.rbn,
+        sdr: sdrBinaryExists()
+    };
+
+}
 
 
 const DATA_DIR =
@@ -40,11 +56,12 @@ export class SettingsService {
     get(): ShackSettings {
 
         return {
-
             ...this.settings,
-
             sources: {
                 ...this.settings.sources
+            },
+            modules: {
+                ...this.settings.modules
             },
 
             dxspiders:
@@ -64,16 +81,27 @@ export class SettingsService {
     ): ShackSettings {
 
 
+        /*
+         * Merge with the current settings: fields the client
+         * does not send (e.g. audio, modules) are kept.
+         */
         this.settings = {
-
+            ...this.settings,
             ...settings,
-
             sources: {
-                ...settings.sources
+                ...this.settings.sources,
+                ...(settings.sources ?? {})
+            },
+            modules: {
+                ...this.settings.modules,
+                ...(settings.modules ?? {})
             },
 
             dxspiders:
-                settings.dxspiders.map(
+                (Array.isArray(settings.dxspiders)
+                    ? settings.dxspiders
+                    : this.settings.dxspiders
+                ).map(
                     spider => ({
                         ...spider
                     })
@@ -143,11 +171,12 @@ export class SettingsService {
 
 
                     sources: {
-
                         ...shackSettings.sources,
-
                         ...(parsed.sources ?? {})
-
+                    },
+                    modules: {
+                        ...defaultModules(),
+                        ...(parsed.modules ?? {})
                     },
 
 
@@ -178,13 +207,12 @@ export class SettingsService {
 
 
         return {
-
             ...shackSettings,
-
             sources: {
                 ...shackSettings.sources
             },
-
+            modules:
+                defaultModules(),
             dxspiders:
                 shackSettings.dxspiders.map(
                     spider => ({

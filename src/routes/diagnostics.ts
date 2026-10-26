@@ -160,6 +160,13 @@ export default router;
  */
 
 import { execFile } from "child_process";
+import path from "node:path";
+
+/*
+ * diagnose.sh in the project directory (pm2 cwd), any user.
+ */
+const DIAGNOSE_SCRIPT =
+    path.resolve("diagnose.sh");
 
 router.get(
     "/system",
@@ -167,7 +174,7 @@ router.get(
 
         execFile(
             "/bin/bash",
-            ["/home/admin/SHACK-SERVER/diagnose.sh", "--quiet"],
+            [DIAGNOSE_SCRIPT, "--quiet"],
             { timeout: 30000, maxBuffer: 1024 * 1024 },
             (error, stdout, stderr) => {
 
@@ -212,7 +219,7 @@ router.get(
 
         execFile(
             "/bin/bash",
-            ["/home/admin/SHACK-SERVER/diagnose.sh", "--quiet"],
+            [DIAGNOSE_SCRIPT, "--quiet"],
             { timeout: 30000, maxBuffer: 1024 * 1024 },
             (error, stdout) => {
 

@@ -183,7 +183,7 @@ const sidebarScript =
     );
 
 sidebarScript.src =
-    "js/sidebar.js";
+    "js/sidebar.js?v=2";
 
 await new Promise(resolve => {
 
@@ -206,7 +206,7 @@ await new Promise(resolve => {
         );
 
     settingsScript.src =
-        "js/settings-modal.js?v=2";
+        "js/settings-modal.js?v=3";
 
     document.body.appendChild(
         settingsScript

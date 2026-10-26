@@ -18,14 +18,14 @@
 
     <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px">
         <a href="/index.html" class="rbn-back-link">&larr; Dashboard</a>
-        <h1 style="font-size:20px;margin:0">RBN &amp; MEMORY</h1>
+        <h1 id="rbn-page-title" style="font-size:20px;margin:0">RBN &amp; MEMORY</h1>
     </div>
 
     <!-- ===== OBEN: Memory-Buttons (2x5) + Frequenz/Mode ===== -->
     <section class="rbn-memory-section">
 
         <div style="display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap">
-            <h2 style="margin:0">TRANSCEIVER MEMORY</h2>
+            <h2 id="trx-memory-title" style="margin:0">TRANSCEIVER MEMORY</h2>
 
             <!-- Frequenz-Eingabe + Mode-Anzeige: gefuellt aus CAT,
                  Aenderung geht an den TRX -->
@@ -64,7 +64,7 @@
             </div>
         </div>
 
-        <div class="memory-panel-page">
+        <div class="memory-panel-page" id="trx-memory-panel">
 
             <div class="memory-row">
                 <span class="memory-label">CW</span>
@@ -123,6 +123,47 @@
 
 <script src="js/system-status.js"></script>
 <script src="js/station.js?v=2"></script>
+<script>
+/*
+ * Memory keys (CW/SSB 1-5) are Yaesu CAT commands: show them only
+ * when the active transceiver is a Yaesu FTDX10 or FTX-1.
+ * Frequency/mode and RBN spots work with every transceiver.
+ */
+(function () {
+
+    const MEMORY_PROTOCOLS = ["ftdx10", "ftx-1"];
+    let lastActiveId = null;
+
+    function showMemory(show) {
+        const panel = document.getElementById("trx-memory-panel");
+        const status = document.getElementById("cw-memory-status");
+        const title = document.getElementById("trx-memory-title");
+        const pageTitle = document.getElementById("rbn-page-title");
+        if (panel) panel.style.display = show ? "" : "none";
+        if (status) status.style.display = show ? "" : "none";
+        if (title) title.textContent = show ? "TRANSCEIVER MEMORY" : "TRANSCEIVER";
+        if (pageTitle) pageTitle.innerHTML = show ? "RBN &amp; MEMORY" : "RBN";
+    }
+
+    async function check() {
+        try {
+            const response = await fetch("/api/radios", { cache: "no-store" });
+            if (!response.ok) return;
+            const data = await response.json();
+            if (data.activeRadioId === lastActiveId) return;
+            lastActiveId = data.activeRadioId;
+            const active = (data.radios || []).find(r => r.id === data.activeRadioId);
+            showMemory(!!active && MEMORY_PROTOCOLS.includes(String(active.protocol || "").toLowerCase()));
+        } catch (error) {
+            console.warn("RBN: could not read transceiver list", error);
+        }
+    }
+
+    check();
+    setInterval(check, 10000);
+
+})();
+</script>
 <script src="/js/bandplan-data.js"></script>
 <script src="/js/bandplan.js"></script>
 <script src="vendor/leaflet/leaflet.js"></script>
