@@ -213,6 +213,23 @@ main { max-width:none !important; }
 .qso-btn-primary { background:#ff4fd8; border-color:#ff4fd8; color:#111; font-weight:600; }
 .qso-btn-danger { background:#7d2632; border-color:#9c3a47; color:#fff; }
 .qso-btn:disabled { opacity:.55; cursor:default; }
+/* Compact edit dialog: 4 columns, no scrolling on normal screens */
+.qso-edit-dialog { width:min(1100px,100%); }
+.qso-edit-header { padding:12px 20px; }
+.qso-edit-title { font-size:18px; }
+.qso-edit-body { padding:14px 20px; }
+.qso-section-title { margin:14px 0 8px; font-size:12px; }
+.qso-form-grid { grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px 14px; }
+.qso-field label { margin-bottom:4px; font-size:11px; }
+.qso-field input, .qso-field textarea { padding:7px 9px; }
+.qso-field textarea { resize:vertical; min-height:36px; }
+.qso-field-notes { grid-column:span 2; }
+.qso-edit-footer { padding:12px 20px; }
+.qso-check-row { display:flex; align-items:center; gap:18px; min-height:36px; }
+.qso-field label.qso-check { display:inline-flex; align-items:center; gap:7px; margin:0; color:#fff; font-size:13px; cursor:pointer; }
+.qso-field label.qso-check input { width:auto; margin:0; padding:0; accent-color:#ff4fd8; cursor:pointer; }
+@media (max-width:900px) { .qso-form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:520px) { .qso-form-grid { grid-template-columns:1fr; } .qso-field-notes { grid-column:auto; } }
 .qso-delete-confirm { width:min(460px,100%); }
 .qso-delete-text { color:#c4d0d6; line-height:1.5; }
 @media (max-width:800px) {
@@ -517,19 +534,23 @@ function openEditQsoDialog(qso) {
                     ${editField("RST RECEIVED","qso-edit-rst-rcvd",qso.rst_rcvd || "59")}
 
                     <div class="qso-field">
-                        <label>SEND QSL</label>
-                        <input
-                            id="qso-edit-qsl-sent"
-                            type="checkbox"
-                            ${Number(qso.qsl_sent) === 1 ? "checked" : ""}>
-                    </div>
-
-                    <div class="qso-field">
-                        <label>QSL RECEIVED</label>
-                        <input
-                            id="qso-edit-qsl-received"
-                            type="checkbox"
-                            ${Number(qso.qsl_received) === 1 ? "checked" : ""}>
+                        <label>QSL</label>
+                        <div class="qso-check-row">
+                            <label class="qso-check">
+                                <input
+                                    id="qso-edit-qsl-sent"
+                                    type="checkbox"
+                                    ${Number(qso.qsl_sent) === 1 ? "checked" : ""}>
+                                SENT
+                            </label>
+                            <label class="qso-check">
+                                <input
+                                    id="qso-edit-qsl-received"
+                                    type="checkbox"
+                                    ${Number(qso.qsl_received) === 1 ? "checked" : ""}>
+                                RECEIVED
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <div class="qso-section-title">DX INFORMATION</div>
@@ -540,7 +561,7 @@ function openEditQsoDialog(qso) {
                     ${editField("DX GRID","qso-edit-dx-grid",qso.dx_grid || "")}
                     ${editField("ITU","qso-edit-itu",qso.itu_zone ?? "","number")}
                     ${editField("CQ","qso-edit-cq",qso.cq_zone ?? "","number")}
-                    <div class="qso-field qso-field-wide"><label>NOTES</label><textarea id="qso-edit-notes" rows="3">${escapeHtml(qso.notes || "")}</textarea></div>
+                    <div class="qso-field qso-field-notes"><label>NOTES</label><textarea id="qso-edit-notes" rows="1">${escapeHtml(qso.notes || "")}</textarea></div>
                 </div>
                 <div class="qso-section-title">MY STATION</div>
                 <div class="qso-form-grid">
@@ -581,7 +602,7 @@ async function saveEditedQso(id) {
     const frequencyKHz = Number(value("qso-edit-frequency"));
     const payload = {
         qso_date:value("qso-edit-date"), time_on_utc:value("qso-edit-time-on"), time_off_utc:value("qso-edit-time-off") || null,
-        call:value("qso-edit-call").trim().toUpperCase(), frequency:Math.round(frequencyKHz / 1000),
+        call:value("qso-edit-call").trim().toUpperCase(), frequency:Math.round(frequencyKHz * 1000) / 1000000,
         band:value("qso-edit-band").trim(), mode:value("qso-edit-mode").trim().toUpperCase(),
         rst_sent:value("qso-edit-rst-sent").trim() || "59", rst_rcvd:value("qso-edit-rst-rcvd").trim() || "59",
         qsl_sent:document.getElementById("qso-edit-qsl-sent")?.checked || false,

@@ -168,7 +168,11 @@ function updateSystemLog(
 
                         <span class="system-log-time">
                             ${escapeHtml(
-                                entry.time || ""
+                                entry.time ||
+                                (entry.timestamp
+                                    ? new Date(entry.timestamp)
+                                          .toLocaleTimeString("de-CH")
+                                    : "")
                             )}
                         </span>
 

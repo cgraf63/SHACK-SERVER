@@ -785,6 +785,75 @@ body {
 
 }
 
+
+/* =========================================================
+   COMPACT LAYOUT: everything on one screen (desktop)
+   ========================================================= */
+.diagnostics-page { padding: 14px 20px; }
+.diagnostics-header { margin-bottom: 12px; }
+.diagnostics-header > div { display: flex; align-items: baseline; gap: 16px; }
+.diagnostics-title h1 { font-size: 22px; }
+.diagnostics-icon { font-size: 21px; }
+.diagnostics-updated { margin-top: 0; }
+.diagnostics-card { margin-bottom: 12px; padding: 12px 14px; }
+.diagnostics-card-title { margin-bottom: 10px; font-size: 12px; }
+.source-list { grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 8px; }
+.source-row { gap: 6px; min-height: 40px; }
+.source-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.source-status { margin-left: 4px; flex-direction: column; align-items: flex-end; gap: 1px; line-height: 1.2; }
+.source-row { padding: 8px 12px; }
+.diagnostics-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 12px; }
+.diagnostics-stats { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
+.diagnostics-stat { padding: 8px 12px; gap: 3px; }
+.diagnostics-stat strong { font-size: 20px; }
+.geo-list { margin-top: 8px; max-height: 76px; overflow-y: auto; }
+.geo-item { padding: 5px 10px; margin-bottom: 4px; }
+.diagnostics-bottom {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: 12px;
+    align-items: start;
+}
+.diagnostics-bottom .diagnostics-card { margin-bottom: 0; }
+.diagnostics-side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.diagnostics-bottom .system-log { max-height: none; height: 300px; }
+.diagnostics-side .system-message { margin-top: 10px; min-height: 0; }
+.diagnostics-side .system-message:empty { display: none; }
+#diagnosis-output { margin-top: 10px; max-height: 160px; overflow-y: auto; }
+.diagnostics-button { padding: 7px 11px; font-size: 12px; }
+.system-actions { gap: 8px; }
+#diagnosis-output .system-log-row { grid-template-columns: minmax(0, 1fr); min-height: 20px; }
+#diagnosis-output .system-log-row span { white-space: normal; }
+
+/* Wide and tall enough: fill the window, the log takes the free height */
+@media (min-width: 1100px) and (min-height: 650px) {
+    .diagnostics-page {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        height: calc(100vh - 35px);
+    }
+    .diagnostics-bottom {
+        flex: 1 1 auto;
+        min-height: 0;
+        align-items: stretch;
+    }
+    .diagnostics-bottom .system-log-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+    .diagnostics-bottom .system-log {
+        flex: 1 1 auto;
+        height: auto;
+        min-height: 120px;
+    }
+    .diagnostics-side { min-height: 0; overflow-y: auto; }
+}
+@media (max-width: 1099px) {
+    .diagnostics-grid,
+    .diagnostics-bottom { grid-template-columns: 1fr; }
+}
     </style>
 
 </head>
@@ -993,6 +1062,10 @@ body {
 
 
             <!-- =================================================
+                 LOG + DIAGNOSIS + ACTIONS
+                 ================================================= -->
+            <div class="diagnostics-bottom">
+            <!-- =================================================
                  SYSTEM LOG
                  ================================================= -->
 
@@ -1015,7 +1088,7 @@ body {
 
             </section>
 
-
+                <div class="diagnostics-side">
                         <!-- =================================================
                  SYSTEM DIAGNOSIS
                  ================================================= -->
@@ -1104,8 +1177,8 @@ body {
                 </div>
 
             </section>
-
-
+                </div>
+            </div>
         </section>
 
 
@@ -1135,7 +1208,7 @@ body {
 
 
 <script
-    src="/js/diagnostics.js">
+    src="/js/diagnostics.js?v=2">
 </script>
 
 
