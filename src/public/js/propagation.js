@@ -744,8 +744,21 @@ async function updateStationInline() {
         remoteButton.type =
             "button";
 
+        /*
+         * Remote pages per driver.
+         */
+        const REMOTE_PAGES = {
+            "ftdx10": { label: "FTDX10", url: "/remote.html" },
+            "rgo-one": { label: "RGO ONE", url: "/rgo-remote.html" }
+        };
+
+        const remotePage =
+            REMOTE_PAGES[
+                String(activeRadio.protocol || "").toLowerCase()
+            ];
+
         remoteButton.textContent =
-            "FTDX10";
+            remotePage ? remotePage.label : "";
 
         remoteButton.addEventListener(
             "click",
@@ -753,20 +766,19 @@ async function updateStationInline() {
 
                 event.stopPropagation();
 
-                window.location.href =
-                    "/remote.html";
+                if (remotePage) {
+                    window.location.href =
+                        remotePage.url;
+                }
 
             }
         );
 
         /*
-         * The remote page (remote.html) is made for the
-         * Yaesu FTDX10 - show the button only for it.
+         * Only for transceivers with a remote page
+         * (FTDX10, RGO One).
          */
-        if (
-            String(activeRadio.protocol || "").toLowerCase() ===
-            "ftdx10"
-        ) {
+        if (remotePage) {
 
             wrapper.appendChild(
                 remoteButton
