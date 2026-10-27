@@ -1988,7 +1988,79 @@ img.flag {
 
     max-width: 850px;
 
+    max-height: 62vh;
+
     height: auto;
+
+}
+
+
+/* About: license and source info */
+
+.about-dialog {
+
+    overflow-y: auto;
+
+}
+
+
+.about-info {
+
+    margin-top: 14px;
+
+    padding-top: 14px;
+
+    border-top: 1px solid rgba(
+        0,
+        200,
+        255,
+        0.18
+    );
+
+    text-align: center;
+
+    color: rgba(
+        255,
+        255,
+        255,
+        0.72
+    );
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+}
+
+
+.about-info p {
+
+    margin: 2px 0;
+
+}
+
+
+.about-tagline {
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+}
+
+
+.about-info a {
+
+    color: #4fd3ff;
+
+    text-decoration: none;
+
+}
+
+
+.about-info a:hover {
+
+    text-decoration: underline;
 
 }
 
