@@ -11,6 +11,7 @@ import watchlistRouter from "./routes/watchlist.js";
 import systemRouter from "./routes/system.js";
 import diagnosticsRouter from "./routes/diagnostics.js";
 import settingsRouter from "./routes/settings.js";
+import uploadsRouter from "./routes/uploads.js";
 import networkRouter from "./routes/network.js";
 import indexRouter from "./routes/index.js";
 import propagationRouter from "./routes/propagation.js";
@@ -132,6 +133,13 @@ app.use(
 app.use(
     "/api/settings",
     settingsRouter
+);
+
+
+// Online logbook uploads (QRZ.com, ...)
+app.use(
+    "/api/uploads",
+    uploadsRouter
 );
 
 

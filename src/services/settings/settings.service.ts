@@ -13,6 +13,49 @@ import { sdrBinaryExists } from "../sdr/sdr-binary.js";
  * RBN on, SDR on only if the native SDR program is installed
  * (keeps existing installations with an RSP1B unchanged).
  */
+/*
+ * Upload defaults. QRZ was always uploaded when QRZ_API_KEY was set
+ * in .env - keep that behaviour for existing installations.
+ */
+function defaultUploads(): ShackSettings["uploads"] {
+
+    return {
+        qrz: {
+            enabled: Boolean(process.env.QRZ_API_KEY),
+            apiKey: ""
+        }
+    };
+
+}
+
+function mergeUploads(
+    base: ShackSettings["uploads"],
+    patch: any
+): ShackSettings["uploads"] {
+
+    const qrzPatch = patch?.qrz ?? {};
+
+    return {
+        qrz: {
+            enabled:
+                typeof qrzPatch.enabled === "boolean"
+                    ? qrzPatch.enabled
+                    : base.qrz.enabled,
+            /*
+             * The browser never receives the key; an empty
+             * field means "unchanged". clearApiKey removes it.
+             */
+            apiKey:
+                qrzPatch.clearApiKey === true
+                    ? ""
+                    : typeof qrzPatch.apiKey === "string" && qrzPatch.apiKey.trim()
+                        ? qrzPatch.apiKey.trim()
+                        : base.qrz.apiKey
+        }
+    };
+
+}
+
 function defaultModules(): ShackSettings["modules"] {
 
     return {
@@ -63,6 +106,11 @@ export class SettingsService {
             modules: {
                 ...this.settings.modules
             },
+            uploads: {
+                qrz: {
+                    ...this.settings.uploads.qrz
+                }
+            },
 
             dxspiders:
                 this.settings.dxspiders.map(
@@ -96,6 +144,11 @@ export class SettingsService {
                 ...this.settings.modules,
                 ...(settings.modules ?? {})
             },
+            uploads:
+                mergeUploads(
+                    this.settings.uploads,
+                    (settings as any).uploads
+                ),
 
             dxspiders:
                 (Array.isArray(settings.dxspiders)
@@ -178,6 +231,11 @@ export class SettingsService {
                         ...defaultModules(),
                         ...(parsed.modules ?? {})
                     },
+                    uploads:
+                        mergeUploads(
+                            defaultUploads(),
+                            parsed.uploads
+                        ),
 
 
                     dxspiders:
@@ -213,6 +271,8 @@ export class SettingsService {
             },
             modules:
                 defaultModules(),
+            uploads:
+                defaultUploads(),
             dxspiders:
                 shackSettings.dxspiders.map(
                     spider => ({

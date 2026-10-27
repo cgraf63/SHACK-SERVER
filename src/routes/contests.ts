@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { uploadQueue } from "../services/upload/upload-queue.service.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -292,6 +293,12 @@ router.put(
             }
 
 
+            /* Edited: upload again where already uploaded. */
+            uploadQueue.requeueAfterEdit(
+                "contest",
+                id
+            );
+
             return res.json(
                 qso
             );
@@ -390,6 +397,11 @@ router.delete(
                 contestService.deleteContestQso(
                     id
                 );
+
+
+            if (deleted) {
+                uploadQueue.remove("contest", id);
+            }
 
 
             if (!deleted) {

@@ -397,6 +397,90 @@
 
 
     <!-- =========================
+         LOG UPLOADS (online logbooks)
+         ========================= -->
+
+    <section class="settings-section">
+
+        <h2>Log Uploads</h2>
+
+        <p class="radio-settings-intro">
+            New QSOs are uploaded automatically in the background
+            (with retry). Contest QSOs: QSO History → UPLOAD SESSION.
+        </p>
+
+        <div class="upload-service">
+
+            <label class="source-switch">
+                <input
+                    id="upload-qrz-enabled"
+                    type="checkbox">
+                <span>
+                    QRZ.com Logbook
+                    <small class="module-hint">auto upload</small>
+                </span>
+            </label>
+
+            <div class="upload-service-row">
+                <label for="upload-qrz-key">API key</label>
+                <input
+                    id="upload-qrz-key"
+                    type="password"
+                    autocomplete="off"
+                    placeholder="QRZ Logbook API key">
+                <button
+                    id="upload-qrz-test"
+                    type="button"
+                    class="settings-secondary-button">
+                    Test
+                </button>
+            </div>
+
+            <div id="upload-qrz-info" class="upload-service-info"></div>
+
+        </div>
+
+        <style>
+            .upload-service { margin: 6px 0 4px; }
+            .upload-service-row {
+                display: grid;
+                grid-template-columns: 70px minmax(0, 340px) auto;
+                gap: 10px;
+                align-items: center;
+                margin: 8px 0 0 28px;
+            }
+            .upload-service-row label { font-size: 13px; color: #9fb1bd; }
+            .upload-service-row button { justify-self: start; }
+            .upload-service-row input {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 7px 10px;
+                border: 1px solid var(--border-color, #303640);
+                border-radius: 5px;
+                background: rgba(255, 255, 255, 0.04);
+                color: inherit;
+                font: inherit;
+                font-size: 13px;
+            }
+            .upload-service-info {
+                margin: 8px 0 0 28px;
+                min-height: 18px;
+                font-size: 12px;
+                color: #8fa3b2;
+            }
+            .upload-service-info .ok { color: #39d98a; }
+            .upload-service-info .err { color: #ff6b6b; }
+            .upload-service-info button {
+                margin-left: 8px;
+                padding: 2px 8px;
+                font-size: 12px;
+            }
+        </style>
+
+    </section>
+
+
+    <!-- =========================
          OPTIONAL MODULES
          ========================= -->
 

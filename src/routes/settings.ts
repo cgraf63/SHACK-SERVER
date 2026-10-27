@@ -18,6 +18,31 @@ import {
     sourceManager
 } from "../services/sources/source-manager-instance.js";
 
+/*
+ * Settings as sent to the browser: secrets (logbook API keys,
+ * passwords) are removed, only "is set" flags are returned.
+ */
+function publicSettings(settings: ShackSettings): unknown {
+
+    return {
+        ...settings,
+        uploads: {
+            qrz: {
+                enabled: settings.uploads.qrz.enabled,
+                apiKey: "",
+                apiKeySet:
+                    Boolean(settings.uploads.qrz.apiKey) ||
+                    Boolean(process.env.QRZ_API_KEY),
+                apiKeyFromEnv:
+                    !settings.uploads.qrz.apiKey &&
+                    Boolean(process.env.QRZ_API_KEY)
+            }
+        }
+    };
+
+}
+
+
 const router = Router();
 
 
@@ -43,7 +68,9 @@ router.get(
 
 
         res.json(
-            settingsService.get()
+            publicSettings(
+                settingsService.get()
+            )
         );
 
     }
@@ -98,7 +125,9 @@ sourceManager.restart();
 
 
             res.json(
-                updated
+                publicSettings(
+                    updated
+                )
             );
 
         }

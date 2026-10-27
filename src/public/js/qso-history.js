@@ -167,6 +167,76 @@ document.addEventListener("DOMContentLoaded", () => {
 
         sessionSelect.insertAdjacentElement("afterend", button);
 
+
+        /*
+            Upload the whole session to the online logbooks
+            (QRZ.com, ...). Runs in the background with retry.
+        */
+        const uploadButton =
+            document.createElement("button");
+
+        uploadButton.type = "button";
+        uploadButton.id = "contest-history-upload";
+        uploadButton.className = "contest-session-select";
+        uploadButton.textContent = "UPLOAD SESSION";
+        uploadButton.title = "Upload all QSOs of this session to the online logbooks (Settings → Log Uploads)";
+
+        uploadButton.addEventListener("click", async () => {
+
+            const sessionId = sessionSelect.value;
+
+            if (!sessionId) {
+                alert("Please select a session first.");
+                return;
+            }
+
+            const label =
+                sessionSelect.options[sessionSelect.selectedIndex]?.textContent?.trim() ||
+                "this session";
+
+            if (!confirm(`Upload all QSOs of "${label}" to the online logbooks?`)) {
+                return;
+            }
+
+            uploadButton.disabled = true;
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/uploads/contest-session/" + sessionId,
+                        { method: "POST" }
+                    );
+
+                const data =
+                    await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(data.error || "HTTP " + response.status);
+                }
+
+                alert(
+                    `${data.queued} upload(s) queued for ${data.qsos} QSOs` +
+                    ` (${(data.services || []).join(", ").toUpperCase()}).\n` +
+                    `QSOs already uploaded are skipped. Progress: Settings → Log Uploads.`
+                );
+
+            }
+            catch (error) {
+
+                alert("Upload failed: " + error.message);
+
+            }
+            finally {
+
+                uploadButton.disabled = false;
+
+            }
+
+        });
+
+        button.insertAdjacentElement("afterend", uploadButton);
+
     }
 
 

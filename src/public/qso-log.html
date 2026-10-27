@@ -150,6 +150,11 @@ main { max-width:none !important; }
 .qso-log-table tbody tr:hover { background:rgba(255,255,255,.04); }
 .qso-log-call { font-weight:600; }
 .qsl-status { text-align:center; font-size:16px; width:45px; }
+.upload-status { white-space:nowrap; }
+.upload-badge { display:inline-block; min-width:18px; margin-right:3px; padding:1px 4px; border-radius:4px; border:1px solid #344754; font-size:11px; font-weight:700; text-align:center; cursor:default; }
+.upload-badge.done { color:#39d98a; border-color:rgba(57,217,138,.45); }
+.upload-badge.pending { color:#8fa3b2; }
+.upload-badge.failed { color:#ff6b6b; border-color:rgba(255,82,82,.5); }
 .qso-log-table th[data-sort="qsl_sent"],
 .qso-log-table th[data-sort="qsl_received"] {
     width:45px;
@@ -344,9 +349,10 @@ main { max-width:none !important; }
 <th data-sort="dx_grid">DX Grid</th>
 <th data-sort="qsl_sent" title="Send QSL">QS</th>
 <th data-sort="qsl_received" title="QSL Received">QR</th>
+<th class="no-sort" title="Online logbook uploads">Upload</th>
 <th class="no-sort">Actions</th>
 </tr></thead>
-<tbody id="qso-log-body"><tr><td colspan="13" class="qso-log-empty">Loading QSOs...</td></tr></tbody>
+<tbody id="qso-log-body"><tr><td colspan="14" class="qso-log-empty">Loading QSOs...</td></tr></tbody>
 </table>
 </div>
 </section>
@@ -357,6 +363,45 @@ let qsoRecords = [];
 let sortField = "qso_date";
 let sortDirection = "desc";
 
+/*
+    Online logbook upload status per QSO (QRZ.com, ...)
+*/
+let uploadServices = [];
+let uploadStatus = {};
+
+async function loadUploadStatus() {
+    try {
+        const response = await fetch("/api/uploads/status?source=qso", { cache:"no-store" });
+        if (!response.ok) return;
+        const data = await response.json();
+        uploadServices = Array.isArray(data.services) ? data.services : [];
+        uploadStatus = data.status || {};
+    } catch (error) {
+        uploadServices = [];
+        uploadStatus = {};
+    }
+}
+
+const UPLOAD_SHORT = { qrz:"Q", clublog:"C", lotw:"L" };
+
+function renderUploadBadges(id) {
+    const entries = uploadStatus[id] || {};
+    return uploadServices
+        .filter(service => service.enabled || entries[service.id])
+        .map(service => {
+            const entry = entries[service.id];
+            const state = entry ? entry.status : "none";
+            const text =
+                state === "done" ? `${service.label}: uploaded ${entry.uploaded_at ? entry.uploaded_at.slice(0,16).replace("T"," ") + " UTC" : ""}${entry.message ? " · " + entry.message : ""}`
+                : state === "pending" ? `${service.label}: waiting${entry.message ? " · last error: " + entry.message : ""}`
+                : state === "failed" ? `${service.label}: failed · ${entry.message || ""}`
+                : `${service.label}: not queued`;
+            const mark = state === "done" ? "✓" : state === "failed" ? "✖" : state === "pending" ? "…" : "–";
+            return `<span class="upload-badge ${state}" title="${escapeHtml(text)}">${UPLOAD_SHORT[service.id] || service.id[0].toUpperCase()}${mark}</span>`;
+        })
+        .join("");
+}
+
 async function loadQsoLog() {
     const body = document.getElementById("qso-log-body");
     const count = document.getElementById("qso-log-count");
@@ -365,12 +410,13 @@ async function loadQsoLog() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         qsoRecords = Array.isArray(data.qsos) ? data.qsos : [];
+        await loadUploadStatus();
 
         renderQsoLog();
     } catch (error) {
         console.error("QSO LOG:", error);
         count.textContent = "Error loading log";
-        body.innerHTML = `<tr><td colspan="12" class="qso-log-empty">Could not load QSO log.</td></tr>`;
+        body.innerHTML = `<tr><td colspan="14" class="qso-log-empty">Could not load QSO log.</td></tr>`;
     }
 }
 
@@ -451,7 +497,7 @@ function renderQsoLog() {
     count.textContent = `${filtered.length} of ${qsoRecords.length} QSOs`;
 
     if (!filtered.length) {
-        body.innerHTML = `<tr><td colspan="12" class="qso-log-empty">No QSOs found.</td></tr>`;
+        body.innerHTML = `<tr><td colspan="14" class="qso-log-empty">No QSOs found.</td></tr>`;
         updateSortHeaders();
         return;
     }
@@ -470,6 +516,7 @@ function renderQsoLog() {
     <td>${escapeHtml(qso.dx_grid || "")}</td>
     <td class="qsl-status">${Number(qso.qsl_sent) === 1 ? "✓" : "—"}</td>
     <td class="qsl-status">${Number(qso.qsl_received) === 1 ? "✓" : "—"}</td>
+    <td class="upload-status">${renderUploadBadges(qso.id)}</td>
     <td class="qso-log-actions">
         <button class="qso-log-action qso-log-action-edit" title="Edit QSO" data-action="edit" data-id="${qso.id}">Edit</button>
         <button class="qso-log-action qso-log-action-delete" title="Delete QSO" data-action="delete" data-id="${qso.id}">Delete</button>

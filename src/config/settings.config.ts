@@ -55,6 +55,19 @@ export interface ShackSettings {
         rbn: boolean;
         sdr: boolean;
     };
+    /*
+     * Online logbooks. Credentials stay in data/settings.json
+     * (not in the repository). The API never sends them back
+     * to the browser (see routes/settings.ts).
+     */
+    uploads: UploadSettings;
+}
+
+export interface UploadSettings {
+    qrz: {
+        enabled: boolean;
+        apiKey: string;
+    };
 }
 
 
@@ -93,6 +106,12 @@ export const shackSettings: ShackSettings = {
     modules: {
         rbn: true,
         sdr: false
+    },
+    uploads: {
+        qrz: {
+            enabled: false,
+            apiKey: ""
+        }
     },
     dxspiders: [
         {

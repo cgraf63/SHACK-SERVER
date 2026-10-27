@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { qsoService } from "../services/qso/qso-instance.js";
+import { uploadQueue } from "../services/upload/upload-queue.service.js";
 import { QRZService } from "../services/geo/qrz.service.js";
 import { CallsignResolverService } from "../services/geo/callsign-resolver.service.js";
 
@@ -287,10 +288,15 @@ country_code:
                 });
 
 
-              if (!qso.contest_id) {
+              /*
+                  Online logbooks (QRZ.com, ...): queued, uploaded
+                  in the background with retry.
+              */
+              if (!qso.contest_id && qso.id) {
 
-                  await qrzService.uploadQsoToLogbook(
-                      qso
+                  uploadQueue.enqueue(
+                      "qso",
+                      Number(qso.id)
                   );
 
               }
@@ -1037,6 +1043,9 @@ country_code:
 
             }
 
+            /* Edited QSO: upload again (online logbooks). */
+            uploadQueue.requeueAfterEdit("qso", id);
+
             return res.json({
                 success: true,
                 qso:
@@ -1090,6 +1099,11 @@ router.delete(
 
             const deleted =
                 qsoService.deleteQso(id);
+
+
+            if (deleted) {
+                uploadQueue.remove("qso", id);
+            }
 
 
             if (!deleted) {

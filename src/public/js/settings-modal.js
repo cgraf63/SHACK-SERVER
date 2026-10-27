@@ -130,6 +130,15 @@ async function loadSettings() {
         }
 
 
+        /*
+            Log uploads (keys are never sent to the browser)
+        */
+
+        applyUploadSettings(
+            settingsData.uploads
+        );
+
+
         const callsign =
             document.getElementById(
                 "callsign"
@@ -574,6 +583,23 @@ async function saveSettings() {
         dxspiders:
             collectDXSpiders(),
 
+        uploads: {
+
+            qrz: {
+
+                enabled:
+                    document.getElementById("upload-qrz-enabled")
+                        ?.checked ?? false,
+
+                /* empty = keep the saved key */
+                apiKey:
+                    document.getElementById("upload-qrz-key")
+                        ?.value.trim() ?? ""
+
+            }
+
+        },
+
         modules: {
 
             rbn:
@@ -629,6 +655,11 @@ async function saveSettings() {
 
         showSettingsMessage(
             "Settings saved."
+        );
+
+
+        applyUploadSettings(
+            settingsData.uploads
         );
 
 
@@ -796,6 +827,9 @@ function initializeSettingsModal() {
     settingsModalInitialized = true;
 
 
+    initUploadSettings();
+
+
     settingsButton.addEventListener(
         "click",
         event => {
@@ -899,5 +933,191 @@ if (
 ) {
 
     initializeSettingsModal();
+
+}
+
+
+
+/*
+    =====================================================
+    Log uploads (QRZ.com, ...)
+    =====================================================
+*/
+
+function applyUploadSettings(uploads) {
+
+    const qrz =
+        uploads?.qrz ?? {};
+
+    const enabled =
+        document.getElementById("upload-qrz-enabled");
+
+    const key =
+        document.getElementById("upload-qrz-key");
+
+    if (enabled) {
+        enabled.checked =
+            qrz.enabled === true;
+    }
+
+    if (key) {
+
+        key.value = "";
+
+        key.placeholder =
+            qrz.apiKeyFromEnv
+                ? "Key from .env (QRZ_API_KEY) - enter to replace"
+                : qrz.apiKeySet
+                    ? "•••••••• saved - enter a new key to replace"
+                    : "QRZ Logbook API key";
+
+    }
+
+    loadUploadSummary();
+
+}
+
+
+async function loadUploadSummary() {
+
+    const info =
+        document.getElementById("upload-qrz-info");
+
+    if (!info) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/uploads/summary",
+                { cache: "no-store" }
+            );
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const summary =
+            await response.json();
+
+        const qrz =
+            summary.qrz;
+
+        if (!qrz) {
+            info.textContent = "";
+            return;
+        }
+
+        const parts = [
+            `${qrz.done} uploaded`,
+            `${qrz.pending} pending`
+        ];
+
+        info.innerHTML =
+            escapeHtml(parts.join(" · ")) +
+            (
+                qrz.failed
+                    ? ` · <span class="err">${qrz.failed} failed</span>` +
+                      `<button type="button" class="settings-secondary-button" id="upload-qrz-retry">Retry failed</button>`
+                    : ""
+            );
+
+        document
+            .getElementById("upload-qrz-retry")
+            ?.addEventListener(
+                "click",
+                async () => {
+
+                    await fetch(
+                        "/api/uploads/retry",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ service: "qrz" })
+                        }
+                    );
+
+                    loadUploadSummary();
+
+                }
+            );
+
+    }
+    catch (error) {
+
+        info.textContent = "";
+
+    }
+
+}
+
+
+function initUploadSettings() {
+
+    const testButton =
+        document.getElementById("upload-qrz-test");
+
+    if (!testButton) {
+        return;
+    }
+
+    testButton.addEventListener(
+        "click",
+        async () => {
+
+            const info =
+                document.getElementById("upload-qrz-info");
+
+            const key =
+                document.getElementById("upload-qrz-key")
+                    ?.value.trim() ?? "";
+
+            testButton.disabled = true;
+
+            if (info) {
+                info.textContent = "Testing...";
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/uploads/test/qrz",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(key ? { apiKey: key } : {})
+                        }
+                    );
+
+                const result =
+                    await response.json();
+
+                if (info) {
+                    info.innerHTML =
+                        `<span class="${result.ok ? "ok" : "err"}">` +
+                        `${result.ok ? "✔" : "✖"} ${escapeHtml(result.message || "")}` +
+                        `</span>`;
+                }
+
+            }
+            catch (error) {
+
+                if (info) {
+                    info.innerHTML =
+                        `<span class="err">✖ ${escapeHtml(error.message)}</span>`;
+                }
+
+            }
+            finally {
+
+                testButton.disabled = false;
+
+            }
+
+        }
+    );
 
 }

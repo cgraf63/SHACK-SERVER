@@ -1051,10 +1051,11 @@ async function saveQso() {
         call:
             call,
 
+        /* MHz with Hz resolution (was rounded to whole MHz). */
         frequency:
-             Math.round(
-                frequencyKHz  / 1000
-            ),
+            Math.round(
+                frequencyKHz * 1000
+            ) / 1000000,
 
         band:
             document

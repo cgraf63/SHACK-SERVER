@@ -20,12 +20,19 @@ import {
     sotaPotaService
 } from "./services/activities/sota-pota-instance.js";
 
+import {
+    uploadQueue
+} from "./services/upload/upload-queue.service.js";
+
 import "./services/rbn/rbn-instance.js";
 
 import "./services/telnet/telnet-server.js";
 radioManager.start();
 
 sotaPotaService.start();
+
+/* Online logbook uploads (QRZ.com, ...) */
+uploadQueue.start();
 
 
 const PORT =
