@@ -151,6 +151,7 @@ main { max-width:none !important; }
 .qso-log-call { font-weight:600; }
 .qsl-status { text-align:center; font-size:16px; width:45px; }
 .upload-status { white-space:nowrap; }
+.source-tag { display:inline-block; margin-left:4px; padding:0 5px; border-radius:4px; border:1px solid rgba(0,229,255,.45); color:#00e5ff; font-size:10px; font-weight:700; letter-spacing:.04em; vertical-align:middle; }
 .upload-badge { display:inline-block; min-width:18px; margin-right:3px; padding:1px 4px; border-radius:4px; border:1px solid #344754; font-size:11px; font-weight:700; text-align:center; cursor:default; }
 .upload-badge.done { color:#39d98a; border-color:rgba(57,217,138,.45); }
 .upload-badge.pending { color:#8fa3b2; }
@@ -472,6 +473,7 @@ function renderQsoLog() {
                     qso.country,
                     qso.band,
                     qso.mode,
+                    qso.spot_source,
                     qso.dx_grid
                 ]
                     .filter(
@@ -509,7 +511,7 @@ function renderQsoLog() {
     <td class="qso-log-call">${escapeHtml(qso.call || "")}</td>
     <td>${escapeHtml(qso.name || "")}</td>
     <td>${escapeHtml(qso.band || "")}</td>
-    <td>${escapeHtml(qso.mode || "")}</td>
+    <td>${escapeHtml(qso.mode || "")}${String(qso.spot_source || "").toUpperCase() === "WSJT-X" ? ` <span class="source-tag" title="Logged by WSJT-X / JTDX">WSJT-X</span>` : ""}</td>
     <td>${formatFrequency(qso.frequency)}</td>
     <td>${escapeHtml(qso.rst_sent || "")}/${escapeHtml(qso.rst_rcvd || "")}</td>
     <td>${qso.country_code ? `<img class="dx-flag" src="/assets/flags/${escapeHtml(qso.country_code)}.svg" alt="">` : ""}${escapeHtml(qso.country || "")}</td>
