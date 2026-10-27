@@ -61,6 +61,16 @@ export interface ShackSettings {
      * to the browser (see routes/settings.ts).
      */
     uploads: UploadSettings;
+    /*
+     * WSJT-X / JTDX: QSOs logged there are received via UDP
+     * (WSJT-X Settings → Reporting → UDP Server = IP of this server).
+     */
+    wsjtx: {
+        enabled: boolean;
+        port: number;
+        /* empty = unicast; e.g. 224.0.0.1 when JTAlert/GridTracker share the stream */
+        multicastGroup: string;
+    };
 }
 
 export interface UploadSettings {
@@ -135,6 +145,11 @@ export const shackSettings: ShackSettings = {
     uploads: {
         accounts: [],
         clublogApiKey: ""
+    },
+    wsjtx: {
+        enabled: false,
+        port: 2237,
+        multicastGroup: ""
     },
     dxspiders: [
         {

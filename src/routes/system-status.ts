@@ -6,6 +6,7 @@ import { exec } from "child_process";
 import { DatabaseSync } from "node:sqlite";
 import { radioManager } from "../services/radio/radio-manager.js";
 import { sourceStatus } from "../services/sources/source-manager-instance.js";
+import { wsjtxService } from "../services/wsjtx/wsjtx.service.js";
 
 const router = Router();
 
@@ -358,6 +359,27 @@ router.get("/health", async (_req, res) => {
     }
     catch {
         checks.push({ name: "DX sources", state: "warn", detail: "Status unknown" });
+    }
+
+    /* ---------- WSJT-X (only when enabled) ---------- */
+    const wsjtx = wsjtxService.getStatus();
+    if (wsjtx.enabled) {
+        if (!wsjtx.listening) {
+            checks.push({
+                name: "WSJT-X",
+                state: "warn",
+                detail: `UDP ${wsjtx.port} not open${wsjtx.error ? `: ${wsjtx.error}` : ""}`
+            });
+        }
+        else {
+            checks.push({
+                name: "WSJT-X",
+                state: "ok",
+                detail: wsjtx.clients.length
+                    ? `${wsjtx.clients.map(c => c.id).join(", ")} connected`
+                    : `Listening on UDP ${wsjtx.port}, no WSJT-X running`
+            });
+        }
     }
 
     /* ---------- Database ---------- */

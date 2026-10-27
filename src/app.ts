@@ -12,6 +12,7 @@ import systemRouter from "./routes/system.js";
 import diagnosticsRouter from "./routes/diagnostics.js";
 import settingsRouter from "./routes/settings.js";
 import uploadsRouter from "./routes/uploads.js";
+import wsjtxRouter from "./routes/wsjtx.js";
 import networkRouter from "./routes/network.js";
 import indexRouter from "./routes/index.js";
 import propagationRouter from "./routes/propagation.js";
@@ -140,6 +141,13 @@ app.use(
 app.use(
     "/api/uploads",
     uploadsRouter
+);
+
+
+// WSJT-X / JTDX UDP interface
+app.use(
+    "/api/wsjtx",
+    wsjtxRouter
 );
 
 

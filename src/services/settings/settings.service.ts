@@ -17,6 +17,21 @@ import {
  * RBN on, SDR on only if the native SDR program is installed
  * (keeps existing installations with an RSP1B unchanged).
  */
+function normalizeWsjtx(raw: any): ShackSettings["wsjtx"] {
+
+    const port = Number(raw?.port);
+    const group = String(raw?.multicastGroup ?? "").trim();
+
+    return {
+        enabled: raw?.enabled === true,
+        port: Number.isInteger(port) && port > 0 && port < 65536 ? port : 2237,
+        /* only real multicast addresses (224.0.0.0 - 239.255.255.255) */
+        multicastGroup:
+            /^(22[4-9]|23\d)\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(group) ? group : ""
+    };
+
+}
+
 function defaultModules(): ShackSettings["modules"] {
 
     return {
@@ -45,8 +60,9 @@ export class SettingsService {
         ShackSettings;
 
 
-    private onUpdateCallback:
-        (() => void) | undefined;
+    /* Several services listen (DX sources, WSJT-X, ...). */
+    private onUpdateCallbacks:
+        Array<() => void> = [];
 
 
     constructor() {
@@ -72,6 +88,9 @@ export class SettingsService {
                     this.settings.uploads,
                     undefined
                 ),
+            wsjtx: {
+                ...this.settings.wsjtx
+            },
 
             dxspiders:
                 this.settings.dxspiders.map(
@@ -110,6 +129,11 @@ export class SettingsService {
                     this.settings.uploads,
                     (settings as any).uploads
                 ),
+            wsjtx:
+                normalizeWsjtx({
+                    ...this.settings.wsjtx,
+                    ...((settings as any).wsjtx ?? {})
+                }),
 
             dxspiders:
                 (Array.isArray(settings.dxspiders)
@@ -127,11 +151,14 @@ export class SettingsService {
         this.save();
 
 
-        if (
-            this.onUpdateCallback
-        ) {
+        for (const callback of this.onUpdateCallbacks) {
 
-            this.onUpdateCallback();
+            try {
+                callback();
+            }
+            catch (error) {
+                console.error("Settings listener failed:", error);
+            }
 
         }
 
@@ -145,8 +172,9 @@ export class SettingsService {
         callback: () => void
     ): void {
 
-        this.onUpdateCallback =
-            callback;
+        this.onUpdateCallbacks.push(
+            callback
+        );
 
     }
 
@@ -197,6 +225,11 @@ export class SettingsService {
                             parsed,
                             parsed.callsign ?? ""
                         ),
+                    wsjtx:
+                        normalizeWsjtx({
+                            ...shackSettings.wsjtx,
+                            ...(parsed.wsjtx ?? {})
+                        }),
 
 
                     dxspiders:
@@ -235,6 +268,9 @@ export class SettingsService {
             uploads: {
                 accounts: [],
                 clublogApiKey: ""
+            },
+            wsjtx: {
+                ...shackSettings.wsjtx
             },
             dxspiders:
                 shackSettings.dxspiders.map(

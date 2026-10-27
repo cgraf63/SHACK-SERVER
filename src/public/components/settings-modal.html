@@ -512,6 +512,56 @@
 
 
     <!-- =========================
+         WSJT-X / JTDX
+         ========================= -->
+
+    <section class="settings-section">
+
+        <h2>WSJT-X</h2>
+
+        <p class="radio-settings-intro">
+            QSOs logged in WSJT-X or JTDX are added to the log automatically
+            (and uploaded like all QSOs). In WSJT-X: Settings → Reporting →
+            UDP Server = <strong id="wsjtx-server-address">IP of this server</strong>,
+            port as below, "Accept UDP requests" on.
+        </p>
+
+        <label class="source-switch">
+            <input id="wsjtx-enabled" type="checkbox">
+            <span>Receive QSOs from WSJT-X / JTDX</span>
+        </label>
+
+        <div class="upload-service-row wsjtx-row">
+            <label for="wsjtx-port">UDP port</label>
+            <input id="wsjtx-port" type="number" min="1" max="65535" placeholder="2237">
+            <label for="wsjtx-multicast" title="Only when JTAlert or GridTracker also listen: same multicast group in WSJT-X (e.g. 224.0.0.1)">Multicast</label>
+            <input id="wsjtx-multicast" type="text" placeholder="empty, or e.g. 224.0.0.1">
+        </div>
+
+        <div id="wsjtx-status" class="upload-service-info"></div>
+
+        <style>
+            .upload-service-row.wsjtx-row {
+                grid-template-columns: 70px 90px 70px minmax(0, 220px);
+                margin: 10px 0 0 28px;
+            }
+            .wsjtx-row input {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 7px 10px;
+                border: 1px solid var(--border-color, #303640);
+                border-radius: 5px;
+                background: rgba(255, 255, 255, 0.04);
+                color: inherit;
+                font: inherit;
+                font-size: 13px;
+            }
+        </style>
+
+    </section>
+
+
+    <!-- =========================
          OPTIONAL MODULES
          ========================= -->
 

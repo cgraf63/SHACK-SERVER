@@ -138,6 +138,10 @@ async function loadSettings() {
             settingsData.uploads
         );
 
+        applyWsjtxSettings(
+            settingsData.wsjtx
+        );
+
 
         const callsign =
             document.getElementById(
@@ -595,6 +599,23 @@ async function saveSettings() {
 
         },
 
+        wsjtx: {
+
+            enabled:
+                document.getElementById("wsjtx-enabled")
+                    ?.checked ?? false,
+
+            port:
+                Number(
+                    document.getElementById("wsjtx-port")?.value
+                ) || 2237,
+
+            multicastGroup:
+                document.getElementById("wsjtx-multicast")
+                    ?.value.trim() ?? ""
+
+        },
+
         modules: {
 
             rbn:
@@ -656,6 +677,8 @@ async function saveSettings() {
         applyUploadSettings(
             settingsData.uploads
         );
+
+        setTimeout(loadWsjtxStatus, 800);
 
 
         /*
@@ -1288,5 +1311,111 @@ function initUploadSettings() {
 
             }
         );
+
+}
+
+
+
+/*
+    =====================================================
+    WSJT-X / JTDX
+    =====================================================
+*/
+
+function applyWsjtxSettings(wsjtx) {
+
+    const enabled =
+        document.getElementById("wsjtx-enabled");
+
+    const port =
+        document.getElementById("wsjtx-port");
+
+    const multicast =
+        document.getElementById("wsjtx-multicast");
+
+    if (enabled) enabled.checked = wsjtx?.enabled === true;
+    if (port) port.value = wsjtx?.port ?? 2237;
+    if (multicast) multicast.value = wsjtx?.multicastGroup ?? "";
+
+    const address =
+        document.getElementById("wsjtx-server-address");
+
+    /* LAN IP of the server (not the browser's hostname, e.g. Cloudflare) */
+    if (address) {
+        fetch("/api/system-status", { cache: "no-store" })
+            .then(response => response.ok ? response.json() : null)
+            .then(data => {
+                if (data?.ip) {
+                    address.textContent = data.ip;
+                }
+            })
+            .catch(() => {});
+    }
+
+    loadWsjtxStatus();
+
+}
+
+
+async function loadWsjtxStatus() {
+
+    const info =
+        document.getElementById("wsjtx-status");
+
+    if (!info) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch("/api/wsjtx/status", { cache: "no-store" });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const status =
+            await response.json();
+
+        if (!status.enabled) {
+            info.textContent = "Off";
+            return;
+        }
+
+        if (!status.listening) {
+            info.innerHTML =
+                `<span class="err">✖ UDP ${status.port} not open` +
+                `${status.error ? ": " + escapeHtml(status.error) : ""}</span>`;
+            return;
+        }
+
+        const clients =
+            (status.clients || [])
+                .map(client => {
+                    const ago = Math.round((Date.now() - client.lastSeen) / 1000);
+                    const freq = client.dialFrequency
+                        ? ` · ${(client.dialFrequency / 1e6).toFixed(3)} MHz ${escapeHtml(client.mode || "")}`
+                        : "";
+                    return `${escapeHtml(client.id)} ${escapeHtml(client.version || "")} (${escapeHtml(client.address)}, ${ago}s ago)${freq}`;
+                });
+
+        info.innerHTML =
+            `<span class="ok">✔ Listening on UDP ${status.port}` +
+            `${status.multicastGroup ? " · multicast " + escapeHtml(status.multicastGroup) : ""}</span>` +
+            (clients.length
+                ? `<br>${clients.join("<br>")}`
+                : " · no WSJT-X seen yet") +
+            (status.lastQso
+                ? `<br>Last QSO: ${escapeHtml(status.lastQso.call)} - ${escapeHtml(status.lastQso.result)}` +
+                  ` (${escapeHtml(status.lastQso.at.slice(11, 16))} UTC) · ${status.loggedCount} logged since start`
+                : "");
+
+    }
+    catch (error) {
+
+        info.textContent = "";
+
+    }
 
 }

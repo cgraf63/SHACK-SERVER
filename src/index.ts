@@ -24,6 +24,10 @@ import {
     uploadQueue
 } from "./services/upload/upload-queue.service.js";
 
+import {
+    wsjtxService
+} from "./services/wsjtx/wsjtx.service.js";
+
 import "./services/rbn/rbn-instance.js";
 
 import "./services/telnet/telnet-server.js";
@@ -33,6 +37,9 @@ sotaPotaService.start();
 
 /* Online logbook uploads (QRZ.com, ...) */
 uploadQueue.start();
+
+/* WSJT-X / JTDX: QSOs logged there arrive via UDP */
+wsjtxService.start();
 
 
 const PORT =
