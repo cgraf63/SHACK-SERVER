@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { uploadQueue, type UploadSource } from "../services/upload/upload-queue.service.js";
+import { settingsService } from "../services/settings/settings.service.js";
 
 
 /*
@@ -18,11 +19,14 @@ router.get("/status", (req, res) => {
 
     res.set("Cache-Control", "no-store");
     res.json({
-        services: uploadQueue.getUploaders().map(uploader => ({
-            id: uploader.id,
-            label: uploader.label,
-            enabled: uploader.isEnabled()
-        })),
+        services: (() => {
+            const enabled = uploadQueue.enabledServices();
+            return uploadQueue.getUploaders().map(uploader => ({
+                id: uploader.id,
+                label: uploader.label,
+                enabled: enabled.includes(uploader.id)
+            }));
+        })(),
         status: uploadQueue.getStatusMap(source)
     });
 
@@ -52,7 +56,11 @@ router.post("/retry", (req, res) => {
 });
 
 
-/* Check credentials (Settings → Test). Body: { apiKey? } */
+/*
+ * Check credentials (Settings → Test).
+ * Body: { accountId?, callsign?, apiKey? } - typed key or the saved
+ * key of the account.
+ */
 router.post("/test/:service", async (req, res) => {
 
     const uploader = uploadQueue.getUploader(String(req.params.service));
@@ -69,7 +77,11 @@ router.post("/test/:service", async (req, res) => {
         }
     }
 
-    res.json(await uploader.test(credentials));
+    const account =
+        settingsService.get().uploads.accounts
+            .find(item => item.id === credentials.accountId) ?? null;
+
+    res.json(await uploader.test(account, credentials));
 
 });
 
@@ -85,9 +97,17 @@ router.post("/contest-session/:id", (req, res) => {
 
     const result = uploadQueue.enqueueContestSession(sessionId);
 
+    if (!result.account) {
+        return res.status(409).json({
+            error:
+                `No logbook account for ${result.callsign || "this session"}. ` +
+                "Add it in Settings → Log Uploads."
+        });
+    }
+
     if (!result.services.length) {
         return res.status(409).json({
-            error: "No online logbook enabled. Settings → Log Uploads."
+            error: `No online logbook enabled for ${result.account}.`
         });
     }
 

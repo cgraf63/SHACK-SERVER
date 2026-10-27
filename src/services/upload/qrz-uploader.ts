@@ -3,6 +3,8 @@ import axios from "axios";
 import { settingsService } from "../settings/settings.service.js";
 import { qrzConfig } from "../../config/qrz.config.js";
 import type { Uploader, UploadResult } from "./uploader.js";
+import type { LogbookAccount } from "../../config/settings.config.js";
+import { normalizeCallsign } from "../settings/upload-accounts.js";
 
 
 /*
@@ -13,13 +15,25 @@ import type { Uploader, UploadResult } from "./uploader.js";
 const QRZ_LOGBOOK_URL = "https://logbook.qrz.com/api";
 
 
-function apiKey(): string {
+/*
+ * Key of an account. QRZ_API_KEY in .env still works for the
+ * station's own callsign (Settings → Station).
+ */
+function apiKeyFor(account: LogbookAccount | null): string {
 
-    return (
-        settingsService.get().uploads.qrz.apiKey ||
-        qrzConfig.apiKey ||
-        ""
-    ).trim();
+    if (!account) {
+        return "";
+    }
+
+    if (account.qrz.apiKey) {
+        return account.qrz.apiKey.trim();
+    }
+
+    const own = normalizeCallsign(settingsService.get().callsign);
+
+    return account.callsign === own
+        ? (qrzConfig.apiKey || "").trim()
+        : "";
 
 }
 
@@ -82,11 +96,11 @@ export const qrzUploader: Uploader = {
 
     label: "QRZ.com",
 
-    isEnabled(): boolean {
+    isEnabledFor(account: LogbookAccount): boolean {
 
         return (
-            settingsService.get().uploads.qrz.enabled &&
-            Boolean(apiKey())
+            account.qrz.enabled &&
+            Boolean(apiKeyFor(account))
         );
 
     },
@@ -94,7 +108,7 @@ export const qrzUploader: Uploader = {
     async upload(_qso, adif, options): Promise<UploadResult> {
 
         const params: Record<string, string> = {
-            KEY: apiKey(),
+            KEY: apiKeyFor(options.account),
             ACTION: "INSERT",
             ADIF: adif
         };
@@ -141,9 +155,9 @@ export const qrzUploader: Uploader = {
 
     },
 
-    async test(credentials): Promise<UploadResult> {
+    async test(account, credentials): Promise<UploadResult> {
 
-        const key = (credentials?.apiKey || apiKey()).trim();
+        const key = (credentials?.apiKey || apiKeyFor(account)).trim();
 
         if (!key) {
             return { ok: false, message: "No API key entered." };
@@ -159,6 +173,18 @@ export const qrzUploader: Uploader = {
                     answer.CALLSIGN ? `Logbook ${answer.CALLSIGN}` : "Key valid",
                     answer.COUNT ? `${answer.COUNT} QSOs` : ""
                 ].filter(Boolean);
+
+                const logbook = normalizeCallsign(answer.CALLSIGN);
+                const expected = normalizeCallsign(credentials?.callsign || account?.callsign);
+
+                if (logbook && expected && logbook !== expected) {
+                    return {
+                        ok: false,
+                        message:
+                            `${parts.join(" · ")} - this key belongs to ${logbook}, ` +
+                            `not ${expected}`
+                    };
+                }
 
                 return { ok: true, message: parts.join(" · ") };
 

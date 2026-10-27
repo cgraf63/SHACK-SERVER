@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { publicUploadSettings } from "../services/settings/upload-accounts.js";
 
 import {
     ShackSettings
@@ -26,18 +27,11 @@ function publicSettings(settings: ShackSettings): unknown {
 
     return {
         ...settings,
-        uploads: {
-            qrz: {
-                enabled: settings.uploads.qrz.enabled,
-                apiKey: "",
-                apiKeySet:
-                    Boolean(settings.uploads.qrz.apiKey) ||
-                    Boolean(process.env.QRZ_API_KEY),
-                apiKeyFromEnv:
-                    !settings.uploads.qrz.apiKey &&
-                    Boolean(process.env.QRZ_API_KEY)
-            }
-        }
+        uploads:
+            publicUploadSettings(
+                settings.uploads,
+                settings.callsign
+            )
     };
 
 }

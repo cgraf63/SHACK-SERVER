@@ -64,6 +64,19 @@ export interface ShackSettings {
 }
 
 export interface UploadSettings {
+    /*
+     * One account per callsign (QRZ logbook, later Club Log, LoTW).
+     * A QSO is uploaded with the account of its station callsign;
+     * portable suffixes (/P, /M, /QRP ...) match automatically,
+     * other forms (e.g. A61/HB9BC) via aliases.
+     */
+    accounts: LogbookAccount[];
+}
+
+export interface LogbookAccount {
+    id: string;
+    callsign: string;
+    aliases: string[];
     qrz: {
         enabled: boolean;
         apiKey: string;
@@ -108,10 +121,7 @@ export const shackSettings: ShackSettings = {
         sdr: false
     },
     uploads: {
-        qrz: {
-            enabled: false,
-            apiKey: ""
-        }
+        accounts: []
     },
     dxspiders: [
         {

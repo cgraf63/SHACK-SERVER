@@ -8,6 +8,9 @@ import { systemLog } from "../diagnostics/system-log.service.js";
 import { qsoToAdif, type UploadQso } from "./adif-export.js";
 import type { Uploader, UploadServiceId } from "./uploader.js";
 import { qrzUploader } from "./qrz-uploader.js";
+import { settingsService } from "../settings/settings.service.js";
+import { findAccount, normalizeCallsign } from "../settings/upload-accounts.js";
+import type { LogbookAccount } from "../../config/settings.config.js";
 
 
 /*
@@ -117,10 +120,45 @@ class UploadQueueService {
         return UPLOADERS.find(uploader => uploader.id === id);
     }
 
+    /* Services enabled for at least one account. */
     enabledServices(): UploadServiceId[] {
+
+        const accounts = settingsService.get().uploads.accounts;
+
         return UPLOADERS
-            .filter(uploader => uploader.isEnabled())
+            .filter(uploader => accounts.some(account => uploader.isEnabledFor(account)))
             .map(uploader => uploader.id);
+
+    }
+
+    /*
+     * Account for a QSO: station callsign of the QSO, or the own
+     * callsign (Settings → Station) when the QSO has none.
+     */
+    accountFor(qso: UploadQso | null): LogbookAccount | null {
+
+        const settings = settingsService.get();
+        const callsign =
+            normalizeCallsign(qso?.my_callsign) ||
+            normalizeCallsign(settings.callsign);
+
+        return findAccount(settings.uploads.accounts, callsign);
+
+    }
+
+    /* Services to use for a QSO (account found and service enabled there). */
+    servicesFor(qso: UploadQso | null): UploadServiceId[] {
+
+        const account = this.accountFor(qso);
+
+        if (!account) {
+            return [];
+        }
+
+        return UPLOADERS
+            .filter(uploader => uploader.isEnabledFor(account))
+            .map(uploader => uploader.id);
+
     }
 
 
@@ -135,8 +173,10 @@ class UploadQueueService {
     enqueue(
         source: UploadSource,
         recordId: number,
-        services: UploadServiceId[] = this.enabledServices()
+        services?: UploadServiceId[]
     ): number {
+
+        services ??= this.servicesFor(this.loadQso(source, recordId));
 
         const now = new Date().toISOString();
         let count = 0;
@@ -260,10 +300,12 @@ class UploadQueueService {
 
         const summary: Record<string, any> = {};
 
+        const enabled = this.enabledServices();
+
         for (const uploader of UPLOADERS) {
             summary[uploader.id] = {
                 label: uploader.label,
-                enabled: uploader.isEnabled(),
+                enabled: enabled.includes(uploader.id),
                 pending: 0,
                 done: 0,
                 failed: 0
@@ -376,10 +418,46 @@ class UploadQueueService {
             return;
         }
 
+        const account = this.accountFor(qso);
+
+        if (!account) {
+
+            this.db.prepare(`
+                UPDATE log_uploads
+                SET status = 'failed', message = ?, updated_at = ?
+                WHERE id = ?
+            `).run(
+                `No logbook account for ${qso.my_callsign || "this callsign"} (Settings → Log Uploads)`,
+                now,
+                row.id
+            );
+
+            return;
+
+        }
+
+        if (!uploader.isEnabledFor(account)) {
+
+            /* Disabled for this account: keep waiting, look again later. */
+            this.db.prepare(`
+                UPDATE log_uploads
+                SET next_try_at = ?, message = ?, updated_at = ?
+                WHERE id = ?
+            `).run(
+                Date.now() + 10 * 60_000,
+                `${uploader.label} not enabled for ${account.callsign}`,
+                now,
+                row.id
+            );
+
+            return;
+
+        }
+
         const result = await uploader.upload(
             qso,
             qsoToAdif(qso),
-            { replace: row.replace_flag === 1 }
+            { replace: row.replace_flag === 1, account }
         );
 
         if (result.ok) {
@@ -483,19 +561,43 @@ class UploadQueueService {
     }
 
     /* All QSOs of a contest session -> queue (button in QSO History). */
-    enqueueContestSession(sessionId: number): { qsos: number; queued: number; services: UploadServiceId[] } {
+    enqueueContestSession(sessionId: number): {
+        qsos: number;
+        queued: number;
+        services: UploadServiceId[];
+        callsign: string;
+        account: string | null;
+    } {
 
-        const services = this.enabledServices();
+        const session = contestService.getSessionById(sessionId);
         const qsos = contestService.getContestQsos(sessionId);
         let queued = 0;
+        const used = new Set<UploadServiceId>();
+        let account: string | null = null;
 
         for (const qso of qsos) {
-            if (qso.id) {
-                queued += this.enqueue("contest", Number(qso.id), services);
+
+            if (!qso.id) {
+                continue;
             }
+
+            const uploadQso = this.loadQso("contest", Number(qso.id));
+            const services = this.servicesFor(uploadQso);
+
+            account ??= this.accountFor(uploadQso)?.callsign ?? null;
+            services.forEach(service => used.add(service));
+
+            queued += this.enqueue("contest", Number(qso.id), services);
+
         }
 
-        return { qsos: qsos.length, queued, services };
+        return {
+            qsos: qsos.length,
+            queued,
+            services: [...used],
+            callsign: normalizeCallsign(session?.station_callsign),
+            account
+        };
 
     }
 

@@ -585,18 +585,8 @@ async function saveSettings() {
 
         uploads: {
 
-            qrz: {
-
-                enabled:
-                    document.getElementById("upload-qrz-enabled")
-                        ?.checked ?? false,
-
-                /* empty = keep the saved key */
-                apiKey:
-                    document.getElementById("upload-qrz-key")
-                        ?.value.trim() ?? ""
-
-            }
+            accounts:
+                collectUploadAccounts()
 
         },
 
@@ -940,37 +930,85 @@ if (
 
 /*
     =====================================================
-    Log uploads (QRZ.com, ...)
+    Log uploads: one logbook account per callsign
+    (QRZ.com now, later Club Log and LoTW).
+    Keys are never sent to the browser: an empty key
+    field means "keep the saved key".
     =====================================================
 */
 
-function applyUploadSettings(uploads) {
+function uploadAccountRow(account) {
+
+    const row =
+        document.createElement("div");
+
+    row.className =
+        "upload-account";
+
+    row.dataset.accountId =
+        account.id || "";
 
     const qrz =
-        uploads?.qrz ?? {};
+        account.qrz || {};
 
-    const enabled =
-        document.getElementById("upload-qrz-enabled");
+    const placeholder =
+        qrz.apiKeyFromEnv
+            ? "Key from .env - enter to replace"
+            : qrz.apiKeySet
+                ? "•••••••• saved - enter to replace"
+                : "QRZ Logbook API key";
 
-    const key =
-        document.getElementById("upload-qrz-key");
+    row.innerHTML = `
+        <div class="upload-account-head">
+            <label>Callsign</label>
+            <input class="upload-call" type="text" value="${escapeHtml(account.callsign || "")}" placeholder="HB9XXX">
+            <label title="Other callsigns for this logbook, e.g. A61/HB9ISO. /P, /M, /QRP match automatically.">Also for</label>
+            <input class="upload-aliases" type="text" value="${escapeHtml((account.aliases || []).join(", "))}" placeholder="e.g. A61/HB9ISO  (/P, /M match automatically)">
+            <button type="button" class="dxspider-remove upload-account-remove" title="Remove account">×</button>
+        </div>
+        <div class="upload-service-row">
+            <label class="source-switch">
+                <input class="upload-qrz-enabled" type="checkbox" ${qrz.enabled ? "checked" : ""}>
+                <span>QRZ.com</span>
+            </label>
+            <label>API key</label>
+            <input class="upload-qrz-key" type="password" autocomplete="off" placeholder="${escapeHtml(placeholder)}">
+            <button type="button" class="settings-secondary-button upload-qrz-test">Test</button>
+        </div>
+        <div class="upload-service-info upload-account-info"></div>
+    `;
 
-    if (enabled) {
-        enabled.checked =
-            qrz.enabled === true;
+    row.querySelector(".upload-call")
+        .addEventListener("input", event => {
+            event.target.value = event.target.value.toUpperCase();
+        });
+
+    row.querySelector(".upload-account-remove")
+        .addEventListener("click", () => row.remove());
+
+    row.querySelector(".upload-qrz-test")
+        .addEventListener("click", () => testUploadAccount(row));
+
+    return row;
+
+}
+
+
+function applyUploadSettings(uploads) {
+
+    const list =
+        document.getElementById("upload-accounts");
+
+    if (!list) {
+        return;
     }
 
-    if (key) {
+    list.innerHTML = "";
 
-        key.value = "";
-
-        key.placeholder =
-            qrz.apiKeyFromEnv
-                ? "Key from .env (QRZ_API_KEY) - enter to replace"
-                : qrz.apiKeySet
-                    ? "•••••••• saved - enter a new key to replace"
-                    : "QRZ Logbook API key";
-
+    for (const account of uploads?.accounts ?? []) {
+        list.appendChild(
+            uploadAccountRow(account)
+        );
     }
 
     loadUploadSummary();
@@ -978,10 +1016,103 @@ function applyUploadSettings(uploads) {
 }
 
 
+function collectUploadAccounts() {
+
+    return Array.from(
+        document.querySelectorAll("#upload-accounts .upload-account")
+    )
+        .map(row => ({
+
+            id:
+                row.dataset.accountId || undefined,
+
+            callsign:
+                row.querySelector(".upload-call").value.trim().toUpperCase(),
+
+            aliases:
+                row.querySelector(".upload-aliases").value
+                    .split(/[,;\s]+/)
+                    .map(item => item.trim().toUpperCase())
+                    .filter(Boolean),
+
+            qrz: {
+
+                enabled:
+                    row.querySelector(".upload-qrz-enabled").checked,
+
+                /* empty = keep the saved key */
+                apiKey:
+                    row.querySelector(".upload-qrz-key").value.trim()
+
+            }
+
+        }))
+        .filter(account => account.callsign);
+
+}
+
+
+async function testUploadAccount(row) {
+
+    const info =
+        row.querySelector(".upload-account-info");
+
+    const button =
+        row.querySelector(".upload-qrz-test");
+
+    const key =
+        row.querySelector(".upload-qrz-key").value.trim();
+
+    const callsign =
+        row.querySelector(".upload-call").value.trim().toUpperCase();
+
+    button.disabled = true;
+    info.textContent = "Testing...";
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/uploads/test/qrz",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        accountId: row.dataset.accountId || "",
+                        callsign,
+                        ...(key ? { apiKey: key } : {})
+                    })
+                }
+            );
+
+        const result =
+            await response.json();
+
+        info.innerHTML =
+            `<span class="${result.ok ? "ok" : "err"}">` +
+            `${result.ok ? "✔" : "✖"} QRZ.com: ${escapeHtml(result.message || "")}` +
+            `</span>`;
+
+    }
+    catch (error) {
+
+        info.innerHTML =
+            `<span class="err">✖ ${escapeHtml(error.message)}</span>`;
+
+    }
+    finally {
+
+        button.disabled = false;
+
+    }
+
+}
+
+
 async function loadUploadSummary() {
 
     const info =
-        document.getElementById("upload-qrz-info");
+        document.getElementById("upload-summary");
 
     if (!info) {
         return;
@@ -1005,27 +1136,22 @@ async function loadUploadSummary() {
         const qrz =
             summary.qrz;
 
-        if (!qrz) {
+        if (!qrz || (!qrz.done && !qrz.pending && !qrz.failed)) {
             info.textContent = "";
             return;
         }
 
-        const parts = [
-            `${qrz.done} uploaded`,
-            `${qrz.pending} pending`
-        ];
-
         info.innerHTML =
-            escapeHtml(parts.join(" · ")) +
+            `QRZ.com: ${qrz.done} uploaded · ${qrz.pending} pending` +
             (
                 qrz.failed
                     ? ` · <span class="err">${qrz.failed} failed</span>` +
-                      `<button type="button" class="settings-secondary-button" id="upload-qrz-retry">Retry failed</button>`
+                      `<button type="button" class="settings-secondary-button" id="upload-retry">Retry failed</button>`
                     : ""
             );
 
         document
-            .getElementById("upload-qrz-retry")
+            .getElementById("upload-retry")
             ?.addEventListener(
                 "click",
                 async () => {
@@ -1056,68 +1182,31 @@ async function loadUploadSummary() {
 
 function initUploadSettings() {
 
-    const testButton =
-        document.getElementById("upload-qrz-test");
+    document
+        .getElementById("upload-account-add")
+        ?.addEventListener(
+            "click",
+            () => {
 
-    if (!testButton) {
-        return;
-    }
+                const list =
+                    document.getElementById("upload-accounts");
 
-    testButton.addEventListener(
-        "click",
-        async () => {
-
-            const info =
-                document.getElementById("upload-qrz-info");
-
-            const key =
-                document.getElementById("upload-qrz-key")
-                    ?.value.trim() ?? "";
-
-            testButton.disabled = true;
-
-            if (info) {
-                info.textContent = "Testing...";
-            }
-
-            try {
-
-                const response =
-                    await fetch(
-                        "/api/uploads/test/qrz",
-                        {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(key ? { apiKey: key } : {})
-                        }
-                    );
-
-                const result =
-                    await response.json();
-
-                if (info) {
-                    info.innerHTML =
-                        `<span class="${result.ok ? "ok" : "err"}">` +
-                        `${result.ok ? "✔" : "✖"} ${escapeHtml(result.message || "")}` +
-                        `</span>`;
+                if (!list) {
+                    return;
                 }
 
-            }
-            catch (error) {
+                const row =
+                    uploadAccountRow({
+                        callsign: "",
+                        aliases: [],
+                        qrz: { enabled: true }
+                    });
 
-                if (info) {
-                    info.innerHTML =
-                        `<span class="err">✖ ${escapeHtml(error.message)}</span>`;
-                }
+                list.appendChild(row);
 
-            }
-            finally {
-
-                testButton.disabled = false;
+                row.querySelector(".upload-call").focus();
 
             }
-
-        }
-    );
+        );
 
 }

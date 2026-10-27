@@ -409,39 +409,57 @@
             (with retry). Contest QSOs: QSO History → UPLOAD SESSION.
         </p>
 
-        <div class="upload-service">
+        <div id="upload-accounts" class="upload-accounts"></div>
 
-            <label class="source-switch">
-                <input
-                    id="upload-qrz-enabled"
-                    type="checkbox">
-                <span>
-                    QRZ.com Logbook
-                    <small class="module-hint">auto upload</small>
-                </span>
-            </label>
+        <button
+            id="upload-account-add"
+            type="button"
+            class="settings-secondary-button">
+            + Add Logbook Account
+        </button>
 
-            <div class="upload-service-row">
-                <label for="upload-qrz-key">API key</label>
-                <input
-                    id="upload-qrz-key"
-                    type="password"
-                    autocomplete="off"
-                    placeholder="QRZ Logbook API key">
-                <button
-                    id="upload-qrz-test"
-                    type="button"
-                    class="settings-secondary-button">
-                    Test
-                </button>
-            </div>
-
-            <div id="upload-qrz-info" class="upload-service-info"></div>
-
-        </div>
+        <div id="upload-summary" class="upload-service-info upload-summary"></div>
 
         <style>
-            .upload-service { margin: 6px 0 4px; }
+            .upload-accounts { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+            .upload-account {
+                padding: 10px 12px;
+                border: 1px solid var(--border-color, #303640);
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.02);
+            }
+            .upload-account-head {
+                display: grid;
+                grid-template-columns: 70px 150px 60px minmax(0, 1fr) auto;
+                gap: 10px;
+                align-items: center;
+            }
+            .upload-account-head label,
+            .upload-account .upload-service-row label { font-size: 13px; color: #9fb1bd; }
+            .upload-account input[type="text"],
+            .upload-account input[type="password"] {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 7px 10px;
+                border: 1px solid var(--border-color, #303640);
+                border-radius: 5px;
+                background: rgba(255, 255, 255, 0.04);
+                color: inherit;
+                font: inherit;
+                font-size: 13px;
+            }
+            .upload-account .upload-call { text-transform: uppercase; font-weight: 700; }
+            .upload-account .upload-service-row {
+                grid-template-columns: 110px 70px minmax(0, 300px) auto;
+                margin: 10px 0 0;
+            }
+            .upload-account .upload-service-info { margin: 6px 0 0 0; }
+            .upload-account .source-switch { font-size: 13px; }
+            .upload-service-info.upload-summary { margin: 4px 0 0 0; }
+            @media (max-width: 700px) {
+                .upload-account-head,
+                .upload-account .upload-service-row { grid-template-columns: 1fr; }
+            }
             .upload-service-row {
                 display: grid;
                 grid-template-columns: 70px minmax(0, 340px) auto;

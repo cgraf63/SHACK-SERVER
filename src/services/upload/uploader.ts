@@ -1,3 +1,4 @@
+import type { LogbookAccount } from "../../config/settings.config.js";
 import type { UploadQso } from "./adif-export.js";
 
 
@@ -26,20 +27,23 @@ export interface Uploader {
 
     label: string;
 
-    /* Enabled in Settings and credentials present. */
-    isEnabled(): boolean;
+    /* Service enabled and credentials present for this account. */
+    isEnabledFor(account: LogbookAccount): boolean;
 
     /*
-     * Upload one QSO. replace = the QSO was edited after an
-     * earlier upload (overwrite instead of adding a duplicate).
+     * Upload one QSO with the account of its station callsign.
+     * replace = the QSO was edited after an earlier upload.
      */
     upload(
         qso: UploadQso,
         adif: string,
-        options: { replace: boolean }
+        options: { replace: boolean; account: LogbookAccount }
     ): Promise<UploadResult>;
 
-    /* Check the credentials (Settings → Test). */
-    test(credentials?: Record<string, string>): Promise<UploadResult>;
+    /* Check credentials (Settings → Test). */
+    test(
+        account: LogbookAccount | null,
+        credentials?: Record<string, string>
+    ): Promise<UploadResult>;
 
 }
