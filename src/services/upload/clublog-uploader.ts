@@ -1,6 +1,7 @@
 import { settingsService } from "../settings/settings.service.js";
 import type { LogbookAccount } from "../../config/settings.config.js";
 import type { Uploader, UploadResult } from "./uploader.js";
+import { systemLog } from "../diagnostics/system-log.service.js";
 
 
 /*
@@ -12,16 +13,28 @@ import type { Uploader, UploadResult } from "./uploader.js";
  * Fields: email, password (Club Log *application* password),
  * callsign (log to upload into), api (application key), adif / file.
  *
- * Club Log asks programs to stop sending after a rejected login
- * (HTTP 403) - the account is paused for one hour then.
+ * Error handling (Club Log: stop sending after a non-200 answer):
+ *   403          login rejected -> no more requests for this account
+ *                until the credentials are changed or "Test" succeeds
+ *   400          QSO rejected   -> QSO marked failed, account paused
+ *   other/network               -> account paused 5, 10, 20 ... 120 min
+ * The reason is shown in the QSO log, Settings and the system log.
+ * At most one request every 2 seconds.
  */
 
 const REALTIME_URL = "https://clublog.org/realtime.php";
 const PUTLOGS_URL = "https://clublog.org/putlogs.php";
 
-const PAUSE_AFTER_403_MS = 60 * 60_000;
+const MIN_REQUEST_INTERVAL_MS = 2000;
 
-const pausedUntil = new Map<string, number>();
+const BACKOFF_START_MS = 5 * 60_000;
+const BACKOFF_MAX_MS = 120 * 60_000;
+
+let lastRequestAt = 0;
+
+const blocked = new Map<string, { fingerprint: string; reason: string }>();
+
+const backoff = new Map<string, { until: number; delay: number; reason: string }>();
 
 
 function apiKey(): string {
@@ -42,10 +55,76 @@ function credentialsOk(account: LogbookAccount): boolean {
 }
 
 
+function fingerprint(account: LogbookAccount): string {
+
+    return [
+        account.callsign,
+        account.clublog.email,
+        account.clublog.password,
+        apiKey()
+    ].join("\u0000");
+
+}
+
+
+function block(account: LogbookAccount, reason: string): void {
+
+    blocked.set(account.id, { fingerprint: fingerprint(account), reason });
+
+    systemLog.error(
+        "UPLOAD", "UPLOAD",
+        `Club Log ${account.callsign}: ${reason} - uploads stopped until the ` +
+        "login is corrected (Settings → Log Uploads → Test)"
+    );
+
+}
+
+
+function pause(account: LogbookAccount, reason: string): void {
+
+    const previous = backoff.get(account.id);
+
+    const delay = previous
+        ? Math.min(BACKOFF_MAX_MS, previous.delay * 2)
+        : BACKOFF_START_MS;
+
+    backoff.set(account.id, { until: Date.now() + delay, delay, reason });
+
+    systemLog.warn(
+        "UPLOAD", "UPLOAD",
+        `Club Log ${account.callsign}: ${reason} - paused for ${Math.round(delay / 60_000)} min`
+    );
+
+}
+
+
+function clearErrors(account: LogbookAccount): void {
+
+    blocked.delete(account.id);
+    backoff.delete(account.id);
+
+}
+
+
+async function throttle(): Promise<void> {
+
+    const wait = lastRequestAt + MIN_REQUEST_INTERVAL_MS - Date.now();
+
+    if (wait > 0) {
+        await new Promise(resolve => setTimeout(resolve, wait));
+    }
+
+    lastRequestAt = Date.now();
+
+}
+
+
 async function post(
     url: string,
     body: URLSearchParams | FormData
 ): Promise<{ status: number; text: string }> {
+
+    await throttle();
 
     const response =
         await fetch(url, {
@@ -66,42 +145,34 @@ async function post(
 function result(status: number, text: string, account: LogbookAccount): UploadResult {
 
     if (status === 200) {
+        backoff.delete(account.id);
         return { ok: true, message: text || "OK" };
     }
 
     if (status === 403) {
-
-        pausedUntil.set(account.id, Date.now() + PAUSE_AFTER_403_MS);
-
-        return {
-            ok: false,
-            message: `Login rejected: ${text || "check e-mail, app password and API key"}`,
-            permanent: true
-        };
-
+        const reason = `Login rejected (HTTP 403): ${text || "check e-mail, app password and API key"}`;
+        block(account, reason);
+        return { ok: false, message: reason, permanent: true };
     }
 
     if (status === 400) {
-        return { ok: false, message: `Rejected: ${text}`, permanent: true };
+        const reason = `QSO rejected (HTTP 400): ${text}`.trim();
+        pause(account, reason);
+        return { ok: false, message: reason, permanent: true };
     }
 
-    return { ok: false, message: `HTTP ${status} ${text}`.trim() };
+    const reason = `HTTP ${status} ${text}`.trim();
+    pause(account, reason);
+    return { ok: false, message: reason };
 
 }
 
 
-function paused(account: LogbookAccount): UploadResult | null {
+function networkError(error: unknown, account: LogbookAccount): UploadResult {
 
-    const until = pausedUntil.get(account.id) ?? 0;
-
-    if (until > Date.now()) {
-        return {
-            ok: false,
-            message: "Paused after rejected login - check Settings → Log Uploads"
-        };
-    }
-
-    return null;
+    const reason = error instanceof Error ? error.message : String(error);
+    pause(account, reason);
+    return { ok: false, message: reason };
 
 }
 
@@ -120,14 +191,43 @@ export const clublogUploader: Uploader = {
 
     },
 
+    pausedFor(account: LogbookAccount) {
+
+        const stop = blocked.get(account.id);
+
+        if (stop) {
+
+            /* Credentials changed since the 403: allowed to try again. */
+            if (stop.fingerprint !== fingerprint(account)) {
+                blocked.delete(account.id);
+            }
+            else {
+                return {
+                    reason: `${stop.reason} - stopped until the login is corrected`,
+                    until: Date.now() + 10 * 60_000
+                };
+            }
+
+        }
+
+        const wait = backoff.get(account.id);
+
+        if (wait && wait.until > Date.now()) {
+            return {
+                reason:
+                    `${wait.reason} - paused until ` +
+                    `${new Date(wait.until).toISOString().slice(11, 16)} UTC`,
+                until: wait.until
+            };
+        }
+
+        return null;
+
+    },
+
     async upload(_qso, adif, options): Promise<UploadResult> {
 
         const account = options.account;
-        const pause = paused(account);
-
-        if (pause) {
-            return pause;
-        }
 
         try {
 
@@ -147,10 +247,7 @@ export const clublogUploader: Uploader = {
         }
         catch (error) {
 
-            return {
-                ok: false,
-                message: error instanceof Error ? error.message : String(error)
-            };
+            return networkError(error, account);
 
         }
 
@@ -159,11 +256,6 @@ export const clublogUploader: Uploader = {
     async uploadBatch(_qsos, adif, options): Promise<UploadResult> {
 
         const account = options.account;
-        const pause = paused(account);
-
-        if (pause) {
-            return pause;
-        }
 
         try {
 
@@ -189,10 +281,7 @@ export const clublogUploader: Uploader = {
         }
         catch (error) {
 
-            return {
-                ok: false,
-                message: error instanceof Error ? error.message : String(error)
-            };
+            return networkError(error, account);
 
         }
 
@@ -201,7 +290,7 @@ export const clublogUploader: Uploader = {
     /*
      * Check the login without storing anything: an empty QSO is sent.
      * Club Log answers 403 for a wrong login and 400 for the (expected)
-     * invalid QSO when the login is fine.
+     * invalid QSO when the login is fine. A successful test lifts a stop.
      */
     async test(account, credentials): Promise<UploadResult> {
 
@@ -239,10 +328,13 @@ export const clublogUploader: Uploader = {
             }
 
             if (response.status === 400 || response.status === 200) {
+
                 if (account) {
-                    pausedUntil.delete(account.id);
+                    clearErrors(account);
                 }
+
                 return { ok: true, message: `Login OK for ${callsign}` };
+
             }
 
             return { ok: false, message: `HTTP ${response.status} ${response.text}`.trim() };

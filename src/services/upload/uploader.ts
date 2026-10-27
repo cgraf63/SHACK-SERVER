@@ -53,6 +53,13 @@ export interface Uploader {
 
     batchMinimum?: number;
 
+    /*
+     * Optional: the service must not be contacted for this account at
+     * the moment (e.g. after an error). Returns the reason, or null.
+     * The queue then sends nothing and leaves the QSOs waiting.
+     */
+    pausedFor?(account: LogbookAccount): { reason: string; until: number } | null;
+
     /* Check credentials (Settings → Test). */
     test(
         account: LogbookAccount | null,

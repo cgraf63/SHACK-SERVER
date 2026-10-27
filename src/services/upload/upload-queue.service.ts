@@ -458,6 +458,21 @@ class UploadQueueService {
 
         }
 
+        const pause = uploader.pausedFor?.(account) ?? null;
+
+        if (pause) {
+
+            /* Service asked us to stop: send nothing, keep waiting. */
+            this.db.prepare(`
+                UPDATE log_uploads
+                SET next_try_at = ?, message = ?, updated_at = ?
+                WHERE id = ?
+            `).run(pause.until, pause.reason, now, row.id);
+
+            return;
+
+        }
+
         const result = await uploader.upload(
             qso,
             qsoToAdif(qso),
@@ -562,6 +577,10 @@ class UploadQueueService {
 
                 if (!qso || !account || !uploader.isEnabledFor(account)) {
                     continue;   // handled by the single upload path
+                }
+
+                if (uploader.pausedFor?.(account)) {
+                    continue;   // paused: the single path stores the reason
                 }
 
                 const group =
