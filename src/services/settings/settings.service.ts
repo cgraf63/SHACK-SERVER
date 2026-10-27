@@ -233,7 +233,8 @@ export class SettingsService {
             modules:
                 defaultModules(),
             uploads: {
-                accounts: []
+                accounts: [],
+                clublogApiKey: ""
             },
             dxspiders:
                 shackSettings.dxspiders.map(

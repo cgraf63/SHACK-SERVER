@@ -8,8 +8,8 @@ import type {
 
 /*
  * Logbook accounts per callsign: normalisation, migration, merging
- * a save from the browser (keys are never sent to the browser), and
- * finding the account for a station callsign.
+ * a save from the browser (secrets are never sent to the browser),
+ * and finding the account for a station callsign.
  *
  * No imports of settingsService here (used by the settings service).
  */
@@ -33,7 +33,14 @@ function normalizeAliases(value: unknown): string[] {
 }
 
 
-function normalizeAccount(raw: any, fallbackKey = ""): LogbookAccount | null {
+function text(value: unknown): string {
+
+    return String(value ?? "").trim();
+
+}
+
+
+function normalizeAccount(raw: any): LogbookAccount | null {
 
     const callsign = normalizeCallsign(raw?.callsign);
 
@@ -42,12 +49,22 @@ function normalizeAccount(raw: any, fallbackKey = ""): LogbookAccount | null {
     }
 
     return {
-        id: typeof raw?.id === "string" && raw.id ? raw.id : (raw?.migrated ? `acc-${callsign}` : randomUUID()),
+        id:
+            typeof raw?.id === "string" && raw.id
+                ? raw.id
+                : raw?.migrated
+                    ? `acc-${callsign}`
+                    : randomUUID(),
         callsign,
         aliases: normalizeAliases(raw?.aliases),
         qrz: {
             enabled: raw?.qrz?.enabled === true,
-            apiKey: String(raw?.qrz?.apiKey ?? fallbackKey ?? "").trim()
+            apiKey: text(raw?.qrz?.apiKey)
+        },
+        clublog: {
+            enabled: raw?.clublog?.enabled === true,
+            email: text(raw?.clublog?.email),
+            password: text(raw?.clublog?.password)
         }
     };
 
@@ -66,19 +83,21 @@ export function loadUploadSettings(
 ): UploadSettings {
 
     const uploads = parsed?.uploads;
+    const clublogApiKey = text(uploads?.clublogApiKey);
 
     if (Array.isArray(uploads?.accounts)) {
         return {
             accounts: uploads.accounts
                 .map((account: any) => normalizeAccount(account))
-                .filter(Boolean) as LogbookAccount[]
+                .filter(Boolean) as LogbookAccount[],
+            clublogApiKey
         };
     }
 
     const callsign = normalizeCallsign(stationCallsign);
 
     if (!callsign) {
-        return { accounts: [] };
+        return { accounts: [], clublogApiKey };
     }
 
     if (uploads?.qrz) {
@@ -90,7 +109,7 @@ export function loadUploadSettings(
                 apiKey: uploads.qrz.apiKey
             }
         });
-        return { accounts: account ? [account] : [] };
+        return { accounts: account ? [account] : [], clublogApiKey };
     }
 
     if (process.env.QRZ_API_KEY) {
@@ -99,31 +118,52 @@ export function loadUploadSettings(
             callsign,
             qrz: { enabled: true, apiKey: "" }   // key stays in .env
         });
-        return { accounts: account ? [account] : [] };
+        return { accounts: account ? [account] : [], clublogApiKey };
     }
 
-    return { accounts: [] };
+    return { accounts: [], clublogApiKey };
 
 }
 
 
 /*
- * Save from the browser. Keys: empty = keep the saved key of the same
- * account (id), clearApiKey = remove. Accounts missing in the patch
- * are deleted.
+ * Typed secret, or the saved one of the same account.
+ * clear = true removes it.
+ */
+function secret(typed: unknown, previous: string | undefined, clear: unknown): string {
+
+    if (clear === true) {
+        return "";
+    }
+
+    return text(typed) || previous || "";
+
+}
+
+
+/*
+ * Save from the browser. Secrets: empty = keep the saved value of the
+ * same account (id). Accounts missing in the patch are deleted.
  */
 export function mergeUploadSettings(
     base: UploadSettings,
     patch: any
 ): UploadSettings {
 
+    const clublogApiKey =
+        patch?.clearClublogApiKey === true
+            ? ""
+            : text(patch?.clublogApiKey) || base.clublogApiKey || "";
+
     if (!Array.isArray(patch?.accounts)) {
         return {
             accounts: base.accounts.map(account => ({
                 ...account,
                 aliases: [...account.aliases],
-                qrz: { ...account.qrz }
-            }))
+                qrz: { ...account.qrz },
+                clublog: { ...account.clublog }
+            })),
+            clublogApiKey
         };
     }
 
@@ -133,16 +173,21 @@ export function mergeUploadSettings(
 
         const previous = base.accounts.find(account => account.id === raw?.id);
 
-        const typedKey = String(raw?.qrz?.apiKey ?? "").trim();
-
-        const apiKey =
-            raw?.qrz?.clearApiKey === true
-                ? ""
-                : typedKey || previous?.qrz.apiKey || "";
-
         const account = normalizeAccount({
             ...raw,
-            qrz: { enabled: raw?.qrz?.enabled === true, apiKey }
+            qrz: {
+                enabled: raw?.qrz?.enabled === true,
+                apiKey: secret(raw?.qrz?.apiKey, previous?.qrz.apiKey, raw?.qrz?.clearApiKey)
+            },
+            clublog: {
+                enabled: raw?.clublog?.enabled === true,
+                email: text(raw?.clublog?.email),
+                password: secret(
+                    raw?.clublog?.password,
+                    previous?.clublog.password,
+                    raw?.clublog?.clearPassword
+                )
+            }
         });
 
         if (account && !accounts.some(a => a.callsign === account.callsign)) {
@@ -151,13 +196,13 @@ export function mergeUploadSettings(
 
     }
 
-    return { accounts };
+    return { accounts, clublogApiKey };
 
 }
 
 
 /*
- * Settings for the browser: keys removed, "is set" flags only.
+ * Settings for the browser: secrets removed, "is set" flags only.
  * The .env key (QRZ_API_KEY) counts for the station's own callsign.
  */
 export function publicUploadSettings(
@@ -168,6 +213,8 @@ export function publicUploadSettings(
     const own = normalizeCallsign(stationCallsign);
 
     return {
+        clublogApiKey: "",
+        clublogApiKeySet: Boolean(uploads.clublogApiKey),
         accounts: uploads.accounts.map(account => {
 
             const envKey =
@@ -184,6 +231,12 @@ export function publicUploadSettings(
                     apiKey: "",
                     apiKeySet: Boolean(account.qrz.apiKey) || envKey,
                     apiKeyFromEnv: envKey
+                },
+                clublog: {
+                    enabled: account.clublog.enabled,
+                    email: account.clublog.email,
+                    password: "",
+                    passwordSet: Boolean(account.clublog.password)
                 }
             };
 
@@ -205,7 +258,7 @@ const SAME_LOGBOOK_SUFFIXES = new Set([
  * Account for a station callsign:
  *   1. exact callsign or alias
  *   2. callsign + portable suffix (HB9ISO/P, HB9ISO/M, HB9ISO/QRP, HB9ISO/3)
- * Prefixed calls (A61/HB9BC) need their own account or an alias,
+ * Prefixed calls (A61/HB9ISO) need their own account or an alias,
  * they are another DXCC entity (own LoTW certificate).
  */
 export function findAccount(

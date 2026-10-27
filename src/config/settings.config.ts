@@ -71,6 +71,12 @@ export interface UploadSettings {
      * other forms (e.g. A61/HB9BC) via aliases.
      */
     accounts: LogbookAccount[];
+    /*
+     * Club Log application key (per program, not per callsign).
+     * Every installation requests its own: clublog.org/requestapikey.php
+     * - never commit it to a public repository.
+     */
+    clublogApiKey: string;
 }
 
 export interface LogbookAccount {
@@ -80,6 +86,12 @@ export interface LogbookAccount {
     qrz: {
         enabled: boolean;
         apiKey: string;
+    };
+    clublog: {
+        enabled: boolean;
+        email: string;
+        /* Club Log application password (Settings → App Passwords) */
+        password: string;
     };
 }
 
@@ -121,7 +133,8 @@ export const shackSettings: ShackSettings = {
         sdr: false
     },
     uploads: {
-        accounts: []
+        accounts: [],
+        clublogApiKey: ""
     },
     dxspiders: [
         {

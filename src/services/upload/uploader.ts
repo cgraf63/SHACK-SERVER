@@ -2,7 +2,7 @@ import type { LogbookAccount } from "../../config/settings.config.js";
 import type { UploadQso } from "./adif-export.js";
 
 
-export type UploadServiceId = "qrz";
+export type UploadServiceId = "qrz" | "clublog";
 
 
 export interface UploadResult {
@@ -39,6 +39,19 @@ export interface Uploader {
         adif: string,
         options: { replace: boolean; account: LogbookAccount }
     ): Promise<UploadResult>;
+
+    /*
+     * Optional: many QSOs of one account in one request (Club Log asks
+     * for files instead of hundreds of single uploads). Used for
+     * contest sessions when at least batchMinimum QSOs are waiting.
+     */
+    uploadBatch?(
+        qsos: UploadQso[],
+        adif: string,
+        options: { account: LogbookAccount }
+    ): Promise<UploadResult>;
+
+    batchMinimum?: number;
 
     /* Check credentials (Settings → Test). */
     test(

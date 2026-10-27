@@ -586,7 +586,12 @@ async function saveSettings() {
         uploads: {
 
             accounts:
-                collectUploadAccounts()
+                collectUploadAccounts(),
+
+            /* empty = keep the saved key */
+            clublogApiKey:
+                document.getElementById("upload-clublog-apikey")
+                    ?.value.trim() ?? ""
 
         },
 
@@ -951,6 +956,14 @@ function uploadAccountRow(account) {
     const qrz =
         account.qrz || {};
 
+    const clublog =
+        account.clublog || {};
+
+    const clublogPlaceholder =
+        clublog.passwordSet
+            ? "•••••••• saved"
+            : "Club Log app password";
+
     const placeholder =
         qrz.apiKeyFromEnv
             ? "Key from .env - enter to replace"
@@ -975,6 +988,17 @@ function uploadAccountRow(account) {
             <input class="upload-qrz-key" type="password" autocomplete="off" placeholder="${escapeHtml(placeholder)}">
             <button type="button" class="settings-secondary-button upload-qrz-test">Test</button>
         </div>
+        <div class="upload-service-row upload-clublog-row">
+            <label class="source-switch">
+                <input class="upload-clublog-enabled" type="checkbox" ${clublog.enabled ? "checked" : ""}>
+                <span>Club Log</span>
+            </label>
+            <label>E-mail</label>
+            <input class="upload-clublog-email" type="text" autocomplete="off" value="${escapeHtml(clublog.email || "")}" placeholder="Club Log login e-mail">
+            <label title="Club Log → Settings → App Passwords (not your normal password)">App password</label>
+            <input class="upload-clublog-password" type="password" autocomplete="off" placeholder="${escapeHtml(clublogPlaceholder)}">
+            <button type="button" class="settings-secondary-button upload-clublog-test">Test</button>
+        </div>
         <div class="upload-service-info upload-account-info"></div>
     `;
 
@@ -987,7 +1011,10 @@ function uploadAccountRow(account) {
         .addEventListener("click", () => row.remove());
 
     row.querySelector(".upload-qrz-test")
-        .addEventListener("click", () => testUploadAccount(row));
+        .addEventListener("click", () => testUploadAccount(row, "qrz"));
+
+    row.querySelector(".upload-clublog-test")
+        .addEventListener("click", () => testUploadAccount(row, "clublog"));
 
     return row;
 
@@ -1004,6 +1031,17 @@ function applyUploadSettings(uploads) {
     }
 
     list.innerHTML = "";
+
+    const clublogKey =
+        document.getElementById("upload-clublog-apikey");
+
+    if (clublogKey) {
+        clublogKey.value = "";
+        clublogKey.placeholder =
+            uploads?.clublogApiKeySet
+                ? "•••••••• saved - enter to replace"
+                : "request at clublog.org/requestapikey.php";
+    }
 
     for (const account of uploads?.accounts ?? []) {
         list.appendChild(
@@ -1044,6 +1082,20 @@ function collectUploadAccounts() {
                 apiKey:
                     row.querySelector(".upload-qrz-key").value.trim()
 
+            },
+
+            clublog: {
+
+                enabled:
+                    row.querySelector(".upload-clublog-enabled").checked,
+
+                email:
+                    row.querySelector(".upload-clublog-email").value.trim(),
+
+                /* empty = keep the saved password */
+                password:
+                    row.querySelector(".upload-clublog-password").value.trim()
+
             }
 
         }))
@@ -1052,36 +1104,62 @@ function collectUploadAccounts() {
 }
 
 
-async function testUploadAccount(row) {
+async function testUploadAccount(row, service) {
 
     const info =
         row.querySelector(".upload-account-info");
 
     const button =
-        row.querySelector(".upload-qrz-test");
-
-    const key =
-        row.querySelector(".upload-qrz-key").value.trim();
+        row.querySelector(`.upload-${service}-test`);
 
     const callsign =
         row.querySelector(".upload-call").value.trim().toUpperCase();
 
+    const body = {
+        accountId: row.dataset.accountId || "",
+        callsign
+    };
+
+    if (service === "qrz") {
+
+        const key =
+            row.querySelector(".upload-qrz-key").value.trim();
+
+        if (key) body.apiKey = key;
+
+    }
+    else {
+
+        const email =
+            row.querySelector(".upload-clublog-email").value.trim();
+
+        const password =
+            row.querySelector(".upload-clublog-password").value.trim();
+
+        const apiKey =
+            document.getElementById("upload-clublog-apikey")?.value.trim() ?? "";
+
+        if (email) body.email = email;
+        if (password) body.password = password;
+        if (apiKey) body.apiKey = apiKey;
+
+    }
+
+    const label =
+        service === "qrz" ? "QRZ.com" : "Club Log";
+
     button.disabled = true;
-    info.textContent = "Testing...";
+    info.textContent = `Testing ${label}...`;
 
     try {
 
         const response =
             await fetch(
-                "/api/uploads/test/qrz",
+                `/api/uploads/test/${service}`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        accountId: row.dataset.accountId || "",
-                        callsign,
-                        ...(key ? { apiKey: key } : {})
-                    })
+                    body: JSON.stringify(body)
                 }
             );
 
@@ -1090,7 +1168,7 @@ async function testUploadAccount(row) {
 
         info.innerHTML =
             `<span class="${result.ok ? "ok" : "err"}">` +
-            `${result.ok ? "✔" : "✖"} QRZ.com: ${escapeHtml(result.message || "")}` +
+            `${result.ok ? "✔" : "✖"} ${label}: ${escapeHtml(result.message || "")}` +
             `</span>`;
 
     }
@@ -1133,20 +1211,22 @@ async function loadUploadSummary() {
         const summary =
             await response.json();
 
-        const qrz =
-            summary.qrz;
+        const lines =
+            Object.values(summary)
+                .filter(item => item.done || item.pending || item.failed)
+                .map(item =>
+                    `${escapeHtml(item.label)}: ${item.done} uploaded · ${item.pending} pending` +
+                    (item.failed ? ` · <span class="err">${item.failed} failed</span>` : "")
+                );
 
-        if (!qrz || (!qrz.done && !qrz.pending && !qrz.failed)) {
-            info.textContent = "";
-            return;
-        }
+        const anyFailed =
+            Object.values(summary).some(item => item.failed);
 
         info.innerHTML =
-            `QRZ.com: ${qrz.done} uploaded · ${qrz.pending} pending` +
+            lines.join("<br>") +
             (
-                qrz.failed
-                    ? ` · <span class="err">${qrz.failed} failed</span>` +
-                      `<button type="button" class="settings-secondary-button" id="upload-retry">Retry failed</button>`
+                anyFailed
+                    ? `<button type="button" class="settings-secondary-button" id="upload-retry">Retry failed</button>`
                     : ""
             );
 
@@ -1161,7 +1241,7 @@ async function loadUploadSummary() {
                         {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ service: "qrz" })
+                            body: JSON.stringify({})
                         }
                     );
 

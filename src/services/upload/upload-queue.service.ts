@@ -8,6 +8,7 @@ import { systemLog } from "../diagnostics/system-log.service.js";
 import { qsoToAdif, type UploadQso } from "./adif-export.js";
 import type { Uploader, UploadServiceId } from "./uploader.js";
 import { qrzUploader } from "./qrz-uploader.js";
+import { clublogUploader } from "./clublog-uploader.js";
 import { settingsService } from "../settings/settings.service.js";
 import { findAccount, normalizeCallsign } from "../settings/upload-accounts.js";
 import type { LogbookAccount } from "../../config/settings.config.js";
@@ -45,7 +46,8 @@ interface UploadRow {
 
 
 const UPLOADERS: Uploader[] = [
-    qrzUploader
+    qrzUploader,
+    clublogUploader
 ];
 
 const WORKER_INTERVAL_MS = 20_000;
@@ -372,6 +374,8 @@ class UploadQueueService {
                 return;
             }
 
+            await this.processBatches(enabled);
+
             const placeholders = enabled.map(() => "?").join(",");
 
             const rows = this.db.prepare(`
@@ -460,6 +464,20 @@ class UploadQueueService {
             { replace: row.replace_flag === 1, account }
         );
 
+        this.markResult(row, result, `${uploader.label}: ${qso.call}`);
+
+    }
+
+
+    /* Store the result of one upload (single or part of a batch). */
+    private markResult(
+        row: UploadRow,
+        result: { ok: boolean; message: string; permanent?: boolean },
+        logText: string | null
+    ): void {
+
+        const now = new Date().toISOString();
+
         if (result.ok) {
 
             this.db.prepare(`
@@ -469,10 +487,9 @@ class UploadQueueService {
                 WHERE id = ?
             `).run(result.message, now, now, row.id);
 
-            systemLog.info(
-                "UPLOAD", "UPLOAD",
-                `${uploader.label}: ${qso.call} ${result.message}`
-            );
+            if (logText) {
+                systemLog.info("UPLOAD", "UPLOAD", `${logText} ${result.message}`);
+            }
 
             return;
 
@@ -498,11 +515,95 @@ class UploadQueueService {
             row.id
         );
 
-        systemLog.warn(
-            "UPLOAD", "UPLOAD",
-            `${uploader.label}: ${qso.call} ${result.message}` +
-            (giveUp ? " (failed)" : ` (retry ${attempts}/${MAX_AUTO_ATTEMPTS})`)
-        );
+        if (logText) {
+            systemLog.warn(
+                "UPLOAD", "UPLOAD",
+                `${logText} ${result.message}` +
+                (giveUp ? " (failed)" : ` (retry ${attempts}/${MAX_AUTO_ATTEMPTS})`)
+            );
+        }
+
+    }
+
+
+    /*
+     * Contest sessions: services with a batch upload (Club Log) get
+     * one file per account instead of hundreds of single requests.
+     */
+    private async processBatches(enabled: UploadServiceId[]): Promise<void> {
+
+        for (const uploader of UPLOADERS) {
+
+            if (!uploader.uploadBatch || !enabled.includes(uploader.id)) {
+                continue;
+            }
+
+            const rows = this.db.prepare(`
+                SELECT *
+                FROM log_uploads
+                WHERE status = 'pending'
+                  AND next_try_at <= ?
+                  AND service = ?
+                  AND source = 'contest'
+                ORDER BY id ASC
+                LIMIT 5000
+            `).all(Date.now(), uploader.id) as unknown as UploadRow[];
+
+            const groups = new Map<string, {
+                account: LogbookAccount;
+                rows: UploadRow[];
+                qsos: UploadQso[];
+            }>();
+
+            for (const row of rows) {
+
+                const qso = this.loadQso(row.source, row.record_id);
+                const account = qso ? this.accountFor(qso) : null;
+
+                if (!qso || !account || !uploader.isEnabledFor(account)) {
+                    continue;   // handled by the single upload path
+                }
+
+                const group =
+                    groups.get(account.id) ??
+                    { account, rows: [], qsos: [] };
+
+                group.rows.push(row);
+                group.qsos.push(qso);
+                groups.set(account.id, group);
+
+            }
+
+            for (const group of groups.values()) {
+
+                if (group.rows.length < (uploader.batchMinimum ?? 1)) {
+                    continue;
+                }
+
+                const result = await uploader.uploadBatch(
+                    group.qsos,
+                    group.qsos.map(qso => qsoToAdif(qso)).join("\n"),
+                    { account: group.account }
+                );
+
+                for (const row of group.rows) {
+                    this.markResult(row, result, null);
+                }
+
+                const log =
+                    `${uploader.label}: ${group.rows.length} contest QSOs for ` +
+                    `${group.account.callsign} - ${result.message}`;
+
+                if (result.ok) {
+                    systemLog.info("UPLOAD", "UPLOAD", log);
+                }
+                else {
+                    systemLog.warn("UPLOAD", "UPLOAD", log);
+                }
+
+            }
+
+        }
 
     }
 
