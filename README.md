@@ -39,19 +39,26 @@ SHACK-SERVER runs on a raspberry Pi 4 with 1GB Ram or higher. Transceivers and S
 Access to the PI is achieved using http witin the lan or https over the wan. On the router you need to open just 1 port: 443. 
 As an alternative you can secure the https using cloudflare.
 
-<img width="1896" height="1002" alt="image" src="https://github.com/user-attachments/assets/ca9f4a2f-af58-4ebb-9e4b-99c063e7a1ae" />
+<img width="1878" height="1026" alt="image" src="https://github.com/user-attachments/assets/71936b1c-0f0d-49ea-8877-f498c0263318" />
 
-## Super Easy to use Contest Console
+## Easy to use Contest Console - Multi OP capable
 
-<img width="1890" height="1003" alt="image" src="https://github.com/user-attachments/assets/e48e78a9-9e3f-41e2-a906-6b38bd90a0a3" />
+<img width="1908" height="819" alt="image" src="https://github.com/user-attachments/assets/0b38f373-6a33-4a5c-855c-dab2ae7f684e" />
+
 
 ## Remote Control for Yaesu (including audio: Mic and Speaker) and CTR2-MIDI Integration Spectrum and Waterfall plus Remote Control over https !
 
 <img width="1916" height="1023" alt="image" src="https://github.com/user-attachments/assets/d09b5335-c229-483b-a5b9-99be8e16d3ff" />
 
 
-## Fully blown internal SDR (SDR Receiver needed of Course)
+## Fully blown internal SDR (SDR Receiver needed of Course) using our own code.
 <img width="1907" height="1021" alt="image" src="https://github.com/user-attachments/assets/2669fc8c-9eed-4804-9768-0d2d8181cf65" />
+
+## Configurable uploads to QRZ, LoTW, Clublog
+<img width="858" height="322" alt="image" src="https://github.com/user-attachments/assets/3a11fde5-a803-4d5b-8ae7-ff60ef06f2eb" />
+
+## WSJTX Integration
+<img width="879" height="203" alt="image" src="https://github.com/user-attachments/assets/c6a5e6d7-9ce1-414b-9b55-d5eb2eb9e02d" />
 
 
 # Architecture
