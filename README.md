@@ -111,3 +111,29 @@ As an alternative you can secure the https using cloudflare.
             Dashboard      Telnet Server    REST API     WebSocket
 
 
+## License
+
+SHACK-SERVER is free software: you can redistribute it and/or modify it under the terms of the **GNU Affero General Public License v3.0 only** (AGPL-3.0-only). See [LICENSE](LICENSE) for the full text.
+
+Copyright (C) 2025-2026 Christoph Graf, HB9ISO
+
+### License change
+
+Starting with the release following tag `v-gpl-final`, SHACK-SERVER is licensed under the AGPL-3.0. All versions up to and including `v-gpl-final` remain available under the GNU General Public License v3.0.
+
+**What this means for you as a user:** nothing changes. You can use, modify and run SHACK-SERVER for your own station or your club free of charge, as before.
+
+**What the AGPL adds:** if you modify SHACK-SERVER and make it available to others over a network (for example as a hosted service), you must also make your modified source code available to those users.
+
+### Commercial licensing
+
+If you want to use SHACK-SERVER under terms other than the AGPL-3.0, for example in a closed-source product or service, a commercial license is available. Contact: **license@shack-server.com**
+
+### Trademark
+
+"SHACK-SERVER" is the name of this project. The AGPL grants rights to the code, not to the name. Forks and modified versions must use a different name.
+
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first. All contributors must sign the [Contributor License Agreement](CLA.md) before a pull request can be merged.
+
