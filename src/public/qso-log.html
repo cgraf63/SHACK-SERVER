@@ -151,7 +151,11 @@ main { max-width:none !important; }
 .qso-log-call { font-weight:600; }
 .qsl-status { text-align:center; font-size:16px; width:45px; }
 .upload-status { white-space:nowrap; }
-.source-tag { display:inline-block; margin-left:4px; padding:0 5px; border-radius:4px; border:1px solid rgba(0,229,255,.45); color:#00e5ff; font-size:10px; font-weight:700; letter-spacing:.04em; vertical-align:middle; }
+.source-tag { display:inline-block; padding:1px 6px; border-radius:4px; border:1px solid #344754; color:#8fa3b2; font-size:11px; font-weight:700; letter-spacing:.03em; white-space:nowrap; cursor:default; }
+.source-tag.source-wsjtx { color:#00e5ff; border-color:rgba(0,229,255,.45); }
+.source-tag.source-spot { color:#d9b8ff; border-color:rgba(181,108,255,.45); }
+.source-tag.source-adif { color:#ffc400; border-color:rgba(255,196,0,.4); }
+.qso-log-source-filter { margin-right:8px; padding:9px 10px; border:1px solid #344754; border-radius:6px; background:#101c25; color:white; font:inherit; font-size:13px; }
 .upload-badge { display:inline-block; min-width:18px; margin-right:3px; padding:1px 4px; border-radius:4px; border:1px solid #344754; font-size:11px; font-weight:700; text-align:center; cursor:default; }
 .upload-badge.done { color:#39d98a; border-color:rgba(57,217,138,.45); }
 .upload-badge.pending { color:#8fa3b2; }
@@ -320,6 +324,18 @@ main { max-width:none !important; }
 
         <div class="qso-log-filter-row">
 
+            <select
+                id="qso-log-source-filter"
+                class="qso-log-source-filter"
+                title="Filter by source"
+            >
+                <option value="">All sources</option>
+                <option value="manual">Manual</option>
+                <option value="spot">Spot</option>
+                <option value="wsjtx">WSJT-X</option>
+                <option value="adif">ADIF import</option>
+            </select>
+
             <input
                 id="qso-log-search"
                 class="qso-log-search"
@@ -343,7 +359,8 @@ main { max-width:none !important; }
 <th data-sort="call">Call</th>
 <th data-sort="name">Name</th>
 <th data-sort="band">Band</th>
-<th data-sort="mode">Mode</th>
+<th data-sort="mode_label">Mode</th>
+<th data-sort="source_label" title="Where the QSO came from">Source</th>
 <th data-sort="frequency">Frequency</th>
 <th data-sort="rst_sent">RST</th>
 <th data-sort="country">Country</th>
@@ -353,7 +370,7 @@ main { max-width:none !important; }
 <th class="no-sort" title="Online logbook uploads">Upload</th>
 <th class="no-sort">Actions</th>
 </tr></thead>
-<tbody id="qso-log-body"><tr><td colspan="14" class="qso-log-empty">Loading QSOs...</td></tr></tbody>
+<tbody id="qso-log-body"><tr><td colspan="15" class="qso-log-empty">Loading QSOs...</td></tr></tbody>
 </table>
 </div>
 </section>
@@ -363,6 +380,33 @@ main { max-width:none !important; }
 let qsoRecords = [];
 let sortField = "qso_date";
 let sortDirection = "desc";
+
+/*
+    Display helpers: mode (USB/LSB shown as SSB, the stored value is
+    kept for exports) and source of the QSO.
+*/
+function modeLabel(mode) {
+    const text = String(mode || "").trim().toUpperCase();
+    return text === "USB" || text === "LSB" ? "SSB" : text;
+}
+
+function sourceInfo(spotSource) {
+    const text = String(spotSource || "").trim();
+    const upper = text.toUpperCase();
+    if (!text) return { key:"manual", label:"Manual", title:"Entered by hand" };
+    if (upper === "WSJT-X" || upper === "JTDX") return { key:"wsjtx", label:"WSJT-X", title:"Logged by WSJT-X / JTDX" };
+    if (upper === "ADIF") return { key:"adif", label:"ADIF", title:"Imported from an ADIF file" };
+    return { key:"spot", label:"Spot", title:`From a spot: ${text}` };
+}
+
+function addDisplayFields(qso) {
+    const source = sourceInfo(qso.spot_source);
+    qso.mode_label = modeLabel(qso.mode);
+    qso.source_key = source.key;
+    qso.source_label = source.label;
+    qso.source_title = source.title;
+    return qso;
+}
 
 /*
     Online logbook upload status per QSO (QRZ.com, ...)
@@ -411,13 +455,14 @@ async function loadQsoLog() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         qsoRecords = Array.isArray(data.qsos) ? data.qsos : [];
+        qsoRecords.forEach(addDisplayFields);
         await loadUploadStatus();
 
         renderQsoLog();
     } catch (error) {
         console.error("QSO LOG:", error);
         count.textContent = "Error loading log";
-        body.innerHTML = `<tr><td colspan="14" class="qso-log-empty">Could not load QSO log.</td></tr>`;
+        body.innerHTML = `<tr><td colspan="15" class="qso-log-empty">Could not load QSO log.</td></tr>`;
     }
 }
 
@@ -459,9 +504,16 @@ function renderQsoLog() {
     const searchText =
         search.value.trim().toLowerCase();
 
+    const sourceFilter =
+        document.getElementById("qso-log-source-filter")?.value || "";
+
     const filtered =
         qsoRecords.filter(
             qso => {
+
+                if (sourceFilter && qso.source_key !== sourceFilter) {
+                    return false;
+                }
 
                 if (!searchText) {
                     return true;
@@ -473,6 +525,8 @@ function renderQsoLog() {
                     qso.country,
                     qso.band,
                     qso.mode,
+                    qso.mode_label,
+                    qso.source_label,
                     qso.spot_source,
                     qso.dx_grid
                 ]
@@ -499,7 +553,7 @@ function renderQsoLog() {
     count.textContent = `${filtered.length} of ${qsoRecords.length} QSOs`;
 
     if (!filtered.length) {
-        body.innerHTML = `<tr><td colspan="14" class="qso-log-empty">No QSOs found.</td></tr>`;
+        body.innerHTML = `<tr><td colspan="15" class="qso-log-empty">No QSOs found.</td></tr>`;
         updateSortHeaders();
         return;
     }
@@ -511,7 +565,8 @@ function renderQsoLog() {
     <td class="qso-log-call">${escapeHtml(qso.call || "")}</td>
     <td>${escapeHtml(qso.name || "")}</td>
     <td>${escapeHtml(qso.band || "")}</td>
-    <td>${escapeHtml(qso.mode || "")}${String(qso.spot_source || "").toUpperCase() === "WSJT-X" ? ` <span class="source-tag" title="Logged by WSJT-X / JTDX">WSJT-X</span>` : ""}</td>
+    <td title="${escapeHtml(qso.mode || "")}">${escapeHtml(qso.mode_label)}</td>
+    <td><span class="source-tag source-${qso.source_key}" title="${escapeHtml(qso.source_title)}">${escapeHtml(qso.source_label)}</span></td>
     <td>${formatFrequency(qso.frequency)}</td>
     <td>${escapeHtml(qso.rst_sent || "")}/${escapeHtml(qso.rst_rcvd || "")}</td>
     <td>${qso.country_code ? `<img class="dx-flag" src="/assets/flags/${escapeHtml(qso.country_code)}.svg" alt="">` : ""}${escapeHtml(qso.country || "")}</td>
@@ -674,7 +729,8 @@ async function saveEditedQso(id) {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
         const index = qsoRecords.findIndex(q => Number(q.id) === Number(id));
-        if (index >= 0 && data.qso) qsoRecords[index] = data.qso;
+        if (index >= 0 && data.qso) qsoRecords[index] = addDisplayFields(data.qso);
+        await loadUploadStatus();
         closeEditQsoDialog();
         renderQsoLog();
     } catch (error) {
@@ -716,6 +772,13 @@ document.getElementById(
     "qso-log-search"
 ).addEventListener(
     "input",
+    renderQsoLog
+);
+
+document.getElementById(
+    "qso-log-source-filter"
+).addEventListener(
+    "change",
     renderQsoLog
 );
 
