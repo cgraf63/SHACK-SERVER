@@ -145,6 +145,8 @@ main { max-width:none !important; }
 .qso-log-table { width:100% !important; min-width:1100px !important; max-width:none !important; border-collapse:collapse; background:#0b151e; }
 .qso-log-table th { text-align:left; padding:6px 10px; border-bottom:1px solid #344754; color:#9fb1bd; font-size:13px; white-space:nowrap; cursor:pointer; user-select:none; }
 .qso-log-table th:hover { color:white; }
+/* Long names are cut (full name on hover) so the log fits 1920 px */
+.qso-log-table td.qso-log-name { max-width:220px; overflow:hidden; text-overflow:ellipsis; }
 .qso-log-table th.no-sort { cursor:default; }
 .qso-log-table td { padding:4px 10px; line-height:1.25; border-bottom:1px solid #24343f; white-space:nowrap; }
 .qso-log-table tbody tr:hover { background:rgba(255,255,255,.04); }
@@ -563,7 +565,7 @@ function renderQsoLog() {
     <td>${escapeHtml(qso.qso_date || "")}</td>
     <td>${escapeHtml(qso.time_on_utc || "")}</td>
     <td class="qso-log-call">${escapeHtml(qso.call || "")}</td>
-    <td>${escapeHtml(qso.name || "")}</td>
+    <td class="qso-log-name" title="${escapeHtml(qso.name || "")}">${escapeHtml(qso.name || "")}</td>
     <td>${escapeHtml(qso.band || "")}</td>
     <td title="${escapeHtml(qso.mode || "")}">${escapeHtml(qso.mode_label)}</td>
     <td><span class="source-tag source-${qso.source_key}" title="${escapeHtml(qso.source_title)}">${escapeHtml(qso.source_label)}</span></td>
