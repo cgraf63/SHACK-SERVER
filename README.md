@@ -14,6 +14,18 @@ Open-source platform for intelligent amateur radio information processing.
 
 ---
 
+## Try it - demo on Windows, macOS or Linux
+
+No Raspberry Pi and no transceiver needed. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), then run:
+
+```bash
+docker run -d --name shack-demo -p 3000:3000 ghcr.io/cgraf63/shack-server:demo
+```
+
+Open **http://localhost:3000**. The demo uses a simulated transceiver and real live DX spots; remote audio / transmit and online uploads are disabled and the log is limited. Remove it again with `docker rm -f shack-demo` (this also resets the demo data).
+
+For the full version on a Raspberry Pi see [docs/INSTALLATION_EN.md](docs/INSTALLATION_EN.md).
+
 ## Why SHACK-SERVER?
 
 Modern amateur radio operators receive information from many independent systems.

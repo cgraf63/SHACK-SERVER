@@ -11,6 +11,8 @@ import watchlistRouter from "./routes/watchlist.js";
 import systemRouter from "./routes/system.js";
 import diagnosticsRouter from "./routes/diagnostics.js";
 import settingsRouter from "./routes/settings.js";
+import { DEMO_MODE, DEMO_LIMITS } from "./services/demo/demo-mode.js";
+import { demoGuard, demoCounts } from "./services/demo/demo-guard.js";
 import uploadsRouter from "./routes/uploads.js";
 import wsjtxRouter from "./routes/wsjtx.js";
 import networkRouter from "./routes/network.js";
@@ -77,6 +79,29 @@ app.use(
         extended: true
     })
 );
+
+
+/*
+    Demo version (SHACK_DEMO=1): server-side limits before all routes,
+    and /api/demo for the DEMO banner in the web interface.
+*/
+
+app.get(
+    "/api/demo",
+    (_req, res) => {
+        res.set("Cache-Control", "no-store");
+        res.json({
+            demo: DEMO_MODE,
+            limits: DEMO_LIMITS,
+            counts: DEMO_MODE ? demoCounts() : null
+        });
+    }
+);
+
+if (DEMO_MODE) {
+    app.use(demoGuard);
+    console.log("DEMO MODE: limited demo version (SHACK_DEMO=1)");
+}
 
 
 /*

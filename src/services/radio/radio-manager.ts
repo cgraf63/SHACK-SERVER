@@ -221,7 +221,11 @@ export class RadioManager {
              * Exception: network connections (existing rigctld) have
              * no serial device of their own.
              */
-            if (!config.device && config.connection !== "network") {
+            if (
+                !config.device &&
+                config.connection !== "network" &&
+                config.protocol !== "demo"
+            ) {
                 continue;
             }
 

@@ -7,6 +7,7 @@ import { RgoOneService } from "./rgo-one.service.js";
 import { IcomService } from "./icom.service.js";
 import { QmxService } from "./qmx.service.js";
 import { HamlibService } from "./hamlib.service.js";
+import { DemoRadioService } from "./demo-radio.service.js";
 
 /*
  * Driver registry
@@ -57,9 +58,22 @@ interface RadioDriver extends RadioDriverInfo {
 }
 
 
+
 const YAESU_BAUD = [4800, 9600, 19200, 38400, 115200];
 
 const DRIVERS: RadioDriver[] = [
+
+    {
+        protocol: "demo",
+        label: "Demo transceiver (simulated)",
+        models: "No hardware - for testing and the demo version",
+        defaultBaudRate: 38400,
+        baudRates: [38400],
+        hint:
+            "Simulated transceiver: follows frequency and mode changes, " +
+            "nothing is sent to a real radio. No serial port needed.",
+        create: () => new DemoRadioService(),
+    },
 
     {
         protocol: "ftdx10",

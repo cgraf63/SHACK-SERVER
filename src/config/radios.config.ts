@@ -10,7 +10,8 @@ export interface RadioConfig {
         | "ftdx10"
         | "icom"
         | "qmx"
-        | "hamlib";
+        | "hamlib"
+        | "demo";
 
     device: string;
 

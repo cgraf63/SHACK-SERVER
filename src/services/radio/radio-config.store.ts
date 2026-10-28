@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { DEMO_MODE } from "../demo/demo-mode.js";
 import path from "node:path";
 
 import {
@@ -132,10 +133,23 @@ export class RadioConfigStore {
 
         if (!fs.existsSync(this.file)) {
 
-            const seeded: RadioConfigFile = {
-                activeRadioId: "",
-                radios: seedRadios.map(r => ({ ...r })),
-            };
+            /* Demo version: only the simulated transceiver. */
+            const seeded: RadioConfigFile = DEMO_MODE
+                ? {
+                    activeRadioId: "demo",
+                    radios: [{
+                        id: "demo",
+                        name: "DEMO TRANSCEIVER",
+                        protocol: "demo",
+                        device: "",
+                        baudRate: 38400,
+                        enabled: true,
+                    }],
+                }
+                : {
+                    activeRadioId: "",
+                    radios: seedRadios.map(r => ({ ...r })),
+                };
 
             this.data = seeded;
             this.fixActiveRadio();

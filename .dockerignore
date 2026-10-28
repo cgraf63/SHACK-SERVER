@@ -1,0 +1,12 @@
+# Only what the image needs - never local data, keys or logs
+**
+!package.json
+!package-lock.json
+!tsconfig.json
+!src/**
+!callsignprefixes_iso_lower_ready.csv
+!data/cty.dat
+src/**/*.bak*
+src/**/*.backup*
+src/**/*before*
+src/services/sdr/native/shack-sdr

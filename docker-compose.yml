@@ -1,11 +1,14 @@
+# SHACK-SERVER demo (Docker Desktop on Windows / macOS / Linux)
+#
+#   docker compose up -d      -> http://localhost:3000
+#   docker compose down       -> stop and remove (demo data is reset)
+#
+# The full version runs on a Raspberry Pi: scripts/install.sh
+
 services:
-  shack-server:
-    build: ./backend
-    container_name: shack-server
-    restart: unless-stopped
+  shack-demo:
+    image: ghcr.io/cgraf63/shack-server:demo
+    container_name: shack-demo
     ports:
-      - "8000:8000"
-    volumes:
-      - ./backend/app:/app/app
-      - ./backend/data:/app/data
-      - ./backend/logs:/app/logs
+      - "3000:3000"
+    restart: unless-stopped
