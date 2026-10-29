@@ -147,6 +147,34 @@ export class GeoEnrichmentService {
             )
         ) {
 
+            /*
+                Older cache entries may lack the country code
+                (e.g. TC3ATA before the cty.dat fallback) - add it.
+            */
+            if (!cached.countryCode) {
+
+                const info =
+                    this.resolver.resolve(
+                        normalized
+                    );
+
+                if (info?.countryCode) {
+
+                    cached.countryCode =
+                        info.countryCode;
+
+                    if (!cached.country) {
+                        cached.country = info.country;
+                    }
+
+                    this.cache.set(
+                        cached
+                    );
+
+                }
+
+            }
+
             return cached;
 
         }
