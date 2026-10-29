@@ -24,7 +24,7 @@ docker run -d --name shack-demo -p 3000:3000 ghcr.io/cgraf63/shack-server:demo
 
 Open **http://localhost:3000**. The demo uses a simulated transceiver and real live DX spots; remote audio / transmit and online uploads are disabled and the log is limited. Remove it again with `docker rm -f shack-demo` (this also resets the demo data).
 
-For the full version on a Raspberry Pi see [docs/INSTALLATION_EN.md](docs/INSTALLATION_EN.md).
+Details, limits and troubleshooting: [docs/DEMO_DOCKER.md](docs/DEMO_DOCKER.md). For the full version on a Raspberry Pi see [docs/INSTALLATION_EN.md](docs/INSTALLATION_EN.md).
 
 ## Why SHACK-SERVER?
 
