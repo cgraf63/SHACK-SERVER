@@ -11,6 +11,39 @@ const qrzService =
 
 const callsignResolverService =
     new CallsignResolverService();
+
+
+/*
+    Fill in missing country codes (flags) of existing QSOs once at
+    startup, e.g. special calls like TC0ATA that the prefix table
+    did not know.
+*/
+try {
+
+    let filled = 0;
+
+    for (const qso of qsoService.getQsosWithoutCountryCode()) {
+
+        const code =
+            callsignResolverService.resolve(qso.call)?.countryCode;
+
+        if (code) {
+            qsoService.setCountryCode(qso.id, code);
+            filled++;
+        }
+
+    }
+
+    if (filled) {
+        console.log(`QSO: country code added to ${filled} QSO(s)`);
+    }
+
+}
+catch (error) {
+
+    console.error("QSO country code backfill failed:", error);
+
+}
 /*
     Create QSO
 */
@@ -237,10 +270,12 @@ router.post(
                             : null,
 
 
+/* Flag code from the browser, else from the callsign (prefix / cty.dat) */
 country_code:
-    typeof country_code === "string"
+    (typeof country_code === "string" && country_code.trim()
         ? country_code.trim().toLowerCase()
-        : null,
+        : callsignResolverService.resolve(String(call || ""))?.countryCode) ||
+    null,
 
 
                     dx_grid:

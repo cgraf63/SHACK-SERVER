@@ -709,7 +709,27 @@ const rows =
    }
 
 
-    deleteQso(
+    /* QSOs without flag code (backfill at startup). */
+    getQsosWithoutCountryCode(): Array<{ id: number; call: string }> {
+
+        return this.db.prepare(`
+            SELECT id, call
+            FROM qso
+            WHERE country_code IS NULL OR TRIM(country_code) = ''
+        `).all() as unknown as Array<{ id: number; call: string }>;
+
+    }
+
+    setCountryCode(id: number, countryCode: string): void {
+
+        this.db.prepare(`
+            UPDATE qso SET country_code = ? WHERE id = ?
+        `).run(countryCode.toLowerCase(), id);
+
+    }
+
+
+        deleteQso(
         id: number
     ): boolean {
 

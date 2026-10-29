@@ -2679,8 +2679,144 @@ private loadPrefixDatabase(): void {
 
 
 
+        /*
+         * Not in the prefix table (e.g. TC0ATA - Turkey also uses
+         * TB, TC, YM): fall back to cty.dat (complete DXCC prefix list,
+         * data/cty.dat) and take the ISO code of the entity's main prefix.
+         */
+        return this.resolveFromCty(normalized);
+
+    }
+
+
+    /* ------------------------------------------------------------------
+     * cty.dat fallback
+     * ------------------------------------------------------------------ */
+
+    private cty: {
+        exact: Map<string, CtyEntity>;
+        prefixes: Array<[string, CtyEntity]>;
+    } | null = null;
+
+    private loadCty(): void {
+
+        this.cty = { exact: new Map(), prefixes: [] };
+
+        const file = path.resolve(process.cwd(), "data", "cty.dat");
+
+        if (!fs.existsSync(file)) {
+            return;
+        }
+
+        const content = fs.readFileSync(file, "utf8");
+
+        for (const record of content.split(";")) {
+
+            const text = record.trim();
+
+            if (!text) {
+                continue;
+            }
+
+            /* Header: Name: CQ: ITU: Cont: Lat: Lon: GMT: Prefix:  then aliases */
+            const header = text.split(":");
+
+            if (header.length < 9) {
+                continue;
+            }
+
+            const entity: CtyEntity = {
+                name: header[0]!.trim(),
+                continent: header[3]!.trim(),
+                mainPrefix: header[7]!.trim().replace(/^\*/, "").toUpperCase()
+            };
+
+            const aliases = header.slice(8).join(":");
+
+            for (const raw of aliases.split(",")) {
+
+                /* strip overrides: (cq) [itu] <lat/lon> {cont} ~gmt~ */
+                const alias = raw.trim().replace(/[([<{~].*$/, "").toUpperCase();
+
+                if (!alias) {
+                    continue;
+                }
+
+                if (alias.startsWith("=")) {
+                    this.cty.exact.set(alias.slice(1), entity);
+                }
+                else {
+                    this.cty.prefixes.push([alias, entity]);
+                }
+
+            }
+
+        }
+
+        this.cty.prefixes.sort((a, b) => b[0].length - a[0].length);
+
+    }
+
+    private resolveFromCty(call: string): CallsignInfo | null {
+
+        if (!this.cty) {
+            this.loadCty();
+        }
+
+        const cty = this.cty!;
+
+        /* portable prefix in front (e.g. A61/HB9ISO) counts, /P etc. not */
+        const parts = call.split("/");
+        const candidates = [call];
+
+        if (parts.length > 1) {
+            const [first, second] = parts;
+            if (first && second && first.length < second.length) {
+                candidates.push(first);
+            }
+            else if (first) {
+                candidates.push(first);
+            }
+        }
+
+        for (const candidate of candidates) {
+
+            const entity =
+                cty.exact.get(candidate) ??
+                cty.prefixes.find(([prefix]) => candidate.startsWith(prefix))?.[1];
+
+            if (!entity) {
+                continue;
+            }
+
+            /* ISO code via the entity's main prefix in the prefix table */
+            const known =
+                this.database[entity.mainPrefix] ??
+                Object.entries(this.database)
+                    .filter(([prefix]) => entity.mainPrefix.startsWith(prefix))
+                    .sort((a, b) => b[0].length - a[0].length)[0]?.[1];
+
+            if (!known?.countryCode) {
+                return null;
+            }
+
+            return {
+                call,
+                country: known.country || entity.name,
+                countryCode: known.countryCode,
+                continent: known.continent || entity.continent
+            };
+
+        }
+
         return null;
 
     }
 
+}
+
+interface CtyEntity {
+    name: string;
+    continent: string;
+    mainPrefix: string;
 }
