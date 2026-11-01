@@ -1,15 +1,15 @@
 import { Router } from "express";
 
+/* Shared instance: sees changes made in Settings immediately. */
 import {
-    SettingsService
+    settingsService
 } from "../services/settings/settings.service.js";
 
 
 const router = Router();
 
 
-const settingsService =
-    new SettingsService();
+
 
 
 router.get(

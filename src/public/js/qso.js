@@ -1,4 +1,30 @@
 let activeQsoSpot = null;
+
+/* Own operator name for the QSO (Settings → Station → Operator). */
+let activeOperatorName = "";
+
+/* Band from a frequency in kHz (HF/6m/2m/70cm amateur bands). */
+function qsoBandFromKHz(kHz) {
+
+    const f = Number(kHz);
+
+    if (!Number.isFinite(f) || f <= 0) {
+        return "";
+    }
+
+    const bands = [
+        [1800, 2000, "160m"], [3500, 4000, "80m"], [5060, 5450, "60m"],
+        [7000, 7300, "40m"], [10100, 10150, "30m"], [14000, 14350, "20m"],
+        [18068, 18168, "17m"], [21000, 21450, "15m"], [24890, 24990, "12m"],
+        [28000, 29700, "10m"], [50000, 54000, "6m"], [144000, 148000, "2m"],
+        [420000, 450000, "70cm"]
+    ];
+
+    const band = bands.find(([low, high]) => f >= low && f <= high);
+
+    return band ? band[2] : "";
+
+}
 let activeQsoStation = null;
 let editingQsoId = null;
 
@@ -305,8 +331,10 @@ const formFrequencyKHz =
         ? Number(editQso.frequency) * 1000
         : Number(spot.frequency);
 
+/* Band follows the frequency (a spot's band field can be wrong). */
 const formBand =
     editQso?.band ||
+    qsoBandFromKHz(formFrequencyKHz) ||
     spot.band ||
     "";
 
@@ -356,6 +384,11 @@ const formNotes =
     editQso
         ? (editQso.notes || "")
         : "";
+
+activeOperatorName =
+    editQso?.operator_name ||
+    stationConfig.name ||
+    "";
 
 const formMyCallsign =
     editQso?.my_callsign ||
@@ -1123,10 +1156,14 @@ async function saveQso() {
                 .trim()
                 .toUpperCase() || "",
 
-                operator_name:
-    activeQsoStation?.name ||
-    activeQsoStation?.operator_name ||
-    "",
+        /*
+            Own operator name (Settings → Station). Not activeQsoStation:
+            that object is merged with the DX station's QRZ data.
+        */
+        operator_name:
+            activeOperatorName ||
+            document.getElementById("qso-my-callsign")?.value.trim().toUpperCase() ||
+            "",
 
         name:
             document
@@ -1572,3 +1609,28 @@ function escapeQsoHtml(value) {
 */
 window.openQsoDialog =
     openQsoDialog;
+
+
+/*
+    Band follows the frequency while typing in the QSO dialog.
+*/
+document.addEventListener(
+    "input",
+    event => {
+
+        if (event.target?.id !== "qso-frequency") {
+            return;
+        }
+
+        const band =
+            qsoBandFromKHz(event.target.value);
+
+        const bandInput =
+            document.getElementById("qso-band");
+
+        if (band && bandInput) {
+            bandInput.value = band;
+        }
+
+    }
+);

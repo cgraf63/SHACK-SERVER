@@ -1,7 +1,6 @@
 import * as net from "node:net";
-import { SettingsService } from "../settings/settings.service.js";
-
-const settingsService = new SettingsService();
+/* Shared instance: sees changes made in Settings immediately. */
+import { settingsService } from "../settings/settings.service.js";
 
 interface PotaSpot {
 
