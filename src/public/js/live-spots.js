@@ -1373,7 +1373,7 @@ function renderLiveSpots() {
 
 
 
-                <td>
+                <td class="azimuth-cell" data-azimuth="${spot.azimuth ?? ""}">
                     ${
                         spot.azimuth !== undefined
                         ?
@@ -1484,8 +1484,26 @@ function renderLiveSpots() {
                             return;
                         }
 
+                        /* Azimuth: turn the antenna when a rotator is configured */
+                        if (
+                            cell.classList.contains("azimuth-cell") &&
+                            cell.dataset.azimuth !== "" &&
+                            window.shackRotator?.isEnabled()
+                        ) {
+                            window.shackRotator.turn(Number(cell.dataset.azimuth));
+                            return;
+                        }
+
                         tuneCellsButton.click();
                     });
+
+                    if (cell.classList.contains("azimuth-cell")) {
+                        cell.addEventListener("mouseenter", () => {
+                            cell.title = window.shackRotator?.isEnabled() && cell.dataset.azimuth !== ""
+                                ? `Click to turn the antenna to ${cell.dataset.azimuth}°`
+                                : "Click to tune radio";
+                        });
+                    }
                 }
             }
 
@@ -2775,6 +2793,15 @@ alt="${spot.country || ""}"
                 <span>
                     ${azimuth}
                 </span>
+
+                ${
+                    spot.azimuth !== undefined && window.shackRotator?.isEnabled()
+                        ? `<span>
+                               <button type="button" class="rot-popup-btn" data-rotator-az="${spot.azimuth}" title="Turn the antenna (short path)">TURN ${spot.azimuth}°</button>
+                               <button type="button" class="rot-popup-btn" data-rotator-az="${(Number(spot.azimuth) + 180) % 360}" title="Turn the antenna (long path)">LP ${(Number(spot.azimuth) + 180) % 360}°</button>
+                           </span>`
+                        : ""
+                }
 
                 ${activity}
 

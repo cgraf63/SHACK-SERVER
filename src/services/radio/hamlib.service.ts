@@ -679,7 +679,7 @@ export class HamlibService implements RadioService {
 /* ---------------------------------------------------------------------- */
 
 /* Ask the OS for a free local TCP port. */
-function freeTcpPort(): Promise<number> {
+export function freeTcpPort(): Promise<number> {
 
     return new Promise((resolve, reject) => {
 
@@ -703,7 +703,7 @@ function freeTcpPort(): Promise<number> {
  *   rig_open: error = IO error
  * So the concrete OS error wins; otherwise the error lines are joined.
  */
-function lastMeaningfulLine(output: string): string {
+export function lastMeaningfulLine(output: string): string {
 
     const lines = output
         .split(/\r?\n/)

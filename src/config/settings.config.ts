@@ -71,6 +71,24 @@ export interface ShackSettings {
         /* empty = unicast; e.g. 224.0.0.1 when JTAlert/GridTracker share the stream */
         multicastGroup: string;
     };
+    rotator: RotatorSettings;
+}
+
+/*
+ * Antenna rotator via Hamlib (rotctld).
+ *   serial:  SHACK-SERVER starts its own rotctld for the controller
+ *   network: connect to a rotctld that is already running
+ */
+export interface RotatorSettings {
+    enabled: boolean;
+    connection: "serial" | "network";
+    /* Hamlib rotator model number (rotctl -l) */
+    model: number;
+    device: string;
+    /* 0 = Hamlib default for this model */
+    baudRate: number;
+    host: string;
+    port: number;
 }
 
 export interface UploadSettings {
@@ -150,6 +168,15 @@ export const shackSettings: ShackSettings = {
         enabled: false,
         port: 2237,
         multicastGroup: ""
+    },
+    rotator: {
+        enabled: false,
+        connection: "serial",
+        model: 0,
+        device: "",
+        baudRate: 0,
+        host: "127.0.0.1",
+        port: 4533
     },
     dxspiders: [
         {

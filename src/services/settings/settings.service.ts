@@ -32,6 +32,26 @@ function normalizeWsjtx(raw: any): ShackSettings["wsjtx"] {
 
 }
 
+export function normalizeRotator(raw: any): ShackSettings["rotator"] {
+
+    const model = Number(raw?.model);
+    const baud = Number(raw?.baudRate);
+    const port = Number(raw?.port);
+    const device = String(raw?.device ?? "").trim();
+    const host = String(raw?.host ?? "").trim();
+
+    return {
+        enabled: raw?.enabled === true,
+        connection: raw?.connection === "network" ? "network" : "serial",
+        model: Number.isInteger(model) && model > 0 ? model : 0,
+        device: device.startsWith("/dev/") ? device : "",
+        baudRate: Number.isInteger(baud) && baud >= 0 && baud <= 1_000_000 ? baud : 0,
+        host: /^[A-Za-z0-9.\-:]+$/.test(host) ? host : "127.0.0.1",
+        port: Number.isInteger(port) && port > 0 && port < 65536 ? port : 4533
+    };
+
+}
+
 function defaultModules(): ShackSettings["modules"] {
 
     return {
@@ -91,6 +111,9 @@ export class SettingsService {
             wsjtx: {
                 ...this.settings.wsjtx
             },
+            rotator: {
+                ...this.settings.rotator
+            },
 
             dxspiders:
                 this.settings.dxspiders.map(
@@ -133,6 +156,11 @@ export class SettingsService {
                 normalizeWsjtx({
                     ...this.settings.wsjtx,
                     ...((settings as any).wsjtx ?? {})
+                }),
+            rotator:
+                normalizeRotator({
+                    ...this.settings.rotator,
+                    ...((settings as any).rotator ?? {})
                 }),
 
             dxspiders:
@@ -230,6 +258,11 @@ export class SettingsService {
                             ...shackSettings.wsjtx,
                             ...(parsed.wsjtx ?? {})
                         }),
+                    rotator:
+                        normalizeRotator({
+                            ...shackSettings.rotator,
+                            ...(parsed.rotator ?? {})
+                        }),
 
 
                     dxspiders:
@@ -271,6 +304,9 @@ export class SettingsService {
             },
             wsjtx: {
                 ...shackSettings.wsjtx
+            },
+            rotator: {
+                ...shackSettings.rotator
             },
             dxspiders:
                 shackSettings.dxspiders.map(

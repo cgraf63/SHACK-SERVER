@@ -142,6 +142,10 @@ async function loadSettings() {
             settingsData.wsjtx
         );
 
+        applyRotatorSettings(
+            settingsData.rotator
+        );
+
 
         const callsign =
             document.getElementById(
@@ -599,6 +603,9 @@ async function saveSettings() {
 
         },
 
+        rotator:
+            collectRotatorSettings(),
+
         wsjtx: {
 
             enabled:
@@ -679,6 +686,7 @@ async function saveSettings() {
         );
 
         setTimeout(loadWsjtxStatus, 800);
+        setTimeout(loadRotatorStatus, 2500);
 
 
         /*
@@ -846,6 +854,8 @@ function initializeSettingsModal() {
 
 
     initUploadSettings();
+
+    initRotatorSettings();
 
 
     settingsButton.addEventListener(
@@ -1417,5 +1427,278 @@ async function loadWsjtxStatus() {
         info.textContent = "";
 
     }
+
+}
+
+
+
+/*
+    =====================================================
+    Rotator (Hamlib rotctld)
+    =====================================================
+*/
+
+let rotatorModels = [];
+let rotatorPorts = [];
+let rotatorWanted = null;
+
+function rotatorConnection() {
+
+    return document.querySelector('input[name="rotator-connection"]:checked')?.value || "serial";
+
+}
+
+function updateRotatorForm() {
+
+    document
+        .querySelector(".rotator-form")
+        ?.classList.toggle("connection-network", rotatorConnection() === "network");
+
+}
+
+function fillRotatorManufacturers(selectedModel) {
+
+    const mfgSelect = document.getElementById("rotator-mfg");
+
+    if (!mfgSelect) return;
+
+    const manufacturers =
+        [...new Set(rotatorModels.map(model => model.mfg))].sort((a, b) => a.localeCompare(b));
+
+    const current =
+        rotatorModels.find(model => model.id === Number(selectedModel))?.mfg || "";
+
+    mfgSelect.innerHTML =
+        `<option value="">- choose -</option>` +
+        manufacturers
+            .map(mfg => `<option ${mfg === current ? "selected" : ""}>${escapeHtml(mfg)}</option>`)
+            .join("");
+
+    fillRotatorModels(selectedModel);
+
+}
+
+function fillRotatorModels(selectedModel) {
+
+    const mfg = document.getElementById("rotator-mfg")?.value || "";
+    const modelSelect = document.getElementById("rotator-model");
+
+    if (!modelSelect) return;
+
+    const models = rotatorModels.filter(model => model.mfg === mfg);
+
+    modelSelect.innerHTML =
+        (models.length ? "" : `<option value="">- choose manufacturer -</option>`) +
+        models
+            .map(model =>
+                `<option value="${model.id}" ${model.id === Number(selectedModel) ? "selected" : ""}>` +
+                `${escapeHtml(model.model)}${model.status && model.status !== "Stable" ? ` (${escapeHtml(model.status)})` : ""}` +
+                `</option>`
+            )
+            .join("");
+
+}
+
+function fillRotatorPorts(selectedDevice) {
+
+    const select = document.getElementById("rotator-device");
+
+    if (!select) return;
+
+    const options = rotatorPorts.map(port =>
+        `<option value="${escapeHtml(port.path)}" ${port.path === selectedDevice ? "selected" : ""}>` +
+        `${escapeHtml(port.label || port.path)}${port.inUseBy ? ` - used by ${escapeHtml(port.inUseBy)}` : ""}` +
+        `</option>`
+    );
+
+    if (selectedDevice && !rotatorPorts.some(port => port.path === selectedDevice)) {
+        options.unshift(`<option value="${escapeHtml(selectedDevice)}" selected>${escapeHtml(selectedDevice)} (not connected)</option>`);
+    }
+
+    select.innerHTML =
+        options.length
+            ? `<option value="">- choose -</option>` + options.join("")
+            : `<option value="">No serial port found</option>`;
+
+}
+
+async function loadRotatorLists(rotator) {
+
+    try {
+
+        const [modelsResponse, portsResponse] = await Promise.all([
+            fetch("/api/rotator/models", { cache: "no-store" }),
+            fetch("/api/radios/ports", { cache: "no-store" })
+        ]);
+
+        const models = modelsResponse.ok ? await modelsResponse.json() : null;
+        const ports = portsResponse.ok ? await portsResponse.json() : [];
+
+        rotatorModels = Array.isArray(models?.models) ? models.models : [];
+        rotatorPorts = Array.isArray(ports) ? ports : (Array.isArray(ports?.data) ? ports.data : []);
+
+        if (models && !models.installed) {
+            showRotatorStatus("err", models.error || "Hamlib is not installed");
+        }
+
+    }
+    catch (error) {
+
+        rotatorModels = [];
+        rotatorPorts = [];
+
+    }
+
+    fillRotatorManufacturers(rotator?.model);
+    fillRotatorPorts(rotator?.device || "");
+
+}
+
+function showRotatorStatus(kind, text) {
+
+    const info = document.getElementById("rotator-status");
+
+    if (info) {
+        info.innerHTML = kind
+            ? `<span class="${kind}">${kind === "ok" ? "✔" : "✖"} ${escapeHtml(text)}</span>`
+            : escapeHtml(text);
+    }
+
+}
+
+async function loadRotatorStatus() {
+
+    try {
+
+        const response = await fetch("/api/rotator/status", { cache: "no-store" });
+
+        if (!response.ok) return;
+
+        const status = await response.json();
+
+        if (!status.enabled) {
+            showRotatorStatus("", "Off");
+        }
+        else if (status.connected) {
+            showRotatorStatus("ok", `Connected - antenna at ${status.azimuth ?? "?"}°`);
+        }
+        else {
+            showRotatorStatus("err", status.error || "Not connected");
+        }
+
+    }
+    catch (error) {
+        // ignore
+    }
+
+}
+
+function applyRotatorSettings(rotator) {
+
+    rotatorWanted = rotator || {};
+
+    const enabled = document.getElementById("rotator-enabled");
+    const host = document.getElementById("rotator-host");
+    const port = document.getElementById("rotator-port");
+    const baud = document.getElementById("rotator-baud");
+
+    if (enabled) enabled.checked = rotatorWanted.enabled === true;
+    if (host) host.value = rotatorWanted.host || "127.0.0.1";
+    if (port) port.value = rotatorWanted.port || 4533;
+    if (baud) baud.value = String(rotatorWanted.baudRate || 0);
+
+    const radio = document.querySelector(
+        `input[name="rotator-connection"][value="${rotatorWanted.connection === "network" ? "network" : "serial"}"]`
+    );
+
+    if (radio) radio.checked = true;
+
+    updateRotatorForm();
+    void loadRotatorLists(rotatorWanted);
+    void loadRotatorStatus();
+
+}
+
+function collectRotatorSettings() {
+
+    return {
+
+        enabled:
+            document.getElementById("rotator-enabled")?.checked ?? false,
+
+        connection:
+            rotatorConnection(),
+
+        model:
+            Number(document.getElementById("rotator-model")?.value) || 0,
+
+        device:
+            document.getElementById("rotator-device")?.value || "",
+
+        baudRate:
+            Number(document.getElementById("rotator-baud")?.value) || 0,
+
+        host:
+            document.getElementById("rotator-host")?.value.trim() || "127.0.0.1",
+
+        port:
+            Number(document.getElementById("rotator-port")?.value) || 4533
+
+    };
+
+}
+
+function initRotatorSettings() {
+
+    document
+        .querySelectorAll('input[name="rotator-connection"]')
+        .forEach(input => input.addEventListener("change", updateRotatorForm));
+
+    document
+        .getElementById("rotator-mfg")
+        ?.addEventListener("change", () => fillRotatorModels(0));
+
+    document
+        .getElementById("rotator-ports-refresh")
+        ?.addEventListener("click", () => {
+            const device = document.getElementById("rotator-device")?.value || "";
+            void loadRotatorLists({ ...collectRotatorSettings(), device });
+        });
+
+    document
+        .getElementById("rotator-test")
+        ?.addEventListener("click", async event => {
+
+            const button = event.currentTarget;
+
+            button.disabled = true;
+            showRotatorStatus("", "Testing...");
+
+            try {
+
+                const response =
+                    await fetch("/api/rotator/test", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(collectRotatorSettings())
+                    });
+
+                const result = await response.json();
+
+                showRotatorStatus(result.ok ? "ok" : "err", result.message || result.error || "");
+
+            }
+            catch (error) {
+
+                showRotatorStatus("err", error.message);
+
+            }
+            finally {
+
+                button.disabled = false;
+
+            }
+
+        });
 
 }

@@ -30,6 +30,10 @@ import {
     wsjtxService
 } from "./services/wsjtx/wsjtx.service.js";
 
+import {
+    rotatorService
+} from "./services/rotator/rotator.service.js";
+
 import "./services/rbn/rbn-instance.js";
 
 import "./services/telnet/telnet-server.js";
@@ -50,6 +54,9 @@ else {
 
     /* WSJT-X / JTDX: QSOs logged there arrive via UDP */
     wsjtxService.start();
+
+    /* Antenna rotator (Hamlib rotctld) */
+    rotatorService.start();
 
 }
 

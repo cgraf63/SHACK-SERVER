@@ -30,6 +30,9 @@ const BLOCKED: Array<[string, RegExp]> = [
        beyond frequency / mode / band */
     ["POST", /^\/api\/radio\/(ptt|cw-memory|tune-start|monitor|power|dsp-control|filter-gain|vfo-control|vfo|split|split-frequency|split-up5)$/],
 
+    /* Antenna rotator */
+    ["POST", /^\/api\/rotator\//],
+
     /* Online logbooks */
     ["POST", /^\/api\/uploads\//],
 

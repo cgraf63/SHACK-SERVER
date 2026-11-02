@@ -562,6 +562,117 @@
 
 
     <!-- =========================
+         ROTATOR (Hamlib rotctld)
+         ========================= -->
+
+    <section class="settings-section" data-demo-hide>
+
+        <h2>Rotator</h2>
+
+        <p class="radio-settings-intro">
+            Antenna rotator via Hamlib (Yaesu GS-232, SPID Rot2Prog, Hy-Gain DCU-1,
+            ERC, K3NG and many more). Turn the antenna from the live spots
+            (click on the azimuth) or from the spot details.
+        </p>
+
+        <label class="source-switch">
+            <input id="rotator-enabled" type="checkbox">
+            <span>Use a rotator</span>
+        </label>
+
+        <div class="rotator-form">
+
+            <label>Connection</label>
+            <div class="rotator-connection">
+                <label class="radio-check">
+                    <input type="radio" name="rotator-connection" value="serial" checked>
+                    Controller on a serial port (SHACK-SERVER starts rotctld)
+                </label>
+                <label class="radio-check">
+                    <input type="radio" name="rotator-connection" value="network">
+                    Existing rotctld
+                </label>
+            </div>
+
+            <label class="rotator-serial" for="rotator-mfg">Manufacturer</label>
+            <select id="rotator-mfg" class="rotator-serial"></select>
+
+            <label class="rotator-serial" for="rotator-model">Model</label>
+            <select id="rotator-model" class="rotator-serial"></select>
+
+            <label class="rotator-serial" for="rotator-device">Serial port</label>
+            <div class="rotator-serial rotator-port-row">
+                <select id="rotator-device"></select>
+                <button id="rotator-ports-refresh" type="button" class="settings-secondary-button">Refresh</button>
+            </div>
+
+            <label class="rotator-serial" for="rotator-baud">Baud rate</label>
+            <select id="rotator-baud" class="rotator-serial">
+                <option value="0">Model default</option>
+                <option>600</option>
+                <option>1200</option>
+                <option>2400</option>
+                <option>4800</option>
+                <option>9600</option>
+                <option>19200</option>
+                <option>38400</option>
+                <option>57600</option>
+                <option>115200</option>
+            </select>
+
+            <label class="rotator-network" for="rotator-host">rotctld host</label>
+            <input id="rotator-host" class="rotator-network" type="text" placeholder="127.0.0.1">
+
+            <label class="rotator-network" for="rotator-port">rotctld port</label>
+            <input id="rotator-port" class="rotator-network" type="number" min="1" max="65535" placeholder="4533">
+
+            <span></span>
+            <div>
+                <button id="rotator-test" type="button" class="settings-secondary-button">Test</button>
+            </div>
+
+        </div>
+
+        <div id="rotator-status" class="upload-service-info"></div>
+
+        <style>
+            .rotator-form {
+                display: grid;
+                grid-template-columns: 120px minmax(0, 420px);
+                gap: 8px 14px;
+                align-items: center;
+                margin: 10px 0 0 28px;
+            }
+            .rotator-form > label { font-size: 13px; color: #9fb1bd; }
+            .rotator-form select,
+            .rotator-form input[type="text"],
+            .rotator-form input[type="number"] {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 7px 10px;
+                border: 1px solid var(--border-color, #303640);
+                border-radius: 5px;
+                background: rgba(255, 255, 255, 0.04);
+                color: inherit;
+                font: inherit;
+                font-size: 13px;
+            }
+            .rotator-form select option { background: #15191f; color: #e6edf3; }
+            .rotator-connection { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+            .rotator-port-row { display: flex; gap: 8px; }
+            .rotator-port-row select { flex: 1; }
+            .rotator-form.connection-network .rotator-serial { display: none; }
+            .rotator-form:not(.connection-network) .rotator-network { display: none; }
+            #rotator-status { margin-left: 28px; }
+            @media (max-width: 700px) {
+                .rotator-form { grid-template-columns: 1fr; margin-left: 0; }
+            }
+        </style>
+
+    </section>
+
+
+    <!-- =========================
          OPTIONAL MODULES
          ========================= -->
 

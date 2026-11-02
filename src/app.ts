@@ -15,6 +15,7 @@ import { DEMO_MODE, DEMO_LIMITS } from "./services/demo/demo-mode.js";
 import { demoGuard, demoCounts } from "./services/demo/demo-guard.js";
 import uploadsRouter from "./routes/uploads.js";
 import wsjtxRouter from "./routes/wsjtx.js";
+import rotatorRouter from "./routes/rotator.js";
 import networkRouter from "./routes/network.js";
 import indexRouter from "./routes/index.js";
 import propagationRouter from "./routes/propagation.js";
@@ -173,6 +174,13 @@ app.use(
 app.use(
     "/api/wsjtx",
     wsjtxRouter
+);
+
+
+// Antenna rotator (Hamlib rotctld)
+app.use(
+    "/api/rotator",
+    rotatorRouter
 );
 
 

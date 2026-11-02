@@ -161,7 +161,7 @@ sudo apt install -y git curl ca-certificates gnupg build-essential netcat-openbs
 | `git` | Get and update the code from GitHub |
 | `build-essential` | Fallback in case an npm package has to be compiled |
 | `netcat-openbsd` | Connection tests (`nc`) |
-| `libhamlib-utils` | Hamlib (`rigctl`, `rigctld`) for the Hamlib transceiver driver |
+| `libhamlib-utils` | Hamlib (`rigctl`, `rigctld`, `rotctld`) for the Hamlib transceiver driver and the antenna rotator |
 | `avahi-daemon` | Reachable as `<hostname>.local` in the home network |
 
 ---
@@ -491,6 +491,20 @@ The transceiver reconnects automatically when it is switched on or the USB cable
 ### Sharing the transceiver with other programs
 
 A serial port can only be opened by one program at a time. If the transceiver should also be controlled by WSJT-X or a logging program, start a shared `rigctld` and in SHACK-SERVER choose the driver **Hamlib** with the connection **"Existing rigctld"** (host and port, default 4532).
+
+### Antenna rotator (optional)
+
+SHACK-SERVER can turn the antenna through Hamlib (`rotctld`, part of `libhamlib-utils`). Supported are all controllers known to Hamlib, e.g. Yaesu GS-232, SPID Rot2Prog, Hy-Gain DCU-1, ERC, K3NG.
+
+1. **Settings → Rotator** → tick **Use a rotator**.
+2. **Controller on a serial port**: choose manufacturer, model and port (baud rate usually "Model default"). SHACK-SERVER starts `rotctld` itself.
+   **Existing rotctld**: host and port (default 4533) of a `rotctld` that is already running, e.g. one shared with PSTRotator or N1MM.
+3. **Test** shows the current antenna direction.
+4. **Save**.
+
+The dashboard then shows a compass with a STOP button in the Station area. A click on the **AZ** value of a spot turns the antenna; the spot details (VIEW) offer short path and long path.
+
+To try it without hardware, run `rotctld -m 1 &` (Hamlib dummy rotator) and use **Existing rotctld** with `127.0.0.1:4533`.
 
 ### Check
 
