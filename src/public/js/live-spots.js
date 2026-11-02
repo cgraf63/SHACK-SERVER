@@ -1327,7 +1327,7 @@ function renderLiveSpots() {
                     ? `<span style="color:white; font-size:12px; margin-right:5px;">▲</span>`
                     : ""
         }
-        ${spot.call}
+        <span class="spot-call-link" title="Click for details">${spot.call}</span>
     </span>
 
 </td>
@@ -1447,21 +1447,19 @@ function renderLiveSpots() {
                 row
             );
 
-            /* CLICK ON THE CALLSIGN OPENS THE VIEW POPUP */
-            const callCell = row.cells[0];
+            /*
+                CLICK ON THE CALLSIGN (text only) OPENS THE VIEW POPUP.
+                Flag and worked dot keep their own tooltip, no click.
+            */
+            const callLink = row.querySelector(".spot-call-link");
             const viewButton = row.querySelector(".details-btn");
 
-            if (callCell && viewButton) {
+            if (callLink && viewButton) {
 
-                callCell.style.cursor = "pointer";
-                callCell.title =
-                    (callCell.title ? callCell.title + " · " : "") +
-                    "Click for details";
+                callLink.style.cursor = "pointer";
 
-                callCell.addEventListener("click", event => {
-                    if (event.target.closest("button, a, input, select")) {
-                        return;
-                    }
+                callLink.addEventListener("click", event => {
+                    event.stopPropagation();
                     viewButton.click();
                 });
 

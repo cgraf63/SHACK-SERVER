@@ -3709,3 +3709,7 @@ D.sidebar.collapsed {
     border-color: rgba(130, 185, 210, 0.55);
     color: #edf7fc;
 }
+
+/* Live spots: callsign opens the VIEW popup */
+.spot-call-link { cursor: pointer; }
+.spot-call-link:hover { text-decoration: underline; color: var(--cyan, #00e5ff); }
