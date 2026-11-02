@@ -286,11 +286,11 @@
 
 .station-inline-selector {
 
-    width: 150px;
+    width: 120px;
 
-    min-width: 150px;
+    min-width: 120px;
 
-    padding: 6px 8px;
+    padding: 6px 4px 6px 6px;
 
     border: 1px solid
         rgba(255,255,255,0.08);
@@ -304,6 +304,7 @@
     color: #ffffff;
 
     font: inherit;
+    font-size: 12px;
 
     outline: none;
 
@@ -342,7 +343,7 @@
 
     flex: 0 0 230px;
 
-    min-width: 230px;
+    min-width: 184px;
 
     padding: 6px 8px;
 
@@ -3515,7 +3516,7 @@ D.sidebar.collapsed {
 
     flex: 0 0 120px;
 
-    min-width: 120px;
+    min-width: 96px;
 
     padding: 6px 12px;
 

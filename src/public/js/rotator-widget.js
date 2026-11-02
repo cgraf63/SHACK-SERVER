@@ -31,35 +31,35 @@
 
         style.id = "rotator-widget-styles";
         style.textContent = `
+            .station-title.has-rotator { display: flex; align-items: center; gap: 12px; }
             .rotator-widget {
-                display: flex;
+                display: inline-flex;
                 align-items: center;
-                gap: 8px;
-                width: max-content;
-                max-width: 100%;
-                box-sizing: border-box;
-                margin-top: 8px;
-                padding: 5px 8px;
+                gap: 6px;
+                height: 20px;
+                padding: 0 2px 0 6px;
                 border: 1px solid var(--panel-border, #1d3442);
-                border-radius: 8px;
-                background: rgba(255, 255, 255, 0.02);
+                border-radius: 10px;
                 font-size: 12px;
+                font-weight: 600;
+                color: #8fa3b2;
                 white-space: nowrap;
             }
-            .rotator-widget.disconnected { opacity: 0.6; }
+            .rotator-widget.disconnected { opacity: 0.7; }
             .rotator-widget svg { flex: 0 0 auto; }
-            .rotator-widget .rot-text { display: flex; flex-direction: column; gap: 2px; min-width: 56px; }
-            .rotator-widget .rot-az { font-size: 16px; font-weight: 800; color: var(--cyan, #00e5ff); }
-            .rotator-widget .rot-sub { color: #8fa3b2; }
-            .rotator-widget .rot-sub.err { color: #ff6b6b; white-space: normal; max-width: 220px; }
+            .rotator-widget .rot-az { font-weight: 800; color: var(--cyan, #00e5ff); }
+            .rotator-widget .rot-target { color: #ffc400; }
+            .rotator-widget .rot-err { color: #ff6b6b; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
             .rotator-widget button {
-                padding: 6px 10px;
+                height: 16px;
+                padding: 0 7px;
                 border: 1px solid #7d2632;
-                border-radius: 6px;
+                border-radius: 8px;
                 background: #401b22;
                 color: #ff8b96;
                 font-weight: 700;
-                font-size: 12px;
+                font-size: 10px;
+                line-height: 14px;
                 cursor: pointer;
             }
             .rotator-widget button:hover { background: #5a202a; color: #fff; }
@@ -90,13 +90,13 @@
             const rad = (angle - 90) * Math.PI / 180;
             const x = 22 + Math.cos(rad) * length;
             const y = 22 + Math.sin(rad) * length;
-            return `<line x1="22" y1="22" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>`;
+            return `<line x1="22" y1="22" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${color}" stroke-width="5" stroke-linecap="round"/>`;
         };
 
         return `
-            <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
-                <circle cx="22" cy="22" r="19" fill="none" stroke="#1d3442" stroke-width="2"/>
-                <text x="22" y="9" text-anchor="middle" font-size="7" fill="#8fa3b2">N</text>
+            <svg width="18" height="18" viewBox="0 0 44 44" aria-hidden="true">
+                <circle cx="22" cy="22" r="19" fill="none" stroke="#3a5566" stroke-width="4"/>
+                
                 ${needle(target, "rgba(255,196,0,0.8)", 15)}
                 ${needle(azimuth, "#00e5ff", 17)}
                 <circle cx="22" cy="22" r="2.5" fill="#00e5ff"/>
@@ -106,35 +106,42 @@
 
     function render() {
 
-        const station = document.querySelector(".station-inline");
+        /* next to the "Station" heading: the dashboard bar has a fixed height */
+        const title = document.querySelector(".station-inline .station-title");
 
-        if (!state.enabled || !station) {
+        if (!state.enabled || !title) {
+            title?.classList.remove("has-rotator");
             widget?.remove();
             widget = null;
             return;
         }
 
-        if (!widget || !widget.isConnected) {
-
-            widget = document.createElement("div");
+        if (!widget) {
+            widget = document.createElement("span");
             widget.className = "rotator-widget";
-            station.appendChild(widget);
+        }
 
+        if (widget.parentElement !== title) {
+            title.classList.add("has-rotator");
+            title.appendChild(widget);
         }
 
         widget.classList.toggle("disconnected", !state.connected);
+        widget.title = state.connected
+            ? "Antenna rotator" + (state.target !== null ? ` - turning to ${state.target}°` : "")
+            : (state.error || "Rotator not connected");
 
         const az = state.azimuth === null ? "--" : `${state.azimuth}°`;
 
-        const sub = !state.connected
-            ? `<span class="rot-sub err">${escapeText(state.error || "Rotator not connected")}</span>`
+        const extra = !state.connected
+            ? `<span class="rot-err">${escapeText(state.error || "not connected")}</span>`
             : state.target !== null
-                ? `<span class="rot-sub">→ ${state.target}°</span>`
-                : `<span class="rot-sub">Rotator</span>`;
+                ? `<span class="rot-target">→ ${state.target}°</span>`
+                : "";
 
         widget.innerHTML =
             compass(state.azimuth, state.target) +
-            `<div class="rot-text"><span class="rot-az">${az}</span>${sub}</div>` +
+            `<span class="rot-az">${az}</span>${extra}` +
             `<button type="button" title="Stop the rotator">STOP</button>`;
 
         widget.querySelector("button").addEventListener("click", stop);
