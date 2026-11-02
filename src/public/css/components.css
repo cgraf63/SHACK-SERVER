@@ -107,7 +107,7 @@
 
     align-items:flex-start;
 
-    gap:25px;
+    gap:15px;
 
 }
 
@@ -247,7 +247,7 @@
 .station-inline {
     white-space: nowrap;
     border-left: 1px solid var(--panel-border);
-    padding-left: 20px;
+    padding-left: 14px;
     align-self: flex-start;
     margin-top: -25px;
 }
@@ -341,7 +341,7 @@
 
 .station-inline-radio {
 
-    flex: 0 0 230px;
+    flex: 0 0 184px;
 
     min-width: 184px;
 
@@ -3514,7 +3514,7 @@ D.sidebar.collapsed {
 
 .station-remote-button {
 
-    flex: 0 0 120px;
+    flex: 0 0 96px;
 
     min-width: 96px;
 
