@@ -1447,6 +1447,26 @@ function renderLiveSpots() {
                 row
             );
 
+            /* CLICK ON THE CALLSIGN OPENS THE VIEW POPUP */
+            const callCell = row.cells[0];
+            const viewButton = row.querySelector(".details-btn");
+
+            if (callCell && viewButton) {
+
+                callCell.style.cursor = "pointer";
+                callCell.title =
+                    (callCell.title ? callCell.title + " · " : "") +
+                    "Click for details";
+
+                callCell.addEventListener("click", event => {
+                    if (event.target.closest("button, a, input, select")) {
+                        return;
+                    }
+                    viewButton.click();
+                });
+
+            }
+
             /* CLICK CELLS TO TUNE RADIO */
             const tuneCellsButton =
                 row.querySelector(".tune-btn");
