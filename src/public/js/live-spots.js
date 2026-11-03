@@ -1553,6 +1553,9 @@ if (detailsButton) {
                         detailsSpot.image =
                             data.qrz.image || "";
 
+                        detailsSpot.qrzName =
+                            data.qrz.name || "";
+
                     }
 
                 }
@@ -2683,6 +2686,17 @@ setTimeout(
 
 
 
+function escapeDetailsText(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+}
+
+
 async function showSpotDetails(spot) {
 
     const activity =
@@ -2777,6 +2791,12 @@ alt="${spot.country || ""}"
                 <span>
                     ${flag}${spot.call}
                 </span>
+
+                ${
+                    spot.qrzName
+                        ? `<span class="spot-details-name" title="Name from QRZ.com" style="color:#9fb3c2; max-width:260px; overflow:hidden; text-overflow:ellipsis;">${escapeDetailsText(spot.qrzName)}</span>`
+                        : ""
+                }
 
                 <span>
                     ${frequency} kHz
