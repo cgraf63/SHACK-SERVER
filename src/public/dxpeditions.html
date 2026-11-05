@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DXpeditions - SHACK-SERVER</title>
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/components.css?v=7">
+
+    <style>
+
+html, body { width: 100%; margin: 0; padding: 0; }
+body { min-height: 100vh; overflow-x: auto; }
+*, *::before, *::after { box-sizing: border-box; }
+
+.dxp-page {
+    width: 100%;
+    min-height: 100vh;
+    padding: 14px 20px 30px;
+    background: #050d13;
+    color: #fff;
+}
+
+.dxp-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 14px;
+}
+
+.dxp-title { display: flex; align-items: center; gap: 10px; }
+.dxp-title h1 { margin: 0; color: var(--yellow, #ffc400); font-size: 28px; line-height: 1.2; }
+.dxp-title .dxp-icon { font-size: 26px; }
+
+.dxp-sub { margin-top: 6px; color: #8fa3b2; font-size: 13px; }
+.dxp-sub a { color: #8fa3b2; }
+.dxp-sub .err { color: var(--red, #ff5252); }
+
+.dxp-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.dxp-tab {
+    padding: 8px 16px;
+    border: 1px solid var(--panel-border, #1d3442);
+    border-radius: 8px;
+    background: #0b1821;
+    color: #9fb3c2;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .04em;
+    cursor: pointer;
+}
+.dxp-tab.active { border-color: var(--cyan, #00e5ff); color: var(--cyan, #00e5ff); background: #082029; }
+.dxp-tab .count { opacity: .75; margin-left: 4px; }
+
+.dxp-search {
+    width: 220px;
+    padding: 8px 10px;
+    border: 1px solid var(--panel-border, #1d3442);
+    border-radius: 8px;
+    background: #07131a;
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+}
+
+.dxp-check { display: flex; align-items: center; gap: 6px; color: #9fb3c2; font-size: 13px; cursor: pointer; }
+
+.dxp-refresh {
+    margin-left: auto;
+    padding: 8px 14px;
+    border: 1px solid var(--panel-border, #1d3442);
+    border-radius: 8px;
+    background: #0b1821;
+    color: #9fb3c2;
+    font-size: 13px;
+    cursor: pointer;
+}
+.dxp-refresh:hover, .dxp-tab:hover { color: #fff; }
+
+.dxp-card {
+    border: 1px solid var(--panel-border, #1d3442);
+    border-radius: 10px;
+    background: var(--panel, #0d1720);
+    overflow: hidden;
+}
+
+table.dxp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+.dxp-table th {
+    position: sticky;
+    top: 0;
+    padding: 9px 10px;
+    background: #0a141c;
+    color: var(--yellow, #ffc400);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--panel-border, #1d3442);
+}
+
+.dxp-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    vertical-align: middle;
+}
+
+.dxp-table tr:hover td { background: rgba(0,229,255,.04); }
+
+.dxp-call { font-weight: 800; font-size: 14px; color: #fff; text-decoration: none; white-space: nowrap; }
+a.dxp-call:hover { color: var(--cyan, #00e5ff); }
+.dxp-alt { display: block; color: #8fa3b2; font-size: 11px; font-weight: 600; white-space: nowrap; }
+
+.dxp-entity { white-space: nowrap; }
+.dxp-entity img { width: 20px; height: 14px; vertical-align: -2px; margin-right: 6px; }
+
+.dxp-dates { white-space: nowrap; }
+.dxp-when { display: block; font-size: 11px; color: #8fa3b2; }
+.dxp-when.soon { color: var(--orange, #ff9800); }
+
+.dxp-qsl { white-space: nowrap; color: #c9d6df; }
+
+.dxp-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    white-space: nowrap;
+}
+.dxp-badge.new { background: rgba(255,82,82,.16); color: #ff6b6b; border: 1px solid rgba(255,82,82,.45); }
+.dxp-badge.worked { background: rgba(140,255,0,.08); color: #9be05a; border: 1px solid rgba(140,255,0,.3); }
+.dxp-badge.call { background: rgba(0,229,255,.08); color: var(--cyan, #00e5ff); border: 1px solid rgba(0,229,255,.3); }
+
+.dxp-spot {
+    padding: 4px 9px;
+    border: 1px solid #1d5f73;
+    border-radius: 6px;
+    background: #0f2a35;
+    color: #7fe9ff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.dxp-spot:hover { background: #164050; color: #fff; }
+.dxp-spot .age { color: #8fa3b2; font-weight: 600; margin-left: 4px; }
+.dxp-none { color: #4f6472; }
+
+.dxp-info { color: #9fb3c2; max-width: 520px; line-height: 1.35; }
+
+.dxp-empty { padding: 30px; text-align: center; color: #8fa3b2; }
+
+.dxp-footer { margin-top: 12px; color: #6f8593; font-size: 12px; }
+.dxp-footer a { color: #8fa3b2; }
+
+    </style>
+
+</head>
+
+<body>
+
+<div id="app">
+
+    <aside id="sidebar" class="sidebar"></aside>
+
+    <main>
+
+        <div class="dxp-page">
+
+            <div class="dxp-header">
+                <div>
+                    <div class="dxp-title">
+                        <span class="dxp-icon">🏝</span>
+                        <h1>DXPEDITIONS</h1>
+                    </div>
+                    <div class="dxp-sub" id="dxp-sub">Loading…</div>
+                </div>
+            </div>
+
+            <div class="dxp-toolbar">
+                <button type="button" class="dxp-tab active" data-tab="active">QRV NOW<span class="count" id="count-active"></span></button>
+                <button type="button" class="dxp-tab" data-tab="upcoming">UPCOMING<span class="count" id="count-upcoming"></span></button>
+                <input type="search" class="dxp-search" id="dxp-search" placeholder="Search call, country, info…" autocomplete="off">
+                <label class="dxp-check" title="Only entities (countries) that are not yet in your QSO log">
+                    <input type="checkbox" id="dxp-needed"> Only new countries
+                </label>
+                <button type="button" class="dxp-refresh" id="dxp-refresh" title="Fetch the newest list from NG3K (at most every 10 minutes)">↻ Refresh</button>
+            </div>
+
+            <div class="dxp-card">
+                <table class="dxp-table">
+                    <thead>
+                        <tr>
+                            <th>CALL</th>
+                            <th>ENTITY</th>
+                            <th>DATES</th>
+                            <th>QSL</th>
+                            <th title="Compared with your QSO log">LOG</th>
+                            <th title="Current spot from the DX clusters - click to tune">SPOTTED</th>
+                            <th>INFO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dxp-body">
+                        <tr><td colspan="7" class="dxp-empty">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dxp-footer">
+                Data: <a href="https://www.ng3k.com/Misc/adxo.html" target="_blank" rel="noopener">Announced DX Operations (ADXO)</a>
+                by NG3K, Bill Feidt - refreshed automatically every 6 hours.
+                Countries are compared by the flag/country of your logged QSOs.
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script src="/js/component-loader.js?v=11"></script>
+<script src="/js/system-status.js"></script>
+<script src="/js/dxpeditions-data.js?v=2"></script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadComponents();
+});
+
+(function () {
+
+    const state = {
+        tab: "active",
+        search: "",
+        neededOnly: false,
+        list: { entries: [] },
+        worked: { calls: new Set(), countries: new Set() },
+        spots: []
+    };
+
+    const body = document.getElementById("dxp-body");
+
+    const regionNames = (() => {
+        try { return new Intl.DisplayNames(["en"], { type: "region" }); }
+        catch { return null; }
+    })();
+
+    function esc(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    function today() {
+        return new Date().toISOString().slice(0, 10);
+    }
+
+    function daysBetween(a, b) {
+        return Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
+    }
+
+    function whenText(entry) {
+
+        const day = today();
+
+        if (entry.start > day) {
+            const d = daysBetween(day, entry.start);
+            return { text: d === 1 ? "starts tomorrow" : `starts in ${d} days`, soon: d <= 7 };
+        }
+
+        const d = daysBetween(day, entry.end);
+
+        return { text: d === 0 ? "last day" : d === 1 ? "ends tomorrow" : `${d} days left`, soon: d <= 2 };
+
+    }
+
+    function logStatus(entry) {
+
+        const calls = [entry.call, ...(entry.calls || [])].map(c => c.toUpperCase());
+
+        if (calls.some(c => state.worked.calls.has(c))) {
+            return `<span class="dxp-badge call" title="This callsign is in your QSO log">WORKED</span>`;
+        }
+
+        if (!entry.countryCode) {
+            return `<span class="dxp-none">-</span>`;
+        }
+
+        return state.worked.countries.has(entry.countryCode)
+            ? `<span class="dxp-badge worked" title="Country already in your QSO log">COUNTRY WORKED</span>`
+            : `<span class="dxp-badge new" title="Country not yet in your QSO log">NEW COUNTRY</span>`;
+
+    }
+
+    function isNew(entry) {
+        return entry.countryCode && !state.worked.countries.has(entry.countryCode);
+    }
+
+    function latestSpot(entry) {
+
+        let best = null;
+
+        for (const spot of state.spots) {
+            if (window.shackDxpeditions.matches(entry, spot.call)) {
+                if (!best || Number(spot.lastSeen || 0) > Number(best.lastSeen || 0)) best = spot;
+            }
+        }
+
+        return best;
+
+    }
+
+    function spotCell(entry) {
+
+        const spot = latestSpot(entry);
+
+        if (!spot) return `<span class="dxp-none">-</span>`;
+
+        const khz = Number(spot.frequency);
+        const minutes = spot.lastSeen ? Math.max(0, Math.round((Date.now() - Number(spot.lastSeen)) / 60000)) : null;
+        const mode = spot.mode && spot.mode !== "UNKNOWN" ? spot.mode : "";
+
+        return `<button type="button" class="dxp-spot"
+                    data-khz="${khz}" data-mode="${esc(mode)}"
+                    title="${esc(spot.call)} spotted on ${khz.toLocaleString("de-CH")} kHz - click to tune">
+                    ${khz.toLocaleString("de-CH", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${esc(mode)}${
+                        minutes !== null ? `<span class="age">${minutes}m</span>` : ""
+                    }
+                </button>`;
+
+    }
+
+    function render() {
+
+        const day = today();
+        const entries = state.list.entries || [];
+
+        const active = entries.filter(e => e.start <= day && e.end >= day);
+        const upcoming = entries.filter(e => e.start > day);
+
+        document.getElementById("count-active").textContent = `(${active.length})`;
+        document.getElementById("count-upcoming").textContent = `(${upcoming.length})`;
+
+        const query = state.search.trim().toLowerCase();
+
+        let rows = state.tab === "active" ? active : upcoming;
+
+        if (state.neededOnly) rows = rows.filter(isNew);
+
+        if (query) {
+            rows = rows.filter(e =>
+                [e.call, ...(e.calls || []), e.entity, e.qsl, e.info, regionNames?.of(e.countryCode?.toUpperCase() || "ZZ") || ""]
+                    .join(" ").toLowerCase().includes(query)
+            );
+        }
+
+        /* QRV now: spotted ones first, then new countries */
+        if (state.tab === "active") {
+            rows = [...rows].sort((a, b) =>
+                (latestSpot(b) ? 1 : 0) - (latestSpot(a) ? 1 : 0) ||
+                (isNew(b) ? 1 : 0) - (isNew(a) ? 1 : 0) ||
+                a.end.localeCompare(b.end)
+            );
+        }
+
+        if (!rows.length) {
+            body.innerHTML = `<tr><td colspan="7" class="dxp-empty">${
+                entries.length ? "No DXpeditions for this selection." : "No data yet - the list is fetched from NG3K."
+            }</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = rows.map(entry => {
+
+            const when = whenText(entry);
+            const qrzCall = (entry.calls || [])[0] || entry.call;
+            const others = (entry.calls || []).filter(c => c !== entry.call);
+            const flag = entry.countryCode
+                ? `<img src="/assets/flags/${esc(entry.countryCode)}.svg" alt="" onerror="this.remove()">`
+                : "";
+
+            return `<tr>
+                <td>
+                    <a class="dxp-call" href="https://www.qrz.com/db/${encodeURIComponent(qrzCall)}" target="_blank" rel="noopener" title="Open on QRZ.com">${esc(entry.call)}</a>
+                    ${others.length ? `<span class="dxp-alt">${others.map(esc).join(", ")}</span>` : ""}
+                </td>
+                <td class="dxp-entity">${flag}${esc(entry.entity)}</td>
+                <td class="dxp-dates">${esc(entry.dates)}<span class="dxp-when ${when.soon ? "soon" : ""}">${when.text}</span></td>
+                <td class="dxp-qsl">${esc(entry.qsl || "-")}</td>
+                <td>${logStatus(entry)}</td>
+                <td>${spotCell(entry)}</td>
+                <td class="dxp-info" title="${esc(entry.source ? "Source: " + entry.source : "")}">${esc(entry.info)}</td>
+            </tr>`;
+
+        }).join("");
+
+    }
+
+    function renderSub() {
+
+        const sub = document.getElementById("dxp-sub");
+        const list = state.list;
+
+        const updated = list.fetchedAt
+            ? new Date(list.fetchedAt).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" })
+            : "never";
+
+        sub.innerHTML =
+            `Source: <a href="${esc(list.sourceUrl || "https://www.ng3k.com/Misc/adxo.html")}" target="_blank" rel="noopener">NG3K ADXO</a>` +
+            ` · updated ${esc(updated)}` +
+            (list.error ? ` · <span class="err">${esc(list.error)}</span>` : "");
+
+    }
+
+    async function loadList(refresh = false) {
+
+        state.list = await window.shackDxpeditions.load(refresh);
+        renderSub();
+        render();
+
+    }
+
+    async function loadWorked() {
+
+        try {
+            const response = await fetch("/api/qso/worked", { cache: "no-store" });
+            if (!response.ok) return;
+            const data = await response.json();
+            state.worked = {
+                calls: new Set((data.calls || []).map(c => String(c).toUpperCase())),
+                countries: new Set((data.countries || []).map(c => String(c).toLowerCase()))
+            };
+        }
+        catch { /* log not reachable */ }
+
+    }
+
+    async function loadSpots() {
+
+        try {
+            const response = await fetch("/api/spots", { cache: "no-store" });
+            if (response.ok) {
+                const data = await response.json();
+                state.spots = Array.isArray(data) ? data : (data.spots || []);
+            }
+        }
+        catch { /* spots not reachable */ }
+
+    }
+
+    async function tune(khz, mode) {
+
+        try {
+            const response = await fetch("/api/radio/tune", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ frequency: Math.round(khz * 1000), mode })
+            });
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                alert(`Tune failed: ${data.error || response.status}`);
+            }
+        }
+        catch (error) {
+            alert(`Tune failed: ${error.message}`);
+        }
+
+    }
+
+    document.querySelectorAll(".dxp-tab").forEach(button => {
+        button.addEventListener("click", () => {
+            state.tab = button.dataset.tab;
+            document.querySelectorAll(".dxp-tab").forEach(b => b.classList.toggle("active", b === button));
+            render();
+        });
+    });
+
+    document.getElementById("dxp-search").addEventListener("input", event => {
+        state.search = event.target.value;
+        render();
+    });
+
+    document.getElementById("dxp-needed").addEventListener("change", event => {
+        state.neededOnly = event.target.checked;
+        render();
+    });
+
+    document.getElementById("dxp-refresh").addEventListener("click", async event => {
+        const button = event.currentTarget;
+        button.disabled = true;
+        button.textContent = "↻ Loading…";
+        await loadList(true);
+        button.disabled = false;
+        button.textContent = "↻ Refresh";
+    });
+
+    body.addEventListener("click", event => {
+        const button = event.target.closest(".dxp-spot");
+        if (button) tune(Number(button.dataset.khz), button.dataset.mode);
+    });
+
+    (async () => {
+        await Promise.all([loadWorked(), loadSpots()]);
+        await loadList();
+    })();
+
+    setInterval(async () => { await loadSpots(); render(); }, 30000);
+    setInterval(async () => { await loadWorked(); await loadList(); }, 10 * 60 * 1000);
+
+})();
+
+</script>
+
+<script src="/js/demo-banner.js?v=1"></script>
+</body>
+</html>

@@ -3714,3 +3714,27 @@ D.sidebar.collapsed {
 /* Live spots: callsign opens the VIEW popup */
 .spot-call-link { cursor: pointer; }
 .spot-call-link:hover { text-decoration: underline; color: var(--cyan, #00e5ff); }
+
+
+
+/* DXpedition icon after the callsign in the live spots */
+.dxp-spot-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0 4px;
+    border: 1px solid rgba(255, 196, 0, 0.6);
+    border-radius: 4px;
+    background: rgba(255, 196, 0, 0.14);
+    color: #ffc400;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 14px;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    vertical-align: 1px;
+}
+
+.dxp-spot-badge:hover {
+    background: rgba(255, 196, 0, 0.3);
+    color: #fff;
+}

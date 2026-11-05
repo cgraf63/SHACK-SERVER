@@ -1147,6 +1147,12 @@ function escapeHtml(value) {
 }
 
 
+/* DXpedition list arrived: show the DXP icons */
+window.addEventListener("dxpeditionsLoaded", () => {
+    try { renderLiveSpots(); } catch (error) { console.error(error); }
+});
+
+
 function renderLiveSpots() {
 
 
@@ -1327,7 +1333,7 @@ function renderLiveSpots() {
                     ? `<span style="color:white; font-size:12px; margin-right:5px;">▲</span>`
                     : ""
         }
-        <span class="spot-call-link" title="Click for details">${spot.call}</span>
+        <span class="spot-call-link" title="Click for details">${spot.call}</span>${dxpeditionBadge(spot.call)}
     </span>
 
 </td>
@@ -2684,6 +2690,25 @@ setTimeout(
 );
 
 
+
+
+/*
+    DXpedition (NG3K ADXO, js/dxpeditions-data.js): small icon after
+    the callsign when the station is an announced DXpedition QRV now.
+*/
+function dxpeditionBadge(call) {
+
+    const entry = window.shackDxpeditions?.match(call);
+
+    if (!entry) return "";
+
+    const text =
+        `DXpedition: ${entry.entity} - ${entry.dates}` +
+        (entry.qsl ? ` - QSL: ${entry.qsl}` : "");
+
+    return `<a class="dxp-spot-badge" href="/dxpeditions" title="${escapeDetailsText(text)}">DXP</a>`;
+
+}
 
 
 function escapeDetailsText(value) {

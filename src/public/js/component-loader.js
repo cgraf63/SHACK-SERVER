@@ -34,6 +34,34 @@ function loadComponents() {
 
 }
 
+/* Highlight the menu entry of the page that is open */
+function markActiveSidebarLink() {
+
+    const current =
+        location.pathname.replace(/\.html$/, "").replace(/\/+$/, "") || "/";
+
+    const links =
+        document.querySelectorAll("#sidebar nav a[href^='/']");
+
+    let found = null;
+
+    links.forEach(link => {
+
+        const target =
+            link.getAttribute("href").replace(/\.html$/, "").replace(/\/+$/, "") || "/";
+
+        if (target === current || (target === "/" && current === "/index")) {
+            found = link;
+        }
+
+    });
+
+    if (found) {
+        links.forEach(link => link.classList.toggle("active", link === found));
+    }
+
+}
+
 async function loadComponentsOnce() {
 
     /*
@@ -44,6 +72,9 @@ async function loadComponentsOnce() {
         "sidebar",
         "sidebar.html"
     );
+
+
+    markActiveSidebarLink();
 
 
     /*

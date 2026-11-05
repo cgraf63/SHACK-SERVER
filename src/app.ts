@@ -16,6 +16,7 @@ import { demoGuard, demoCounts } from "./services/demo/demo-guard.js";
 import uploadsRouter from "./routes/uploads.js";
 import wsjtxRouter from "./routes/wsjtx.js";
 import rotatorRouter from "./routes/rotator.js";
+import dxpeditionsRouter from "./routes/dxpeditions.js";
 import networkRouter from "./routes/network.js";
 import indexRouter from "./routes/index.js";
 import propagationRouter from "./routes/propagation.js";
@@ -181,6 +182,12 @@ app.use(
 app.use(
     "/api/rotator",
     rotatorRouter
+);
+
+// DXpeditions (NG3K ADXO)
+app.use(
+    "/api/dxpeditions",
+    dxpeditionsRouter
 );
 
 

@@ -75,3 +75,6 @@ data/*.db-shm
 data/*.db-wal
 data/*.backup-*
 data/settings.json
+
+# DXpeditions list (NG3K ADXO cache)
+data/dxpeditions-cache.json

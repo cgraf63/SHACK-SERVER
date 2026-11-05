@@ -34,12 +34,19 @@ import {
     rotatorService
 } from "./services/rotator/rotator.service.js";
 
+import {
+    dxpeditionService
+} from "./services/dxpeditions/dxpedition.service.js";
+
 import "./services/rbn/rbn-instance.js";
 
 import "./services/telnet/telnet-server.js";
 radioManager.start();
 
 sotaPotaService.start();
+
+/* DXpeditions list (NG3K ADXO, refreshed every 6 hours; also in the demo) */
+dxpeditionService.start();
 
 if (DEMO_MODE) {
 
