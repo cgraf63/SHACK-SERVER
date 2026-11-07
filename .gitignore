@@ -78,3 +78,8 @@ data/settings.json
 
 # DXpeditions list (NG3K ADXO cache)
 data/dxpeditions-cache.json
+
+# Backups
+data/backups/
+data/backup-status.json
+data/.backup-work-*

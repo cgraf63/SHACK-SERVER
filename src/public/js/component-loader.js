@@ -237,7 +237,7 @@ await new Promise(resolve => {
         );
 
     settingsScript.src =
-        "js/settings-modal.js?v=9";
+        "js/settings-modal.js?v=10";
 
     document.body.appendChild(
         settingsScript

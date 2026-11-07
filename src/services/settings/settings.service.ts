@@ -72,6 +72,8 @@ const SETTINGS_FILE =
         "settings.json"
     );
 
+import { normalizeBackup } from "../backup/backup-settings.js";
+
 
 export class SettingsService {
 
@@ -114,6 +116,8 @@ export class SettingsService {
             rotator: {
                 ...this.settings.rotator
             },
+            backup:
+                normalizeBackup(this.settings.backup, this.settings.backup),
 
             dxspiders:
                 this.settings.dxspiders.map(
@@ -162,6 +166,10 @@ export class SettingsService {
                     ...this.settings.rotator,
                     ...((settings as any).rotator ?? {})
                 }),
+            backup:
+                (settings as any).backup
+                    ? normalizeBackup((settings as any).backup, this.settings.backup)
+                    : this.settings.backup,
 
             dxspiders:
                 (Array.isArray(settings.dxspiders)
@@ -263,6 +271,8 @@ export class SettingsService {
                             ...shackSettings.rotator,
                             ...(parsed.rotator ?? {})
                         }),
+                    backup:
+                        normalizeBackup(parsed.backup ?? shackSettings.backup),
 
 
                     dxspiders:
@@ -308,6 +318,8 @@ export class SettingsService {
             rotator: {
                 ...shackSettings.rotator
             },
+            backup:
+                normalizeBackup(shackSettings.backup),
             dxspiders:
                 shackSettings.dxspiders.map(
                     spider => ({

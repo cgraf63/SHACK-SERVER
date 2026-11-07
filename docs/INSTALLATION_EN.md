@@ -492,6 +492,25 @@ The transceiver reconnects automatically when it is switched on or the USB cable
 
 A serial port can only be opened by one program at a time. If the transceiver should also be controlled by WSJT-X or a logging program, start a shared `rigctld` and in SHACK-SERVER choose the driver **Hamlib** with the connection **"Existing rigctld"** (host and port, default 4532).
 
+### Backup (Dropbox and/or NAS)
+
+**Settings → Backup** saves the QSO and contest log, the settings and the transceivers once a day (time and number of backups adjustable). Both targets use **rclone**: `sudo apt install rclone`.
+
+- **Dropbox** (or Google Drive, OneDrive ...): set up the remote once as user `admin`: `rclone config` → *n* (new remote) → name `dropbox` → type *dropbox* → confirm the defaults. On a Pi without a desktop, rclone shows a command (`rclone authorize "dropbox"`) to run on a PC with a browser; paste the result back. In the settings enter `dropbox:SHACK-SERVER` and press **Test**.
+- **NAS (SMB)**: address, share, folder, user and password of the NAS. No mounting needed. **Test** checks the access.
+
+**Backup now** makes a backup with the saved settings. The last 3 backups also stay in `data/backups` on the Pi.
+
+**Restore** (example):
+
+```bash
+mkdir ~/restore && tar -xzf shack-server-backup-2026-11-07_0315.tar.gz -C ~/restore
+pm2 stop shack-server
+cp ~/restore/shack-server.db ~/restore/settings.json ~/restore/radios.json ~/SHACK-SERVER/data/
+rm -f ~/SHACK-SERVER/data/shack-server.db-wal ~/SHACK-SERVER/data/shack-server.db-shm
+pm2 start shack-server
+```
+
 ### Antenna rotator (optional)
 
 SHACK-SERVER can turn the antenna through Hamlib (`rotctld`, part of `libhamlib-utils`). Supported are all controllers known to Hamlib, e.g. Yaesu GS-232, SPID Rot2Prog, Hy-Gain DCU-1, ERC, K3NG.

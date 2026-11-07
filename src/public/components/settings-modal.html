@@ -673,6 +673,126 @@
 
 
     <!-- =========================
+         BACKUP
+         ========================= -->
+
+    <section class="settings-section" data-demo-hide>
+
+        <h2>Backup</h2>
+
+        <p class="radio-settings-intro">
+            Daily backup of the QSO and contest log, the settings and the transceivers
+            to Dropbox (or any other <a href="https://rclone.org" target="_blank" rel="noopener">rclone</a>
+            remote) and/or a NAS. The last 3 backups also stay on the Pi (data/backups).
+            The backup contains your logbook credentials - keep the targets private.
+        </p>
+
+        <label class="source-switch">
+            <input id="backup-enabled" type="checkbox">
+            <span>Daily backup</span>
+        </label>
+
+        <div class="backup-form">
+
+            <label for="backup-time">Time</label>
+            <div class="backup-row">
+                <input id="backup-time" type="time" step="60">
+                <label for="backup-keep" class="backup-inline-label">Keep</label>
+                <input id="backup-keep" type="number" min="1" max="365">
+                <span class="backup-hint">backups per target</span>
+            </div>
+
+            <span class="backup-target-title">
+                <label class="radio-check"><input id="backup-rclone-enabled" type="checkbox"> Dropbox / rclone</label>
+            </span>
+
+            <label for="backup-rclone-remote">rclone remote</label>
+            <div class="backup-row">
+                <input id="backup-rclone-remote" type="text" placeholder="dropbox:SHACK-SERVER" spellcheck="false">
+                <button id="backup-rclone-test" type="button" class="settings-secondary-button">Test</button>
+            </div>
+
+            <span></span>
+            <span class="backup-hint">Remote name from <code>rclone config</code> (as user admin), then a colon and the folder.</span>
+
+            <span class="backup-target-title">
+                <label class="radio-check"><input id="backup-smb-enabled" type="checkbox"> NAS (SMB)</label>
+            </span>
+
+            <label for="backup-smb-host">NAS address</label>
+            <input id="backup-smb-host" type="text" placeholder="192.168.1.20 or nas.local" spellcheck="false">
+
+            <label for="backup-smb-share">Share</label>
+            <input id="backup-smb-share" type="text" placeholder="backup" spellcheck="false">
+
+            <label for="backup-smb-path">Folder</label>
+            <input id="backup-smb-path" type="text" placeholder="SHACK-SERVER" spellcheck="false">
+
+            <label for="backup-smb-user">User</label>
+            <input id="backup-smb-user" type="text" autocomplete="off" spellcheck="false">
+
+            <label for="backup-smb-password">Password</label>
+            <div class="backup-row">
+                <input id="backup-smb-password" type="password" autocomplete="new-password">
+                <button id="backup-smb-test" type="button" class="settings-secondary-button">Test</button>
+            </div>
+
+            <label for="backup-smb-domain">Domain</label>
+            <input id="backup-smb-domain" type="text" placeholder="WORKGROUP (optional)" spellcheck="false">
+
+            <span></span>
+            <div class="backup-row">
+                <button id="backup-run" type="button" class="settings-secondary-button">Backup now</button>
+                <span class="backup-hint">uses the saved settings - save first</span>
+            </div>
+
+        </div>
+
+        <div id="backup-status" class="upload-service-info"></div>
+
+        <style>
+            .backup-form {
+                display: grid;
+                grid-template-columns: 120px minmax(0, 420px);
+                gap: 8px 14px;
+                align-items: center;
+                margin: 10px 0 0 28px;
+            }
+            .backup-form > label { font-size: 13px; color: #9fb1bd; }
+            .backup-form input[type="text"],
+            .backup-form input[type="password"],
+            .backup-form input[type="number"],
+            .backup-form input[type="time"] {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 7px 10px;
+                border: 1px solid var(--border-color, #303640);
+                border-radius: 5px;
+                background: rgba(255, 255, 255, 0.04);
+                color: inherit;
+                font: inherit;
+                font-size: 13px;
+                color-scheme: dark;
+            }
+            .backup-row { display: flex; align-items: center; gap: 8px; }
+            .backup-row input[type="text"], .backup-row input[type="password"] { flex: 1; }
+            .backup-row input[type="time"] { width: 110px; }
+            .backup-row input[type="number"] { width: 70px; }
+            .backup-inline-label { font-size: 13px; color: #9fb1bd; margin-left: 10px; }
+            .backup-hint { font-size: 12px; color: #7f93a1; }
+            .backup-hint code { color: #b8c7d1; }
+            .backup-target-title { grid-column: 1 / -1; margin-top: 8px; font-size: 13px; font-weight: 700; }
+            #backup-status { margin-left: 28px; }
+            #backup-status .target { display: block; }
+            @media (max-width: 700px) {
+                .backup-form { grid-template-columns: 1fr; margin-left: 0; }
+            }
+        </style>
+
+    </section>
+
+
+    <!-- =========================
          OPTIONAL MODULES
          ========================= -->
 

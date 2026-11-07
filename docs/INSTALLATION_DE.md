@@ -490,6 +490,25 @@ Der Transceiver verbindet sich automatisch neu, wenn er eingeschaltet oder das U
 
 Eine serielle Schnittstelle kann nur von einem Programm gleichzeitig geöffnet werden. Soll der Transceiver zusätzlich von WSJT-X oder einem Logprogramm gesteuert werden, ein gemeinsames `rigctld` starten und in SHACK-SERVER beim Treiber **Hamlib** die Verbindung **„Existing rigctld“** (Host und Port, Standard 4532) wählen.
 
+### Backup (Dropbox und/oder NAS)
+
+**Settings → Backup** sichert QSO- und Contest-Log, Einstellungen und Transceiver einmal täglich (Uhrzeit und Anzahl Sicherungen einstellbar). Beide Ziele laufen über **rclone**: `sudo apt install rclone`.
+
+- **Dropbox** (oder Google Drive, OneDrive ...): Ziel einmalig als Benutzer `admin` einrichten: `rclone config` → *n* (new remote) → Name `dropbox` → Typ *dropbox* → Vorgaben bestätigen. Auf einem Pi ohne Desktop zeigt rclone einen Befehl (`rclone authorize "dropbox"`), den man auf einem PC mit Browser ausführt; das Ergebnis zurück einfügen. In den Settings `dropbox:SHACK-SERVER` eintragen und **Test** drücken.
+- **NAS (SMB)**: Adresse, Freigabe, Ordner, Benutzer und Passwort des NAS. Kein Einbinden (mount) nötig. **Test** prüft den Zugriff.
+
+**Backup now** sichert sofort mit den gespeicherten Einstellungen. Die letzten 3 Sicherungen bleiben zusätzlich in `data/backups` auf dem Pi.
+
+**Wiederherstellen** (Beispiel):
+
+```bash
+mkdir ~/restore && tar -xzf shack-server-backup-2026-11-07_0315.tar.gz -C ~/restore
+pm2 stop shack-server
+cp ~/restore/shack-server.db ~/restore/settings.json ~/restore/radios.json ~/SHACK-SERVER/data/
+rm -f ~/SHACK-SERVER/data/shack-server.db-wal ~/SHACK-SERVER/data/shack-server.db-shm
+pm2 start shack-server
+```
+
 ### Antennenrotor (optional)
 
 SHACK-SERVER kann die Antenne über Hamlib drehen (`rotctld`, Teil von `libhamlib-utils`). Unterstützt werden alle Steuergeräte, die Hamlib kennt, z. B. Yaesu GS-232, SPID Rot2Prog, Hy-Gain DCU-1, ERC, K3NG.

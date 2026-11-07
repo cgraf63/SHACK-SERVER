@@ -72,6 +72,34 @@ export interface ShackSettings {
         multicastGroup: string;
     };
     rotator: RotatorSettings;
+    backup: BackupSettings;
+}
+
+/*
+ * Backup of the log and the settings (daily, at a set time).
+ *   rclone: to an rclone remote, e.g. "dropbox:SHACK-SERVER"
+ *   smb:    directly to a NAS share (via rclone's SMB backend)
+ * The SMB password is never sent to the browser.
+ */
+export interface BackupSettings {
+    enabled: boolean;
+    /* local time, "HH:MM" */
+    time: string;
+    /* number of backups kept per target */
+    keep: number;
+    rclone: {
+        enabled: boolean;
+        remote: string;
+    };
+    smb: {
+        enabled: boolean;
+        host: string;
+        share: string;
+        path: string;
+        user: string;
+        password: string;
+        domain: string;
+    };
 }
 
 /*
@@ -177,6 +205,13 @@ export const shackSettings: ShackSettings = {
         baudRate: 0,
         host: "127.0.0.1",
         port: 4533
+    },
+    backup: {
+        enabled: false,
+        time: "03:15",
+        keep: 14,
+        rclone: { enabled: false, remote: "dropbox:SHACK-SERVER" },
+        smb: { enabled: false, host: "", share: "", path: "SHACK-SERVER", user: "", password: "", domain: "" }
     },
     dxspiders: [
         {

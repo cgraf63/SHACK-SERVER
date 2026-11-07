@@ -38,6 +38,10 @@ import {
     dxpeditionService
 } from "./services/dxpeditions/dxpedition.service.js";
 
+import {
+    backupService
+} from "./services/backup/backup.service.js";
+
 import "./services/rbn/rbn-instance.js";
 
 import "./services/telnet/telnet-server.js";
@@ -64,6 +68,9 @@ else {
 
     /* Antenna rotator (Hamlib rotctld) */
     rotatorService.start();
+
+    /* Backup (daily, Settings -> Backup) */
+    backupService.start();
 
 }
 

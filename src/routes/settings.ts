@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { publicUploadSettings } from "../services/settings/upload-accounts.js";
+import { publicBackup } from "../services/backup/backup-settings.js";
 
 import {
     ShackSettings
@@ -31,7 +32,9 @@ function publicSettings(settings: ShackSettings): unknown {
             publicUploadSettings(
                 settings.uploads,
                 settings.callsign
-            )
+            ),
+        backup:
+            publicBackup(settings.backup)
     };
 
 }

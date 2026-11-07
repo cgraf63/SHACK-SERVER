@@ -146,6 +146,10 @@ async function loadSettings() {
             settingsData.rotator
         );
 
+        applyBackupSettings(
+            settingsData.backup
+        );
+
 
         const callsign =
             document.getElementById(
@@ -606,6 +610,9 @@ async function saveSettings() {
         rotator:
             collectRotatorSettings(),
 
+        backup:
+            collectBackupSettings(),
+
         wsjtx: {
 
             enabled:
@@ -687,6 +694,8 @@ async function saveSettings() {
 
         setTimeout(loadWsjtxStatus, 800);
         setTimeout(loadRotatorStatus, 2500);
+
+        afterBackupSaved();
 
 
         /*
@@ -856,6 +865,8 @@ function initializeSettingsModal() {
     initUploadSettings();
 
     initRotatorSettings();
+
+    initBackupSettings();
 
 
     settingsButton.addEventListener(
@@ -1697,6 +1708,200 @@ function initRotatorSettings() {
 
                 button.disabled = false;
 
+            }
+
+        });
+
+}
+
+
+
+/* =========================================================
+   BACKUP (Dropbox / rclone, NAS via SMB)
+   ========================================================= */
+
+function backupValue(id) {
+    return document.getElementById(id)?.value.trim() ?? "";
+}
+
+function backupChecked(id) {
+    return document.getElementById(id)?.checked === true;
+}
+
+function applyBackupSettings(backup) {
+
+    const b = backup || {};
+    const set = (id, value) => { const el = document.getElementById(id); if (el) el.value = value ?? ""; };
+    const check = (id, value) => { const el = document.getElementById(id); if (el) el.checked = value === true; };
+
+    check("backup-enabled", b.enabled);
+    set("backup-time", b.time || "03:15");
+    set("backup-keep", b.keep || 14);
+
+    check("backup-rclone-enabled", b.rclone?.enabled);
+    set("backup-rclone-remote", b.rclone?.remote || "");
+
+    check("backup-smb-enabled", b.smb?.enabled);
+    set("backup-smb-host", b.smb?.host);
+    set("backup-smb-share", b.smb?.share);
+    set("backup-smb-path", b.smb?.path);
+    set("backup-smb-user", b.smb?.user);
+    set("backup-smb-domain", b.smb?.domain);
+    set("backup-smb-password", "");
+
+    const password = document.getElementById("backup-smb-password");
+    if (password) {
+        password.placeholder = b.smb?.passwordSet ? "saved - leave empty to keep" : "";
+    }
+
+    void loadBackupStatus();
+
+}
+
+function collectBackupSettings() {
+
+    return {
+        enabled: backupChecked("backup-enabled"),
+        time: backupValue("backup-time") || "03:15",
+        keep: Number(backupValue("backup-keep")) || 14,
+        rclone: {
+            enabled: backupChecked("backup-rclone-enabled"),
+            remote: backupValue("backup-rclone-remote")
+        },
+        smb: {
+            enabled: backupChecked("backup-smb-enabled"),
+            host: backupValue("backup-smb-host"),
+            share: backupValue("backup-smb-share"),
+            path: backupValue("backup-smb-path"),
+            user: backupValue("backup-smb-user"),
+            password: document.getElementById("backup-smb-password")?.value ?? "",
+            domain: backupValue("backup-smb-domain")
+        }
+    };
+
+}
+
+/* After saving: the password is on the Pi now, the field is emptied */
+function afterBackupSaved() {
+
+    const password = document.getElementById("backup-smb-password");
+
+    if (password && password.value) {
+        password.value = "";
+        password.placeholder = "saved - leave empty to keep";
+    }
+
+}
+
+function showBackupStatus(html) {
+
+    const info = document.getElementById("backup-status");
+
+    if (info) info.innerHTML = html;
+
+}
+
+function formatBackupStatus(status) {
+
+    if (status?.running) {
+        return "Backup running...";
+    }
+
+    const last = status?.lastRun;
+
+    if (!last) {
+        return "No backup yet.";
+    }
+
+    const when = new Date(last.at).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" });
+    const size = last.size ? ` (${Math.max(1, Math.round(last.size / 1024))} KB)` : "";
+
+    const head = last.ok
+        ? `<span class="ok">✔ Last backup ${escapeHtml(when)}${escapeHtml(size)}</span>`
+        : `<span class="err">✖ Last backup ${escapeHtml(when)} failed</span>`;
+
+    const targets = (last.targets || []).map(target =>
+        `<span class="target ${target.ok ? "ok" : "err"}">${target.ok ? "✔" : "✖"} ${escapeHtml(target.name)}: ${escapeHtml(target.message)}</span>`
+    ).join("");
+
+    const note = !last.targets?.length && last.message ? `<span class="target">${escapeHtml(last.message)}</span>` : "";
+
+    const success = !last.ok && status.lastSuccess
+        ? `<span class="target">Last successful backup: ${escapeHtml(new Date(status.lastSuccess).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" }))}</span>`
+        : "";
+
+    return head + targets + note + success;
+
+}
+
+async function loadBackupStatus() {
+
+    try {
+        const response = await fetch("/api/backup/status", { cache: "no-store" });
+        if (response.ok) showBackupStatus(formatBackupStatus(await response.json()));
+    }
+    catch {
+        // server not reachable
+    }
+
+}
+
+async function testBackupTarget(target, button) {
+
+    button.disabled = true;
+    showBackupStatus("Testing...");
+
+    try {
+
+        const response = await fetch("/api/backup/test", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ target, backup: collectBackupSettings() })
+        });
+
+        const result = await response.json();
+        const name = target === "smb" ? "NAS" : "Dropbox / rclone";
+
+        showBackupStatus(
+            `<span class="${result.ok ? "ok" : "err"}">${result.ok ? "✔" : "✖"} ${escapeHtml(name)}: ${escapeHtml(result.message || result.error || "")}</span>`
+        );
+
+    }
+    catch (error) {
+        showBackupStatus(`<span class="err">✖ ${escapeHtml(error.message)}</span>`);
+    }
+    finally {
+        button.disabled = false;
+    }
+
+}
+
+function initBackupSettings() {
+
+    document.getElementById("backup-rclone-test")
+        ?.addEventListener("click", event => testBackupTarget("rclone", event.currentTarget));
+
+    document.getElementById("backup-smb-test")
+        ?.addEventListener("click", event => testBackupTarget("smb", event.currentTarget));
+
+    document.getElementById("backup-run")
+        ?.addEventListener("click", async event => {
+
+            const button = event.currentTarget;
+
+            button.disabled = true;
+            showBackupStatus("Backup running...");
+
+            try {
+                const response = await fetch("/api/backup/run", { method: "POST" });
+                const result = await response.json();
+                showBackupStatus(response.ok ? formatBackupStatus(result) : `<span class="err">✖ ${escapeHtml(result.error || response.status)}</span>`);
+            }
+            catch (error) {
+                showBackupStatus(`<span class="err">✖ ${escapeHtml(error.message)}</span>`);
+            }
+            finally {
+                button.disabled = false;
             }
 
         });
