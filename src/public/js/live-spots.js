@@ -1153,6 +1153,68 @@ window.addEventListener("dxpeditionsLoaded", () => {
 });
 
 
+/*
+    Mouse wheel over the live spots table or the slider moves the
+    slider (one wheel notch = 3 spots). The page only scrolls when
+    the list is at the top or bottom.
+*/
+let liveSpotWheelMax = 0;
+let liveSpotWheelRest = 0;
+
+function attachLiveSpotWheel(maxOffset) {
+
+    liveSpotWheelMax = maxOffset;
+
+    const area =
+        document.querySelector(".live-spots-container");
+
+    if (!area || area.dataset.wheel === "1") {
+        return;
+    }
+
+    area.dataset.wheel = "1";
+
+    area.addEventListener("wheel", event => {
+
+        if (event.ctrlKey || liveSpotWheelMax <= 0) {
+            return;
+        }
+
+        const pixels =
+            event.deltaMode === 1 ? event.deltaY * 33 :
+            event.deltaMode === 2 ? event.deltaY * 600 :
+            event.deltaY;
+
+        const down = pixels > 0;
+
+        // at the end of the list: let the page scroll
+        if ((down && liveSpotOffset >= liveSpotWheelMax) || (!down && liveSpotOffset <= 0)) {
+            liveSpotWheelRest = 0;
+            return;
+        }
+
+        event.preventDefault();
+
+        liveSpotWheelRest += pixels;
+
+        const rows = Math.trunc(liveSpotWheelRest / 33);
+
+        if (rows === 0) {
+            return;
+        }
+
+        liveSpotWheelRest -= rows * 33;
+
+        liveSpotOffset =
+            Math.max(0, Math.min(liveSpotWheelMax, liveSpotOffset + rows));
+
+        renderLiveSpots();
+
+    }, { passive: false });
+
+}
+
+
 function renderLiveSpots() {
 
 
@@ -1223,6 +1285,9 @@ function renderLiveSpots() {
             sorted.length -
             getLiveSpotPageSize()
         );
+
+
+    attachLiveSpotWheel(maxOffset);
 
 
     liveSpotOffset =
