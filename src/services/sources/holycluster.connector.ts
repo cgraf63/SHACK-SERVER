@@ -25,6 +25,20 @@ export class HolyClusterConnector {
 
     private socket: WebSocket | undefined;
 
+    /*
+     * Reconnect: after a close / error (10 s, up to 2 min when it keeps
+     * failing) and when no message arrived for 10 minutes (connection
+     * dropped somewhere without a close). Ping every 30 s keeps NAT
+     * and proxies open.
+     */
+    private reconnectTimer: NodeJS.Timeout | undefined;
+    private keepaliveTimer: NodeJS.Timeout | undefined;
+    private lastMessage = 0;
+    private failures = 0;
+
+    private static readonly SILENT_MS = 10 * 60 * 1000;
+    private static readonly PING_MS = 30 * 1000;
+
 
     private normalizer: SpotNormalizer =
         new SpotNormalizer();
@@ -47,6 +61,13 @@ export class HolyClusterConnector {
 
     connect() {
 
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = undefined;
+        }
+
+        this.stopKeepalive();
+
 
         console.log(
             `HolyCluster connecting: ${this.source.name}`
@@ -64,6 +85,8 @@ export class HolyClusterConnector {
         const socket =
             this.socket;
 
+        this.lastMessage = Date.now();
+
 
 
         socket.on(
@@ -73,6 +96,10 @@ export class HolyClusterConnector {
                 console.log(
                     "HolyCluster connected"
                 );
+
+                this.failures = 0;
+                this.lastMessage = Date.now();
+                this.startKeepalive(socket);
 
             }
         );
@@ -84,6 +111,8 @@ export class HolyClusterConnector {
         socket.on(
             "message",
             (data: WebSocket.Data) => {
+
+                this.lastMessage = Date.now();
 
 
                 try {
@@ -194,9 +223,11 @@ export class HolyClusterConnector {
             error => {
 
                 console.error(
-                    "HolyCluster error",
-                    error
+                    "HolyCluster error:",
+                    error instanceof Error ? error.message : error
                 );
+
+                // "close" follows and reconnects
 
             }
         );
@@ -211,9 +242,86 @@ export class HolyClusterConnector {
                     "HolyCluster disconnected"
                 );
 
+                if (this.socket === socket) {
+                    this.stopKeepalive();
+                    this.scheduleReconnect();
+                }
+
             }
         );
 
+
+    }
+
+
+
+    private scheduleReconnect(): void {
+
+        if (this.reconnectTimer) {
+            return;
+        }
+
+        this.failures++;
+
+        const delay =
+            Math.min(120_000, 10_000 * this.failures);
+
+        console.log(
+            `HolyCluster reconnect in ${Math.round(delay / 1000)} s`
+        );
+
+        this.reconnectTimer =
+            setTimeout(() => {
+                this.reconnectTimer = undefined;
+                this.connect();
+            }, delay);
+
+    }
+
+
+
+    private startKeepalive(socket: WebSocket): void {
+
+        this.stopKeepalive();
+
+        this.keepaliveTimer =
+            setInterval(() => {
+
+                if (socket.readyState !== WebSocket.OPEN) {
+                    return;
+                }
+
+                if (Date.now() - this.lastMessage > HolyClusterConnector.SILENT_MS) {
+
+                    console.log(
+                        "HolyCluster: no data for 10 minutes - reconnecting"
+                    );
+
+                    // terminate() fires "close" -> scheduleReconnect()
+                    socket.terminate();
+                    return;
+
+                }
+
+                try {
+                    socket.ping();
+                }
+                catch {
+                    // close follows
+                }
+
+            }, HolyClusterConnector.PING_MS);
+
+    }
+
+
+
+    private stopKeepalive(): void {
+
+        if (this.keepaliveTimer) {
+            clearInterval(this.keepaliveTimer);
+            this.keepaliveTimer = undefined;
+        }
 
     }
 
