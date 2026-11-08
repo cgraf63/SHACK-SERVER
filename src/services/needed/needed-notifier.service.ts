@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import type { FusionSpot } from "../fusion/spot.model.js";
 import type { NeededAlertSettings } from "../../config/settings.config.js";
 import { dxccService, type DxccEntity } from "../dxcc/dxcc.service.js";
@@ -29,6 +32,9 @@ import { heardService, type HeardInfo } from "./heard.service.js";
 const BASELINE_MS = 2 * 60 * 1000;
 const RECHECK_MS = [2 * 60_000, 5 * 60_000, 10 * 60_000];
 const RECENT_MAX = 30;
+
+/* the last alerts survive a restart (dashboard list) */
+const RECENT_FILE = path.resolve(process.cwd(), "data", "needed-alerts.json");
 
 export type NeededLevel = "NEW COUNTRY" | "NEW BAND COUNTRY" | "NEW BAND" | "NEW MODE";
 
@@ -141,6 +147,14 @@ class NeededNotifier {
     start(fusion: { onNewSpot(listener: (spot: FusionSpot) => void): void }): void {
 
         this.startedAt = Date.now();
+
+        try {
+            const saved = JSON.parse(fs.readFileSync(RECENT_FILE, "utf8"));
+            if (Array.isArray(saved)) this.recent = saved.slice(0, RECENT_MAX);
+        }
+        catch {
+            // no alerts yet
+        }
 
         fusion.onNewSpot(spot => {
             try {
@@ -284,6 +298,13 @@ class NeededNotifier {
         });
 
         this.recent.length = Math.min(this.recent.length, RECENT_MAX);
+
+        try {
+            fs.writeFileSync(RECENT_FILE, JSON.stringify(this.recent));
+        }
+        catch {
+            // list stays in memory
+        }
 
         console.log(`Needed alert: ${message} (score ${score}) - ${result}`);
 

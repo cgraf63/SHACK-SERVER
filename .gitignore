@@ -83,3 +83,6 @@ data/dxpeditions-cache.json
 data/backups/
 data/backup-status.json
 data/.backup-work-*
+
+# Needed alerts (last alerts, dashboard)
+data/needed-alerts.json
