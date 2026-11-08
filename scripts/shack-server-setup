@@ -18,14 +18,13 @@ echo "============================================================"
 echo "              SHACK-SERVER Setup Assistant"
 echo "============================================================"
 echo
-echo "Dieser Assistent hilft bei der Grundkonfiguration."
+echo "This assistant helps with the basic configuration."
 echo
-echo "Station, DXSpider, HolyCluster und DX Summit werden"
-echo "anschliessend über die Settings-Seite des SHACK-SERVER"
-echo "konfiguriert."
+echo "Station, DXSpider, HolyCluster and DX Summit are set up"
+echo "afterwards in the SHACK-SERVER settings (web interface)."
 echo
-echo "Geändert werden hier nur die tatsächlich verwendeten"
-echo "Umgebungsvariablen."
+echo "Only the environment variables that are actually used"
+echo "are changed here."
 echo
 echo "============================================================"
 echo
@@ -35,7 +34,7 @@ echo
 # ------------------------------------------------------------
 
 if [ ! -d "$PROJECT_DIR" ]; then
-    echo "FEHLER: SHACK-SERVER Verzeichnis nicht gefunden:"
+    echo "ERROR: SHACK-SERVER directory not found:"
     echo "$PROJECT_DIR"
     exit 1
 fi
@@ -47,12 +46,12 @@ cd "$PROJECT_DIR"
 # ------------------------------------------------------------
 
 echo
-echo "1. Netzwerkprüfung"
-echo "------------------"
+echo "1. Network check"
+echo "----------------"
 
 HOSTNAME_NOW="$(hostname 2>/dev/null || true)"
 
-echo "Hostname: ${HOSTNAME_NOW:-unbekannt}"
+echo "Host name: ${HOSTNAME_NOW:-unknown}"
 
 if command -v hostname >/dev/null 2>&1; then
     IP_ADDRESS="$(hostname -I 2>/dev/null | awk '{print $1}')"
@@ -61,16 +60,16 @@ else
 fi
 
 if [ -n "$IP_ADDRESS" ]; then
-    echo "IP-Adresse: $IP_ADDRESS"
+    echo "IP address: $IP_ADDRESS"
 else
-    echo "IP-Adresse: konnte nicht ermittelt werden"
+    echo "IP address: could not be found"
 fi
 
 if ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; then
     echo "Internet: OK"
 else
-    echo "Internet: NICHT ERREICHBAR"
-    echo "Bitte zuerst die Netzwerkverbindung prüfen."
+    echo "Internet: NOT REACHABLE"
+    echo "Please check the network connection first."
 fi
 
 # ------------------------------------------------------------
@@ -78,14 +77,14 @@ fi
 # ------------------------------------------------------------
 
 echo
-echo "2. Internet-Dienste"
-echo "-------------------"
+echo "2. Internet services"
+echo "--------------------"
 
 if [ -f "$ENV_FILE" ]; then
-    echo ".env gefunden."
+    echo ".env found."
 else
-    echo ".env wurde nicht gefunden."
-    echo "Eine neue Datei wird erstellt."
+    echo ".env not found."
+    echo "A new file is created."
     touch "$ENV_FILE"
 fi
 
@@ -95,7 +94,7 @@ BACKUP_FILE="$ENV_FILE.backup-$(date +%Y%m%d-%H%M%S)"
 cp "$ENV_FILE" "$BACKUP_FILE"
 chmod 600 "$ENV_FILE"
 
-echo "Backup erstellt:"
+echo "Backup created:"
 echo "  $BACKUP_FILE"
 
 # ------------------------------------------------------------
@@ -152,8 +151,8 @@ ask_secret() {
 
     if [ -n "$old_value" ]; then
         echo "$label"
-        echo "  Bereits vorhanden – ENTER = unverändert lassen."
-        read -r -s -p "  Neues Passwort/Token: " new_value
+        echo "  Already set - ENTER = keep it."
+        read -r -s -p "  New password / token: " new_value
         echo
 
         if [ -n "$new_value" ]; then
@@ -172,8 +171,8 @@ ask_secret() {
 # ------------------------------------------------------------
 
 echo
-echo "HTTP-Port des SHACK-SERVER"
-echo "ENTER = aktuellen Wert behalten."
+echo "HTTP port of SHACK-SERVER (default 3000)"
+echo "ENTER = keep the current value."
 
 ask_value "PORT" "PORT"
 
@@ -186,13 +185,14 @@ echo "------------------------------------------------------------"
 echo "QRZ"
 echo "------------------------------------------------------------"
 echo
-echo "Die QRZ-Zugangsdaten werden nur in .env gespeichert."
-echo "Das QRZ-Passwort und der API-Key werden nicht angezeigt."
+echo "QRZ.com login for callsign lookups (name, locator, photo)."
+echo "Stored in .env only; password and API key are not shown."
+echo "Logbook uploads (QRZ logbook, Club Log) are set up later in Settings."
 echo
 
-ask_value "QRZ Benutzername" "QRZ_USER"
-ask_secret "QRZ Passwort" "QRZ_PASSWORD"
-ask_secret "QRZ API-Key" "QRZ_API_KEY"
+ask_value "QRZ user name" "QRZ_USER"
+ask_secret "QRZ password" "QRZ_PASSWORD"
+ask_secret "QRZ API key" "QRZ_API_KEY"
 
 # ------------------------------------------------------------
 # Security
@@ -205,13 +205,12 @@ chmod 600 "$ENV_FILE"
 # ------------------------------------------------------------
 
 echo
-echo "3. Konfiguration"
+echo "3. Configuration"
 echo "----------------"
 echo
-echo "Die grundlegenden Zugangsdaten wurden gespeichert."
+echo "The basic credentials have been saved."
 echo
-echo "Die folgenden Einstellungen werden NICHT in .env"
-echo "verwaltet:"
+echo "The following settings are NOT kept in .env:"
 echo
 echo "  - Callsign"
 echo "  - Operator"
@@ -221,29 +220,29 @@ echo "  - DXSpider 1–4"
 echo "  - HolyCluster"
 echo "  - DX Summit"
 echo
-echo "Diese Einstellungen befinden sich zentral in:"
+echo "They are kept in:"
 echo
 echo "  data/settings.json"
 echo
-echo "und können bequem über das Dashboard geändert werden."
+echo "and are changed in the web interface (Settings)."
 echo
 
 if [ -n "$IP_ADDRESS" ]; then
-    echo "Settings öffnen:"
+    echo "Open SHACK-SERVER and click Settings in the menu:"
     echo
-    echo "  https://${IP_ADDRESS}/settings.html"
+    echo "  http://${IP_ADDRESS}:$(get_env_value PORT | grep -E '^[0-9]+$' || echo 3000)"
 else
-    echo "Settings öffnen über:"
+    echo "Open SHACK-SERVER and click Settings in the menu:"
     echo
-    echo "  https://<SHACK-SERVER-IP>/settings.html"
+    echo "  http://<SHACK-SERVER-IP>:3000"
 fi
 
 echo
 echo "------------------------------------------------------------"
-echo "Setup abgeschlossen."
+echo "Setup finished."
 echo "------------------------------------------------------------"
 echo
-echo "Die .env-Datei wurde mit chmod 600 geschützt."
+echo "The .env file is protected with chmod 600."
 echo
 echo "Backup:"
 echo "  $BACKUP_FILE"

@@ -79,7 +79,7 @@ while [ $# -gt 0 ]; do
             exit 0
             ;;
         *)
-            echo "Unbekannte Option: $1  (Hilfe: --help)"
+            echo "Unknown option: $1  (help: --help)"
             exit 1
             ;;
     esac
@@ -101,9 +101,9 @@ step()  { echo; echo "${C_HEAD}== $* ==${C_OFF}"; }
 ok()    { echo "${C_OK}  ✔ $*${C_OFF}"; }
 warn()  { echo "${C_WARN}  ! $*${C_OFF}"; }
 info()  { echo "    $*"; }
-fail()  { echo; echo "${C_ERR}FEHLER: $*${C_OFF}"; echo "Details im Log: $LOG_FILE"; exit 1; }
+fail()  { echo; echo "${C_ERR}ERROR: $*${C_OFF}"; echo "Details in the log: $LOG_FILE"; exit 1; }
 
-trap 'fail "Abbruch in Zeile $LINENO (Befehl: $BASH_COMMAND)"' ERR
+trap 'fail "Aborted in line $LINENO (command: $BASH_COMMAND)"' ERR
 
 # Run a command (or only show it in --dry-run).
 run() {
@@ -140,7 +140,7 @@ ask_yes_no() {
         return
     fi
 
-    if [ "$default" = "j" ]; then hint="[J/n]"; else hint="[j/N]"; fi
+    if [ "$default" = "j" ]; then hint="[Y/n]"; else hint="[y/N]"; fi
 
     read -r -p "  $question $hint " answer <"$TTY" || answer=""
     answer="${answer:-$default}"
@@ -171,62 +171,62 @@ ask_value() {
 
 check_system() {
 
-    step "1. System prüfen"
+    step "1. Check the system"
 
     : >"$LOG_FILE" 2>/dev/null || LOG_FILE="/tmp/shack-server-install.log"
     info "Log: $LOG_FILE"
 
     if [ "$(id -u)" = "0" ]; then
-        fail "Bitte NICHT als root bzw. mit sudo starten, sondern als normaler Benutzer.
-       Das Script fragt selbst nach dem sudo-Passwort, wo es nötig ist."
+        fail "Please do NOT run this as root or with sudo, but as the normal user.
+       The script asks for the sudo password itself where needed."
     fi
 
     if [ ! -r /etc/os-release ]; then
-        fail "Unbekanntes Betriebssystem (keine /etc/os-release)."
+        fail "Unknown operating system (no /etc/os-release)."
     fi
 
     # shellcheck disable=SC1091
     . /etc/os-release
 
     case " ${ID:-} ${ID_LIKE:-} " in
-        *" debian "*|*" raspbian "*|*" ubuntu "*) ok "Betriebssystem: ${PRETTY_NAME:-$ID}" ;;
-        *) fail "Nur Debian, Raspberry Pi OS und Ubuntu werden unterstützt (gefunden: ${PRETTY_NAME:-unbekannt})." ;;
+        *" debian "*|*" raspbian "*|*" ubuntu "*) ok "Operating system: ${PRETTY_NAME:-$ID}" ;;
+        *) fail "Only Debian, Raspberry Pi OS and Ubuntu are supported (found: ${PRETTY_NAME:-unknown})." ;;
     esac
 
     local arch
     arch="$(uname -m)"
     case "$arch" in
-        aarch64|x86_64) ok "Architektur: $arch" ;;
+        aarch64|x86_64) ok "Architecture: $arch" ;;
         armv7l|armv6l)
-            fail "32-Bit-System ($arch). Bitte ein 64-Bit Raspberry Pi OS installieren -
-       Node.js $NODE_MAJOR gibt es dafür nicht mehr."
+            fail "32-bit system ($arch). Please install a 64-bit Raspberry Pi OS -
+       Node.js $NODE_MAJOR is not available for 32 bit."
             ;;
-        *) warn "Ungetestete Architektur: $arch" ;;
+        *) warn "Untested architecture: $arch" ;;
     esac
 
     local mem_mb
     mem_mb="$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)"
     if [ "$mem_mb" -lt 900 ]; then
-        warn "Nur ${mem_mb} MB RAM - der Build kann sehr lange dauern."
+        warn "Only ${mem_mb} MB RAM - the build can take very long."
     else
-        ok "Arbeitsspeicher: ${mem_mb} MB"
+        ok "Memory: ${mem_mb} MB"
     fi
 
     if ! command -v sudo >/dev/null 2>&1; then
-        fail "sudo ist nicht installiert."
+        fail "sudo is not installed."
     fi
 
     if [ "$DRY_RUN" != "1" ]; then
-        info "sudo-Rechte werden geprüft (evtl. Passwort eingeben) ..."
-        sudo -v || fail "Keine sudo-Rechte."
+        info "Checking sudo rights (enter your password if asked) ..."
+        sudo -v || fail "No sudo rights."
     fi
 
     if curl -fsS --max-time 10 -o /dev/null https://github.com 2>/dev/null; then
-        ok "Internet: erreichbar"
+        ok "Internet: reachable"
     elif [ "$DRY_RUN" = "1" ]; then
-        warn "github.com nicht erreichbar (dry-run: wird ignoriert)"
+        warn "github.com not reachable (dry-run: ignored)"
     else
-        fail "github.com ist nicht erreichbar. Bitte Netzwerk prüfen."
+        fail "github.com is not reachable. Please check the network."
     fi
 
 }
@@ -238,19 +238,22 @@ check_system() {
 
 install_packages() {
 
-    step "2. Systempakete"
+    step "2. System packages"
 
-    info "Paketlisten aktualisieren ..."
+    info "Updating the package lists ..."
     srun apt-get update
 
-    # avahi-daemon: <hostname>.local im Heimnetz
-    # libhamlib-utils: rigctl / rigctld für den Hamlib-Treiber
+    # avahi-daemon: <hostname>.local in the home network
+    # libhamlib-utils: rigctld / rotctld (Hamlib transceivers, rotator)
+    # alsa-utils: arecord / aplay (remote audio)
+    # rclone: backup to Dropbox / NAS
+    # sqlite3: restore / inspect the log by hand
     local packages=(git curl ca-certificates gnupg build-essential
-                    libhamlib-utils avahi-daemon)
+                    libhamlib-utils avahi-daemon alsa-utils rclone sqlite3)
 
-    info "Installiere: ${packages[*]}"
+    info "Installing: ${packages[*]}"
     srun env DEBIAN_FRONTEND=noninteractive apt-get install -y "${packages[@]}"
-    ok "Systempakete installiert"
+    ok "System packages installed"
 
 }
 
@@ -264,9 +267,9 @@ install_node() {
     fi
 
     if [ -n "$current" ] && [ "$current" -ge "$NODE_MAJOR" ]; then
-        ok "Node.js $(node -v) ist bereits installiert"
+        ok "Node.js $(node -v) is already installed"
     else
-        info "Node.js ${current:-fehlt} - installiere Version $NODE_MAJOR (NodeSource) ..."
+        info "Node.js ${current:-missing} - installing version $NODE_MAJOR (NodeSource) ..."
         if [ "$DRY_RUN" = "1" ]; then
             echo "    [dry-run] curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | sudo -E bash -"
         else
@@ -274,29 +277,29 @@ install_node() {
             curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | sudo -E bash - >>"$LOG_FILE" 2>&1
         fi
         srun apt-get install -y nodejs
-        ok "Node.js installiert"
+        ok "Node.js installed"
     fi
 
     if command -v pm2 >/dev/null 2>&1; then
-        ok "pm2 ist bereits installiert"
+        ok "pm2 is already installed"
     else
-        info "Installiere pm2 ..."
+        info "Installing pm2 ..."
         srun npm install -g pm2
-        ok "pm2 installiert"
+        ok "pm2 installed"
     fi
 
 }
 
 setup_serial_permission() {
 
-    step "4. Zugriff auf serielle Schnittstellen (Transceiver)"
+    step "4. Access to the serial ports (transceivers)"
 
     if id -nG "$USER" | tr ' ' '\n' | grep -qx dialout; then
-        ok "Benutzer $USER ist bereits in der Gruppe dialout"
+        ok "User $USER is already in the group dialout"
     else
         srun usermod -aG dialout "$USER"
         NEEDS_RELOGIN=1
-        ok "Benutzer $USER zur Gruppe dialout hinzugefügt (wirksam nach Neustart)"
+        ok "User $USER added to the group dialout (active after a reboot)"
     fi
 
 }
@@ -331,73 +334,73 @@ detect_repo_url() {
 
 get_code() {
 
-    step "5. SHACK-SERVER Code"
+    step "5. SHACK-SERVER code"
 
     if [ -d "$INSTALL_DIR/.git" ]; then
 
-        info "Vorhandene Installation: $INSTALL_DIR"
+        info "Existing installation: $INSTALL_DIR"
 
         if [ -n "$(git -C "$INSTALL_DIR" status --porcelain --untracked-files=no 2>/dev/null)" ]; then
-            warn "Es gibt lokale Änderungen an versionierten Dateien:"
+            warn "There are local changes to versioned files:"
             git -C "$INSTALL_DIR" status --short --untracked-files=no | sed 's/^/      /'
-            if ask_yes_no "Trotzdem aktualisieren? (lokale Änderungen werden mit git stash gesichert)" "n"; then
+            if ask_yes_no "Update anyway? (local changes are saved with git stash)" "n"; then
                 run git -C "$INSTALL_DIR" stash push -m "install.sh $(date +%Y%m%d-%H%M%S)"
-                ok "Lokale Änderungen gesichert (git stash list)"
+                ok "Local changes saved (git stash list)"
             else
-                warn "Code wird NICHT aktualisiert - es wird mit dem vorhandenen Stand weitergemacht"
+                warn "Code is NOT updated - continuing with the existing version"
                 return
             fi
         fi
 
-        info "Hole Aktualisierungen (git pull) ..."
+        info "Getting updates (git pull) ..."
         run git -C "$INSTALL_DIR" pull --ff-only
-        ok "Code ist aktuell ($(git -C "$INSTALL_DIR" log -1 --format='%h %cd' --date=short 2>/dev/null || echo '?'))"
+        ok "Code is up to date ($(git -C "$INSTALL_DIR" log -1 --format='%h %cd' --date=short 2>/dev/null || echo '?'))"
         return
 
     fi
 
     if [ -e "$INSTALL_DIR" ] && [ -n "$(ls -A "$INSTALL_DIR" 2>/dev/null)" ]; then
-        fail "$INSTALL_DIR existiert, ist aber kein git-Klon.
-       Bitte umbenennen/verschieben oder mit --dir ein anderes Verzeichnis wählen."
+        fail "$INSTALL_DIR exists, but is not a git clone.
+       Please rename / move it or choose another directory with --dir."
     fi
 
     if [ -z "$REPO_URL" ]; then
         if [ -n "$TTY" ] && [ "$ASSUME_YES" != "1" ]; then
-            REPO_URL="$(ask_value "GitHub-Adresse des SHACK-SERVER Repositorys" "")"
+            REPO_URL="$(ask_value "GitHub address of the SHACK-SERVER repository" "")"
         fi
-        [ -n "$REPO_URL" ] || fail "Keine Repository-Adresse. Bitte mit --repo <URL> angeben."
+        [ -n "$REPO_URL" ] || fail "No repository address. Please give it with --repo <URL>."
     fi
 
-    info "Klone $REPO_URL ($BRANCH) nach $INSTALL_DIR ..."
+    info "Cloning $REPO_URL ($BRANCH) to $INSTALL_DIR ..."
     run git clone --branch "$BRANCH" "$REPO_URL" "$INSTALL_DIR"
-    ok "Code heruntergeladen"
+    ok "Code downloaded"
 
 }
 
 build_app() {
 
-    step "6. Abhängigkeiten und Build"
+    step "6. Dependencies and build"
 
     if [ "$DRY_RUN" != "1" ]; then
         cd "$INSTALL_DIR"
     fi
 
-    info "npm install (beim ersten Mal einige Minuten) ..."
+    info "npm install (a few minutes the first time) ..."
     if [ -f "$INSTALL_DIR/package-lock.json" ]; then
         run npm ci --no-audit --no-fund || run npm install --no-audit --no-fund
     else
         run npm install --no-audit --no-fund
     fi
-    ok "Abhängigkeiten installiert"
+    ok "Dependencies installed"
 
     info "Build (npm run build) ..."
     if ! run npm run build; then
         if grep -qi "heap out of memory" "$LOG_FILE" 2>/dev/null; then
-            fail "Zu wenig Arbeitsspeicher für den Build. Swap vergrössern oder Pi mit mehr RAM verwenden."
+            fail "Not enough memory for the build. Increase the swap or use a Pi with more RAM."
         fi
-        fail "Build fehlgeschlagen."
+        fail "Build failed."
     fi
-    ok "Build erfolgreich"
+    ok "Build successful"
 
 }
 
@@ -408,20 +411,20 @@ build_app() {
 
 run_setup_assistant() {
 
-    step "7. Grundkonfiguration (.env)"
+    step "7. Basic configuration (.env)"
 
     if [ -f "$INSTALL_DIR/.env" ] && [ "$MODE" = "update" ]; then
-        ok ".env vorhanden - unverändert"
+        ok ".env exists - unchanged"
         return
     fi
 
-    if [ -f "$INSTALL_DIR/.env" ] && ! ask_yes_no ".env ist vorhanden. Setup-Assistent trotzdem starten?" "n"; then
-        ok ".env vorhanden - unverändert"
+    if [ -f "$INSTALL_DIR/.env" ] && ! ask_yes_no ".env exists. Start the setup assistant anyway?" "n"; then
+        ok ".env exists - unchanged"
         return
     fi
 
     if [ -z "$TTY" ] || [ "$DRY_RUN" = "1" ]; then
-        warn "Setup-Assistent übersprungen. Später starten mit:"
+        warn "Setup assistant skipped. Start it later with:"
         info "bash $INSTALL_DIR/scripts/shack-server-setup"
         return
     fi
@@ -442,28 +445,28 @@ app_port() {
 
 setup_pm2() {
 
-    step "8. Autostart mit pm2"
+    step "8. Autostart with pm2"
 
     if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
-        info "Starte $APP_NAME neu ..."
+        info "Restarting $APP_NAME ..."
         run pm2 restart "$APP_NAME" --update-env
-        ok "$APP_NAME neu gestartet"
+        ok "$APP_NAME restarted"
     else
-        info "Starte $APP_NAME ..."
+        info "Starting $APP_NAME ..."
         run pm2 start "$INSTALL_DIR/dist/index.js" --name "$APP_NAME" --cwd "$INSTALL_DIR"
-        ok "$APP_NAME gestartet"
+        ok "$APP_NAME started"
     fi
 
     run pm2 save
 
     # Autostart after reboot (systemd unit for this user)
     if systemctl list-unit-files 2>/dev/null | grep -q "^pm2-$USER.service"; then
-        ok "pm2-Autostart ist bereits eingerichtet"
+        ok "pm2 autostart is already set up"
     else
-        info "Richte Autostart nach Neustart ein ..."
+        info "Setting up the autostart after a reboot ..."
         srun env PATH="$PATH" "$(command -v pm2 || echo pm2)" startup systemd -u "$USER" --hp "$HOME"
         run pm2 save
-        ok "Autostart eingerichtet"
+        ok "Autostart set up"
     fi
 
     if [ "$DRY_RUN" != "1" ]; then
@@ -472,12 +475,12 @@ setup_pm2() {
         local _
         for _ in 1 2 3 4 5 6 7 8 9 10; do
             if curl -fsS --max-time 2 -o /dev/null "http://127.0.0.1:$port/"; then
-                ok "SHACK-SERVER antwortet auf Port $port"
+                ok "SHACK-SERVER answers on port $port"
                 return
             fi
             sleep 2
         done
-        warn "SHACK-SERVER antwortet nicht auf Port $port. Logs: pm2 logs $APP_NAME"
+        warn "SHACK-SERVER does not answer on port $port. Logs: pm2 logs $APP_NAME"
     fi
 
 }
@@ -490,15 +493,15 @@ setup_pm2() {
 install_caddy_package() {
 
     if command -v caddy >/dev/null 2>&1; then
-        ok "Caddy ist bereits installiert ($(caddy version 2>/dev/null | awk '{print $1}'))"
+        ok "Caddy is already installed ($(caddy version 2>/dev/null | awk '{print $1}'))"
         return
     fi
 
-    info "Installiere Caddy (offizielle Paketquelle) ..."
+    info "Installing Caddy (official package source) ..."
     srun apt-get install -y debian-keyring debian-archive-keyring apt-transport-https
 
     if [ "$DRY_RUN" = "1" ]; then
-        echo "    [dry-run] Caddy-Paketquelle von dl.cloudsmith.io einrichten"
+        echo "    [dry-run] set up the Caddy package source from dl.cloudsmith.io"
     else
         curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
             | sudo gpg --dearmor --yes -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
@@ -510,7 +513,7 @@ install_caddy_package() {
 
     srun apt-get update
     srun apt-get install -y caddy
-    ok "Caddy installiert"
+    ok "Caddy installed"
 
 }
 
@@ -589,13 +592,13 @@ setup_caddy() {
         return
     fi
 
-    step "9. HTTPS im Heimnetz (Caddy)"
+    step "9. HTTPS in the home network (Caddy)"
 
-    info "Caddy stellt SHACK-SERVER per HTTPS bereit. Nötig für Remote-Mikrofon"
-    info "und USB-Bedienteile im Browser (WebHID)."
+    info "Caddy provides SHACK-SERVER via HTTPS. Needed for the remote microphone"
+    info "and USB control panels in the browser (WebHID)."
 
-    if [ "$WITH_CADDY" = "ask" ] && ! ask_yes_no "Caddy einrichten?" "j"; then
-        info "Caddy übersprungen"
+    if [ "$WITH_CADDY" = "ask" ] && ! ask_yes_no "Set up Caddy?" "j"; then
+        info "Caddy skipped"
         return
     fi
 
@@ -614,16 +617,16 @@ setup_caddy() {
 
     # Never overwrite a configuration we did not create without asking.
     if caddyfile_exists && ! caddyfile_is_ours; then
-        warn "Es gibt bereits eine eigene Caddy-Konfiguration ($CADDYFILE):"
+        warn "There is already a Caddy configuration of your own ($CADDYFILE):"
         caddyfile_cat | sed 's/^/      /' | head -30
-        if ! ask_yes_no "Durch die SHACK-SERVER-Konfiguration ersetzen? (Backup wird angelegt)" "n"; then
+        if ! ask_yes_no "Replace it with the SHACK-SERVER configuration? (a backup is made)" "n"; then
             local snippet="$INSTALL_DIR/Caddyfile.shack-server"
             if [ "$DRY_RUN" != "1" ]; then
                 generate_caddyfile "$port" "$sites" >"$snippet"
             fi
-            warn "Caddy-Konfiguration nicht verändert. Vorschlag gespeichert in:"
+            warn "Caddy configuration not changed. Suggestion saved in:"
             info "$snippet"
-            SUMMARY+=("Caddy: eigene Konfiguration beibehalten - Vorschlag: $snippet")
+            SUMMARY+=("Caddy: own configuration kept - suggestion: $snippet")
             return
         fi
     fi
@@ -632,10 +635,10 @@ setup_caddy() {
     local public old_public
     old_public="$(existing_public_host || true)"
 
-    info "Öffentlicher Zugang (optional): Hostname, den Cloudflare an diesen Pi"
-    info "weiterleitet, z.B. dashboard.example.com. \"-\" = nur Heimnetz."
-    info "Die Anmeldung übernimmt dann Cloudflare (Access) - SHACK-SERVER hat keine."
-    public="$(ask_value "Öffentlicher Hostname" "${old_public:--}")"
+    info "Public access (optional): host name that Cloudflare forwards to this Pi,"
+    info "e.g. dashboard.example.com. \"-\" = home network only."
+    info "The login is then done by Cloudflare (Access) - SHACK-SERVER has none."
+    public="$(ask_value "Public host name" "${old_public:--}")"
     if [ "$public" = "-" ]; then
         public=""
     fi
@@ -644,7 +647,7 @@ setup_caddy() {
     public="${public%%/*}"
 
     if [ -n "$public" ] && ! [[ "$public" =~ ^[A-Za-z0-9.-]+$ ]]; then
-        fail "Ungültiger Hostname: $public"
+        fail "Invalid host name: $public"
     fi
 
     local tmp
@@ -652,7 +655,7 @@ setup_caddy() {
     generate_caddyfile "$port" "$sites" "$public" >"$tmp"
 
     if [ "$DRY_RUN" = "1" ]; then
-        echo "    [dry-run] würde $CADDYFILE schreiben:"
+        echo "    [dry-run] would write $CADDYFILE:"
         sed 's/^/      | /' "$tmp"
         rm -f "$tmp"
         return
@@ -660,7 +663,7 @@ setup_caddy() {
 
     if ! caddy validate --adapter caddyfile --config "$tmp" >>"$LOG_FILE" 2>&1; then
         rm -f "$tmp"
-        fail "Die erzeugte Caddy-Konfiguration ist ungültig (siehe Log)."
+        fail "The generated Caddy configuration is invalid (see the log)."
     fi
 
     if caddyfile_exists; then
@@ -679,18 +682,18 @@ setup_caddy() {
     else
         srun systemctl restart caddy
     fi
-    ok "Caddy eingerichtet: $sites${public:+, http://$public}"
+    ok "Caddy set up: $sites${public:+, http://$public}"
 
-    SUMMARY+=("HTTPS im Heimnetz: $sites")
+    SUMMARY+=("HTTPS in the home network: $sites")
     if [ -n "$public" ]; then
-        SUMMARY+=("Öffentlich über Cloudflare: https://$public (Cloudflare Access aktiv lassen!)")
+        SUMMARY+=("Public through Cloudflare: https://$public (keep Cloudflare Access active!)")
     fi
-    SUMMARY+=("Zertifikatswarnung im Browser vermeiden: das Caddy-Stammzertifikat")
+    SUMMARY+=("To avoid the certificate warning in the browser, install the Caddy root certificate")
     SUMMARY+=("  /var/lib/caddy/.local/share/caddy/pki/authorities/local/root.crt")
-    SUMMARY+=("  auf den Geräten (PC, Tablet, Handy) als vertrauenswürdig installieren.")
+    SUMMARY+=("  as trusted on your devices (PC, tablet, phone).")
     if [ -n "$ip" ]; then
-        SUMMARY+=("Tipp: Im Router eine feste IP für den Pi vergeben ($ip), sonst passt")
-        SUMMARY+=("  das Zertifikat nach einem IP-Wechsel nicht mehr (dann Installer erneut starten).")
+        SUMMARY+=("Tip: give the Pi a fixed IP address in the router ($ip), otherwise")
+        SUMMARY+=("  the certificate no longer fits after an IP change (then run the installer again).")
     fi
 
 }
@@ -710,13 +713,13 @@ summary() {
     echo
     echo "${C_OK}============================================================${C_OFF}"
     if [ "$MODE" = "update" ]; then
-        echo "${C_OK}  SHACK-SERVER ist aktualisiert${C_OFF}"
+        echo "${C_OK}  SHACK-SERVER is updated${C_OFF}"
     else
-        echo "${C_OK}  SHACK-SERVER ist installiert${C_OFF}"
+        echo "${C_OK}  SHACK-SERVER is installed${C_OFF}"
     fi
     echo "${C_OK}============================================================${C_OFF}"
     echo
-    echo "  Im Browser öffnen:"
+    echo "  Open in the browser:"
     if command -v caddy >/dev/null 2>&1 && caddyfile_is_ours; then
         [ -n "$ip" ] && echo "    https://$ip"
         echo "    https://${host,,}.local"
@@ -725,7 +728,7 @@ summary() {
         echo "    http://${host,,}.local:$port"
     fi
     echo
-    echo "  Danach: Settings → Station und Transceivers einrichten."
+    echo "  Then: Settings -> set up the station and the transceivers."
 
     local line
     if [ ${#SUMMARY[@]} -gt 0 ]; then
@@ -737,14 +740,14 @@ summary() {
 
     if [ "$NEEDS_RELOGIN" = "1" ]; then
         echo
-        echo "${C_WARN}  WICHTIG: Bitte den Raspberry jetzt neu starten (sudo reboot),${C_OFF}"
-        echo "${C_WARN}  damit der Zugriff auf die Transceiver-Schnittstellen aktiv wird.${C_OFF}"
+        echo "${C_WARN}  IMPORTANT: please reboot the Raspberry now (sudo reboot),${C_OFF}"
+        echo "${C_WARN}  so that the access to the transceiver ports becomes active.${C_OFF}"
     fi
 
     echo
-    echo "  Später aktualisieren:  bash $INSTALL_DIR/scripts/install.sh --update"
-    echo "  Logs anzeigen:         pm2 logs $APP_NAME"
-    echo "  Installationslog:      $LOG_FILE"
+    echo "  Update later:          bash $INSTALL_DIR/scripts/install.sh --update"
+    echo "  Show the logs:         pm2 logs $APP_NAME"
+    echo "  Installation log:      $LOG_FILE"
     echo
 
 }
@@ -763,7 +766,7 @@ main() {
     else
         echo "              SHACK-SERVER Installation"
     fi
-    [ "$DRY_RUN" = "1" ] && echo "              (dry-run: es wird nichts verändert)"
+    [ "$DRY_RUN" = "1" ] && echo "              (dry-run: nothing is changed)"
     echo "============================================================"
 
     check_system

@@ -1,0 +1,64 @@
+# Tests the one-step installer on a fresh Ubuntu machine, on x86 and on
+# ARM64 (same architecture as the Raspberry Pi 4/5, 64-bit OS).
+# Actions -> Install test -> Run workflow, and on changes of the scripts.
+
+name: Install test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/install.sh"
+      - "scripts/shack-server-setup"
+      - ".github/workflows/install-test.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Remove the preinstalled Node.js (like a fresh Raspberry Pi OS)
+        run: |
+          sudo rm -f /usr/local/bin/node /usr/local/bin/npm /usr/local/bin/npx
+          hash -r
+          command -v node || echo "no node - good"
+
+      - name: Install (as the normal user, defaults, no Caddy)
+        run: bash scripts/install.sh --yes --no-caddy
+
+      - name: Check
+        run: |
+          set -e
+          node -v
+          pm2 status
+          systemctl is-enabled "pm2-$USER"
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:3000/ >/dev/null && break; sleep 3; done
+          curl -fsS http://127.0.0.1:3000/ | grep -qi "shack-server"
+          curl -fsS http://127.0.0.1:3000/api/settings | head -c 300; echo
+          curl -fsS "http://127.0.0.1:3000/api/dxcc" | python3 -c "import sys,json; d=json.load(sys.stdin); print('DXCC entities', d['total']); assert d['total'] > 300"
+          which rigctld rotctld arecord rclone sqlite3
+
+      - name: Update
+        run: bash ~/SHACK-SERVER/scripts/install.sh --update
+
+      - name: Check after update
+        run: |
+          sleep 5
+          curl -fsS http://127.0.0.1:3000/ | grep -qi "shack-server"
+          pm2 status
+
+      - name: Logs
+        if: always()
+        run: |
+          tail -n 60 ~/shack-server-install.log || true
+          pm2 logs --nostream --lines 40 || true
