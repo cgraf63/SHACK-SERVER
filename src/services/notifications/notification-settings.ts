@@ -98,6 +98,7 @@ export function normalizeNotifications(raw: any, previous?: NotificationSettings
             priority: priority === "default" || priority === "max" ? priority : "high"
         },
         nearbyRadiusKm: clamp(raw?.nearbyRadiusKm, 50, 20000, base.nearbyRadiusKm ?? 1000),
+        pskReporter: typeof raw?.pskReporter === "boolean" ? raw.pskReporter : (base.pskReporter ?? false),
         needed: normalizeNeeded(raw?.needed, base.needed ?? shackSettings.notifications.needed)
     };
 

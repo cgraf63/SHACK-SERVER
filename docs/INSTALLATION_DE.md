@@ -510,7 +510,7 @@ Die Glocke 🔔 neben jedem Rufzeichen der Watchlist schaltet die Push-Nachricht
 - Sperrzeit pro Land + Band (ein Pileup alarmiert einmal), Ruhezeiten und Link wie bei der Watchlist.
 - Beispiel: `NEW COUNTRY: FW3GT – Wallis & Futuna Islands – 14.001 MHz CW – heard in EU (3 spotters, 18 dB) – via DX Summit, RBN`
 
-**Heard near you**: SHACK-SERVER liest den kompletten Reverse-Beacon-Network-Feed (CW/RTTY-Skimmer mit SNR und Locator) und die Spotter-Rufzeichen der DX-Cluster. Eine Station gilt als *nah gehört*, wenn ein Spotter im eingestellten Umkreis deines QTH (Standard 1000 km) sie in den letzten 15 Minuten auf diesem Band gemeldet hat. Live-Spots und DXpeditions-Seite zeigen ein grünes **NEAR**, der DX-Score bekommt +15. Die letzten Needed-Alarme stehen im Dashboard unter der Watchlist (Klick = abstimmen).
+**Heard near you**: SHACK-SERVER liest den kompletten Reverse-Beacon-Network-Feed (CW/RTTY-Skimmer mit SNR und Locator) und die Spotter-Rufzeichen der DX-Cluster. Eine Station gilt als *nah gehört*, wenn ein Spotter im eingestellten Umkreis deines QTH (Standard 1000 km) sie in den letzten 15 Minuten auf diesem Band gemeldet hat. Optional zusätzlich der **PSK-Reporter**-Live-Feed (FT8, FT4, JS8 ...; *Settings → Needed alerts → PSK Reporter*): SHACK-SERVER abonniert nur die Meldungen von Empfängern in den Locator-Feldern innerhalb des Umkreises (MQTT, mqtt.pskreporter.info, Port 1883). Live-Spots und DXpeditions-Seite zeigen ein grünes **NEAR**, der DX-Score bekommt +15. Die letzten Needed-Alarme stehen im Dashboard unter der Watchlist (Klick = abstimmen).
 
 ### Backup (Dropbox und/oder NAS)
 

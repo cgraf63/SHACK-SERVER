@@ -103,6 +103,8 @@ export interface NotificationSettings {
     };
     /* "heard near you": spotter within this distance of the own QTH */
     nearbyRadiusKm: number;
+    /* PSK Reporter live feed (MQTT) for "heard near you" - FT8/FT4 etc. */
+    pskReporter: boolean;
     needed: NeededAlertSettings;
 }
 
@@ -275,6 +277,7 @@ export const shackSettings: ShackSettings = {
         linkUrl: "",
         ntfy: { enabled: true, server: "https://ntfy.sh", topic: "", token: "", priority: "high" },
         nearbyRadiusKm: 1000,
+        pskReporter: false,
         needed: {
             enabled: false,
             newCountry: true,

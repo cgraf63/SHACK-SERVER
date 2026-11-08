@@ -512,7 +512,7 @@ The bell 🔔 next to each callsign in the watch list switches the push for this
 - Lockout per country + band (a pile-up alerts once), quiet hours and link as for the watch list.
 - Example: `NEW COUNTRY: FW3GT – Wallis & Futuna Islands – 14.001 MHz CW – heard in EU (3 spotters, 18 dB) – via DX Summit, RBN`
 
-**Heard near you**: SHACK-SERVER reads the complete Reverse Beacon Network feed (CW/RTTY skimmers with SNR and locator) and the spotter callsigns of the DX clusters. A station is *near* when a spotter within the set distance of your QTH (default 1000 km) reported it on this band in the last 15 minutes. The live spots and the DXpeditions page show a green **NEAR** badge, the DX score gets +15. The last needed alerts are listed in the dashboard below the watch list (click = tune).
+**Heard near you**: SHACK-SERVER reads the complete Reverse Beacon Network feed (CW/RTTY skimmers with SNR and locator) and the spotter callsigns of the DX clusters. A station is *near* when a spotter within the set distance of your QTH (default 1000 km) reported it on this band in the last 15 minutes. Optionally also the **PSK Reporter** live feed (FT8, FT4, JS8 ...; *Settings → Needed alerts → PSK Reporter*): SHACK-SERVER subscribes only to the reports of receivers in the grid squares within the radius (MQTT, mqtt.pskreporter.info, port 1883). The live spots and the DXpeditions page show a green **NEAR** badge, the DX score gets +15. The last needed alerts are listed in the dashboard below the watch list (click = tune).
 
 ### Backup (Dropbox and/or NAS)
 

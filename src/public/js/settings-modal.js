@@ -1968,6 +1968,9 @@ function applyNeededSettings(needed, radiusKm) {
     set("needed-min-score", needed.minScore ?? 0);
     set("needed-radius", radiusKm || 1000);
     set("needed-cooldown", needed.cooldownMinutes || 60);
+    check("needed-pskreporter", settingsData?.notifications?.pskReporter === true);
+
+    void loadPskReporterStatus();
 
     const bands = (needed.bands || []).map(b => String(b).toLowerCase());
     const modes = needed.modes || [];
@@ -1979,6 +1982,33 @@ function applyNeededSettings(needed, radiusKm) {
     document.querySelectorAll("[data-needed-mode]").forEach(box => {
         box.checked = modes.includes(box.dataset.neededMode);
     });
+
+}
+
+async function loadPskReporterStatus() {
+
+    const info = document.getElementById("needed-pskreporter-status");
+
+    if (!info) return;
+
+    try {
+
+        const response = await fetch("/api/needed/pskreporter", { cache: "no-store" });
+
+        if (!response.ok) { info.textContent = ""; return; }
+
+        const s = await response.json();
+
+        info.innerHTML = !s.enabled
+            ? "Receivers near your QTH report which stations they decode (MQTT, mqtt.pskreporter.info). RBN covers CW / RTTY."
+            : s.connected
+                ? `<span class="ok">✔ connected - ${escapeHtml(s.squares)} grid squares, ${escapeHtml(s.reportsPerMinute)} reports / min</span>`
+                : `<span class="err">✖ not connected${s.error ? " - " + escapeHtml(s.error) : ""}</span>`;
+
+    }
+    catch {
+        info.textContent = "";
+    }
 
 }
 
@@ -2012,6 +2042,7 @@ function collectNotificationSettings() {
         linkUrl: backupValue("notify-link"),
         nearbyRadiusKm: Number(backupValue("needed-radius")) || 1000,
         needed: collectNeededSettings(),
+        pskReporter: backupChecked("needed-pskreporter"),
         ntfy: {
             enabled: true,
             server: backupValue("notify-ntfy-server") || "https://ntfy.sh",
@@ -2024,6 +2055,8 @@ function collectNotificationSettings() {
 }
 
 function afterNotificationsSaved() {
+
+    setTimeout(loadPskReporterStatus, 4000);
 
     const token = document.getElementById("notify-ntfy-token");
 

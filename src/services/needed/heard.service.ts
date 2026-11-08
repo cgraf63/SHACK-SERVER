@@ -23,6 +23,8 @@ import { settingsService } from "../settings/settings.service.js";
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_REPORTS_PER_CALL = 40;
 const MAX_LOCATORS = 20_000;
+/* memory cap (PSK Reporter can deliver tens of thousands of stations) */
+const MAX_CALLS = 60_000;
 
 export interface HeardReport {
     spotter: string;
@@ -84,6 +86,21 @@ class HeardService {
         if (report.locator) this.learnLocator(report.spotter, report.locator);
 
         let list = this.reports.get(key);
+
+        if (!list && this.reports.size >= MAX_CALLS) {
+
+            this.prune();
+
+            // still full: drop the oldest quarter (Map keeps insertion order)
+            if (this.reports.size >= MAX_CALLS) {
+                let drop = Math.floor(MAX_CALLS / 4);
+                for (const call of this.reports.keys()) {
+                    if (drop-- <= 0) break;
+                    this.reports.delete(call);
+                }
+            }
+
+        }
 
         if (!list) {
             list = [];

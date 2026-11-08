@@ -54,6 +54,10 @@ import {
     attachHeardService
 } from "./services/needed/heard.service.js";
 
+import {
+    pskReporterService
+} from "./services/needed/pskreporter.service.js";
+
 import "./services/rbn/rbn-instance.js";
 
 import "./services/telnet/telnet-server.js";
@@ -90,6 +94,9 @@ else {
     /* Needed alerts (new DXCC entity / band) and "heard near you" */
     attachHeardService(fusionEngine);
     neededNotifier.start(fusionEngine);
+
+    /* PSK Reporter live feed for "heard near you" (Settings, optional) */
+    pskReporterService.start();
 
 }
 
