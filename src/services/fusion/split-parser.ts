@@ -2,6 +2,7 @@
  * Split information in DX spot comments.
  *
  *   "UP 2", "UP2", "up 1-3" (middle), "2 UP", "DOWN 1", "DN 3"
+ *   "LSN 1 UP", "QSX 2 UP" (UP / DOWN wins over a QSX number)
  *   "QSX 14025", "QSX 14.025", "QSX 025" / "QSX 25" (last digits),
  *   "LSN 14.205", "LISTENING 7165"
  *   "LSN UP", "QRZ UP", "PSE UP", a comment that is just "UP"
@@ -78,8 +79,8 @@ function qsxValue(raw: string, rxKhz: number): number | null {
     // kHz: 14025, 7165, 14025.5
     if (value >= 1000) return value;
 
-    // last digits: 025, 25, 195
-    if (/^\d{1,3}$/.test(text)) return expandShortQsx(text, rxKhz);
+    // last digits: 025, 25, 195 (a single digit is too vague)
+    if (/^\d{2,3}$/.test(text)) return expandShortQsx(text, rxKhz);
 
     return null;
 
@@ -95,24 +96,6 @@ export function parseSplit(comment: string | undefined, rxKhz: number, mode: str
     if (DIGITAL.has(m)) return null;
 
     const text = ` ${comment.toUpperCase().replace(/\s+/g, " ")} `;
-
-    /* QSX / LSN / LISTENING <frequency> */
-    const qsx = /\b(?:QSX|LSN|LIS|LSTN|LISTEN(?:ING)?)\s*:?\s*(\d{1,5}(?:[.,]\d{1,3})?)(?![\d.,])/.exec(text);
-
-    if (qsx) {
-
-        const tx = qsxValue(qsx[1] ?? "", rxKhz);
-
-        if (tx !== null && Math.abs(tx - rxKhz) <= MAX_QSX_DISTANCE_KHZ && Math.abs(tx - rxKhz) >= 0.1) {
-            const txKhz = round(tx);
-            return {
-                txKhz,
-                offsetKhz: round(txKhz - rxKhz),
-                label: `QSX ${(txKhz / 1000).toFixed(3)}`
-            };
-        }
-
-    }
 
     /* UP 2 / UP2 / UP 1-3 / DOWN 1 / DN 2 */
     const updown =
@@ -140,6 +123,7 @@ export function parseSplit(comment: string | undefined, rxKhz: number, mode: str
 
     if (direction && Number.isFinite(from) && Number.isFinite(to)) {
 
+
         const offset = (from + to) / 2;
 
         if (offset > 0 && offset <= MAX_OFFSET_KHZ) {
@@ -153,6 +137,24 @@ export function parseSplit(comment: string | undefined, rxKhz: number, mode: str
                 label: `${sign > 0 ? "UP" : "DN"} ${range}`
             };
 
+        }
+
+    }
+
+    /* QSX / LSN / LISTENING <frequency> */
+    const qsx = /\b(?:QSX|LSN|LIS|LSTN|LISTEN(?:ING)?)\s*:?\s*(\d{1,5}(?:[.,]\d{1,3})?)(?![\d.,])/.exec(text);
+
+    if (qsx) {
+
+        const tx = qsxValue(qsx[1] ?? "", rxKhz);
+
+        if (tx !== null && Math.abs(tx - rxKhz) <= MAX_QSX_DISTANCE_KHZ && Math.abs(tx - rxKhz) >= 0.1) {
+            const txKhz = round(tx);
+            return {
+                txKhz,
+                offsetKhz: round(txKhz - rxKhz),
+                label: `QSX ${(txKhz / 1000).toFixed(3)}`
+            };
         }
 
     }
