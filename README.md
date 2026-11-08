@@ -12,6 +12,50 @@ Collect. Fuse. Prioritize.
 Open-source platform for intelligent amateur radio information processing.
 </p>
 
+<p align="center">
+  <a href="docs/media/shack-server-tour.mp4">
+    <img src="docs/images/screenshots/video-poster.jpg" alt="SHACK-SERVER tour (video, 54 s)" width="720">
+  </a>
+  <br>
+  <sub>▶ <a href="docs/media/shack-server-tour.mp4">Watch the 1-minute tour</a> (MP4)</sub>
+</p>
+
+---
+
+## Highlights
+
+**Live DX spots from several clusters, fused and scored.** DXSpider clusters, DX Summit and HolyCluster in one list - the same spot from several sources counts once, the DX score puts the stations you need on top, one click tunes the radio (CAT).
+
+![Dashboard](docs/images/screenshots/01-dashboard.jpg)
+
+**Needed alerts - without entering callsigns.** Every new spot is checked against your log by **DXCC entity**: *NEW COUNTRY*, *NEW BAND COUNTRY*, optionally new band / mode for a station. **NEAR** = heard by a spotter close to your QTH (Reverse Beacon Network, PSK Reporter, cluster spotters).
+
+<p align="center"><img src="docs/images/screenshots/needed-alerts.jpg" alt="Needed alerts" width="720"></p>
+
+**Push to your phone** via [ntfy](https://ntfy.sh) - for needed alerts and your watch list, also when no browser is open. Lockout per station / country and band, quiet hours, tap the notification to open SHACK-SERVER.
+
+![Push notifications](docs/images/screenshots/11-settings-notifications.jpg)
+
+**DXCC table** - all 340 entities x 160-6 m, worked / confirmed, by mode, with filters (needed, worked not confirmed ...).
+
+![DXCC](docs/images/screenshots/04-dxcc.jpg)
+
+**Current DXpeditions** - announced DX operations (NG3K ADXO), updated automatically, compared with your log; if a DXpedition is spotted right now, one click tunes the radio.
+
+![DXpeditions](docs/images/screenshots/05-dxpeditions.jpg)
+
+**QSO log** - ADIF import / export, uploads to QRZ.com and Club Log (per callsign, also /P and other prefixes), WSJT-X integration.
+
+![QSO log](docs/images/screenshots/06-qso-log.jpg)
+
+**Contest** - multi-operator console, one log for several operators and stations, QSO history, Cabrillo export.
+
+![Contest QSO history](docs/images/screenshots/07-contest.jpg)
+
+**And more:** antenna rotator (Hamlib), remote control and audio for Yaesu transceivers, internal SDR, propagation overview, RBN, backup to Dropbox / NAS, runs on a Raspberry Pi and in any browser.
+
+<sub>Screenshots and video: the Docker demo (simulated transceiver, sample log, real live spots). The needed alerts in the picture are example alerts made from real spots of that moment - in the demo the alerts cannot be switched on.</sub>
+
 ---
 
 ## Try it - demo on Windows, macOS or Linux
@@ -66,7 +110,7 @@ As an alternative you can secure the https using cloudflare.
 ## Fully blown internal SDR (SDR Receiver needed of Course) using our own code.
 <img width="1907" height="1021" alt="image" src="https://github.com/user-attachments/assets/2669fc8c-9eed-4804-9768-0d2d8181cf65" />
 
-## Configurable uploads to QRZ, LoTW, Clublog
+## Configurable uploads to QRZ.com and Club Log (LoTW in preparation)
 <img width="858" height="322" alt="image" src="https://github.com/user-attachments/assets/3a11fde5-a803-4d5b-8ae7-ff60ef06f2eb" />
 
 ## WSJTX Integration
