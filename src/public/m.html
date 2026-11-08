@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#050d13">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SHACK">
+
+    <title>SHACK-SERVER</title>
+
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" type="image/png" href="/assets/app/icon-192.png">
+    <link rel="apple-touch-icon" href="/assets/app/apple-touch-icon.png">
+
+    <style>
+
+:root {
+    --bg: #050d13;
+    --panel: #0c1821;
+    --panel2: #102330;
+    --border: #1d3442;
+    --text: #e6eef3;
+    --muted: #8fa3b2;
+    --cyan: #00e5ff;
+    --yellow: #ffc400;
+    --green: #8cff00;
+    --red: #ff5a5a;
+    --orange: #ff9800;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    font-size: 16px;
+    overscroll-behavior-y: contain;
+}
+
+button, input, select { font: inherit; color: inherit; }
+
+/* header: station + radio */
+
+.top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: calc(10px + var(--safe-top)) 14px 10px;
+    background: rgba(5, 13, 19, 0.96);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+}
+
+.top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+.brand { font-weight: 800; letter-spacing: .04em; color: var(--cyan); font-size: 15px; }
+.brand small { color: var(--muted); font-weight: 600; margin-left: 6px; }
+
+.conn { width: 10px; height: 10px; border-radius: 50%; background: var(--red); flex: 0 0 auto; }
+.conn.ok { background: var(--green); box-shadow: 0 0 8px rgba(140,255,0,.6); }
+
+.radio-line {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 6px;
+    font-variant-numeric: tabular-nums;
+}
+.radio-line .freq { font-size: 26px; font-weight: 800; letter-spacing: .02em; }
+.radio-line .mode { color: var(--muted); font-weight: 700; }
+.radio-line .split { color: var(--orange); font-weight: 800; font-size: 13px; }
+.radio-line .tx { color: var(--red); font-weight: 800; font-size: 13px; }
+
+/* tabs */
+
+main { padding: 12px 12px calc(84px + var(--safe-bottom)); }
+
+.tab { display: none; }
+.tab.active { display: block; }
+
+nav.tabs {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 10;
+    display: flex;
+    padding: 6px 6px calc(6px + var(--safe-bottom));
+    background: rgba(8, 18, 26, 0.98);
+    border-top: 1px solid var(--border);
+}
+
+nav.tabs button {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 0;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+nav.tabs button .ico { font-size: 22px; line-height: 1; }
+nav.tabs button.active { color: var(--cyan); }
+nav.tabs .badge {
+    position: absolute;
+    margin-left: 22px;
+    margin-top: -4px;
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--red);
+    color: #fff;
+    font-size: 10px;
+    line-height: 18px;
+}
+
+h2 {
+    margin: 4px 2px 10px;
+    color: var(--yellow);
+    font-size: 13px;
+    letter-spacing: .1em;
+}
+
+.empty { padding: 30px 10px; text-align: center; color: var(--muted); font-size: 14px; }
+
+/* cards (alerts, spots) */
+
+.card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+    cursor: pointer;
+    user-select: none;
+}
+.card:active { background: var(--panel2); border-color: var(--cyan); }
+
+.card .flag { width: 30px; height: 21px; border-radius: 3px; object-fit: cover; flex: 0 0 auto; background: #1a2a35; }
+.card .main { flex: 1; min-width: 0; }
+.card .call { font-size: 19px; font-weight: 800; letter-spacing: .02em; }
+.card .sub { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .right { text-align: right; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+.card .qrg { font-size: 16px; font-weight: 700; color: var(--cyan); }
+.card .age { color: var(--muted); font-size: 12px; }
+
+.pill {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0 5px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 16px;
+    vertical-align: 2px;
+    letter-spacing: .03em;
+}
+.pill.new { color: #ff7a7a; border: 1px solid rgba(255,90,90,.6); background: rgba(255,90,90,.12); }
+.pill.band { color: #ffb347; border: 1px solid rgba(255,152,0,.6); background: rgba(255,152,0,.12); }
+.pill.near { color: #9be05a; border: 1px solid rgba(140,255,0,.5); background: rgba(140,255,0,.1); }
+.pill.split { color: #ffb347; border: 1px solid rgba(255,152,0,.6); background: rgba(255,152,0,.12); }
+.pill.dxp { color: #ffc400; border: 1px solid rgba(255,196,0,.6); background: rgba(255,196,0,.12); }
+.pill.watch { color: var(--cyan); border: 1px solid rgba(0,229,255,.5); background: rgba(0,229,255,.1); }
+
+/* filter chips */
+
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin: 0 -2px 4px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+    flex: 0 0 auto;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+.chip.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0,229,255,.08); }
+
+/* radio tab */
+
+.panel {
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--panel);
+}
+
+.big-freq { font-size: 40px; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.big-sub { text-align: center; color: var(--muted); font-weight: 700; margin-top: 4px; }
+.big-sub .split { color: var(--orange); }
+
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.grid.three { grid-template-columns: repeat(3, 1fr); }
+
+.btn {
+    padding: 13px 6px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel2);
+    font-weight: 800;
+    font-size: 15px;
+}
+.btn:active { border-color: var(--cyan); }
+.btn.on { border-color: var(--cyan); color: var(--cyan); }
+.btn.primary { border-color: rgba(140,255,0,.6); color: var(--green); background: rgba(140,255,0,.08); }
+.btn.warn { border-color: rgba(255,152,0,.6); color: #ffb347; }
+.btn.wide { width: 100%; }
+
+.label { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .06em; margin: 0 0 8px; }
+
+.compass { display: flex; align-items: center; gap: 14px; }
+.compass .deg { font-size: 30px; font-weight: 800; color: var(--cyan); }
+
+/* log tab */
+
+.field { margin-bottom: 10px; }
+.field label { display: block; color: var(--muted); font-size: 12px; font-weight: 700; margin-bottom: 4px; letter-spacing: .05em; }
+.field input, .field select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel2);
+    font-size: 17px;
+}
+.field input.callsign { font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row3 { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 10px; }
+
+.recent .q { display: flex; justify-content: space-between; padding: 8px 2px; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 14px; }
+.recent .q b { letter-spacing: .02em; }
+.recent .q span { color: var(--muted); }
+
+/* toast */
+
+.toast {
+    position: fixed;
+    left: 12px; right: 12px;
+    bottom: calc(80px + var(--safe-bottom));
+    z-index: 20;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(16, 35, 48, 0.97);
+    border: 1px solid var(--cyan);
+    color: var(--text);
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.6);
+    transition: opacity .2s;
+}
+.toast.err { border-color: var(--red); }
+.toast.split { border-color: var(--orange); }
+.toast[hidden] { display: block; opacity: 0; pointer-events: none; }
+
+.install {
+    display: none;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-size: 13px;
+}
+.install.show { display: block; }
+.install button { margin-left: 8px; }
+
+.link { color: var(--muted); font-size: 13px; text-align: center; margin: 18px 0 6px; }
+.link a { color: var(--muted); }
+
+    </style>
+
+</head>
+
+<body>
+
+<header class="top">
+    <div class="top-row">
+        <div class="brand">SHACK-SERVER<small id="station"></small></div>
+        <span class="conn" id="conn" title="Connection to SHACK-SERVER"></span>
+    </div>
+    <div class="radio-line" id="radio-line">
+        <span class="freq" id="hdr-freq">--</span>
+        <span class="mode" id="hdr-mode"></span>
+        <span class="split" id="hdr-split"></span>
+        <span class="tx" id="hdr-tx"></span>
+    </div>
+</header>
+
+<main>
+
+    <!-- ALERTS -->
+    <section class="tab active" id="tab-alerts">
+        <div class="install" id="install">
+            Add SHACK-SERVER to your home screen for a full-screen app.
+            <button class="chip" id="install-btn" type="button">Install</button>
+        </div>
+        <h2>NEEDED ALERTS</h2>
+        <div id="needed-list"><div class="empty">Loading…</div></div>
+        <h2 style="margin-top:18px">WATCH LIST</h2>
+        <div id="watch-list"><div class="empty">—</div></div>
+    </section>
+
+    <!-- SPOTS -->
+    <section class="tab" id="tab-spots">
+        <div class="chips" id="band-chips"></div>
+        <div class="chips" id="mode-chips"></div>
+        <div id="spot-list"><div class="empty">Loading…</div></div>
+    </section>
+
+    <!-- RADIO -->
+    <section class="tab" id="tab-radio">
+        <div class="panel">
+            <div class="big-freq" id="r-freq">--</div>
+            <div class="big-sub" id="r-sub">--</div>
+        </div>
+
+        <div class="panel">
+            <p class="label">BAND</p>
+            <div class="grid" id="band-buttons"></div>
+            <p class="label" style="margin-top:12px">SEGMENT</p>
+            <div class="grid three" id="segment-buttons"></div>
+        </div>
+
+        <div class="panel">
+            <p class="label">MODE / SPLIT</p>
+            <div class="grid">
+                <button class="btn" data-mode="CW" type="button">CW</button>
+                <button class="btn" data-mode="LSB" type="button">LSB</button>
+                <button class="btn" data-mode="USB" type="button">USB</button>
+                <button class="btn warn" id="split-off" type="button">SPLIT OFF</button>
+            </div>
+        </div>
+
+        <div class="panel" id="rotator-panel" hidden>
+            <p class="label">ROTATOR</p>
+            <div class="compass">
+                <svg width="64" height="64" viewBox="0 0 44 44" id="rot-svg"></svg>
+                <div>
+                    <div class="deg" id="rot-deg">--</div>
+                    <div class="big-sub" id="rot-target" style="text-align:left"></div>
+                </div>
+            </div>
+            <div class="grid" style="margin-top:12px">
+                <button class="btn" data-rot="-10" type="button">−10°</button>
+                <button class="btn" data-rot="10" type="button">+10°</button>
+                <button class="btn" id="rot-last" type="button">LAST DX</button>
+                <button class="btn warn" id="rot-stop" type="button">STOP</button>
+            </div>
+        </div>
+
+        <div class="link"><a href="/">Open the full dashboard</a></div>
+    </section>
+
+    <!-- LOG -->
+    <section class="tab" id="tab-log">
+        <div class="panel">
+            <div class="field">
+                <label for="l-call">CALLSIGN</label>
+                <input id="l-call" class="callsign" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="DX CALL">
+            </div>
+            <div class="field">
+                <label for="l-name">NAME</label>
+                <input id="l-name" type="text" autocomplete="off" placeholder="from QRZ.com">
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label for="l-rst-s">RST SENT</label>
+                    <input id="l-rst-s" type="text" inputmode="numeric">
+                </div>
+                <div class="field">
+                    <label for="l-rst-r">RST RCVD</label>
+                    <input id="l-rst-r" type="text" inputmode="numeric">
+                </div>
+            </div>
+            <div class="row3">
+                <div class="field">
+                    <label for="l-freq">FREQ (kHz)</label>
+                    <input id="l-freq" type="text" inputmode="decimal">
+                </div>
+                <div class="field">
+                    <label for="l-band">BAND</label>
+                    <input id="l-band" type="text">
+                </div>
+                <div class="field">
+                    <label for="l-mode">MODE</label>
+                    <input id="l-mode" type="text" autocapitalize="characters">
+                </div>
+            </div>
+            <div class="row">
+                <button class="btn" id="l-fill" type="button">FROM RADIO</button>
+                <button class="btn primary" id="l-save" type="button">SAVE QSO</button>
+            </div>
+        </div>
+
+        <h2>RECENT QSOs</h2>
+        <div class="recent" id="recent"></div>
+    </section>
+
+</main>
+
+<nav class="tabs">
+    <button type="button" data-tab="alerts" class="active"><span class="ico">🔔</span>ALERTS<span class="badge" id="badge" hidden></span></button>
+    <button type="button" data-tab="spots"><span class="ico">📡</span>SPOTS</button>
+    <button type="button" data-tab="radio"><span class="ico">🎛️</span>RADIO</button>
+    <button type="button" data-tab="log"><span class="ico">✍️</span>LOG</button>
+</nav>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+
+(function () {
+
+    /* ------------------------------------------------------------
+       State
+       ------------------------------------------------------------ */
+
+    const state = {
+        tab: "alerts",
+        settings: {},
+        radio: null,
+        spots: [],
+        worked: { dxcc: new Set(), calls: new Set() },
+        needed: [],
+        watch: [],
+        band: "ALL",
+        mode: "ALL",
+        rotator: null,
+        lastDx: null,
+        seenAlerts: Number(localGet("shack-m-seen") || 0)
+    };
+
+    const BANDS = [
+        ["160m", 1800, 2000], ["80m", 3500, 4000], ["60m", 5250, 5450], ["40m", 7000, 7300],
+        ["30m", 10100, 10150], ["20m", 14000, 14350], ["17m", 18068, 18168], ["15m", 21000, 21450],
+        ["12m", 24890, 24990], ["10m", 28000, 29700], ["6m", 50000, 54000]
+    ];
+
+    /* typical frequency per band and segment (kHz) */
+    const SEGMENTS = {
+        "160m": { CW: 1825, FT8: 1840, SSB: 1850 },
+        "80m": { CW: 3525, FT8: 3573, SSB: 3750 },
+        "60m": { CW: 5352, FT8: 5357, SSB: 5360 },
+        "40m": { CW: 7025, FT8: 7074, SSB: 7150 },
+        "30m": { CW: 10120, FT8: 10136, SSB: null },
+        "20m": { CW: 14025, FT8: 14074, SSB: 14200 },
+        "17m": { CW: 18080, FT8: 18100, SSB: 18130 },
+        "15m": { CW: 21025, FT8: 21074, SSB: 21250 },
+        "12m": { CW: 24900, FT8: 24915, SSB: 24950 },
+        "10m": { CW: 28025, FT8: 28074, SSB: 28450 },
+        "6m": { CW: 50090, FT8: 50313, SSB: 50150 }
+    };
+
+    let segment = localGet("shack-m-segment") || "SSB";
+
+    /* ------------------------------------------------------------
+       Helpers
+       ------------------------------------------------------------ */
+
+    function localGet(key) {
+        try { return localStorage.getItem(key); } catch { return null; }
+    }
+
+    function localSet(key, value) {
+        try { localStorage.setItem(key, value); } catch { /* private mode */ }
+    }
+
+    function esc(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function bandOf(khz) {
+        const band = BANDS.find(([, from, to]) => khz >= from && khz <= to);
+        return band ? band[0] : "";
+    }
+
+    function mhz(khz, digits = 3) {
+        return (Number(khz) / 1000).toFixed(digits);
+    }
+
+    function ago(ms) {
+        const minutes = Math.max(0, Math.round((Date.now() - ms) / 60000));
+        return minutes < 60 ? `${minutes}m` : `${Math.round(minutes / 60)}h`;
+    }
+
+    function flag(code) {
+        return code ? `<img class="flag" src="/assets/flags/${esc(String(code).toLowerCase())}.svg" alt="" onerror="this.style.visibility='hidden'">` : `<span class="flag"></span>`;
+    }
+
+    let toastTimer = null;
+
+    function toast(text, kind) {
+        const el = document.getElementById("toast");
+        el.textContent = text;
+        el.className = `toast ${kind || ""}`;
+        el.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { el.hidden = true; }, 3500);
+    }
+
+    async function api(path, options) {
+        const response = await fetch(path, { cache: "no-store", ...(options || {}) });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || data.message || `HTTP ${response.status}`);
+        return data;
+    }
+
+    function post(path, body) {
+        return api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+    }
+
+    function setConnected(ok) {
+        document.getElementById("conn").classList.toggle("ok", ok);
+    }
+
+    /* ------------------------------------------------------------
+       Tune (with split)
+       ------------------------------------------------------------ */
+
+    function radioMode(mode, khz) {
+        const m = String(mode || "").toUpperCase();
+        if (m === "CW") return "CW";
+        if (m === "LSB" || m === "USB" || m === "AM" || m === "FM") return m;
+        if (m === "SSB" || m === "PHONE") return khz < 10000 ? "LSB" : "USB";
+        return "USB"; // FT8, FT4, RTTY, digital: USB
+    }
+
+    /* FT8 / FT4 spots: dial frequency of the band */
+    function dialFor(spotKhz, mode) {
+        const m = String(mode || "").toUpperCase();
+        const band = bandOf(spotKhz);
+        if ((m === "FT8" || m === "FT4") && SEGMENTS[band]) {
+            if (m === "FT8") return SEGMENTS[band].FT8;
+            const ft4 = { "80m": 3575, "40m": 7047.5, "30m": 10140, "20m": 14080, "17m": 18104, "15m": 21140, "12m": 24919, "10m": 28180, "6m": 50318 };
+            return ft4[band] ?? spotKhz;
+        }
+        return spotKhz;
+    }
+
+    async function tune(khz, mode, splitTxKhz, label) {
+
+        const dial = dialFor(khz, mode);
+        const radio = radioMode(mode, dial);
+        const autoSplit = state.settings.autoSplit !== false;
+
+        try {
+
+            const result = await post(autoSplit ? "/api/radio/tune-split" : "/api/radio/tune", {
+                frequency: Math.round(dial * 1000),
+                mode: radio,
+                ...(autoSplit ? { txFrequency: splitTxKhz ? Math.round(splitTxKhz * 1000) : null } : {})
+            });
+
+            navigator.vibrate?.(30);
+
+            if (result.split) {
+                toast(`${label || ""} RX ${mhz(dial)} · TX ${mhz(result.txFrequency / 1000)} · SPLIT`.trim(), "split");
+            }
+            else {
+                toast(`${label ? label + " " : ""}${mhz(dial)} ${radio}${result.note ? " · " + result.note : ""}`);
+            }
+
+            void loadRadio();
+
+        }
+        catch (error) {
+            toast(`Tune failed: ${error.message}`, "err");
+        }
+
+    }
+
+    function spotFor(call) {
+        const key = String(call || "").toUpperCase();
+        return state.spots
+            .filter(s => String(s.call).toUpperCase() === key)
+            .sort((a, b) => (a.age ? parseInt(a.age) : 0) - (b.age ? parseInt(b.age) : 0))[0] || null;
+    }
+
+    /* tap on a DX station: tune, remember for the log and the rotator */
+    function useDx(dx) {
+
+        state.lastDx = dx;
+
+        const spot = spotFor(dx.call);
+        const split = spot?.split?.txKhz ?? null;
+
+        void tune(Number(dx.frequency), dx.mode, split, dx.call);
+
+        // prepare the log
+        const dial = dialFor(Number(dx.frequency), dx.mode);
+        const spotMode = String(dx.mode || "").toUpperCase();
+        const logMode = ["USB", "LSB", "PHONE"].includes(spotMode) ? "SSB" : (spotMode === "UNKNOWN" ? "" : spotMode);
+        document.getElementById("l-call").value = dx.call;
+        document.getElementById("l-name").value = "";
+        document.getElementById("l-freq").value = Number(dx.frequency).toFixed(1);
+        document.getElementById("l-band").value = bandOf(dial);
+        document.getElementById("l-mode").value = logMode;
+        document.getElementById("l-rst-s").value = defaultRst(logMode);
+        document.getElementById("l-rst-r").value = defaultRst(logMode);
+        void lookupName(dx.call);
+
+    }
+
+    /* ------------------------------------------------------------
+       Data
+       ------------------------------------------------------------ */
+
+    async function loadSettings() {
+        try {
+            state.settings = await api("/api/settings");
+            document.getElementById("station").textContent = state.settings.callsign ? `· ${state.settings.callsign}` : "";
+        }
+        catch { /* later */ }
+    }
+
+    async function loadRadio() {
+
+        try {
+
+            const r = await api("/api/radio");
+            state.radio = r;
+            setConnected(true);
+
+            const khz = Number(r.frequency) / 1000;
+            const split = r.split && Number(r.frequencyB) > 0;
+
+            document.getElementById("hdr-freq").textContent = khz > 0 ? mhz(khz) : "--";
+            document.getElementById("hdr-mode").textContent = r.mode || "";
+            document.getElementById("hdr-split").textContent = split ? `SPLIT ${mhz(Number(r.frequencyB) / 1000)}` : "";
+            document.getElementById("hdr-tx").textContent = r.txState ? "TX" : "";
+
+            document.getElementById("r-freq").textContent = khz > 0 ? mhz(khz) : "--";
+            document.getElementById("r-sub").innerHTML =
+                `${esc(r.mode || "")} · ${esc(bandOf(khz) || "")}${r.power ? ` · ${esc(r.power)} W` : ""}` +
+                (split ? ` · <span class="split">SPLIT TX ${esc(mhz(Number(r.frequencyB) / 1000))}</span>` : "") +
+                `<br><span style="font-size:13px">${esc(r.radio || "")}</span>`;
+
+            document.querySelectorAll("#band-buttons .btn").forEach(b => b.classList.toggle("on", b.dataset.band === bandOf(khz)));
+            document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("on", b.dataset.mode === String(r.mode).toUpperCase()));
+
+        }
+        catch (error) {
+            document.getElementById("hdr-freq").textContent = "--";
+            document.getElementById("hdr-mode").textContent = /No active radio/i.test(error.message) ? "no radio" : "";
+            setConnected(!/Failed to fetch|NetworkError/i.test(error.message));
+        }
+
+    }
+
+    async function loadSpots() {
+
+        try {
+            const [spots, worked] = await Promise.all([api("/api/spots"), api("/api/qso/worked").catch(() => ({}))]);
+            state.spots = Array.isArray(spots) ? spots : [];
+            state.worked = {
+                dxcc: new Set(worked.dxcc || []),
+                calls: new Set((worked.calls || []).map(c => String(c).toUpperCase()))
+            };
+            setConnected(true);
+            renderSpots();
+        }
+        catch {
+            setConnected(false);
+        }
+
+    }
+
+    async function loadAlerts() {
+
+        try {
+
+            const [needed, watch] = await Promise.all([
+                api("/api/needed/recent").catch(() => []),
+                api("/api/watchlist/notifications/status").catch(() => ({ recent: [] }))
+            ]);
+
+            state.needed = (Array.isArray(needed) ? needed : []).filter(a => Date.now() - a.at < 6 * 3600_000);
+            state.watch = (watch.recent || []).filter(a => Date.now() - a.at < 6 * 3600_000);
+
+            renderAlerts();
+
+        }
+        catch { /* offline */ }
+
+    }
+
+    async function loadRotator() {
+        try {
+            const r = await api("/api/rotator/status");
+            state.rotator = r.enabled ? r : null;
+        }
+        catch {
+            state.rotator = null;
+        }
+        renderRotator();
+    }
+
+    /* ------------------------------------------------------------
+       Render
+       ------------------------------------------------------------ */
+
+    function renderAlerts() {
+
+        const needed = document.getElementById("needed-list");
+        const watch = document.getElementById("watch-list");
+
+        needed.innerHTML = state.needed.length
+            ? state.needed.map((a, i) => {
+                const spot = spotFor(a.callsign);
+                const level = a.level === "NEW COUNTRY" ? `<span class="pill new">NEW</span>` : `<span class="pill band">${esc(a.level.replace("NEW ", ""))}</span>`;
+                return `<div class="card" data-alert="${i}">
+                    ${flag(spot?.countryCode)}
+                    <div class="main">
+                        <div class="call">${esc(a.callsign)}${level}${a.nearby ? `<span class="pill near">NEAR</span>` : ""}${spot?.split ? `<span class="pill split">${esc(spot.split.label)}</span>` : ""}</div>
+                        <div class="sub">${esc(a.entity)}${a.heard ? " · " + esc(a.heard) : ""}</div>
+                    </div>
+                    <div class="right"><div class="qrg">${mhz(a.frequency)}</div><div class="age">${esc(a.mode || "")} · ${ago(a.at)}</div></div>
+                </div>`;
+            }).join("")
+            : `<div class="empty">No needed alerts in the last hours.<br><small>Settings → Needed alerts on the dashboard.</small></div>`;
+
+        watch.innerHTML = state.watch.length
+            ? state.watch.map((a, i) => `<div class="card" data-watch="${i}">
+                    ${flag(spotFor(a.callsign)?.countryCode)}
+                    <div class="main">
+                        <div class="call">${esc(a.callsign)}<span class="pill watch">WATCH</span></div>
+                        <div class="sub">${esc(a.country || "")}${a.sources?.length ? " · via " + esc(a.sources.join(", ")) : ""}</div>
+                    </div>
+                    <div class="right"><div class="qrg">${mhz(a.frequency)}</div><div class="age">${esc(a.mode || "")} · ${ago(a.at)}</div></div>
+                </div>`).join("")
+            : `<div class="empty">No watch list hits.</div>`;
+
+        // badge: alerts newer than the last look at this tab
+        const newest = Math.max(0, ...state.needed.map(a => a.at), ...state.watch.map(a => a.at));
+        const unseen = [...state.needed, ...state.watch].filter(a => a.at > state.seenAlerts).length;
+        const badge = document.getElementById("badge");
+
+        if (state.tab === "alerts") {
+            state.seenAlerts = Math.max(state.seenAlerts, newest);
+            localSet("shack-m-seen", String(state.seenAlerts));
+            badge.hidden = true;
+        }
+        else {
+            badge.hidden = unseen === 0;
+            badge.textContent = String(unseen);
+        }
+
+    }
+
+    function isNeeded(spot) {
+        return spot.dxccKey && !state.worked.dxcc.has(spot.dxccKey);
+    }
+
+    function renderChips() {
+
+        const bands = ["ALL", ...BANDS.map(b => b[0])];
+        const modes = ["ALL", "NEEDED", "CW", "SSB", "DIGI"];
+
+        document.getElementById("band-chips").innerHTML = bands.map(b =>
+            `<button type="button" class="chip ${state.band === b ? "active" : ""}" data-band-chip="${b}">${b}</button>`).join("");
+
+        document.getElementById("mode-chips").innerHTML = modes.map(m =>
+            `<button type="button" class="chip ${state.mode === m ? "active" : ""}" data-mode-chip="${m}">${m === "NEEDED" ? "★ NEEDED" : m}</button>`).join("");
+
+    }
+
+    function renderSpots() {
+
+        const list = document.getElementById("spot-list");
+
+        let spots = state.spots.filter(s => s.mode !== "UNKNOWN" || true);
+
+        if (state.band !== "ALL") spots = spots.filter(s => String(s.band).toLowerCase() === state.band);
+
+        if (state.mode === "NEEDED") spots = spots.filter(isNeeded);
+        else if (state.mode === "CW") spots = spots.filter(s => s.mode === "CW");
+        else if (state.mode === "SSB") spots = spots.filter(s => ["SSB", "USB", "LSB", "AM", "FM"].includes(s.mode));
+        else if (state.mode === "DIGI") spots = spots.filter(s => !["CW", "SSB", "USB", "LSB", "AM", "FM", "UNKNOWN"].includes(s.mode));
+
+        // needed first, then near, then newest
+        spots = [...spots].sort((a, b) =>
+            (isNeeded(b) ? 1 : 0) - (isNeeded(a) ? 1 : 0) ||
+            (b.heard?.nearby ? 1 : 0) - (a.heard?.nearby ? 1 : 0) ||
+            (parseInt(a.age) || 0) - (parseInt(b.age) || 0)
+        ).slice(0, 80);
+
+        list.innerHTML = spots.length
+            ? spots.map((s, i) => `<div class="card" data-spot="${i}">
+                    ${flag(s.countryCode)}
+                    <div class="main">
+                        <div class="call">${esc(s.call)}${isNeeded(s) ? `<span class="pill new">NEW</span>` : ""}${s.heard?.nearby ? `<span class="pill near">NEAR</span>` : ""}${s.split ? `<span class="pill split">${esc(s.split.label)}</span>` : ""}${window.shackDxpeditions?.match(s.call) ? `<span class="pill dxp">DXP</span>` : ""}</div>
+                        <div class="sub">${esc(s.dxccName || s.country || "")}${s.comments?.[0] ? " · " + esc(s.comments[0]) : ""}</div>
+                    </div>
+                    <div class="right"><div class="qrg">${esc(Number(s.frequency).toFixed(1))}</div><div class="age">${esc(s.mode === "UNKNOWN" ? "" : s.mode)} · ${esc(s.age || "")}</div></div>
+                </div>`).join("")
+            : `<div class="empty">No spots for this selection.</div>`;
+
+        list._spots = spots;
+
+    }
+
+    function renderBands() {
+
+        document.getElementById("band-buttons").innerHTML = BANDS.map(([band]) =>
+            `<button type="button" class="btn" data-band="${band}">${band.replace("m", "")}</button>`).join("");
+
+        document.getElementById("segment-buttons").innerHTML = ["CW", "SSB", "FT8"].map(s =>
+            `<button type="button" class="btn ${segment === s ? "on" : ""}" data-segment="${s}">${s}</button>`).join("");
+
+    }
+
+    function renderRotator() {
+
+        const panel = document.getElementById("rotator-panel");
+        const r = state.rotator;
+
+        panel.hidden = !r;
+
+        if (!r) return;
+
+        const needle = (angle, color, len) => {
+            if (angle === null || angle === undefined) return "";
+            const rad = (angle - 90) * Math.PI / 180;
+            return `<line x1="22" y1="22" x2="${(22 + Math.cos(rad) * len).toFixed(1)}" y2="${(22 + Math.sin(rad) * len).toFixed(1)}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>`;
+        };
+
+        document.getElementById("rot-svg").innerHTML =
+            `<circle cx="22" cy="22" r="19" fill="none" stroke="#1d3442" stroke-width="2"/>` +
+            `<text x="22" y="9" text-anchor="middle" font-size="7" fill="#8fa3b2">N</text>` +
+            needle(r.target, "rgba(255,196,0,.85)", 15) + needle(r.azimuth, "#00e5ff", 17) +
+            `<circle cx="22" cy="22" r="2.5" fill="#00e5ff"/>`;
+
+        document.getElementById("rot-deg").textContent = r.connected && r.azimuth !== null ? `${r.azimuth}°` : "--";
+        document.getElementById("rot-target").textContent = !r.connected ? (r.error || "not connected") : r.target !== null ? `→ ${r.target}°` : "";
+
+        const last = spotFor(state.lastDx?.call);
+        const lastBtn = document.getElementById("rot-last");
+        lastBtn.disabled = !last || last.azimuth === undefined;
+        lastBtn.textContent = last && last.azimuth !== undefined ? `${state.lastDx.call} ${last.azimuth}°` : "LAST DX";
+
+    }
+
+    async function loadRecent() {
+
+        try {
+            const data = await api("/api/qso");
+            const qsos = (data.qsos || [])
+                .sort((a, b) => `${b.qso_date} ${b.time_on_utc}`.localeCompare(`${a.qso_date} ${a.time_on_utc}`))
+                .slice(0, 8);
+            document.getElementById("recent").innerHTML = qsos.length
+                ? qsos.map(q => `<div class="q"><b>${esc(q.call)}</b><span>${esc(q.band || "")} ${esc(q.mode || "")} · ${esc(q.qso_date || "")} ${esc(String(q.time_on_utc || "").slice(0, 5))}</span></div>`).join("")
+                : `<div class="empty">No QSOs yet.</div>`;
+        }
+        catch { /* offline */ }
+
+    }
+
+    /* ------------------------------------------------------------
+       Log
+       ------------------------------------------------------------ */
+
+    function defaultRst(mode) {
+        const m = String(mode || "").toUpperCase();
+        if (m === "CW" || m === "RTTY") return "599";
+        if (m === "FT8" || m === "FT4") return "-10";
+        return "59";
+    }
+
+    function fillFromRadio() {
+
+        const r = state.radio;
+        const dx = state.lastDx;
+        const khz = r && Number(r.frequency) > 0 ? Number(r.frequency) / 1000 : Number(dx?.frequency) || 0;
+
+        // digital spots: log the spot mode (the radio shows USB)
+        const mode = dx && ["FT8", "FT4", "RTTY"].includes(String(dx.mode).toUpperCase()) ? dx.mode : (r?.mode || dx?.mode || "");
+        const logMode = ["USB", "LSB"].includes(String(mode).toUpperCase()) ? "SSB" : String(mode).toUpperCase().replace(/^CW-.*/, "CW");
+
+        document.getElementById("l-freq").value = khz ? khz.toFixed(1) : "";
+        document.getElementById("l-band").value = bandOf(khz);
+        document.getElementById("l-mode").value = logMode;
+        document.getElementById("l-rst-s").value = defaultRst(logMode);
+        document.getElementById("l-rst-r").value = defaultRst(logMode);
+
+    }
+
+    let lookupFor = "";
+
+    async function lookupName(call) {
+
+        const key = String(call || "").trim().toUpperCase();
+
+        if (key.length < 3 || key === lookupFor) return;
+
+        lookupFor = key;
+
+        try {
+            const data = await api(`/api/qso/qrz/${encodeURIComponent(key)}`);
+            if (lookupFor === key && data.qrz) {
+                const name = document.getElementById("l-name");
+                if (!name.value) name.value = data.qrz.name || "";
+                state.lookup = data.qrz;
+            }
+        }
+        catch {
+            state.lookup = null;
+        }
+
+    }
+
+    async function saveQso() {
+
+        const call = document.getElementById("l-call").value.trim().toUpperCase();
+        const khz = Number(String(document.getElementById("l-freq").value).replace(",", "."));
+        const band = document.getElementById("l-band").value.trim() || bandOf(khz);
+        const mode = document.getElementById("l-mode").value.trim().toUpperCase();
+
+        if (!call) return toast("Callsign missing", "err");
+        if (!khz) return toast("Frequency missing", "err");
+        if (!mode) return toast("Mode missing", "err");
+        if (!state.settings.callsign || !state.settings.locator) return toast("Set your callsign and locator in Settings first", "err");
+
+        const now = new Date();
+        const lookup = state.lookup && lookupFor === call ? state.lookup : {};
+        const spot = spotFor(call);
+
+        try {
+
+            await post("/api/qso", {
+                qso_date: now.toISOString().slice(0, 10),
+                time_on_utc: now.toISOString().slice(11, 19),
+                time_off_utc: null,
+                call,
+                frequency: Math.round(khz * 1000) / 1000000,
+                band,
+                mode,
+                rst_sent: document.getElementById("l-rst-s").value.trim() || defaultRst(mode),
+                rst_rcvd: document.getElementById("l-rst-r").value.trim() || defaultRst(mode),
+                my_callsign: state.settings.callsign,
+                my_grid: state.settings.locator,
+                operator_name: state.settings.operatorName || "",
+                name: document.getElementById("l-name").value.trim(),
+                country: lookup.country || spot?.dxccName || spot?.country || "",
+                country_code: spot?.countryCode || "",
+                dx_grid: lookup.grid || lookup.locator || "",
+                notes: "Logged on the phone",
+                spot_source: spot ? (spot.sources || []).join(", ") : "",
+                spot_id: null
+            });
+
+            navigator.vibrate?.([20, 40, 20]);
+            toast(`✔ ${call} logged`);
+
+            document.getElementById("l-call").value = "";
+            document.getElementById("l-name").value = "";
+            lookupFor = "";
+            void loadRecent();
+
+        }
+        catch (error) {
+            toast(`Not saved: ${error.message}`, "err");
+        }
+
+    }
+
+    /* ------------------------------------------------------------
+       Events
+       ------------------------------------------------------------ */
+
+    function showTab(tab) {
+
+        state.tab = tab;
+
+        document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.id === `tab-${tab}`));
+        document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+
+        localSet("shack-m-tab", tab);
+
+        if (tab === "alerts") renderAlerts();
+        if (tab === "log") {
+            if (!document.getElementById("l-freq").value) fillFromRadio();
+            void loadRecent();
+        }
+        if (tab === "radio") void loadRotator();
+
+        window.scrollTo(0, 0);
+
+    }
+
+    document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+
+    document.getElementById("needed-list").addEventListener("click", e => {
+        const card = e.target.closest("[data-alert]");
+        if (!card) return;
+        const a = state.needed[Number(card.dataset.alert)];
+        if (a) useDx({ call: a.callsign, frequency: a.frequency, mode: a.mode });
+    });
+
+    document.getElementById("watch-list").addEventListener("click", e => {
+        const card = e.target.closest("[data-watch]");
+        if (!card) return;
+        const a = state.watch[Number(card.dataset.watch)];
+        if (a) useDx({ call: a.callsign, frequency: a.frequency, mode: a.mode });
+    });
+
+    document.getElementById("spot-list").addEventListener("click", e => {
+        const card = e.target.closest("[data-spot]");
+        if (!card) return;
+        const s = e.currentTarget._spots?.[Number(card.dataset.spot)];
+        if (s) useDx({ call: s.call, frequency: Number(s.frequency), mode: s.mode });
+    });
+
+    document.getElementById("band-chips").addEventListener("click", e => {
+        const chip = e.target.closest("[data-band-chip]");
+        if (!chip) return;
+        state.band = chip.dataset.bandChip;
+        renderChips();
+        renderSpots();
+    });
+
+    document.getElementById("mode-chips").addEventListener("click", e => {
+        const chip = e.target.closest("[data-mode-chip]");
+        if (!chip) return;
+        state.mode = chip.dataset.modeChip;
+        renderChips();
+        renderSpots();
+    });
+
+    document.getElementById("band-buttons").addEventListener("click", e => {
+        const btn = e.target.closest("[data-band]");
+        if (!btn) return;
+        const seg = SEGMENTS[btn.dataset.band];
+        const khz = seg[segment] ?? seg.CW;
+        const mode = segment === "CW" ? "CW" : segment === "FT8" ? "FT8" : (khz < 10000 ? "LSB" : "USB");
+        state.lastDx = null;
+        void tune(khz, mode, null, btn.dataset.band);
+    });
+
+    document.getElementById("segment-buttons").addEventListener("click", e => {
+        const btn = e.target.closest("[data-segment]");
+        if (!btn) return;
+        segment = btn.dataset.segment;
+        localSet("shack-m-segment", segment);
+        renderBands();
+    });
+
+    document.querySelectorAll("[data-mode]").forEach(btn => btn.addEventListener("click", async () => {
+        try {
+            await post("/api/radio/mode", { mode: btn.dataset.mode });
+            navigator.vibrate?.(20);
+            void loadRadio();
+        }
+        catch (error) {
+            toast(`Mode: ${error.message}`, "err");
+        }
+    }));
+
+    document.getElementById("split-off").addEventListener("click", async () => {
+        try {
+            await post("/api/radio/split", { enabled: false });
+            toast("Split off");
+            void loadRadio();
+        }
+        catch (error) {
+            toast(`Split: ${error.message}`, "err");
+        }
+    });
+
+    document.querySelectorAll("[data-rot]").forEach(btn => btn.addEventListener("click", async () => {
+        const r = state.rotator;
+        if (!r || r.azimuth === null) return;
+        try {
+            state.rotator = await post("/api/rotator/turn", { azimuth: (r.target ?? r.azimuth) + Number(btn.dataset.rot) });
+            renderRotator();
+        }
+        catch (error) { toast(`Rotator: ${error.message}`, "err"); }
+    }));
+
+    document.getElementById("rot-last").addEventListener("click", async () => {
+        const spot = spotFor(state.lastDx?.call);
+        if (!spot || spot.azimuth === undefined) return;
+        try {
+            state.rotator = await post("/api/rotator/turn", { azimuth: Number(spot.azimuth) });
+            renderRotator();
+        }
+        catch (error) { toast(`Rotator: ${error.message}`, "err"); }
+    });
+
+    document.getElementById("rot-stop").addEventListener("click", async () => {
+        try {
+            state.rotator = await post("/api/rotator/stop", {});
+            renderRotator();
+        }
+        catch (error) { toast(`Rotator: ${error.message}`, "err"); }
+    });
+
+    const callInput = document.getElementById("l-call");
+    callInput.addEventListener("input", () => { callInput.value = callInput.value.toUpperCase(); });
+    callInput.addEventListener("blur", () => lookupName(callInput.value));
+    document.getElementById("l-fill").addEventListener("click", fillFromRadio);
+    document.getElementById("l-save").addEventListener("click", saveQso);
+    document.getElementById("l-mode").addEventListener("change", e => {
+        const m = e.target.value.toUpperCase();
+        document.getElementById("l-rst-s").value = defaultRst(m);
+        document.getElementById("l-rst-r").value = defaultRst(m);
+    });
+
+    /* install prompt (Android / Chrome) */
+    let installEvent = null;
+
+    window.addEventListener("beforeinstallprompt", event => {
+        event.preventDefault();
+        installEvent = event;
+        document.getElementById("install").classList.add("show");
+    });
+
+    document.getElementById("install-btn").addEventListener("click", async () => {
+        if (!installEvent) return;
+        installEvent.prompt();
+        await installEvent.userChoice.catch(() => undefined);
+        installEvent = null;
+        document.getElementById("install").classList.remove("show");
+    });
+
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw-m.js", { scope: "/m" }).catch(() => undefined);
+    }
+
+    /* ------------------------------------------------------------
+       Start + refresh (only while the app is visible)
+       ------------------------------------------------------------ */
+
+    renderChips();
+    renderBands();
+
+    async function refresh(all) {
+        if (document.hidden) return;
+        await loadRadio();
+        if (all) await Promise.all([loadSpots(), loadAlerts()]);
+        if (state.tab === "radio") await loadRotator();
+    }
+
+    (async () => {
+        await loadSettings();
+        await refresh(true);
+        showTab(localGet("shack-m-tab") || "alerts");
+    })();
+
+    setInterval(() => refresh(false), 2500);
+    setInterval(() => refresh(true), 20000);
+
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) void refresh(true); });
+
+})();
+
+</script>
+
+<script src="/js/dxpeditions-data.js?v=2"></script>
+
+</body>
+</html>

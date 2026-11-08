@@ -938,3 +938,10 @@ Im Browser einmal **Ctrl+F5**, damit die neue Weboberfläche geladen wird.
 - Externe DXSpider-Verbindungen verwenden die jeweils konfigurierte Zieladresse und den konfigurierten Zielport.
 - Nach Änderungen unter `src/` ist `npm run build` erforderlich, danach muss der PM2-Prozess neu gestartet werden.
 - SHACK-SERVER hat keine eigene Anmeldung: Zugriff aus dem Internet nur über einen geschützten Weg (z. B. Cloudflare Access), nie durch direkte Portweiterleitung.
+
+## Handy-App
+
+Auf dem Handy `https://<dein-shack-server>/m` öffnen (unterwegs: die Cloudflare-Access-Adresse + `/m`)
+und **Zum Home-Bildschirm** wählen (iPhone: Teilen-Menü, Android: Browser-Menü oder der Knopf *Install*).
+Die App zeigt Needed-Alerts und Watchlist-Treffer, Live-Spots (antippen = abstimmen, mit Split),
+den Transceiver (Band, Mode, Split aus, Rotor) und ein schnelles QSO-Log. Für die Installation ist HTTPS nötig.

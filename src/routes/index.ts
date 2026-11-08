@@ -25,6 +25,18 @@ router.get('/qso-log', (_req, res) => {
 
 
 
+/* Mobile app (PWA) */
+router.get('/m', (_req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '..',
+            'public',
+            'm.html'
+        )
+    );
+});
+
 router.get('/dxcc', (_req, res) => {
     res.sendFile(
         path.join(

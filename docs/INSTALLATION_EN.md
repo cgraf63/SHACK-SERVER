@@ -940,3 +940,10 @@ Press **Ctrl+F5** once in the browser so the new web interface is loaded.
 - External DXSpider connections use the configured target address and target port.
 - After changes under `src/`, `npm run build` is required, then the PM2 process must be restarted.
 - SHACK-SERVER has no login of its own: access from the internet only via a protected path (e.g. Cloudflare Access), never via direct port forwarding.
+
+## Mobile app (phone)
+
+Open `https://<your-shack-server>/m` on the phone (on the go: your Cloudflare Access address + `/m`)
+and choose **Add to Home Screen** (iPhone: Share menu, Android: browser menu or the *Install* button).
+The app shows needed alerts and watch list hits, live spots (tap = tune, with split), the radio
+(band, mode, split off, rotator) and a quick QSO log. HTTPS is required for the install.
