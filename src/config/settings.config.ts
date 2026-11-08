@@ -74,6 +74,8 @@ export interface ShackSettings {
     rotator: RotatorSettings;
     backup: BackupSettings;
     notifications: NotificationSettings;
+    /* tuning a spot with "UP 2" / "QSX ..." sets split (default on) */
+    autoSplit?: boolean;
 }
 
 /*

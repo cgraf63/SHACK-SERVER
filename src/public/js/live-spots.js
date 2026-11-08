@@ -1425,7 +1425,7 @@ function renderLiveSpots() {
 
 
                 <td class="frequency">
-                    ${spot.frequency}
+                    ${spot.frequency}${splitBadge(spot)}
                 </td>
 
 
@@ -1514,7 +1514,8 @@ function renderLiveSpots() {
     data-frequency="${spot.frequency}"
     data-mode="${spot.mode}"
     data-call="${spot.call}"
-    title="Tune radio">
+    data-split-tx="${spot.split?.txKhz ?? ""}"
+    title="${spot.split ? `Tune radio - split ${escapeDetailsText(spot.split.label)}: TX ${(spot.split.txKhz / 1000).toFixed(3)} MHz` : "Tune radio"}">
     TUNE
 </button>
 
@@ -1807,6 +1808,10 @@ if (tuneButton) {
             const spotCall =
                 button.dataset.call;
 
+            /* "UP 2" / "QSX ..." in the spot: TX frequency (kHz) */
+            const splitTxKHz =
+                Number(button.dataset.splitTx) || null;
+
 
             console.log(
                 "TUNE CLICK:",
@@ -1891,9 +1896,18 @@ if (tuneButton) {
 
             try {
 
+                /*
+                    Automatic split (Settings, default on): TX on VFO B
+                    for "UP 2" / "QSX ...", otherwise split off.
+                */
+                const autoSplit =
+                    await isAutoSplitEnabled();
+
                 const response =
                     await fetch(
-                        "/api/radio/tune",
+                        autoSplit
+                            ? "/api/radio/tune-split"
+                            : "/api/radio/tune",
                         {
                             method:
                                 "POST",
@@ -1910,7 +1924,11 @@ if (tuneButton) {
                                             frequencyHz,
 
                                         mode:
-                                            mode
+                                            mode,
+
+                                        ...(autoSplit
+                                            ? { txFrequency: splitTxKHz ? Math.round(splitTxKHz * 1000) : null }
+                                            : {})
                                     }
                                 )
                         }
@@ -1919,6 +1937,17 @@ if (tuneButton) {
 
                 const result =
                     await response.json();
+
+                if (response.ok && autoSplit) {
+
+                    if (result.split) {
+                        showSplitToast(`SPLIT ${spotCall}: RX ${(frequencyHz / 1e6).toFixed(3)} · TX ${(result.txFrequency / 1e6).toFixed(3)} MHz`, "on");
+                    }
+                    else if (result.note) {
+                        showSplitToast(result.note, splitTxKHz ? "warn" : "off");
+                    }
+
+                }
 
 
                 if (
@@ -2786,6 +2815,66 @@ setTimeout(
     the callsign when the station is an announced DXpedition QRV now.
 */
 /*
+    Split ("UP 2", "QSX 14025" in the spot comment, server: spot.split)
+*/
+function splitBadge(spot) {
+
+    const split = spot?.split;
+
+    if (!split) return "";
+
+    const tx = (Number(split.txKhz) / 1000).toFixed(3);
+
+    return `<span class="split-badge" title="Split: ${escapeDetailsText(split.label)} - TX ${tx} MHz (TUNE sets split)">${escapeDetailsText(split.label)}</span>`;
+
+}
+
+
+let autoSplitSetting = { value: true, loadedAt: 0 };
+
+async function isAutoSplitEnabled() {
+
+    if (Date.now() - autoSplitSetting.loadedAt < 60_000) return autoSplitSetting.value;
+
+    try {
+        const response = await fetch("/api/settings", { cache: "no-store" });
+        if (response.ok) {
+            const settings = await response.json();
+            autoSplitSetting = { value: settings.autoSplit !== false, loadedAt: Date.now() };
+        }
+    }
+    catch {
+        // keep the last value
+    }
+
+    return autoSplitSetting.value;
+
+}
+
+window.addEventListener("settingsSaved", () => { autoSplitSetting.loadedAt = 0; });
+
+
+function showSplitToast(text, kind) {
+
+    let toast = document.getElementById("split-toast");
+
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "split-toast";
+        document.body.appendChild(toast);
+    }
+
+    toast.className = `split-toast ${kind || ""}`;
+    toast.textContent = text;
+    toast.hidden = false;
+
+    clearTimeout(showSplitToast.timer);
+    showSplitToast.timer = setTimeout(() => { toast.hidden = true; }, 5000);
+
+}
+
+
+/*
     "Heard near you": a spotter / RBN skimmer near the own QTH reported
     the station on this band in the last 15 minutes (server: heard).
 */
@@ -2948,6 +3037,12 @@ alt="${spot.country || ""}"
                 <span>
                     ${azimuth}
                 </span>
+
+                ${
+                    spot.split
+                        ? `<span class="split-badge" style="font-size:12px;line-height:20px;padding:0 8px" title="TUNE sets split automatically (Settings)">SPLIT ${escapeDetailsText(spot.split.label)} · TX ${(Number(spot.split.txKhz) / 1000).toFixed(3)} MHz</span>`
+                        : ""
+                }
 
                 ${
                     spot.azimuth !== undefined && window.shackRotator?.isEnabled()

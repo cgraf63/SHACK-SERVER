@@ -2156,6 +2156,117 @@ activeRadio.setMode(
 
 
 /*
+    Tune to a spot, with split when the spot says so
+    (POST /api/radio/tune-split {frequency, mode, txFrequency|null}).
+
+    txFrequency (Hz): RX on VFO A, TX on VFO B, split on.
+    txFrequency null: split is switched off when it is on - so the next
+    station is not called on the TX frequency of the last DXpedition.
+    Transceivers without split control: tuned, splitSupported = false.
+*/
+router.post(
+    "/radio/tune-split",
+    (req, res) => {
+
+        const { frequency, mode, txFrequency } = req.body ?? {};
+
+        const activeRadio = radioManager.getActiveRadio();
+
+        if (!activeRadio) {
+            return res.status(503).json({ error: "No active radio" });
+        }
+
+        if (typeof frequency !== "number" || !Number.isFinite(frequency) || frequency <= 0) {
+            return res.status(400).json({ error: "Invalid frequency" });
+        }
+
+        if (typeof mode !== "string") {
+            return res.status(400).json({ error: "Invalid mode" });
+        }
+
+        const normalizedMode = mode.toUpperCase();
+
+        if (!["LSB", "USB", "SSB", "CW", "CW-R", "CW-L", "AM", "FM"].includes(normalizedMode)) {
+            return res.status(400).json({ error: "Unsupported mode" });
+        }
+
+        const radio = activeRadio as any;
+
+        const canSplit =
+            typeof radio.setSplit === "function" &&
+            typeof radio.setFrequencyB === "function";
+
+        const wantSplit =
+            typeof txFrequency === "number" &&
+            Number.isFinite(txFrequency) &&
+            Math.abs(txFrequency - frequency) >= 100 &&
+            Math.abs(txFrequency - frequency) <= 60_000;
+
+        try {
+
+            activeRadio.setFrequency(frequency);
+            activeRadio.setMode(normalizedMode, frequency);
+
+            let split = false;
+            let note = "";
+
+            if (wantSplit && canSplit) {
+
+                radio.setFrequencyB(txFrequency);
+
+                if (typeof radio.setSplitMode === "function") {
+                    radio.setSplitMode(normalizedMode, txFrequency);
+                }
+                else if (!(activeRadio instanceof RgoOneService)) {
+                    // same as POST /radio/split: mode for VFO B
+                    radio.setMode(normalizedMode, txFrequency);
+                }
+
+                radio.setSplit(true);
+                split = true;
+
+            }
+            else if (wantSplit) {
+                note = "This transceiver does not support split control - tuned to the RX frequency only.";
+            }
+            else if (canSplit && typeof radio.getSplit === "function" && radio.getSplit()) {
+                radio.setSplit(false);
+                note = "Split switched off.";
+            }
+
+            console.log(
+                "RADIO TUNE:",
+                radioManager.getActiveRadioId(),
+                frequency,
+                normalizedMode,
+                split ? `SPLIT TX ${txFrequency}` : ""
+            );
+
+            return res.json({
+                success: true,
+                radioId: radioManager.getActiveRadioId(),
+                frequency,
+                mode: normalizedMode,
+                split,
+                txFrequency: split ? txFrequency : null,
+                splitSupported: canSplit,
+                note
+            });
+
+        }
+        catch (error) {
+
+            return res.status(400).json({
+                error: error instanceof Error ? error.message : "Tune failed"
+            });
+
+        }
+
+    }
+);
+
+
+/*
     Radio Mode
 */
 router.post(

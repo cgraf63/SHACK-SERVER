@@ -227,6 +227,45 @@ export class HamlibService implements RadioService {
 
     }
 
+    /*
+     * Split (rigctld): S = set_split_vfo, I = set_split_freq,
+     * X = set_split_mode. TX on VFO B.
+     */
+    private split = false;
+    private frequencyB = 0;
+
+    getSplit(): boolean { return this.split; }
+
+    getFrequencyB(): number { return this.frequencyB; }
+
+    setSplit(enabled: boolean): void {
+
+        this.send(`S${this.vfoArg} ${enabled ? 1 : 0} VFOB`, 0)
+            .then(() => { this.split = enabled; })
+            .catch(error => this.logError(`split failed: ${error.message}`));
+
+    }
+
+    setFrequencyB(frequency: number): void {
+
+        if (!Number.isFinite(frequency) || frequency <= 0) return;
+
+        this.send(`I${this.vfoArg} ${Math.round(frequency)}`, 0)
+            .then(() => { this.frequencyB = Math.round(frequency); })
+            .catch(error => this.logError(`split frequency failed: ${error.message}`));
+
+    }
+
+    /* mode of the TX VFO in split */
+    setSplitMode(mode: string, frequency: number): void {
+
+        const hamlibMode = toHamlibMode(mode, frequency || this.frequency);
+
+        this.send(`X${this.vfoArg} ${hamlibMode} 0`, 0)
+            .catch(error => this.logError(`split mode failed: ${error.message}`));
+
+    }
+
     setPtt(enabled: boolean): void {
 
         this.send(`T${this.vfoArg} ${enabled ? 1 : 0}`, 0)

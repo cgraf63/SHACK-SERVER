@@ -146,6 +146,9 @@ async function loadSettings() {
             settingsData.rotator
         );
 
+        const autoSplitBox = document.getElementById("auto-split");
+        if (autoSplitBox) autoSplitBox.checked = settingsData.autoSplit !== false;
+
         applyBackupSettings(
             settingsData.backup
         );
@@ -613,6 +616,9 @@ async function saveSettings() {
 
         rotator:
             collectRotatorSettings(),
+
+        autoSplit:
+            document.getElementById("auto-split")?.checked !== false,
 
         backup:
             collectBackupSettings(),

@@ -12,6 +12,10 @@ import {
     dxccService
 } from "../services/dxcc/dxcc.service.js";
 
+import {
+    splitFromComments
+} from "../services/fusion/split-parser.js";
+
 
 const router = Router();
 
@@ -32,9 +36,13 @@ router.get("/", async (_req, res) => {
             const heard = heardService.evaluate(spot.call, spot.band ?? "");
             const entity = dxccService.resolve(spot.call);
 
+            // "UP 2", "QSX 14025" ... in the comments: TX frequency for split
+            const split = splitFromComments(spot.comments ?? (spot.comment ? [spot.comment] : []), Number(spot.frequency), String(spot.mode ?? ""));
+
             return {
                 ...spot,
                 ...(entity ? { dxccKey: entity.key, dxccName: entity.name } : {}),
+                ...(split ? { split } : {}),
                 ...(heard.spotterCount ? { heard } : {})
             };
 

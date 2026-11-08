@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/css/variables.css">
     <link rel="stylesheet" href="/css/theme.css">
     <link rel="stylesheet" href="/css/layout.css">
-    <link rel="stylesheet" href="/css/components.css?v=12">
+    <link rel="stylesheet" href="/css/components.css?v=13">
 
     <style>
 
@@ -160,6 +160,7 @@ a.dxp-call:hover { color: var(--cyan, #00e5ff); }
     cursor: pointer;
 }
 .dxp-spot:hover { background: #164050; color: #fff; }
+.dxp-spot .split { color: #ffb347; font-weight: 800; }
 .dxp-spot .age { color: #8fa3b2; font-weight: 600; margin-left: 4px; }
 .dxp-none { color: #4f6472; }
 
@@ -236,7 +237,7 @@ a.dxp-call:hover { color: var(--cyan, #00e5ff); }
 </div>
 
 
-<script src="/js/component-loader.js?v=15"></script>
+<script src="/js/component-loader.js?v=16"></script>
 <script src="/js/system-status.js"></script>
 <script src="/js/dxpeditions-data.js?v=2"></script>
 
@@ -352,9 +353,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         const mode = spot.mode && spot.mode !== "UNKNOWN" ? spot.mode : "";
 
         return `<button type="button" class="dxp-spot"
-                    data-khz="${khz}" data-mode="${esc(mode)}"
+                    data-khz="${khz}" data-mode="${esc(mode)}" data-split-tx="${spot.split?.txKhz ?? ""}"
                     title="${esc(spot.call)} spotted on ${khz.toLocaleString("de-CH")} kHz - click to tune">
                     ${khz.toLocaleString("de-CH", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${esc(mode)}${
+                        spot.split ? ` <span class="split">${esc(spot.split.label)}</span>` : ""
+                    }${
                         minutes !== null ? `<span class="age">${minutes}m</span>` : ""
                     }
                 </button>${
@@ -488,13 +491,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     }
 
-    async function tune(khz, mode) {
+    let autoSplit = null;
+
+    async function tune(khz, mode, splitTxKhz) {
 
         try {
-            const response = await fetch("/api/radio/tune", {
+            if (autoSplit === null) {
+                const settings = await (await fetch("/api/settings", { cache: "no-store" })).json().catch(() => ({}));
+                autoSplit = settings.autoSplit !== false;
+            }
+            // DXpeditions work split: "UP 2" / "QSX ..." from the spot sets TX on VFO B
+            const response = await fetch(autoSplit ? "/api/radio/tune-split" : "/api/radio/tune", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ frequency: Math.round(khz * 1000), mode })
+                body: JSON.stringify({
+                    frequency: Math.round(khz * 1000),
+                    mode,
+                    ...(autoSplit ? { txFrequency: splitTxKhz ? Math.round(splitTxKhz * 1000) : null } : {})
+                })
             });
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
@@ -536,7 +550,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     body.addEventListener("click", event => {
         const button = event.target.closest(".dxp-spot");
-        if (button) tune(Number(button.dataset.khz), button.dataset.mode);
+        if (button) tune(Number(button.dataset.khz), button.dataset.mode, Number(button.dataset.splitTx) || null);
     });
 
     (async () => {

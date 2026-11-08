@@ -533,6 +533,10 @@ rm -f ~/SHACK-SERVER/data/shack-server.db-wal ~/SHACK-SERVER/data/shack-server.d
 pm2 start shack-server
 ```
 
+### Split (automatic)
+
+When a spot says "UP 2", "UP 1-3", "DOWN 1", "QSX 14025", "QSX 025" or "LSN 14.205", **TUNE** sets the RX frequency on VFO A, the TX frequency on VFO B and switches split on; the live spots show the split as an orange badge next to the frequency (e.g. `UP 2`). Tuning a spot without split switches split off again. Supported: Yaesu FTDX10, RGO ONE and all transceivers via Hamlib with split control. FT8 / FT4 spots are tuned without split (DXpedition mode in WSJT-X). Switch it off under *Settings → Split*.
+
 ### Antenna rotator (optional)
 
 SHACK-SERVER can turn the antenna through Hamlib (`rotctld`, part of `libhamlib-utils`). Supported are all controllers known to Hamlib, e.g. Yaesu GS-232, SPID Rot2Prog, Hy-Gain DCU-1, ERC, K3NG.

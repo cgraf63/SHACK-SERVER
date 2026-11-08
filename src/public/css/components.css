@@ -3919,3 +3919,49 @@ D.sidebar.collapsed {
 #needed-alerts .needed-alert-item:first-child {
     border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+
+/* Split ("UP 2", "QSX 14.025") next to the frequency in the live spots */
+.split-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0 4px;
+    border: 1px solid rgba(255, 152, 0, 0.6);
+    border-radius: 4px;
+    background: rgba(255, 152, 0, 0.14);
+    color: #ffb347;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 14px;
+    letter-spacing: 0.03em;
+    vertical-align: 1px;
+    white-space: nowrap;
+    cursor: help;
+}
+
+/* message after tuning with split */
+.split-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 9500;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 152, 0, 0.6);
+    background: rgba(30, 20, 5, 0.95);
+    color: #ffcf80;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+
+.split-toast.off {
+    border-color: rgba(0, 229, 255, 0.5);
+    background: rgba(5, 20, 28, 0.95);
+    color: #9fe8f5;
+}
+
+.split-toast.warn {
+    border-color: rgba(255, 82, 82, 0.6);
+    color: #ff9b9b;
+}

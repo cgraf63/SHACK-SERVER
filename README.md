@@ -24,7 +24,7 @@ Open-source platform for intelligent amateur radio information processing.
 
 ## Highlights
 
-**Live DX spots from several clusters, fused and scored.** DXSpider clusters, DX Summit and HolyCluster in one list - the same spot from several sources counts once, the DX score puts the stations you need on top, one click tunes the radio (CAT).
+**Live DX spots from several clusters, fused and scored.** DXSpider clusters, DX Summit and HolyCluster in one list - the same spot from several sources counts once, the DX score puts the stations you need on top, one click tunes the radio (CAT) - **with split**: "UP 2", "UP 1-3", "QSX 14025" in the spot sets the TX frequency on VFO B and switches split on (and off again for the next station).
 
 ![Dashboard](docs/images/screenshots/01-dashboard.jpg)
 
