@@ -249,6 +249,58 @@ h2 {
 .recent .q b { letter-spacing: .02em; }
 .recent .q span { color: var(--muted); }
 
+.recent .q.pending b::after { content: " ⏳"; }
+.recent .q.error b { color: var(--red); }
+.recent .q.error b::after { content: " ✗"; }
+
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+.seg button {
+    padding: 11px 6px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel);
+    color: var(--muted);
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: .03em;
+}
+.seg button.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0,229,255,.08); }
+
+.p-summary { display: flex; justify-content: space-between; align-items: center; gap: 10px; cursor: pointer; }
+.p-summary b { font-size: 18px; letter-spacing: .03em; }
+.p-summary span { color: var(--muted); font-size: 13px; }
+.p-summary .edit { color: var(--cyan); font-size: 13px; font-weight: 800; flex: 0 0 auto; }
+#p-edit { margin-top: 12px; }
+
+.inline { display: flex; gap: 6px; }
+.inline input { flex: 1; min-width: 0; }
+.inline .chip { padding: 0 12px; }
+#p-ref { margin-top: 2px; }
+
+.dupe { min-height: 0; margin-top: 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.dupe:empty { display: none; }
+.dupe.warn { color: #ffb347; }
+.dupe.new { color: var(--green); }
+
+.queue {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin: -2px 0 12px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255,152,0,.6);
+    border-radius: 10px;
+    background: rgba(255,152,0,.08);
+    color: #ffb347;
+    font-size: 13px;
+    font-weight: 700;
+}
+.queue[hidden] { display: none; }
+
+.count { color: var(--green); }
+.row.single { grid-template-columns: 1fr; }
+
 /* toast */
 
 .toast {
@@ -371,14 +423,64 @@ h2 {
 
     <!-- LOG -->
     <section class="tab" id="tab-log">
+
+        <div class="seg" id="log-kind">
+            <button type="button" data-kind="home">🏠 HOME STATION</button>
+            <button type="button" data-kind="portable">⛰️ PORTABLE</button>
+        </div>
+
+        <!-- portable station: own call, locator, activity reference -->
+        <div class="panel" id="p-station" hidden>
+            <div class="p-summary" id="p-summary"></div>
+            <div id="p-edit" hidden>
+                <div class="field">
+                    <label for="p-call">MY CALL</label>
+                    <div class="inline">
+                        <input id="p-call" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+                        <button class="chip" type="button" data-suffix="/P">/P</button>
+                        <button class="chip" type="button" data-suffix="/M">/M</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="p-grid">MY LOCATOR</label>
+                    <div class="inline">
+                        <input id="p-grid" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="JN36BK">
+                        <button class="chip" type="button" id="p-gps">📍 GPS</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>MY ACTIVITY</label>
+                    <div class="chips" id="p-progs">
+                        <button class="chip" type="button" data-prog="">NONE</button>
+                        <button class="chip" type="button" data-prog="POTA">POTA</button>
+                        <button class="chip" type="button" data-prog="SOTA">SOTA</button>
+                        <button class="chip" type="button" data-prog="WWFF">WWFF</button>
+                    </div>
+                    <input id="p-ref" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Reference, e.g. HB-0123 / HB/BE-001">
+                </div>
+                <button class="btn primary wide" id="p-done" type="button">DONE</button>
+            </div>
+        </div>
+
         <div class="panel">
             <div class="field">
                 <label for="l-call">CALLSIGN</label>
                 <input id="l-call" class="callsign" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="DX CALL">
+                <div class="dupe" id="l-dupe"></div>
             </div>
-            <div class="field">
-                <label for="l-name">NAME</label>
-                <input id="l-name" type="text" autocomplete="off" placeholder="from QRZ.com">
+            <div class="row">
+                <div class="field">
+                    <label for="l-name">NAME</label>
+                    <input id="l-name" type="text" autocomplete="off" placeholder="from QRZ.com">
+                </div>
+                <div class="field">
+                    <label for="l-ref">THEIR REF</label>
+                    <input id="l-ref" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="P2P / S2S">
+                </div>
+            </div>
+            <div id="l-quick" hidden>
+                <div class="chips" id="l-bands"></div>
+                <div class="chips" id="l-modes"></div>
             </div>
             <div class="row">
                 <div class="field">
@@ -404,13 +506,22 @@ h2 {
                     <input id="l-mode" type="text" autocapitalize="characters">
                 </div>
             </div>
+            <div class="field">
+                <label for="l-time">TIME UTC</label>
+                <input id="l-time" type="text" inputmode="numeric" autocomplete="off" placeholder="now (or e.g. 1432)">
+            </div>
             <div class="row">
                 <button class="btn" id="l-fill" type="button">FROM RADIO</button>
                 <button class="btn primary" id="l-save" type="button">SAVE QSO</button>
             </div>
         </div>
 
-        <h2>RECENT QSOs</h2>
+        <div class="queue" id="queue" hidden>
+            <span id="queue-text"></span>
+            <button class="chip" type="button" id="queue-retry">UPLOAD NOW</button>
+        </div>
+
+        <h2 id="log-title">RECENT QSOs</h2>
         <div class="recent" id="recent"></div>
     </section>
 
@@ -438,7 +549,7 @@ h2 {
         settings: {},
         radio: null,
         spots: [],
-        worked: { dxcc: new Set(), calls: new Set() },
+        worked: { dxcc: new Set(), calls: new Set(), callsOnBand: new Set() },
         needed: [],
         watch: [],
         band: "ALL",
@@ -452,6 +563,13 @@ h2 {
         ["160m", 1800, 2000], ["80m", 3500, 4000], ["60m", 5250, 5450], ["40m", 7000, 7300],
         ["30m", 10100, 10150], ["20m", 14000, 14350], ["17m", 18068, 18168], ["15m", 21000, 21450],
         ["12m", 24890, 24990], ["10m", 28000, 29700], ["6m", 50000, 54000]
+    ];
+
+    /* portable log: also VHF / UHF (4th value: FM calling frequency) */
+    const ALL_BANDS = [
+        ...BANDS,
+        ["2m", 144000, 148000, 145500],
+        ["70cm", 430000, 440000, 433500]
     ];
 
     /* typical frequency per band and segment (kHz) */
@@ -489,7 +607,7 @@ h2 {
     }
 
     function bandOf(khz) {
-        const band = BANDS.find(([, from, to]) => khz >= from && khz <= to);
+        const band = ALL_BANDS.find(([, from, to]) => khz >= from && khz <= to);
         return band ? band[0] : "";
     }
 
@@ -517,10 +635,24 @@ h2 {
         toastTimer = setTimeout(() => { el.hidden = true; }, 3500);
     }
 
+    /*
+     * error.retry = true: no connection, server down, login page
+     * (Cloudflare Access) - try again later. Without: rejected.
+     */
     async function api(path, options) {
-        const response = await fetch(path, { cache: "no-store", ...(options || {}) });
+        let response;
+        try {
+            response = await fetch(path, { cache: "no-store", ...(options || {}) });
+        }
+        catch {
+            throw Object.assign(new Error("no connection"), { retry: true });
+        }
         const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || data.message || `HTTP ${response.status}`);
+        if (!response.ok) {
+            throw Object.assign(new Error(data.error || data.message || `HTTP ${response.status}`), {
+                retry: response.status >= 500 || response.status === 401 || response.status === 403 || response.status === 408 || response.status === 429
+            });
+        }
         return data;
     }
 
@@ -626,10 +758,15 @@ h2 {
 
     async function loadSettings() {
         try {
-            state.settings = await api("/api/settings");
-            document.getElementById("station").textContent = state.settings.callsign ? `· ${state.settings.callsign}` : "";
+            const settings = await api("/api/settings");
+            state.settings = settings;
+            // offline start (portable): callsign, locator, operator from the last visit
+            localSet("shack-m-settings", JSON.stringify({ callsign: settings.callsign, locator: settings.locator, operatorName: settings.operatorName, autoSplit: settings.autoSplit }));
         }
-        catch { /* later */ }
+        catch {
+            state.settings = readJson("shack-m-settings", {}) || {};
+        }
+        document.getElementById("station").textContent = state.settings.callsign ? `· ${state.settings.callsign}` : "";
     }
 
     async function loadRadio() {
@@ -673,7 +810,8 @@ h2 {
             state.spots = Array.isArray(spots) ? spots : [];
             state.worked = {
                 dxcc: new Set(worked.dxcc || []),
-                calls: new Set((worked.calls || []).map(c => String(c).toUpperCase()))
+                calls: new Set((worked.calls || []).map(c => String(c).toUpperCase())),
+                callsOnBand: new Set((worked.callsOnBand || []).map(c => String(c).toUpperCase()))
             };
             setConnected(true);
             renderSpots();
@@ -859,24 +997,298 @@ h2 {
 
     }
 
-    async function loadRecent() {
+    /* ------------------------------------------------------------
+       Log: home station or portable (own call, GPS locator,
+       POTA / SOTA / WWFF), offline queue with idempotent upload
+       ------------------------------------------------------------ */
+
+    const PORTABLE_KEY = "shack-m-portable";
+    const QUEUE_KEY = "shack-m-queue";
+    const ACTIVATION_KEY = "shack-m-activation";
+
+    /* minimum QSOs for a valid activation */
+    const NEEDED_QSOS = { POTA: 10, SOTA: 4, WWFF: 44 };
+
+    const LOG_MODES = ["CW", "SSB", "FM", "AM", "FT8", "FT4"];
+
+    function readJson(key, fallback) {
+        try { return JSON.parse(localGet(key) || "") ?? fallback; } catch { return fallback; }
+    }
+
+    const portable = Object.assign({ on: false, call: "", grid: "", prog: "", ref: "" }, readJson(PORTABLE_KEY, {}));
+
+    function savePortable() {
+        localSet(PORTABLE_KEY, JSON.stringify(portable));
+    }
+
+    function uuid() {
+        try { return crypto.randomUUID(); }
+        catch { return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`; }
+    }
+
+    /* Maidenhead locator, 6 characters */
+    function maidenhead(lat, lon) {
+        const x = lon + 180;
+        const y = lat + 90;
+        const A = String.fromCharCode(65 + Math.floor(x / 20));
+        const B = String.fromCharCode(65 + Math.floor(y / 10));
+        const c = Math.floor((x % 20) / 2);
+        const d = Math.floor(y % 10);
+        const e = String.fromCharCode(65 + Math.floor((x % 2) * 12));
+        const f = String.fromCharCode(65 + Math.floor((y % 1) * 24));
+        return `${A}${B}${c}${d}${e}${f}`;
+    }
+
+    /* POTA "HB-0123", SOTA "HB/BE-001", WWFF "HBFF-0123" */
+    function refProgram(ref, fallback) {
+        const r = String(ref || "").trim().toUpperCase();
+        if (!r) return "";
+        if (/^[A-Z0-9]{1,4}FF-\d{4}$/.test(r)) return "WWFF";
+        if (/^[A-Z0-9]{1,4}\/[A-Z0-9]{2}-\d{3}$/.test(r)) return "SOTA";
+        if (/^[A-Z0-9]{1,4}-\d{4,5}$/.test(r)) return "POTA";
+        return fallback || "";
+    }
+
+    function myCall() {
+        return (portable.on ? portable.call || state.settings.callsign : state.settings.callsign) || "";
+    }
+
+    function myGrid() {
+        return (portable.on ? portable.grid : state.settings.locator) || "";
+    }
+
+    function activationKey() {
+        return [new Date().toISOString().slice(0, 10), myCall(), portable.prog, portable.ref].join("|").toUpperCase();
+    }
+
+    function activation() {
+        const a = readJson(ACTIVATION_KEY, null);
+        return a && a.key === activationKey() ? a : { key: activationKey(), qsos: [] };
+    }
+
+    function saveActivation(a) {
+        localSet(ACTIVATION_KEY, JSON.stringify(a));
+    }
+
+    function setActivationStatus(id, status) {
+        const a = readJson(ACTIVATION_KEY, null);
+        if (!a) return;
+        const q = a.qsos.find(item => item.id === id);
+        if (q) {
+            q.status = status;
+            saveActivation(a);
+        }
+    }
+
+    /* --- offline queue ------------------------------------------ */
+
+    function queue() {
+        const q = readJson(QUEUE_KEY, []);
+        return Array.isArray(q) ? q : [];
+    }
+
+    function setQueue(q) {
+        localSet(QUEUE_KEY, JSON.stringify(q));
+        renderQueue();
+    }
+
+    function renderQueue() {
+        const n = queue().length;
+        document.getElementById("queue").hidden = n === 0;
+        document.getElementById("queue-text").textContent =
+            `${n} QSO${n === 1 ? "" : "s"} waiting for upload${navigator.onLine === false ? " (offline)" : ""}`;
+    }
+
+    let syncing = false;
+
+    /*
+     * Upload the queue in order. Every QSO carries spot_source "MOBILE"
+     * and its own id: the server stores it only once, also when an
+     * upload is repeated after a lost answer.
+     */
+    async function syncQueue() {
+
+        if (syncing) return;
+
+        syncing = true;
+
+        let uploaded = 0;
 
         try {
-            const data = await api("/api/qso");
-            const qsos = (data.qsos || [])
-                .sort((a, b) => `${b.qso_date} ${b.time_on_utc}`.localeCompare(`${a.qso_date} ${a.time_on_utc}`))
-                .slice(0, 8);
-            document.getElementById("recent").innerHTML = qsos.length
-                ? qsos.map(q => `<div class="q"><b>${esc(q.call)}</b><span>${esc(q.band || "")} ${esc(q.mode || "")} · ${esc(q.qso_date || "")} ${esc(String(q.time_on_utc || "").slice(0, 5))}</span></div>`).join("")
-                : `<div class="empty">No QSOs yet.</div>`;
+
+            for (;;) {
+
+                const q = queue();
+                const item = q[0];
+
+                if (!item) break;
+
+                try {
+
+                    const data = await post("/api/qso", item);
+
+                    // a login page or captive portal instead of SHACK-SERVER
+                    if (!data || data.success !== true) throw Object.assign(new Error("no answer from SHACK-SERVER"), { retry: true });
+
+                    setActivationStatus(item.spot_id, "ok");
+                    uploaded++;
+
+                }
+                catch (error) {
+
+                    if (error.retry) break;
+
+                    // rejected by the server: keep it visible, do not block the queue
+                    setActivationStatus(item.spot_id, "error");
+                    toast(`${item.call} not saved: ${error.message}`, "err");
+
+                }
+
+                setQueue(queue().filter(other => other.spot_id !== item.spot_id));
+
+            }
+
         }
-        catch { /* offline */ }
+        finally {
+
+            syncing = false;
+            renderQueue();
+
+            if (uploaded) {
+                void loadRecent();
+                void loadSpots();
+            }
+
+        }
 
     }
 
-    /* ------------------------------------------------------------
-       Log
-       ------------------------------------------------------------ */
+    /* --- list below the form ------------------------------------ */
+
+    let serverRecent = [];
+
+    async function loadRecent() {
+
+        try {
+            const data = await api("/api/qso?limit=10");
+            serverRecent = (data.qsos || [])
+                .sort((a, b) => `${b.qso_date} ${b.time_on_utc}`.localeCompare(`${a.qso_date} ${a.time_on_utc}`))
+                .slice(0, 8);
+        }
+        catch { /* offline */ }
+
+        renderRecent();
+
+    }
+
+    function renderRecent() {
+
+        const box = document.getElementById("recent");
+        const title = document.getElementById("log-title");
+        const row = (q, cls) =>
+            `<div class="q ${cls || ""}"><b>${esc(q.call)}</b><span>${esc(q.band || "")} ${esc(q.mode || "")} · ${esc(q.time || "")}</span></div>`;
+
+        if (portable.on) {
+
+            const a = activation();
+            const valid = a.qsos.filter(q => q.status !== "error").length;
+            const need = NEEDED_QSOS[portable.prog];
+
+            title.innerHTML = `THIS ACTIVATION · <span class="count">${valid}${need ? ` / ${need}` : ""}</span> QSO${valid === 1 ? "" : "s"}` +
+                (need && valid >= need ? " ✔" : "");
+
+            box.innerHTML = a.qsos.length
+                ? [...a.qsos].reverse().map(q => row(q, q.status === "pending" ? "pending" : q.status === "error" ? "error" : "")).join("")
+                : `<div class="empty">No QSOs yet in this activation.</div>`;
+
+            return;
+
+        }
+
+        title.textContent = "RECENT QSOs";
+
+        const pending = queue().map(p => ({ call: p.call, band: p.band, mode: p.mode, time: `${p.qso_date} ${p.time_on_utc.slice(0, 5)}` }));
+        const done = serverRecent.map(q => ({ call: q.call, band: q.band, mode: q.mode, time: `${q.qso_date || ""} ${String(q.time_on_utc || "").slice(0, 5)}` }));
+
+        box.innerHTML = pending.length || done.length
+            ? pending.map(q => row(q, "pending")).join("") + done.map(q => row(q)).join("")
+            : `<div class="empty">No QSOs yet.</div>`;
+
+    }
+
+    /* --- portable station ---------------------------------------- */
+
+    function renderPortable() {
+
+        document.querySelectorAll("#log-kind button").forEach(b =>
+            b.classList.toggle("active", b.dataset.kind === (portable.on ? "portable" : "home")));
+
+        document.getElementById("p-station").hidden = !portable.on;
+        document.getElementById("l-quick").hidden = !portable.on;
+        document.getElementById("l-fill").hidden = portable.on;
+        document.getElementById("l-freq").placeholder = portable.on ? "optional" : "";
+        document.querySelector("#tab-log .row:last-child")?.classList.toggle("single", portable.on);
+
+        const ref = portable.ref ? `${portable.prog ? portable.prog + " " : ""}${portable.ref}` : "no activity reference";
+
+        document.getElementById("p-summary").innerHTML =
+            `<div><b>${esc(myCall() || "MY CALL?")}</b><br><span>${esc(portable.grid || "locator?")} · ${esc(ref)}</span></div>` +
+            `<span class="edit">EDIT</span>`;
+
+        document.getElementById("p-call").value = portable.call || state.settings.callsign || "";
+        document.getElementById("p-grid").value = portable.grid;
+        document.getElementById("p-ref").value = portable.ref;
+
+        document.querySelectorAll("#p-progs .chip").forEach(c => c.classList.toggle("active", c.dataset.prog === portable.prog));
+
+        const band = document.getElementById("l-band").value.trim().toLowerCase();
+        const mode = document.getElementById("l-mode").value.trim().toUpperCase();
+
+        // build the chips once - re-rendering them during a tap would swallow the tap
+        const bands = document.getElementById("l-bands");
+        const modes = document.getElementById("l-modes");
+
+        if (!bands.children.length) {
+            bands.innerHTML = ALL_BANDS.map(([b]) => `<button type="button" class="chip" data-lband="${b}">${b}</button>`).join("");
+            modes.innerHTML = LOG_MODES.map(m => `<button type="button" class="chip" data-lmode="${m}">${m}</button>`).join("");
+        }
+
+        bands.querySelectorAll("[data-lband]").forEach(c => c.classList.toggle("active", c.dataset.lband === band));
+        modes.querySelectorAll("[data-lmode]").forEach(c => c.classList.toggle("active", c.dataset.lmode === mode));
+
+        renderRecent();
+
+    }
+
+    function storePortableFields() {
+        portable.call = document.getElementById("p-call").value.trim().toUpperCase();
+        portable.grid = document.getElementById("p-grid").value.trim().toUpperCase();
+        portable.ref = document.getElementById("p-ref").value.trim().toUpperCase();
+        if (portable.ref && !portable.prog) portable.prog = refProgram(portable.ref, "");
+        savePortable();
+    }
+
+    function useGps() {
+
+        if (!navigator.geolocation) return toast("No location on this device", "err");
+
+        toast("Locating…");
+
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                const grid = maidenhead(pos.coords.latitude, pos.coords.longitude);
+                document.getElementById("p-grid").value = grid;
+                storePortableFields();
+                renderPortable();
+                toast(`📍 ${grid} (±${Math.round(pos.coords.accuracy)} m)`);
+            },
+            error => toast(`Location: ${error.code === 1 ? "permission denied (HTTPS + allow location)" : error.message}`, "err"),
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }
+        );
+
+    }
+
+    /* --- form ----------------------------------------------------- */
 
     function defaultRst(mode) {
         const m = String(mode || "").toUpperCase();
@@ -903,6 +1315,16 @@ h2 {
 
     }
 
+    /* typical frequency when only band + mode were chosen (portable) */
+    function typicalKhz(band, mode) {
+        const seg = SEGMENTS[band];
+        const m = String(mode).toUpperCase();
+        if (seg) return m === "CW" ? seg.CW : (m === "FT8" || m === "FT4") ? seg.FT8 : (seg.SSB ?? seg.CW);
+        const vhf = ALL_BANDS.find(b => b[0] === band);
+        if (!vhf) return 0;
+        return m === "FM" ? vhf[3] : m === "CW" ? vhf[1] + 50 : vhf[1] + 300;
+    }
+
     let lookupFor = "";
 
     async function lookupName(call) {
@@ -912,6 +1334,7 @@ h2 {
         if (key.length < 3 || key === lookupFor) return;
 
         lookupFor = key;
+        state.lookup = null;
 
         try {
             const data = await api(`/api/qso/qrz/${encodeURIComponent(key)}`);
@@ -921,66 +1344,168 @@ h2 {
                 state.lookup = data.qrz;
             }
         }
-        catch {
-            state.lookup = null;
+        catch { /* offline or not found */ }
+
+    }
+
+    /* dupe / worked-before hint below the callsign */
+    function checkDupe() {
+
+        const box = document.getElementById("l-dupe");
+        const call = document.getElementById("l-call").value.trim().toUpperCase();
+        const band = document.getElementById("l-band").value.trim().toLowerCase();
+        const mode = document.getElementById("l-mode").value.trim().toUpperCase();
+
+        box.className = "dupe";
+        box.textContent = "";
+
+        if (call.length < 3) return;
+
+        if (portable.on) {
+
+            const same = activation().qsos.filter(q => q.call === call && q.status !== "error");
+            const dupe = same.find(q => q.band === band && q.mode === mode);
+
+            if (dupe) {
+                box.className = "dupe warn";
+                box.textContent = `⚠ DUPE – already logged at ${dupe.time} on ${dupe.band} ${dupe.mode}`;
+            }
+            else if (same.length) {
+                box.textContent = `Worked in this activation on ${same.map(q => `${q.band} ${q.mode}`).join(", ")}`;
+            }
+
+            return;
+
         }
+
+        if (state.worked.callsOnBand?.has(`${call}|${band.toUpperCase()}`)) {
+            box.className = "dupe warn";
+            box.textContent = `⚠ Already worked on ${band}`;
+        }
+        else if (state.worked.calls.has(call)) {
+            box.textContent = band ? `Worked before – new on ${band}` : "Worked before";
+        }
+        else if (state.worked.calls.size) {
+            box.className = "dupe new";
+            box.textContent = "★ First QSO with this station";
+        }
+
+    }
+
+    function parseTime(text) {
+
+        const now = new Date();
+        const digits = String(text || "").replace(/\D/g, "");
+
+        if (digits.length !== 3 && digits.length !== 4) return now;
+
+        const hh = Number(digits.slice(0, -2));
+        const mm = Number(digits.slice(-2));
+
+        if (hh > 23 || mm > 59) return null;
+
+        const t = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hh, mm, 0));
+
+        // a time "in the future" belongs to yesterday (logging after midnight UTC)
+        if (t.getTime() - now.getTime() > 10 * 60_000) t.setUTCDate(t.getUTCDate() - 1);
+
+        return t;
 
     }
 
     async function saveQso() {
 
+        if (portable.on) storePortableFields();
+
         const call = document.getElementById("l-call").value.trim().toUpperCase();
-        const khz = Number(String(document.getElementById("l-freq").value).replace(",", "."));
-        const band = document.getElementById("l-band").value.trim() || bandOf(khz);
         const mode = document.getElementById("l-mode").value.trim().toUpperCase();
+        let band = document.getElementById("l-band").value.trim().toLowerCase();
+        let khz = Number(String(document.getElementById("l-freq").value).replace(",", "."));
 
-        if (!call) return toast("Callsign missing", "err");
-        if (!khz) return toast("Frequency missing", "err");
+        if (khz && !band) band = bandOf(khz);
+        if (!khz && portable.on && band && mode) khz = typicalKhz(band, mode);
+
+        const when = parseTime(document.getElementById("l-time").value);
+
+        if (!/^[A-Z0-9/]{3,}$/.test(call)) return toast("Callsign missing", "err");
         if (!mode) return toast("Mode missing", "err");
-        if (!state.settings.callsign || !state.settings.locator) return toast("Set your callsign and locator in Settings first", "err");
+        if (!band) return toast(portable.on ? "Choose a band" : "Frequency missing", "err");
+        if (!khz) return toast("Frequency missing", "err");
+        if (!when) return toast("Time: use HHMM (UTC)", "err");
+        if (!myCall()) return toast("Set your callsign first", "err");
+        if (!myGrid()) {
+            if (portable.on) {
+                document.getElementById("p-edit").hidden = false;
+                return toast("Set your locator (📍 GPS)", "err");
+            }
+            return toast("Set your locator in Settings first", "err");
+        }
 
-        const now = new Date();
         const lookup = state.lookup && lookupFor === call ? state.lookup : {};
         const spot = spotFor(call);
+        const theirRef = document.getElementById("l-ref").value.trim().toUpperCase();
+        const id = uuid();
+        const iso = when.toISOString();
 
-        try {
+        const payload = {
+            qso_date: iso.slice(0, 10),
+            time_on_utc: iso.slice(11, 19),
+            time_off_utc: null,
+            call,
+            frequency: Math.round(khz * 1000) / 1000000,
+            band,
+            mode,
+            rst_sent: document.getElementById("l-rst-s").value.trim() || defaultRst(mode),
+            rst_rcvd: document.getElementById("l-rst-r").value.trim() || defaultRst(mode),
+            my_callsign: myCall(),
+            my_grid: myGrid(),
+            operator_name: state.settings.operatorName || "",
+            name: document.getElementById("l-name").value.trim(),
+            country: lookup.country || spot?.dxccName || spot?.country || "",
+            country_code: spot?.countryCode || "",
+            dx_grid: lookup.grid || lookup.locator || "",
+            notes: portable.on ? `Portable${portable.ref ? " " + (portable.prog ? portable.prog + " " : "") + portable.ref : ""}` : "Logged on the phone",
+            my_sig: portable.on && portable.ref ? (portable.prog || refProgram(portable.ref, "")) : "",
+            my_sig_info: portable.on ? portable.ref : "",
+            sig: theirRef ? refProgram(theirRef, portable.prog) : "",
+            sig_info: theirRef,
+            // idempotent upload: the server keeps one QSO per id
+            spot_source: "MOBILE",
+            spot_id: id
+        };
 
-            await post("/api/qso", {
-                qso_date: now.toISOString().slice(0, 10),
-                time_on_utc: now.toISOString().slice(11, 19),
-                time_off_utc: null,
-                call,
-                frequency: Math.round(khz * 1000) / 1000000,
-                band,
-                mode,
-                rst_sent: document.getElementById("l-rst-s").value.trim() || defaultRst(mode),
-                rst_rcvd: document.getElementById("l-rst-r").value.trim() || defaultRst(mode),
-                my_callsign: state.settings.callsign,
-                my_grid: state.settings.locator,
-                operator_name: state.settings.operatorName || "",
-                name: document.getElementById("l-name").value.trim(),
-                country: lookup.country || spot?.dxccName || spot?.country || "",
-                country_code: spot?.countryCode || "",
-                dx_grid: lookup.grid || lookup.locator || "",
-                notes: "Logged on the phone",
-                spot_source: spot ? (spot.sources || []).join(", ") : "",
-                spot_id: null
-            });
-
-            navigator.vibrate?.([20, 40, 20]);
-            toast(`✔ ${call} logged`);
-
-            document.getElementById("l-call").value = "";
-            document.getElementById("l-name").value = "";
-            lookupFor = "";
-            void loadRecent();
-
+        if (portable.on) {
+            const a = activation();
+            a.qsos.push({ id, call, band, mode, time: iso.slice(11, 16), status: "pending" });
+            saveActivation(a);
         }
-        catch (error) {
-            toast(`Not saved: ${error.message}`, "err");
-        }
+
+        setQueue([...queue(), payload]);
+
+        navigator.vibrate?.([20, 40, 20]);
+
+        // ready for the next QSO - keep band, mode, frequency
+        document.getElementById("l-call").value = "";
+        document.getElementById("l-name").value = "";
+        document.getElementById("l-ref").value = "";
+        document.getElementById("l-time").value = "";
+        document.getElementById("l-dupe").textContent = "";
+        lookupFor = "";
+
+        // add to the local worked list for the dupe check
+        state.worked.calls.add(call);
+        state.worked.callsOnBand?.add(`${call}|${band.toUpperCase()}`);
+
+        renderRecent();
+
+        await syncQueue();
+
+        toast(queue().some(p => p.spot_id === id) ? `✔ ${call} saved on the phone – uploads when online` : `✔ ${call} logged`);
+
+        if (portable.on) document.getElementById("l-call").focus();
 
     }
+
 
     /* ------------------------------------------------------------
        Events
@@ -997,7 +1522,9 @@ h2 {
 
         if (tab === "alerts") renderAlerts();
         if (tab === "log") {
-            if (!document.getElementById("l-freq").value) fillFromRadio();
+            if (!portable.on && !document.getElementById("l-freq").value) fillFromRadio();
+            renderPortable();
+            renderQueue();
             void loadRecent();
         }
         if (tab === "radio") void loadRotator();
@@ -1114,15 +1641,101 @@ h2 {
     });
 
     const callInput = document.getElementById("l-call");
-    callInput.addEventListener("input", () => { callInput.value = callInput.value.toUpperCase(); });
+    callInput.addEventListener("input", () => { callInput.value = callInput.value.toUpperCase(); checkDupe(); });
     callInput.addEventListener("blur", () => lookupName(callInput.value));
-    document.getElementById("l-fill").addEventListener("click", fillFromRadio);
-    document.getElementById("l-save").addEventListener("click", saveQso);
+    callInput.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); void saveQso(); } });
+    document.getElementById("l-fill").addEventListener("click", () => { fillFromRadio(); checkDupe(); });
+    document.getElementById("l-save").addEventListener("click", () => void saveQso());
     document.getElementById("l-mode").addEventListener("change", e => {
         const m = e.target.value.toUpperCase();
         document.getElementById("l-rst-s").value = defaultRst(m);
         document.getElementById("l-rst-r").value = defaultRst(m);
+        checkDupe();
     });
+    document.getElementById("l-freq").addEventListener("change", e => {
+        const band = bandOf(Number(String(e.target.value).replace(",", ".")));
+        if (band) document.getElementById("l-band").value = band;
+        if (portable.on) renderPortable();
+        checkDupe();
+    });
+
+    /* home station / portable */
+    document.getElementById("log-kind").addEventListener("click", e => {
+        const btn = e.target.closest("[data-kind]");
+        if (!btn) return;
+        portable.on = btn.dataset.kind === "portable";
+        if (portable.on && !portable.call) portable.call = state.settings.callsign || "";
+        savePortable();
+        // first time portable: open the station settings
+        document.getElementById("p-edit").hidden = !(portable.on && (!portable.grid));
+        if (!portable.on) fillFromRadio();
+        renderPortable();
+        checkDupe();
+    });
+
+    document.getElementById("p-summary").addEventListener("click", () => {
+        const edit = document.getElementById("p-edit");
+        edit.hidden = !edit.hidden;
+    });
+
+    document.getElementById("p-edit").addEventListener("click", e => {
+        const suffix = e.target.closest("[data-suffix]")?.dataset.suffix;
+        if (suffix) {
+            const input = document.getElementById("p-call");
+            const base = input.value.trim().toUpperCase().replace(/\/(P|M|MM|QRP)$/, "");
+            input.value = input.value.toUpperCase().endsWith(suffix) ? base : base + suffix;
+        }
+        const prog = e.target.closest("[data-prog]");
+        if (prog) {
+            portable.prog = prog.dataset.prog;
+            if (!portable.prog) {
+                portable.ref = "";
+                document.getElementById("p-ref").value = "";
+            }
+        }
+        if (suffix !== undefined || prog) {
+            storePortableFields();
+            renderPortable();
+        }
+    });
+
+    ["p-call", "p-grid", "p-ref"].forEach(id => document.getElementById(id).addEventListener("change", () => {
+        storePortableFields();
+        if (id === "p-ref" && portable.ref) portable.prog = refProgram(portable.ref, portable.prog);
+        savePortable();
+        renderPortable();
+    }));
+
+    document.getElementById("p-gps").addEventListener("click", useGps);
+
+    document.getElementById("p-done").addEventListener("click", () => {
+        storePortableFields();
+        document.getElementById("p-edit").hidden = true;
+        renderPortable();
+        callInput.focus();
+    });
+
+    document.getElementById("l-quick").addEventListener("click", e => {
+        const band = e.target.closest("[data-lband]")?.dataset.lband;
+        const mode = e.target.closest("[data-lmode]")?.dataset.lmode;
+        if (band) {
+            document.getElementById("l-band").value = band;
+            // a typed frequency of another band no longer fits
+            const khz = Number(String(document.getElementById("l-freq").value).replace(",", "."));
+            if (khz && bandOf(khz) !== band) document.getElementById("l-freq").value = "";
+        }
+        if (mode) {
+            document.getElementById("l-mode").value = mode;
+            document.getElementById("l-rst-s").value = defaultRst(mode);
+            document.getElementById("l-rst-r").value = defaultRst(mode);
+        }
+        renderPortable();
+        checkDupe();
+    });
+
+    document.getElementById("queue-retry").addEventListener("click", () => void syncQueue());
+    window.addEventListener("online", () => void syncQueue());
+    window.addEventListener("offline", renderQueue);
 
     /* install prompt (Android / Chrome) */
     let installEvent = null;
@@ -1163,12 +1776,16 @@ h2 {
         await loadSettings();
         await refresh(true);
         showTab(localGet("shack-m-tab") || "alerts");
+        void syncQueue();
     })();
+
+    // QSOs saved offline: upload as soon as SHACK-SERVER is reachable
+    setInterval(() => { if (queue().length && !document.hidden) void syncQueue(); }, 30000);
 
     setInterval(() => refresh(false), 2500);
     setInterval(() => refresh(true), 20000);
 
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) void refresh(true); });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) { void refresh(true); void syncQueue(); } });
 
 })();
 

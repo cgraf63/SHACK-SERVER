@@ -84,7 +84,12 @@ router.post(
                 notes,
 
                 spot_source,
-                spot_id
+                spot_id,
+
+                my_sig,
+                my_sig_info,
+                sig,
+                sig_info
 
             } = req.body;
 
@@ -324,6 +329,20 @@ country_code:
                 });
 
 
+              /* activity references (POTA / SOTA / WWFF ...) */
+              const str = (value: unknown): string | null =>
+                  typeof value === "string" && value.trim() ? value : null;
+
+              if (qso.id && (str(my_sig) || str(my_sig_info) || str(sig) || str(sig_info))) {
+                  qsoService.setReferences(Number(qso.id), {
+                      my_sig: str(my_sig),
+                      my_sig_info: str(my_sig_info),
+                      sig: str(sig),
+                      sig_info: str(sig_info)
+                  });
+                  Object.assign(qso, { my_sig: str(my_sig), my_sig_info: str(my_sig_info), sig: str(sig), sig_info: str(sig_info) });
+              }
+
               /*
                   Online logbooks (QRZ.com, ...): queued, uploaded
                   in the background with retry.
@@ -367,12 +386,16 @@ country_code:
 
 router.get(
     "/",
-    (_req, res) => {
+    (req, res) => {
 
         try {
 
             const qsos =
                 qsoService.getAllQso();
+
+            /* ?limit=N: only the newest N (phone, mobile data) */
+            const limit =
+                Number(req.query.limit);
 
 
             return res.json({
@@ -382,7 +405,10 @@ router.get(
                 count:
                     qsos.length,
 
-                qsos
+                qsos:
+                    Number.isInteger(limit) && limit > 0
+                        ? qsos.slice(0, limit)
+                        : qsos
 
             });
 
@@ -772,6 +798,27 @@ console.log("ADIF DEBUG:", {
                             null
 
                     });
+
+                /* activity references: dedicated fields first, then MY_SIG / SIG */
+                const ref = (prefix: "MY_" | ""): { program: string | null; info: string | null } => {
+                    for (const program of ["SOTA", "POTA", "WWFF"]) {
+                        const value = fields[`${prefix}${program}_REF`];
+                        if (value) return { program, info: value };
+                    }
+                    return { program: fields[`${prefix}SIG`] || null, info: fields[`${prefix}SIG_INFO`] || null };
+                };
+
+                const mine = ref("MY_");
+                const theirs = ref("");
+
+                if (qso.id && (mine.info || theirs.info)) {
+                    qsoService.setReferences(Number(qso.id), {
+                        my_sig: mine.program,
+                        my_sig_info: mine.info,
+                        sig: theirs.program,
+                        sig_info: theirs.info
+                    });
+                }
 
                 existingKeys.add(key);
 

@@ -39,6 +39,12 @@ export interface QsoRecord {
     spot_source?: string | null;
     spot_id?: string | null;
 
+    /* Activity references (ADIF MY_SIG / SIG), e.g. POTA + HB-0123 */
+    my_sig?: string | null;
+    my_sig_info?: string | null;
+    sig?: string | null;
+    sig_info?: string | null;
+
     created_at?: string;
 
 }
@@ -236,6 +242,14 @@ export class QsoService {
                 ADD COLUMN qsl_received INTEGER NOT NULL DEFAULT 0
             `);
 
+        }
+
+
+        /* Activity references (POTA / SOTA / WWFF / ...) */
+        for (const column of ["my_sig", "my_sig_info", "sig", "sig_info"]) {
+            if (!columnNames.includes(column)) {
+                this.db.exec(`ALTER TABLE qso ADD COLUMN ${column} TEXT`);
+            }
         }
 
 
@@ -727,6 +741,23 @@ const rows =
             FROM qso
             WHERE country_code IS NULL OR TRIM(country_code) = ''
         `).all() as unknown as Array<{ id: number; call: string }>;
+
+    }
+
+    /* Activity references - set after createQso (portable / POTA / SOTA) */
+    setReferences(
+        id: number,
+        refs: { my_sig?: string | null; my_sig_info?: string | null; sig?: string | null; sig_info?: string | null }
+    ): void {
+
+        const clean = (value: string | null | undefined): string | null => {
+            const text = String(value ?? "").trim().toUpperCase();
+            return text ? text.slice(0, 40) : null;
+        };
+
+        this.db.prepare(`
+            UPDATE qso SET my_sig = ?, my_sig_info = ?, sig = ?, sig_info = ? WHERE id = ?
+        `).run(clean(refs.my_sig), clean(refs.my_sig_info), clean(refs.sig), clean(refs.sig_info), id);
 
     }
 

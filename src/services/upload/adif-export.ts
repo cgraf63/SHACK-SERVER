@@ -28,6 +28,12 @@ export interface UploadQso {
     itu_zone?: number | null;
     notes?: string | null;
 
+    /* Activity references (POTA / SOTA / WWFF ...) */
+    my_sig?: string | null;
+    my_sig_info?: string | null;
+    sig?: string | null;
+    sig_info?: string | null;
+
     /* Contest QSOs */
     contest_id?: string | null;
     stx_string?: string | null;
@@ -189,6 +195,23 @@ export function qsoToAdif(qso: UploadQso): string {
     add("STX_STRING", qso.stx_string);
     add("SRX_STRING", qso.srx_string);
     add("COMMENT", qso.notes);
+
+    /* activity references: MY_SIG / SIG + the dedicated ADIF fields */
+    const refs = (side: "MY_" | "", program: string | null | undefined, info: string | null | undefined): void => {
+        const prog = String(program || "").trim().toUpperCase();
+        const ref = String(info || "").trim().toUpperCase();
+        if (!prog || !ref) return;
+        if (prog === "SOTA") add(`${side}SOTA_REF`, ref);
+        else if (prog === "POTA") add(`${side}POTA_REF`, ref);
+        else if (prog === "WWFF") add(`${side}WWFF_REF`, ref);
+        if (prog !== "SOTA") {
+            add(`${side}SIG`, prog);
+            add(`${side}SIG_INFO`, ref);
+        }
+    };
+
+    refs("MY_", qso.my_sig, qso.my_sig_info);
+    refs("", qso.sig, qso.sig_info);
 
     return fields.join("") + "<EOR>";
 

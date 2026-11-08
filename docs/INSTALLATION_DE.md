@@ -945,3 +945,9 @@ Auf dem Handy `https://<dein-shack-server>/m` öffnen (unterwegs: die Cloudflare
 und **Zum Home-Bildschirm** wählen (iPhone: Teilen-Menü, Android: Browser-Menü oder der Knopf *Install*).
 Die App zeigt Needed-Alerts und Watchlist-Treffer, Live-Spots (antippen = abstimmen, mit Split),
 den Transceiver (Band, Mode, Split aus, Rotor) und ein schnelles QSO-Log. Für die Installation ist HTTPS nötig.
+
+**Portabel-Log:** im LOG-Tab auf **PORTABLE** umschalten: eigenes Rufzeichen mit /P oder /M, Locator vom
+Handy-GPS, POTA-/SOTA-/WWFF-Referenz (und die Referenz der Gegenstation für P2P / S2S), Band und Mode mit
+einem Tipp (auch 2 m / 70 cm). Ohne Netz (Gipfel, Park) bleiben die QSOs auf dem Handy und werden automatisch
+hochgeladen, sobald SHACK-SERVER wieder erreichbar ist - jedes QSO nur einmal. Die Referenzen gehen in den
+ADIF-Upload (MY_SIG, MY_POTA_REF, MY_SOTA_REF, ...). Der Zähler zeigt die QSOs der Aktivierung (POTA 10, SOTA 4, WWFF 44).

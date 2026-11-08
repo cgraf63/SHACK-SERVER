@@ -3965,3 +3965,62 @@ D.sidebar.collapsed {
     border-color: rgba(255, 82, 82, 0.6);
     color: #ff9b9b;
 }
+
+
+/* =====================================================
+   Sidebar: compact, own scroll area
+
+   The sidebar no longer sets the page height: it stays at
+   the window height (sticky) and scrolls by itself when the
+   menu is longer - the dashboard fits on 1080 px again.
+   ===================================================== */
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 14px 16px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(181, 108, 255, 0.35) transparent;
+}
+
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(181, 108, 255, 0.35); border-radius: 3px; }
+
+.sidebar .logo {
+    width: 84px;
+    height: 84px;
+    margin-bottom: 8px;
+}
+
+.sidebar .brand-name {
+    font-size: 17px;
+}
+
+.sidebar .system-status {
+    margin-top: 8px;
+    padding: 8px 10px;
+}
+
+.sidebar .status-line {
+    line-height: 1.4;
+}
+
+.sidebar nav a {
+    padding: 5px 12px;
+    margin: 0;
+    font-size: 15px;
+}
+
+.sidebar.collapsed {
+    overflow: visible;
+}
+
+/* low windows: logo smaller still */
+@media (max-height: 950px) {
+    .sidebar .logo { width: 60px; height: 60px; margin-bottom: 4px; }
+    .sidebar nav a { padding: 4px 12px; }
+}

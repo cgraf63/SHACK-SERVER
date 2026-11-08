@@ -7,7 +7,7 @@
     alerts and the radio are always live.
 */
 
-const CACHE = "shack-mobile-v1";
+const CACHE = "shack-mobile-v2";
 const SHELL = [
     "/m",
     "/manifest.webmanifest",
