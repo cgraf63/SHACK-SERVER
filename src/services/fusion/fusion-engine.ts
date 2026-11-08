@@ -60,6 +60,15 @@ export class FusionEngine {
 
     }
 
+    /* Every incoming report (before merging): who heard whom */
+    private reportListeners: Array<(spot: FusionSpot) => void> = [];
+
+    onSpotReport(listener: (spot: FusionSpot) => void): void {
+
+        this.reportListeners.push(listener);
+
+    }
+
     private emitNewSpot(spot: FusionSpot): void {
 
         for (const listener of this.newSpotListeners) {
@@ -91,6 +100,15 @@ export class FusionEngine {
                 key
             );
 
+        for (const listener of this.reportListeners) {
+            try {
+                listener(spot);
+            }
+            catch (error) {
+                console.error("Spot report listener failed:", error);
+            }
+        }
+
 
 
                     if (existing) {
@@ -107,6 +125,22 @@ export class FusionEngine {
 
                 existing.locator =
                     spot.locator;
+
+            }
+
+
+            for (
+                const spotter of spot.spotters ?? []
+            ) {
+
+                existing.spotters ??= [];
+
+                if (
+                    !existing.spotters.includes(spotter) &&
+                    existing.spotters.length < 50
+                ) {
+                    existing.spotters.push(spotter);
+                }
 
             }
 

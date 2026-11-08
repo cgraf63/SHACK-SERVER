@@ -42,6 +42,18 @@ if (frequency < 1000) {
         }
         : {}),
 
+...(this.cleanSpotter(raw.spotter)
+        ? {
+            spotters: [this.cleanSpotter(raw.spotter)]
+        }
+        : {}),
+
+...(typeof raw.spotterLocator === "string" && /^[A-R]{2}\d{2}([A-X]{2})?$/i.test(raw.spotterLocator.trim())
+        ? {
+            spotterLocator: raw.spotterLocator.trim().toUpperCase()
+        }
+        : {}),
+
 
 
     country: raw.country,
@@ -497,6 +509,17 @@ private detectMode(
 
 }
 
+
+    /* "DL8LAS-#" (RBN skimmer), "HB9ABC-2", "OE1XYZ:" -> call */
+    private cleanSpotter(value: unknown): string {
+
+        if (typeof value !== "string") return "";
+
+        const call = value.toUpperCase().trim().replace(/:$/, "").replace(/-(#|\d+)$/, "");
+
+        return /^[A-Z0-9]{1,10}(\/[A-Z0-9]{1,10}){0,2}$/.test(call) && /\d/.test(call) ? call : "";
+
+    }
 
     private calculateConfidence(mode: string): number {
         return mode === "UNKNOWN" ? 60 : 75;

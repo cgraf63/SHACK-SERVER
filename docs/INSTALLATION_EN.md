@@ -503,6 +503,17 @@ SHACK-SERVER checks every new spot against the **watch list** (dashboard: *ADD T
 
 The bell 🔔 next to each callsign in the watch list switches the push for this callsign on or off. The **lockout** (default 15 min) prevents repeated alerts for the same station, **quiet hours** suppress notifications at night. **Link**: the address of your SHACK-SERVER (e.g. the Cloudflare address) - tapping the notification opens it. Spots in the first 2 minutes after a restart do not alert.
 
+### Needed alerts and "heard near you" (optional)
+
+**Settings → Needed alerts** sends a push (same ntfy topic as the watch list) when a station is spotted that you still need - without entering callsigns. The log is compared by **DXCC entity** (cty.dat): Ceuta & Melilla, Canary Islands, Asiatic Russia etc. count separately.
+
+- Levels: **NEW COUNTRY**, **NEW BAND COUNTRY**, optionally **NEW BAND** / **NEW MODE** for a station already worked.
+- Filters: bands, modes, minimum score, *only alert when heard near me*.
+- Lockout per country + band (a pile-up alerts once), quiet hours and link as for the watch list.
+- Example: `NEW COUNTRY: FW3GT – Wallis & Futuna Islands – 14.001 MHz CW – heard in EU (3 spotters, 18 dB) – via DX Summit, RBN`
+
+**Heard near you**: SHACK-SERVER reads the complete Reverse Beacon Network feed (CW/RTTY skimmers with SNR and locator) and the spotter callsigns of the DX clusters. A station is *near* when a spotter within the set distance of your QTH (default 1000 km) reported it on this band in the last 15 minutes. The live spots and the DXpeditions page show a green **NEAR** badge, the DX score gets +15. The last needed alerts are listed in the dashboard below the watch list (click = tune).
+
 ### Backup (Dropbox and/or NAS)
 
 **Settings → Backup** saves the QSO and contest log, the settings and the transceivers once a day (time and number of backups adjustable). Both targets use **rclone**: `sudo apt install rclone`.

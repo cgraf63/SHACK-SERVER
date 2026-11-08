@@ -1398,7 +1398,7 @@ function renderLiveSpots() {
                     ? `<span style="color:white; font-size:12px; margin-right:5px;">▲</span>`
                     : ""
         }
-        <span class="spot-call-link" title="Click for details">${spot.call}</span>${dxpeditionBadge(spot.call)}
+        <span class="spot-call-link" title="Click for details">${spot.call}</span>${dxpeditionBadge(spot.call)}${heardNearBadge(spot)}
     </span>
 
 </td>
@@ -2012,6 +2012,11 @@ function calculateSpotScore(spot) {
         spot.sources.length >= 2
     ) {
         score += 20;
+    }
+
+    /* heard by a spotter near the own QTH */
+    if (spot.heard?.nearby) {
+        score += 15;
     }
 
     const confidence = Number(spot.confidence);
@@ -2761,6 +2766,27 @@ setTimeout(
     DXpedition (NG3K ADXO, js/dxpeditions-data.js): small icon after
     the callsign when the station is an announced DXpedition QRV now.
 */
+/*
+    "Heard near you": a spotter / RBN skimmer near the own QTH reported
+    the station on this band in the last 15 minutes (server: heard).
+*/
+function heardNearBadge(spot) {
+
+    const heard = spot?.heard;
+
+    if (!heard?.nearby) return "";
+
+    const text =
+        `Heard near you: ${heard.nearbyCount} spotter${heard.nearbyCount === 1 ? "" : "s"} ` +
+        `within ${heard.radiusKm} km` +
+        (heard.bestSnr !== null && heard.bestSnr !== undefined ? `, best SNR ${heard.bestSnr} dB` : "") +
+        ` (${heard.spotterCount} spotter${heard.spotterCount === 1 ? "" : "s"} in total)`;
+
+    return `<span class="heard-near-badge" title="${escapeDetailsText(text)}">NEAR</span>`;
+
+}
+
+
 function dxpeditionBadge(call) {
 
     const entry = window.shackDxpeditions?.match(call);

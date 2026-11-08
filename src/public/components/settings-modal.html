@@ -762,6 +762,97 @@
 
 
     <!-- =========================
+         NEEDED ALERTS
+         ========================= -->
+
+    <section class="settings-section" data-demo-hide>
+
+        <h2>Needed alerts</h2>
+
+        <p class="radio-settings-intro">
+            Push notification when a station is spotted that you still need - no callsigns to
+            enter. Checked against your QSO log by DXCC entity (cty.dat), so e.g. Ceuta &amp; Melilla
+            or the Canary Islands count separately from Spain. Uses the ntfy topic, quiet hours and
+            link from <em>Watch list notifications</em> above.
+        </p>
+
+        <label class="source-switch">
+            <input id="needed-enabled" type="checkbox">
+            <span>Needed alerts</span>
+        </label>
+
+        <div class="backup-form">
+
+            <label>Alert for</label>
+            <div class="notify-watchlist">
+                <label title="DXCC entity never worked"><input id="needed-new-country" type="checkbox"> NEW COUNTRY</label>
+                <label title="Entity worked, but not on this band"><input id="needed-new-band-country" type="checkbox"> NEW BAND COUNTRY</label>
+                <label title="Station worked, but not on this band"><input id="needed-new-band" type="checkbox"> NEW BAND (station)</label>
+                <label title="Station worked, but not in this mode"><input id="needed-new-mode" type="checkbox"> NEW MODE (station)</label>
+            </div>
+
+            <label>Bands</label>
+            <div class="notify-watchlist needed-bands">
+                <label><input type="checkbox" data-needed-band="160m"> 160m</label>
+                <label><input type="checkbox" data-needed-band="80m"> 80m</label>
+                <label><input type="checkbox" data-needed-band="60m"> 60m</label>
+                <label><input type="checkbox" data-needed-band="40m"> 40m</label>
+                <label><input type="checkbox" data-needed-band="30m"> 30m</label>
+                <label><input type="checkbox" data-needed-band="20m"> 20m</label>
+                <label><input type="checkbox" data-needed-band="17m"> 17m</label>
+                <label><input type="checkbox" data-needed-band="15m"> 15m</label>
+                <label><input type="checkbox" data-needed-band="12m"> 12m</label>
+                <label><input type="checkbox" data-needed-band="10m"> 10m</label>
+                <label><input type="checkbox" data-needed-band="6m"> 6m</label>
+                <label><input type="checkbox" data-needed-band="4m"> 4m</label>
+                <label><input type="checkbox" data-needed-band="2m"> 2m</label>
+                <label><input type="checkbox" data-needed-band="70cm"> 70cm</label>
+            </div>
+
+            <label>Modes</label>
+            <div class="notify-watchlist">
+                <label><input type="checkbox" data-needed-mode="CW"> CW</label>
+                <label><input type="checkbox" data-needed-mode="PHONE"> SSB / Phone</label>
+                <label><input type="checkbox" data-needed-mode="FT8"> FT8</label>
+                <label><input type="checkbox" data-needed-mode="FT4"> FT4</label>
+                <label><input type="checkbox" data-needed-mode="DIGI"> other digital</label>
+                <span class="backup-hint">none ticked = all</span>
+            </div>
+
+            <label for="needed-min-score">Minimum score</label>
+            <div class="backup-row">
+                <input id="needed-min-score" type="number" min="0" max="1000">
+                <span class="backup-hint">0 = off; same DX score as in the live spots</span>
+            </div>
+
+            <label for="needed-only-nearby">Heard near you</label>
+            <div class="backup-row">
+                <label class="radio-check"><input id="needed-only-nearby" type="checkbox"> only alert when heard near me</label>
+            </div>
+
+            <label for="needed-radius">Near = within</label>
+            <div class="backup-row">
+                <input id="needed-radius" type="number" min="50" max="20000" step="50">
+                <span class="backup-hint">km of the own QTH (RBN skimmers and cluster spotters; also used for the NEAR badge)</span>
+            </div>
+
+            <label for="needed-cooldown">Lockout</label>
+            <div class="backup-row">
+                <input id="needed-cooldown" type="number" min="1" max="1440">
+                <span class="backup-hint">minutes per country + band (pile-ups alert once)</span>
+            </div>
+
+        </div>
+
+        <style>
+            .needed-bands label { min-width: 52px; }
+            #needed-min-score, #needed-radius, #needed-cooldown { width: 90px !important; flex: 0 0 auto; }
+        </style>
+
+    </section>
+
+
+    <!-- =========================
          BACKUP
          ========================= -->
 

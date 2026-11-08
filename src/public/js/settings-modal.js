@@ -1950,6 +1950,53 @@ function applyNotificationSettings(notifications) {
     void loadNotificationWatchList();
     void loadNotificationStatus();
 
+    applyNeededSettings(n.needed || {}, n.nearbyRadiusKm);
+
+}
+
+function applyNeededSettings(needed, radiusKm) {
+
+    const check = (id, value) => { const el = document.getElementById(id); if (el) el.checked = value === true; };
+    const set = (id, value) => { const el = document.getElementById(id); if (el) el.value = value ?? ""; };
+
+    check("needed-enabled", needed.enabled);
+    check("needed-new-country", needed.newCountry !== false);
+    check("needed-new-band-country", needed.newBandCountry !== false);
+    check("needed-new-band", needed.newBand);
+    check("needed-new-mode", needed.newMode);
+    check("needed-only-nearby", needed.onlyNearby);
+    set("needed-min-score", needed.minScore ?? 0);
+    set("needed-radius", radiusKm || 1000);
+    set("needed-cooldown", needed.cooldownMinutes || 60);
+
+    const bands = (needed.bands || []).map(b => String(b).toLowerCase());
+    const modes = needed.modes || [];
+
+    document.querySelectorAll("[data-needed-band]").forEach(box => {
+        box.checked = bands.includes(box.dataset.neededBand.toLowerCase());
+    });
+
+    document.querySelectorAll("[data-needed-mode]").forEach(box => {
+        box.checked = modes.includes(box.dataset.neededMode);
+    });
+
+}
+
+function collectNeededSettings() {
+
+    return {
+        enabled: backupChecked("needed-enabled"),
+        newCountry: backupChecked("needed-new-country"),
+        newBandCountry: backupChecked("needed-new-band-country"),
+        newBand: backupChecked("needed-new-band"),
+        newMode: backupChecked("needed-new-mode"),
+        bands: [...document.querySelectorAll("[data-needed-band]:checked")].map(box => box.dataset.neededBand),
+        modes: [...document.querySelectorAll("[data-needed-mode]:checked")].map(box => box.dataset.neededMode),
+        minScore: Number(backupValue("needed-min-score")) || 0,
+        onlyNearby: backupChecked("needed-only-nearby"),
+        cooldownMinutes: Number(backupValue("needed-cooldown")) || 60
+    };
+
 }
 
 function collectNotificationSettings() {
@@ -1963,6 +2010,8 @@ function collectNotificationSettings() {
             to: backupValue("notify-quiet-to") || "07:00"
         },
         linkUrl: backupValue("notify-link"),
+        nearbyRadiusKm: Number(backupValue("needed-radius")) || 1000,
+        needed: collectNeededSettings(),
         ntfy: {
             enabled: true,
             server: backupValue("notify-ntfy-server") || "https://ntfy.sh",

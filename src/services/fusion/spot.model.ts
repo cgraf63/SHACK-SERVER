@@ -35,6 +35,9 @@ export interface FusionSpot {
 
     spotters?: string[];
 
+    /* locator of the spotter of this report (if the source tells it) */
+    spotterLocator?: string;
+
 
 
     comments?: string[];

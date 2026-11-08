@@ -164,7 +164,13 @@ export class HolyClusterConnector {
                                     snr:
                                         this.extractSnr(
                                             raw.comment
-                                        )
+                                        ),
+
+                                    spotter:
+                                        raw.spotter_callsign ?? raw.spotter ?? raw.de_callsign,
+
+                                    spotterLocator:
+                                        raw.spotter_locator ?? raw.spotter_grid
 
 
                                 },

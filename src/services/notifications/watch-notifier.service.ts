@@ -192,7 +192,8 @@ class WatchNotifier {
 
     }
 
-    private async send(
+    /* also used by the needed alerts */
+    async send(
         settings: NotificationSettings,
         notification: { title: string; message: string; tags: string[] }
     ): Promise<PushResult> {

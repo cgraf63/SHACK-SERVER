@@ -501,6 +501,17 @@ SHACK-SERVER prüft jeden neuen Spot gegen die **Watchlist** (Dashboard: *ADD TO
 
 Die Glocke 🔔 neben jedem Rufzeichen der Watchlist schaltet die Push-Nachricht für dieses Rufzeichen ein oder aus. Die **Sperrzeit** (Standard 15 min) verhindert wiederholte Alarme derselben Station, **Ruhezeiten** unterdrücken Nachrichten in der Nacht. **Link**: Adresse deines SHACK-SERVER (z. B. die Cloudflare-Adresse) - ein Tipp auf die Nachricht öffnet ihn. Spots in den ersten 2 Minuten nach einem Neustart lösen keinen Alarm aus.
 
+### Needed-Alarm und «Heard near you» (optional)
+
+**Settings → Needed alerts** schickt eine Push-Nachricht (gleiches ntfy-Topic wie die Watchlist), wenn eine Station gespottet wird, die du noch brauchst - ohne Rufzeichen einzutragen. Verglichen wird mit dem Log nach **DXCC-Gebiet** (cty.dat): Ceuta & Melilla, Kanarische Inseln, asiatisches Russland usw. zählen separat.
+
+- Stufen: **NEW COUNTRY**, **NEW BAND COUNTRY**, optional **NEW BAND** / **NEW MODE** für eine schon gearbeitete Station.
+- Filter: Bänder, Modes, Mindest-Score, *nur wenn in meiner Region gehört*.
+- Sperrzeit pro Land + Band (ein Pileup alarmiert einmal), Ruhezeiten und Link wie bei der Watchlist.
+- Beispiel: `NEW COUNTRY: FW3GT – Wallis & Futuna Islands – 14.001 MHz CW – heard in EU (3 spotters, 18 dB) – via DX Summit, RBN`
+
+**Heard near you**: SHACK-SERVER liest den kompletten Reverse-Beacon-Network-Feed (CW/RTTY-Skimmer mit SNR und Locator) und die Spotter-Rufzeichen der DX-Cluster. Eine Station gilt als *nah gehört*, wenn ein Spotter im eingestellten Umkreis deines QTH (Standard 1000 km) sie in den letzten 15 Minuten auf diesem Band gemeldet hat. Live-Spots und DXpeditions-Seite zeigen ein grünes **NEAR**, der DX-Score bekommt +15. Die letzten Needed-Alarme stehen im Dashboard unter der Watchlist (Klick = abstimmen).
+
 ### Backup (Dropbox und/oder NAS)
 
 **Settings → Backup** sichert QSO- und Contest-Log, Einstellungen und Transceiver einmal täglich (Uhrzeit und Anzahl Sicherungen einstellbar). Beide Ziele laufen über **rclone**: `sudo apt install rclone`.

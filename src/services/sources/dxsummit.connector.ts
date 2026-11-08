@@ -140,7 +140,10 @@ export class DXSummitConnector {
                             snr:
                                 this.extractSnr(
                                     raw.info
-                                )
+                                ),
+
+                            spotter:
+                                raw.de_call ?? raw.spotter
 
                         },
 

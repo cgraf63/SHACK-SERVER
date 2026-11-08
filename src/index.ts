@@ -46,6 +46,14 @@ import {
     watchNotifier
 } from "./services/notifications/watch-notifier.service.js";
 
+import {
+    neededNotifier
+} from "./services/needed/needed-notifier.service.js";
+
+import {
+    attachHeardService
+} from "./services/needed/heard.service.js";
+
 import "./services/rbn/rbn-instance.js";
 
 import "./services/telnet/telnet-server.js";
@@ -78,6 +86,10 @@ else {
 
     /* Watch list: push notification when a watched callsign is spotted */
     watchNotifier.start(fusionEngine);
+
+    /* Needed alerts (new DXCC entity / band) and "heard near you" */
+    attachHeardService(fusionEngine);
+    neededNotifier.start(fusionEngine);
 
 }
 

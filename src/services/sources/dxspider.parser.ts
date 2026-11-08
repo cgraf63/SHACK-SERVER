@@ -98,7 +98,7 @@ export class DXSpiderParser {
 
         const match =
             line.match(
-                /DX de .*?:\s+(\d+(?:\.\d+)?)\s+(\S+)\s*(.*)/i
+                /DX de (.*?):\s+(\d+(?:\.\d+)?)\s+(\S+)\s*(.*)/i
             );
 
 
@@ -109,8 +109,11 @@ export class DXSpiderParser {
         }
 
 
+        const spotter =
+            (match[1] ?? "").trim();
+
         let frequency =
-            Number(match[1]);
+            Number(match[2]);
 
 
         /*
@@ -131,11 +134,11 @@ export class DXSpiderParser {
 
 
         const call =
-            match[2];
+            match[3];
 
 
         const comment =
-            (match[3] ?? "")
+            (match[4] ?? "")
                 .replace(/[\x00-\x1F\x7F]/g, "")
                 .trim();
 
@@ -173,7 +176,9 @@ export class DXSpiderParser {
 
             comment,
 
-            locator
+            locator,
+
+            spotter
 
         };
 

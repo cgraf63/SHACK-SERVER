@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/css/variables.css">
     <link rel="stylesheet" href="/css/theme.css">
     <link rel="stylesheet" href="/css/layout.css">
-    <link rel="stylesheet" href="/css/components.css?v=8">
+    <link rel="stylesheet" href="/css/components.css?v=9">
 
     <style>
 
@@ -236,7 +236,7 @@ a.dxp-call:hover { color: var(--cyan, #00e5ff); }
 </div>
 
 
-<script src="/js/component-loader.js?v=13"></script>
+<script src="/js/component-loader.js?v=14"></script>
 <script src="/js/system-status.js"></script>
 <script src="/js/dxpeditions-data.js?v=2"></script>
 
@@ -347,7 +347,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                     ${khz.toLocaleString("de-CH", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${esc(mode)}${
                         minutes !== null ? `<span class="age">${minutes}m</span>` : ""
                     }
-                </button>`;
+                </button>${
+                    spot.heard?.nearby
+                        ? ` <span class="heard-near-badge" title="Heard near you: ${spot.heard.nearbyCount} spotter(s) within ${spot.heard.radiusKm} km${
+                              spot.heard.bestSnr !== null && spot.heard.bestSnr !== undefined ? `, best SNR ${spot.heard.bestSnr} dB` : ""
+                          }">NEAR</span>`
+                        : ""
+                }`;
 
     }
 

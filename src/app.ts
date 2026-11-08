@@ -18,6 +18,7 @@ import wsjtxRouter from "./routes/wsjtx.js";
 import rotatorRouter from "./routes/rotator.js";
 import dxpeditionsRouter from "./routes/dxpeditions.js";
 import backupRouter from "./routes/backup.js";
+import neededRouter from "./routes/needed.js";
 import networkRouter from "./routes/network.js";
 import indexRouter from "./routes/index.js";
 import propagationRouter from "./routes/propagation.js";
@@ -195,6 +196,12 @@ app.use(
 app.use(
     "/api/backup",
     backupRouter
+);
+
+// Needed alerts (new DXCC entity / band)
+app.use(
+    "/api/needed",
+    neededRouter
 );
 
 

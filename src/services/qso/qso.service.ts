@@ -591,6 +591,16 @@ updateQso(
 
     }
 
+/* Light rows for the DXCC worked index (needed alerts) */
+getWorkedRows(): Array<{ call: string; band: string; mode: string }> {
+
+    return this.db.prepare(`
+        SELECT call, band, mode
+        FROM qso
+    `).all() as unknown as Array<{ call: string; band: string; mode: string }>;
+
+}
+
 getWorkedStatus() {
 
     const statement =

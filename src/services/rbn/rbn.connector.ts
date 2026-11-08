@@ -30,6 +30,10 @@ import {
 import {
     RbnGeoService
 } from "./rbn-geo.service.js";
+import {
+    heardService,
+    bandOfKhz
+} from "../needed/heard.service.js";
 
 
 const RBN_HOST =
@@ -74,7 +78,17 @@ export class RbnConnector {
 private callsignResolverService =
     new CallsignResolverService();
 
+    private stopped = false;
+    private reconnectTimer: NodeJS.Timeout | undefined;
+
     connect(): void {
+
+        this.stopped = false;
+
+        this.socket?.removeAllListeners();
+        this.socket?.destroy();
+        this.socket = undefined;
+        this.buffer = "";
 
         const settings =
             settingsService.get();
@@ -180,6 +194,15 @@ private callsignResolverService =
                     "RBN: Disconnected"
                 );
 
+                /* reconnect unless disconnect() was requested */
+                if (!this.stopped) {
+                    this.reconnectTimer ??= setTimeout(() => {
+                        this.reconnectTimer = undefined;
+                        console.log("RBN: Reconnecting");
+                        this.connect();
+                    }, 30_000);
+                }
+
             }
 
         );
@@ -216,6 +239,13 @@ private callsignResolverService =
         if (!spot) {
             return;
         }
+
+
+        /*
+         * Every skimmer spot (any callsign) goes to the "heard near you"
+         * index - not to the spot list.
+         */
+        await this.recordHeard(spot);
 
 
         const settings =
@@ -342,6 +372,32 @@ if (spotterInfo) {
     }
 
 
+    private async recordHeard(spot: RbnSpot): Promise<void> {
+
+        try {
+
+            const spotter =
+                spot.spotter.replace(/-(#|\d+)$/, "").toUpperCase();
+
+            const grid =
+                await this.rbnGeoService.getSpotterGrid("", spot.spotter);
+
+            heardService.report(spot.callsign, {
+                spotter,
+                source: "RBN",
+                band: bandOfKhz(spot.frequency),
+                at: Date.now(),
+                snr: spot.snr,
+                ...(grid ? { locator: grid } : {})
+            });
+
+        }
+        catch {
+            // index only
+        }
+
+    }
+
     getSpots(): RbnSpot[] {
 
         return [
@@ -360,6 +416,13 @@ if (spotterInfo) {
             console.log(
                 "RBN: Disconnect requested"
             );
+
+            this.stopped = true;
+
+            if (this.reconnectTimer) {
+                clearTimeout(this.reconnectTimer);
+                this.reconnectTimer = undefined;
+            }
 
 
             this.socket.destroy();

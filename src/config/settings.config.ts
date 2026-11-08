@@ -101,6 +101,33 @@ export interface NotificationSettings {
         token: string;
         priority: "default" | "high" | "max";
     };
+    /* "heard near you": spotter within this distance of the own QTH */
+    nearbyRadiusKm: number;
+    needed: NeededAlertSettings;
+}
+
+/*
+ * Needed alerts: push when a station is spotted that is still needed
+ * (by DXCC entity from cty.dat) - without entering callsigns.
+ * Uses the ntfy channel, quiet hours and link of the notifications.
+ */
+export interface NeededAlertSettings {
+    enabled: boolean;
+    newCountry: boolean;
+    newBandCountry: boolean;
+    /* station already worked, but not on this band / in this mode */
+    newBand: boolean;
+    newMode: boolean;
+    /* e.g. ["160m", "80m", ...]; empty = all */
+    bands: string[];
+    /* CW, PHONE, FT8, FT4, DIGI; empty = all */
+    modes: string[];
+    /* 0 = off */
+    minScore: number;
+    /* only alert when a spotter near the own QTH hears the station */
+    onlyNearby: boolean;
+    /* lockout per entity + band (station alerts: per call + band) */
+    cooldownMinutes: number;
 }
 
 /*
@@ -246,7 +273,20 @@ export const shackSettings: ShackSettings = {
         cooldownMinutes: 15,
         quietHours: { enabled: false, from: "22:00", to: "07:00" },
         linkUrl: "",
-        ntfy: { enabled: true, server: "https://ntfy.sh", topic: "", token: "", priority: "high" }
+        ntfy: { enabled: true, server: "https://ntfy.sh", topic: "", token: "", priority: "high" },
+        nearbyRadiusKm: 1000,
+        needed: {
+            enabled: false,
+            newCountry: true,
+            newBandCountry: true,
+            newBand: false,
+            newMode: false,
+            bands: ["160m", "80m", "60m", "40m", "30m", "20m", "17m", "15m", "12m", "10m"],
+            modes: [],
+            minScore: 0,
+            onlyNearby: false,
+            cooldownMinutes: 60
+        }
     },
     dxspiders: [
         {
