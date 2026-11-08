@@ -29,10 +29,10 @@ const page = await context.newPage();
 page.on("pageerror", error => console.log("page error:", error.message));
 
 /* full UI, no demo bar */
-await context.route("**/api/demo", route => route.fulfill({ json: { demo: false } }));
+await context.route(/\/api\/demo(\?.*)?$/, route => route.fulfill({ json: { demo: false } }));
 
 /* example settings for the settings pictures (not saved) */
-await context.route("**/api/settings", async route => {
+await context.route(/\/api\/settings(\?.*)?$/, async route => {
     if (route.request().method() !== "GET") return route.continue();
     const response = await route.fetch();
     const settings = await response.json();
@@ -70,7 +70,7 @@ catch (error) {
 const workedDxcc = new Set(worked.dxcc || []);
 const seen = new Set();
 const alerts = spots
-    .filter(s => s.dxccKey && !workedDxcc.has(s.dxccKey) && s.mode && s.mode !== "UNKNOWN" && Number(s.distance) > 2500)
+    .filter(s => s.dxccKey && !workedDxcc.has(s.dxccKey) && s.mode && s.mode !== "UNKNOWN")
     .filter(s => (seen.has(s.dxccKey) ? false : (seen.add(s.dxccKey), true)))
     .slice(0, 4)
     .map((s, i) => ({
@@ -84,7 +84,7 @@ const alerts = spots
 console.log(`spots: ${spots.length}, example alerts: ${alerts.length}, worked DXCC: ${(worked.dxcc || []).length}`);
 console.log("sample spots:", JSON.stringify(spots.slice(0, 3).map(s => ({ call: s.call, dxccKey: s.dxccKey, mode: s.mode, distance: s.distance }))));
 
-await context.route("**/api/needed/recent", route => route.fulfill({ json: alerts }));
+await context.route(/\/api\/needed\/recent(\?.*)?$/, route => route.fulfill({ json: alerts }));
 
 async function shot(name, options = {}) {
     const file = path.join(OUT, `${name}.jpg`);
@@ -106,18 +106,6 @@ await scene("dashboard", async () => {
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     await sleep(9000);
     await shot("01-dashboard");
-});
-
-/* 2 spot details (click on a DX callsign) */
-await scene("spot-details", async () => {
-    const links = await page.$$(".spot-call-link");
-    const target = links[Math.min(2, links.length - 1)];
-    if (!target) throw new Error("no spots");
-    await target.click();
-    await sleep(3500);
-    await shot("02-spot-details");
-    await page.keyboard.press("Escape");
-    await sleep(800);
 });
 
 /* 3 dashboard spot table close-up (for the video) */
@@ -151,10 +139,26 @@ await scene("qso-log", async () => {
     await shot("06-qso-log");
 });
 
-/* 7 contest console */
+/* 7 contest: QSO history of the demo CQ WW session */
 await scene("contest", async () => {
     await page.goto(`${BASE}/contest`, { waitUntil: "networkidle" });
-    await sleep(3500);
+    await sleep(3000);
+    await page.evaluate(() => {
+        const tab = [...document.querySelectorAll("button, a")].find(e => /QSO HISTORY/i.test(e.textContent || ""));
+        tab?.click();
+    });
+    await sleep(2500);
+    // demo session: first contest, first session
+    for (const id of ["contest-history-contest", "contest-history-session"]) {
+        await page.evaluate(selectId => {
+            const select = document.getElementById(selectId);
+            if (select && select.options.length > 1) {
+                select.selectedIndex = 1;
+                select.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+        }, id);
+        await sleep(2000);
+    }
     await shot("07-contest");
 });
 
@@ -169,7 +173,8 @@ await scene("contest-manager", async () => {
 await scene("diagnostics", async () => {
     await page.goto(`${BASE}/diagnostics`, { waitUntil: "networkidle" });
     await sleep(4000);
-    await shot("09-diagnostics");
+    // top part: DX sources and fusion engine (the demo log has QRZ errors)
+    await shot("09-diagnostics", { clip: { x: 0, y: 0, width: 1920, height: 375 } });
 });
 
 /* 10 settings: needed alerts + watch list notifications */
