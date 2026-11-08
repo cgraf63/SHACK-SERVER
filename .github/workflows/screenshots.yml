@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   screenshots:
@@ -58,3 +58,16 @@ jobs:
         with:
           name: screenshots
           path: out/
+
+      # also on the branch "screenshots" (docs/images/screenshots), to be
+      # checked and taken over into main by hand
+      - name: Commit to branch screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B screenshots
+          mkdir -p docs/images/screenshots
+          cp out/*.jpg docs/images/screenshots/
+          git add docs/images/screenshots
+          git commit -m "Screenshots from the demo ($(date -u +%Y-%m-%d))" || echo "nothing new"
+          git push -f origin screenshots

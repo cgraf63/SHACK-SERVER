@@ -81,7 +81,8 @@ const alerts = spots
         sources: s.sources || [], result: "sent"
     }));
 
-console.log(`spots: ${spots.length}, example alerts: ${alerts.length}`);
+console.log(`spots: ${spots.length}, example alerts: ${alerts.length}, worked DXCC: ${(worked.dxcc || []).length}`);
+console.log("sample spots:", JSON.stringify(spots.slice(0, 3).map(s => ({ call: s.call, dxccKey: s.dxccKey, mode: s.mode, distance: s.distance }))));
 
 await context.route("**/api/needed/recent", route => route.fulfill({ json: alerts }));
 
