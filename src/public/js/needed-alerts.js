@@ -1,7 +1,9 @@
 /*
-    SHACK-SERVER - last needed alerts in the dashboard (below the
-    watch list). Data: /api/needed/recent (server, Settings -> Needed
-    alerts). Click on an entry tunes the radio.
+    SHACK-SERVER - last needed alerts in the dashboard, in the place of
+    Priority DX: when there are needed alerts of the last 3 hours, the
+    card shows them ("Needed alerts"), otherwise Priority DX.
+    Data: /api/needed/recent (Settings -> Needed alerts).
+    Click on an entry tunes the radio.
 */
 
 (function () {
@@ -36,12 +38,23 @@
 
         const box = document.getElementById("needed-alerts");
         const list = document.getElementById("needed-alerts-items");
+        const priority = document.getElementById("priority-dx-list");
+        const title = document.getElementById("dx-focus-title");
 
         if (!box || !list) return;
 
-        const recent = (alerts || []).filter(a => Date.now() - a.at < 6 * 3600_000).slice(0, 4);
+        const recent = (alerts || []).filter(a => Date.now() - a.at < 3 * 3600_000).slice(0, 5);
 
         box.hidden = recent.length === 0;
+
+        if (priority) priority.hidden = recent.length > 0;
+
+        if (title) {
+            title.textContent = recent.length ? "Needed alerts" : "Priority DX";
+            title.title = recent.length
+                ? "Stations you still need (new DXCC entity / band), last 3 hours - click to tune. Without alerts: Priority DX."
+                : "Priority DX: the most distant stations in the live spots";
+        }
 
         list.innerHTML = recent.map(a => `
             <div class="needed-alert-item level-${esc(SHORT[a.level] || "NEW").toLowerCase().replace(".", "")}"

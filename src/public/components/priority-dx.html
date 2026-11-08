@@ -1,6 +1,14 @@
 <div class="card">
 
-    <h2>Priority DX</h2>
+    <!--
+        Needed alerts (last 3 hours) - otherwise Priority DX.
+        Filled by js/needed-alerts.js and js/priority-dx.js
+    -->
+    <h2 id="dx-focus-title" title="Priority DX: the most distant stations in the live spots">Priority DX</h2>
+
+    <div id="needed-alerts" class="needed-alerts" hidden>
+        <div id="needed-alerts-items" class="needed-alerts-items"></div>
+    </div>
 
     <div id="priority-dx-list">
         Waiting for data

@@ -57,26 +57,51 @@
     </div>
 
 
+    <!-- compact: name / country ITU CQ / band mode QSO / frequency watch -->
+
     <div class="manual-qso-field">
-
-
         <input
             type="text"
             id="manual-qso-name"
             placeholder="NAME"
             autocomplete="off"
         >
-
     </div>
 
-
-    <div class="manual-qso-row">
-
+    <div class="mq-line">
+        <div class="manual-qso-field mq-grow">
+            <input
+                type="text"
+                id="manual-qso-country"
+                placeholder="COUNTRY"
+                autocomplete="off"
+            >
+        </div>
         <div class="manual-qso-field">
+            <input
+                type="number"
+                id="manual-qso-itu"
+                placeholder="ITU"
+                title="ITU zone"
+                min="0"
+                max="90"
+            >
+        </div>
+        <div class="manual-qso-field">
+            <input
+                type="number"
+                id="manual-qso-cq"
+                placeholder="CQ"
+                title="CQ zone"
+                min="0"
+                max="40"
+            >
+        </div>
+    </div>
 
-
+    <div class="mq-line">
+        <div class="manual-qso-field">
             <select id="manual-qso-band">
-
                 <option value="">BAND</option>
                 <option value="160m">160m</option>
                 <option value="80m">80m</option>
@@ -87,17 +112,10 @@
                 <option value="12m">12m</option>
                 <option value="10m">10m</option>
                 <option value="6m">6m</option>
-
             </select>
-
         </div>
-
-
         <div class="manual-qso-field">
-
-
             <select id="manual-qso-mode">
-
                 <option value="">MODE</option>
                 <option value="SSB">SSB</option>
                 <option value="USB">USB</option>
@@ -105,91 +123,35 @@
                 <option value="CW">CW</option>
                 <option value="FT8">FT8</option>
                 <option value="FT4">FT4</option>
-
             </select>
-
         </div>
-
-    </div>
-
-
-    <div class="manual-qso-field">
-
-
-        <input
-            type="text"
-            id="manual-qso-country"
-            placeholder="COUNTRY"
-            autocomplete="off"
-        >
-
-    </div>
-
-
-    <div class="manual-qso-row">
-
-        <div class="manual-qso-field">
-
-            <input
-                type="number"
-                id="manual-qso-itu"
-                placeholder="ITU"
-                min="0"
-                max="90"
+        <div class="manual-qso-actions">
+            <button
+                type="button"
+                id="manual-qso-open"
+                class="manual-qso-open-button"
             >
-
+                → QSO
+            </button>
         </div>
+    </div>
 
-
-        <div class="manual-qso-field">
-
-
+    <div class="mq-line">
+        <div class="manual-qso-field manual-qso-frequency-field mq-grow">
             <input
-                type="number"
-                id="manual-qso-cq"
-                placeholder="CQ"
-                min="0"
-                max="40"
+                type="text"
+                id="manual-qso-frequency"
+                placeholder="FREQUENCY"
+                autocomplete="off"
             >
-
+            <span class="manual-qso-frequency-unit">kHz</span>
         </div>
-
-    </div>
-
-
-    <div class="manual-qso-field manual-qso-frequency-field">
-
-
-        <input
-            type="text"
-            id="manual-qso-frequency"
-            placeholder="FREQUENCY"
-            autocomplete="off"
-        >
-
-        <span class="manual-qso-frequency-unit">kHz</span>
-
-    </div>
-
-
-    <div class="manual-qso-actions">
-
-        <button
-            type="button"
-            id="manual-qso-open"
-            class="manual-qso-open-button"
-        >
-            → QSO
-        </button>
-
-    </div>
-
-
         <button
             type="button"
             id="manual-qso-add-watch"
             class="manual-qso-add-watch"
         >ADD TO WATCH</button>
+    </div>
 
     <div class="manual-qso-watch-list">
 
@@ -201,17 +163,6 @@
             id="manual-qso-watch-list-items"
             class="manual-qso-watch-list-items"
         ></div>
-
-    </div>
-
-    <!-- Needed alerts (Settings -> Needed alerts), filled by js/needed-alerts.js -->
-    <div id="needed-alerts" class="needed-alerts" hidden>
-
-        <div class="needed-alerts-title" title="Last needed alerts (new DXCC entity / band) - click to tune">
-            NEEDED ALERTS
-        </div>
-
-        <div id="needed-alerts-items" class="needed-alerts-items"></div>
 
     </div>
 

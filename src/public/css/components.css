@@ -3843,3 +3843,79 @@ D.sidebar.collapsed {
     color: #6f8593;
     font-size: 11px;
 }
+
+/* Manual QSO: compact lines (country + zones, band + mode + QSO, frequency + watch) */
+.mq-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mq-line > .manual-qso-field {
+    min-width: 0;
+}
+
+.mq-line > .mq-grow {
+    flex: 1 1 auto;
+}
+
+.mq-line #manual-qso-itu,
+.mq-line #manual-qso-cq {
+    width: 44px;
+    padding: 0 6px;
+    text-align: center;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.mq-line #manual-qso-itu::-webkit-outer-spin-button,
+.mq-line #manual-qso-itu::-webkit-inner-spin-button,
+.mq-line #manual-qso-cq::-webkit-outer-spin-button,
+.mq-line #manual-qso-cq::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.mq-line .manual-qso-actions {
+    margin: 0;
+}
+
+.mq-line .manual-qso-add-watch {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.mq-line .manual-qso-field input {
+    width: 100%;
+    min-width: 0;
+}
+
+.mq-line .manual-qso-frequency-field {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.mq-line .manual-qso-frequency-field input {
+    flex: 1 1 auto;
+}
+
+.mq-line .manual-qso-frequency-unit {
+    flex: 0 0 auto;
+    font-size: 12px;
+    color: #8fa3b2;
+}
+
+.mq-line .manual-qso-open-button {
+    white-space: nowrap;
+}
+
+/* NAME as wide as the lines below */
+.manual-qso-card > .manual-qso-field > #manual-qso-name {
+    width: 100%;
+}
+
+/* Needed alerts in the Priority DX card */
+#needed-alerts .needed-alert-item:first-child {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
