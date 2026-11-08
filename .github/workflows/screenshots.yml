@@ -1,0 +1,60 @@
+# Screenshots of the demo for the README and the video.
+# Builds the demo image, starts it, waits for live spots and takes
+# pictures with Playwright (Actions -> Screenshots -> Run workflow).
+# Result: artifact "screenshots" (JPEG, 1920x1080).
+
+name: Screenshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build demo image
+        run: docker build -t shack-demo .
+
+      - name: Start demo
+        run: docker run -d --name shack-demo -p 3000:3000 shack-demo
+
+      - name: Wait for live spots
+        run: |
+          for i in $(seq 1 60); do
+            n=$(curl -s http://localhost:3000/api/spots | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+            echo "spots: $n"
+            if [ "$n" -ge 40 ]; then break; fi
+            sleep 10
+          done
+          sleep 30
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Playwright
+        run: |
+          mkdir -p /tmp/pw && cd /tmp/pw
+          npm init -y >/dev/null
+          npm install playwright@1.49.1
+          npx playwright install --with-deps chromium
+
+      - name: Take screenshots
+        run: |
+          cp scripts/screenshots/capture.mjs /tmp/pw/
+          cd /tmp/pw && node capture.mjs http://localhost:3000 "$GITHUB_WORKSPACE/out"
+
+      - name: Container log (last lines)
+        if: always()
+        run: docker logs --tail 80 shack-demo
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: out/
