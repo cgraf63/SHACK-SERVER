@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { getWorkedIndex } from "../services/needed/worked-index.js";
 import { qsoService } from "../services/qso/qso-instance.js";
 import { uploadQueue } from "../services/upload/upload-queue.service.js";
 import { QRZService } from "../services/geo/qrz.service.js";
@@ -821,9 +822,15 @@ router.get(
             const worked =
                 qsoService.getWorkedStatus();
 
-            return res.json(
-                worked
-            );
+            /* DXCC entities (cty.dat main prefix) - spots carry dxccKey */
+            const index =
+                getWorkedIndex();
+
+            return res.json({
+                ...worked,
+                dxcc: [...index.entities],
+                dxccOnBand: [...index.entityBands]
+            });
 
         }
         catch (error) {

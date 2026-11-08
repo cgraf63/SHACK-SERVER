@@ -25,6 +25,17 @@ router.get('/qso-log', (_req, res) => {
 
 
 
+router.get('/dxcc', (_req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '..',
+            'public',
+            'dxcc.html'
+        )
+    );
+});
+
 router.get('/dxpeditions', (_req, res) => {
     res.sendFile(
         path.join(

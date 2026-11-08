@@ -592,12 +592,12 @@ updateQso(
     }
 
 /* Light rows for the DXCC worked index (needed alerts) */
-getWorkedRows(): Array<{ call: string; band: string; mode: string }> {
+getWorkedRows(): Array<{ call: string; band: string; mode: string; qsl_received: number; country_code: string | null }> {
 
     return this.db.prepare(`
-        SELECT call, band, mode
+        SELECT call, band, mode, qsl_received, country_code
         FROM qso
-    `).all() as unknown as Array<{ call: string; band: string; mode: string }>;
+    `).all() as unknown as Array<{ call: string; band: string; mode: string; qsl_received: number; country_code: string | null }>;
 
 }
 

@@ -226,7 +226,7 @@ a.dxp-call:hover { color: var(--cyan, #00e5ff); }
             <div class="dxp-footer">
                 Data: <a href="https://www.ng3k.com/Misc/adxo.html" target="_blank" rel="noopener">Announced DX Operations (ADXO)</a>
                 by NG3K, Bill Feidt - refreshed automatically every 6 hours.
-                Countries are compared by the flag/country of your logged QSOs.
+                Countries are compared by DXCC entity (cty.dat) with your QSO log.
             </div>
 
         </div>
@@ -303,18 +303,28 @@ document.addEventListener("DOMContentLoaded", async () => {
             return `<span class="dxp-badge call" title="This callsign is in your QSO log">WORKED</span>`;
         }
 
-        if (!entry.countryCode) {
+        const key = countryKey(entry);
+
+        if (!key) {
             return `<span class="dxp-none">-</span>`;
         }
 
-        return state.worked.countries.has(entry.countryCode)
-            ? `<span class="dxp-badge worked" title="Country already in your QSO log">COUNTRY WORKED</span>`
-            : `<span class="dxp-badge new" title="Country not yet in your QSO log">NEW COUNTRY</span>`;
+        return state.worked.countries.has(key)
+            ? `<span class="dxp-badge worked" title="DXCC entity already in your QSO log">COUNTRY WORKED</span>`
+            : `<span class="dxp-badge new" title="DXCC entity not yet in your QSO log">NEW COUNTRY</span>`;
 
     }
 
+    /* DXCC entity (cty.dat) when the server provides it, otherwise the flag */
+    function countryKey(entry) {
+        return state.worked.useDxcc
+            ? String(entry.dxccKey || "").toUpperCase()
+            : String(entry.countryCode || "").toLowerCase();
+    }
+
     function isNew(entry) {
-        return entry.countryCode && !state.worked.countries.has(entry.countryCode);
+        const key = countryKey(entry);
+        return Boolean(key) && !state.worked.countries.has(key);
     }
 
     function latestSpot(entry) {
@@ -455,7 +465,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             const data = await response.json();
             state.worked = {
                 calls: new Set((data.calls || []).map(c => String(c).toUpperCase())),
-                countries: new Set((data.countries || []).map(c => String(c).toLowerCase()))
+                useDxcc: Array.isArray(data.dxcc),
+                countries: Array.isArray(data.dxcc)
+                    ? new Set(data.dxcc.map(c => String(c).toUpperCase()))
+                    : new Set((data.countries || []).map(c => String(c).toLowerCase()))
             };
         }
         catch { /* log not reachable */ }

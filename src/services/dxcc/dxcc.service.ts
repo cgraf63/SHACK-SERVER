@@ -179,6 +179,15 @@ class DxccService {
 
     }
 
+    /* all current DXCC entities from cty.dat */
+    all(): DxccEntity[] {
+
+        if (!this.loaded) this.load();
+
+        return [...this.byKey.values()];
+
+    }
+
     get(key: string): DxccEntity | undefined {
 
         if (!this.loaded) this.load();

@@ -60,15 +60,26 @@ async function loadWorkedStatus() {
             );
 
 
+        /*
+            DXCC entities (cty.dat main prefix, e.g. "EA9" Ceuta & Melilla)
+            when the server provides them - otherwise flags (ISO code).
+        */
+        workedStatus.useDxcc =
+            Array.isArray(data.dxcc);
+
         workedStatus.countries =
             new Set(
-                data.countries || []
+                workedStatus.useDxcc
+                    ? data.dxcc
+                    : (data.countries || [])
             );
 
 
         workedStatus.countriesOnBand =
             new Set(
-                data.countriesOnBand || []
+                workedStatus.useDxcc
+                    ? (data.dxccOnBand || [])
+                    : (data.countriesOnBand || [])
             );
 
     }
@@ -84,6 +95,16 @@ async function loadWorkedStatus() {
 
 }
 
+/* key of the spot's country for the worked sets: DXCC entity or flag */
+function spotCountryKey(spot) {
+
+    return workedStatus.useDxcc
+        ? String(spot?.dxccKey || "").trim().toUpperCase()
+        : String(spot?.countryCode || "").trim().toLowerCase();
+
+}
+
+
 function getWorkedStatus(spot) {
 
     const call =
@@ -97,9 +118,7 @@ function getWorkedStatus(spot) {
             .toUpperCase();
 
     const country =
-        String(spot.countryCode || "")
-            .trim()
-            .toLowerCase();
+        spotCountryKey(spot);
 
 
     const stationOnBand =
@@ -1981,12 +2000,12 @@ function calculateSpotScore(spot) {
     }
 
     if (
-        spot.countryCode &&
+        spotCountryKey(spot) &&
         workedStatus.countries.has(
-            spot.countryCode.toLowerCase()
+            spotCountryKey(spot)
         ) &&
         !workedStatus.countriesOnBand.has(
-            `${spot.countryCode.toLowerCase()}|${String(spot.band || "").toUpperCase()}`
+            `${spotCountryKey(spot)}|${String(spot.band || "").toUpperCase()}`
         )
     ) {
         score += 60;
@@ -2183,21 +2202,21 @@ function updateOpportunities() {
     const newDxcc =
         currentSpots.some(
             spot =>
-                spot.countryCode &&
+                spotCountryKey(spot) &&
                 !workedStatus.countries.has(
-                    spot.countryCode.toLowerCase()
+                    spotCountryKey(spot)
                 )
         );
 
     const newBand =
         currentSpots.some(
             spot =>
-                spot.countryCode &&
+                spotCountryKey(spot) &&
                 workedStatus.countries.has(
-                    spot.countryCode.toLowerCase()
+                    spotCountryKey(spot)
                 ) &&
                 !workedStatus.countriesOnBand.has(
-                    `${spot.countryCode.toLowerCase()}|${String(spot.band || "").toUpperCase()}`
+                    `${spotCountryKey(spot)}|${String(spot.band || "").toUpperCase()}`
                 )
         );
 

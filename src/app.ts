@@ -19,6 +19,7 @@ import rotatorRouter from "./routes/rotator.js";
 import dxpeditionsRouter from "./routes/dxpeditions.js";
 import backupRouter from "./routes/backup.js";
 import neededRouter from "./routes/needed.js";
+import dxccRouter from "./routes/dxcc.js";
 import networkRouter from "./routes/network.js";
 import indexRouter from "./routes/index.js";
 import propagationRouter from "./routes/propagation.js";
@@ -202,6 +203,12 @@ app.use(
 app.use(
     "/api/needed",
     neededRouter
+);
+
+// DXCC table (entities x bands, worked / confirmed)
+app.use(
+    "/api/dxcc",
+    dxccRouter
 );
 
 

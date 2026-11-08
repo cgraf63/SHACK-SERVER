@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DXCC - SHACK-SERVER</title>
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/components.css?v=12">
+
+    <style>
+
+html, body { width: 100%; margin: 0; padding: 0; }
+body { min-height: 100vh; overflow-x: auto; }
+*, *::before, *::after { box-sizing: border-box; }
+
+.dxcc-page {
+    width: 100%;
+    min-height: 100vh;
+    padding: 14px 20px 30px;
+    background: #050d13;
+    color: #fff;
+}
+
+.dxcc-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.dxcc-header h1 { margin: 0; color: var(--yellow, #ffc400); font-size: 28px; line-height: 1.2; }
+.dxcc-sub { margin-top: 6px; color: #8fa3b2; font-size: 13px; }
+
+.dxcc-stats { display: flex; gap: 12px; }
+
+.dxcc-stat {
+    min-width: 120px;
+    padding: 8px 14px;
+    border: 1px solid var(--panel-border, #1d3442);
+    border-radius: 10px;
+    background: var(--panel, #0d1720);
+}
+.dxcc-stat .label { font-size: 11px; letter-spacing: .08em; color: #8fa3b2; }
+.dxcc-stat .value { font-size: 24px; font-weight: 800; }
+.dxcc-stat .value small { font-size: 13px; font-weight: 600; color: #8fa3b2; }
+.dxcc-stat.worked .value { color: #ffc400; }
+.dxcc-stat.confirmed .value { color: #8cff00; }
+
+.dxcc-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.dxcc-tab {
+    padding: 7px 14px;
+    border: 1px solid var(--panel-border, #1d3442);
+    border-radius: 8px;
+    background: #0b1821;
+    color: #9fb3c2;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: .04em;
+    cursor: pointer;
+}
+.dxcc-tab.active { border-color: var(--cyan, #00e5ff); color: var(--cyan, #00e5ff); background: #082029; }
+.dxcc-tab:hover { color: #fff; }
+
+.dxcc-sep { width: 1px; height: 26px; background: var(--panel-border, #1d3442); margin: 0 4px; }
+
+.dxcc-toolbar select,
+.dxcc-toolbar input[type="search"] {
+    padding: 7px 10px;
+    border: 1px solid var(--panel-border, #1d3442);
+    border-radius: 8px;
+    background: #07131a;
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+}
+.dxcc-toolbar input[type="search"] { width: 200px; }
+
+.dxcc-legend { margin-left: auto; display: flex; gap: 12px; align-items: center; font-size: 12px; color: #8fa3b2; }
+.dxcc-legend .cell { display: inline-block; width: 18px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; }
+
+.dxcc-card {
+    border: 1px solid var(--panel-border, #1d3442);
+    border-radius: 10px;
+    background: var(--panel, #0d1720);
+    overflow: auto;
+    max-height: calc(100vh - 200px);
+}
+
+table.dxcc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+.dxcc-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 8px 6px;
+    background: #0a141c;
+    color: var(--yellow, #ffc400);
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-align: center;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--panel-border, #1d3442);
+}
+.dxcc-table th.left { text-align: left; padding-left: 12px; }
+.dxcc-table th .count { display: block; color: #8fa3b2; font-size: 10px; font-weight: 600; letter-spacing: 0; }
+
+.dxcc-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    text-align: center;
+    vertical-align: middle;
+}
+.dxcc-table td.entity { text-align: left; padding-left: 12px; white-space: nowrap; }
+.dxcc-table td.entity img { width: 20px; height: 14px; vertical-align: -2px; margin-right: 7px; }
+.dxcc-table td.entity .prefix { color: #6f8593; font-size: 11px; margin-left: 6px; }
+.dxcc-table td.cont { color: #8fa3b2; font-size: 12px; }
+.dxcc-table td.qsos { color: #8fa3b2; font-size: 12px; }
+.dxcc-table tr:hover td { background: rgba(0,229,255,.04); }
+.dxcc-table tr.needed td.entity { color: #ff8080; }
+
+.mark {
+    display: inline-block;
+    width: 26px;
+    height: 18px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 18px;
+}
+.mark.C, .dxcc-legend .C { background: rgba(140,255,0,.22); color: #9be05a; border: 1px solid rgba(140,255,0,.5); }
+.mark.W, .dxcc-legend .W { background: rgba(255,196,0,.16); color: #ffc400; border: 1px solid rgba(255,196,0,.45); }
+.mark.none, .dxcc-legend .none { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06); }
+
+.dxcc-empty { padding: 30px; text-align: center; color: #8fa3b2; }
+
+.dxcc-footer { margin-top: 10px; color: #6f8593; font-size: 12px; }
+
+    </style>
+
+</head>
+
+<body>
+
+<div id="app">
+
+    <aside id="sidebar" class="sidebar"></aside>
+
+    <main>
+
+        <div class="dxcc-page">
+
+            <div class="dxcc-header">
+                <div>
+                    <h1>DXCC</h1>
+                    <div class="dxcc-sub">Entities from cty.dat compared with your QSO log - by band, worked and confirmed.</div>
+                </div>
+                <div class="dxcc-stats">
+                    <div class="dxcc-stat worked"><div class="label">WORKED</div><div class="value" id="stat-worked">-</div></div>
+                    <div class="dxcc-stat confirmed"><div class="label">CONFIRMED</div><div class="value" id="stat-confirmed">-</div></div>
+                </div>
+            </div>
+
+            <div class="dxcc-toolbar">
+                <button type="button" class="dxcc-tab active" data-mode="ALL">ALL MODES</button>
+                <button type="button" class="dxcc-tab" data-mode="CW">CW</button>
+                <button type="button" class="dxcc-tab" data-mode="PHONE">PHONE</button>
+                <button type="button" class="dxcc-tab" data-mode="DIGI">DIGITAL</button>
+                <span class="dxcc-sep"></span>
+                <select id="dxcc-show" title="Which entities to show">
+                    <option value="all">All entities</option>
+                    <option value="needed">Needed (not worked)</option>
+                    <option value="unconfirmed">Worked, not confirmed</option>
+                    <option value="worked">Worked</option>
+                    <option value="confirmed">Confirmed</option>
+                </select>
+                <select id="dxcc-continent" title="Continent">
+                    <option value="">All continents</option>
+                    <option value="EU">Europe</option>
+                    <option value="AF">Africa</option>
+                    <option value="AS">Asia</option>
+                    <option value="NA">North America</option>
+                    <option value="SA">South America</option>
+                    <option value="OC">Oceania</option>
+                    <option value="AN">Antarctica</option>
+                </select>
+                <input type="search" id="dxcc-search" placeholder="Search entity or prefix…" autocomplete="off">
+                <div class="dxcc-legend">
+                    <span><span class="cell C"></span>confirmed</span>
+                    <span><span class="cell W"></span>worked</span>
+                    <span><span class="cell none"></span>needed</span>
+                </div>
+            </div>
+
+            <div class="dxcc-card">
+                <table class="dxcc-table">
+                    <thead id="dxcc-head"></thead>
+                    <tbody id="dxcc-body">
+                        <tr><td class="dxcc-empty">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dxcc-footer">
+                DXCC entities from cty.dat (AD1C country files; current entities, WAE-only areas such as Sicily count for
+                their DXCC entity). Confirmed = "QSL received" in the QSO log. Entities with the same prefix (e.g. North and
+                South Cook) are separated only for known callsigns.
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script src="/js/component-loader.js?v=15"></script>
+<script src="/js/system-status.js"></script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadComponents();
+});
+
+(function () {
+
+    const state = {
+        mode: "ALL",
+        show: "all",
+        continent: "",
+        search: "",
+        data: null
+    };
+
+    const head = document.getElementById("dxcc-head");
+    const body = document.getElementById("dxcc-body");
+
+    function esc(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    function bandLabel(band) {
+        return band.replace(/M$/, "");
+    }
+
+    function render() {
+
+        const data = state.data;
+
+        if (!data) return;
+
+        document.getElementById("stat-worked").innerHTML =
+            `${data.worked} <small>/ ${data.total}</small>`;
+        document.getElementById("stat-confirmed").innerHTML =
+            `${data.confirmed} <small>/ ${data.total}</small>`;
+
+        head.innerHTML = `<tr>
+            <th class="left">ENTITY</th>
+            <th>CONT</th>
+            ${data.bands.map(band => `
+                <th title="${esc(bandLabel(band))} m: ${data.perBand[band].worked} worked, ${data.perBand[band].confirmed} confirmed">
+                    ${esc(bandLabel(band))}
+                    <span class="count">${data.perBand[band].worked}/${data.perBand[band].confirmed}</span>
+                </th>`).join("")}
+            <th title="QSOs with this entity">QSOs</th>
+        </tr>`;
+
+        const query = state.search.trim().toLowerCase();
+
+        const rows = data.rows.filter(row => {
+
+            if (state.continent && row.continent !== state.continent) return false;
+
+            if (state.show === "needed" && row.status) return false;
+            if (state.show === "worked" && !row.status) return false;
+            if (state.show === "confirmed" && row.status !== "C") return false;
+            if (state.show === "unconfirmed" && row.status !== "W") return false;
+
+            if (query && !`${row.name} ${row.key}`.toLowerCase().includes(query)) return false;
+
+            return true;
+
+        });
+
+        if (!rows.length) {
+            body.innerHTML = `<tr><td class="dxcc-empty" colspan="${data.bands.length + 3}">No entities for this selection.</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = rows.map(row => `
+            <tr class="${row.status ? "" : "needed"}">
+                <td class="entity">${
+                    row.flag ? `<img src="/assets/flags/${esc(row.flag)}.svg" alt="" onerror="this.remove()">` : ""
+                }${esc(row.name)}<span class="prefix">${esc(row.key)}</span></td>
+                <td class="cont">${esc(row.continent)}</td>
+                ${data.bands.map(band => {
+                    const mark = row.bands[band];
+                    const title = mark === "C" ? "confirmed" : mark === "W" ? "worked" : "needed";
+                    return `<td><span class="mark ${mark || "none"}" title="${esc(row.name)} ${esc(bandLabel(band))} m: ${title}">${mark === "C" ? "✔" : mark === "W" ? "W" : ""}</span></td>`;
+                }).join("")}
+                <td class="qsos">${row.qsos || ""}</td>
+            </tr>`).join("");
+
+    }
+
+    async function load() {
+
+        try {
+            const response = await fetch(`/api/dxcc?mode=${encodeURIComponent(state.mode)}`, { cache: "no-store" });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            state.data = await response.json();
+            render();
+        }
+        catch (error) {
+            body.innerHTML = `<tr><td class="dxcc-empty">DXCC table not available (${esc(error.message)}).</td></tr>`;
+        }
+
+    }
+
+    document.querySelectorAll(".dxcc-tab").forEach(button => {
+        button.addEventListener("click", () => {
+            state.mode = button.dataset.mode;
+            document.querySelectorAll(".dxcc-tab").forEach(b => b.classList.toggle("active", b === button));
+            void load();
+        });
+    });
+
+    document.getElementById("dxcc-show").addEventListener("change", event => {
+        state.show = event.target.value;
+        render();
+    });
+
+    document.getElementById("dxcc-continent").addEventListener("change", event => {
+        state.continent = event.target.value;
+        render();
+    });
+
+    document.getElementById("dxcc-search").addEventListener("input", event => {
+        state.search = event.target.value;
+        render();
+    });
+
+    void load();
+
+})();
+
+</script>
+
+<script src="/js/demo-banner.js?v=1"></script>
+</body>
+</html>

@@ -8,6 +8,10 @@ import {
     heardService
 } from "../services/needed/heard.service.js";
 
+import {
+    dxccService
+} from "../services/dxcc/dxcc.service.js";
+
 
 const router = Router();
 
@@ -26,8 +30,13 @@ router.get("/", async (_req, res) => {
             if (!spot?.call) return spot;
 
             const heard = heardService.evaluate(spot.call, spot.band ?? "");
+            const entity = dxccService.resolve(spot.call);
 
-            return heard.spotterCount ? { ...spot, heard } : spot;
+            return {
+                ...spot,
+                ...(entity ? { dxccKey: entity.key, dxccName: entity.name } : {}),
+                ...(heard.spotterCount ? { heard } : {})
+            };
 
         })
     );

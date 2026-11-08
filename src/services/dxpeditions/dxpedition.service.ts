@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { CallsignResolverService } from "../geo/callsign-resolver.service.js";
+import { dxccService } from "../dxcc/dxcc.service.js";
 
 
 /*
@@ -388,6 +389,11 @@ class DxpeditionService {
             entries: this.list.entries
                 .filter(entry => entry.end >= today)
                 .sort((a, b) => a.start.localeCompare(b.start) || a.call.localeCompare(b.call))
+                .map(entry => {
+                    // DXCC entity: full call first ("3B9/M0CFW"), otherwise the prefix
+                    const entity = dxccService.resolve(entry.calls[0] ?? entry.call) ?? dxccService.resolve(entry.call);
+                    return entity ? { ...entry, dxccKey: entity.key } : entry;
+                })
         };
 
     }
