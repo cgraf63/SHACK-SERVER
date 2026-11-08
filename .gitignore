@@ -89,3 +89,7 @@ data/needed-alerts.json
 
 # never commit credentials
 .env.backup*
+
+# Software update (settings)
+data/update.log
+data/update-state.json

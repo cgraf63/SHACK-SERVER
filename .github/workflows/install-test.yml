@@ -57,8 +57,23 @@ jobs:
           curl -fsS http://127.0.0.1:3000/ | grep -qi "shack-server"
           pm2 status
 
+      - name: Update button (API, like Settings -> Software update)
+        run: |
+          set -e
+          curl -fsS -X POST http://127.0.0.1:3000/api/system/update/check | python3 -c "import sys,json; d=json.load(sys.stdin); print('available', d['available'], 'behind', d['behind'], d['current'])"
+          curl -fsS -X POST http://127.0.0.1:3000/api/system/update/run; echo
+          for i in $(seq 1 60); do
+            sleep 5
+            s=$(curl -fsS http://127.0.0.1:3000/api/system/update || echo '{"restarting":true}')
+            echo "$s" | python3 -c "import sys,json; d=json.load(sys.stdin); print('restarting' if d.get('restarting') else ('running' if d['running'] else d.get('lastRun')))"
+            if echo "$s" | grep -q '"ok":true'; then echo "update via button OK"; exit 0; fi
+            if echo "$s" | grep -q '"ok":false'; then echo "$s"; exit 1; fi
+          done
+          exit 1
+
       - name: Logs
         if: always()
         run: |
           tail -n 60 ~/shack-server-install.log || true
           pm2 logs --nostream --lines 40 || true
+          cat ~/SHACK-SERVER/data/update.log || true

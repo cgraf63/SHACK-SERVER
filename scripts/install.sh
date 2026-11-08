@@ -216,7 +216,8 @@ check_system() {
         fail "sudo is not installed."
     fi
 
-    if [ "$DRY_RUN" != "1" ]; then
+    # An update (also from the update button in the settings) needs no sudo.
+    if [ "$DRY_RUN" != "1" ] && [ "$MODE" != "update" ]; then
         info "Checking sudo rights (enter your password if asked) ..."
         sudo -v || fail "No sudo rights."
     fi
@@ -340,9 +341,11 @@ get_code() {
 
         info "Existing installation: $INSTALL_DIR"
 
-        if [ -n "$(git -C "$INSTALL_DIR" status --porcelain --untracked-files=no 2>/dev/null)" ]; then
+        # data/ (settings, transceivers, log) changes while SHACK-SERVER runs:
+        # not a "local change" of the code.
+        if [ -n "$(git -C "$INSTALL_DIR" status --porcelain --untracked-files=no -- . ':(exclude)data' 2>/dev/null)" ]; then
             warn "There are local changes to versioned files:"
-            git -C "$INSTALL_DIR" status --short --untracked-files=no | sed 's/^/      /'
+            git -C "$INSTALL_DIR" status --short --untracked-files=no -- . ':(exclude)data' | sed 's/^/      /'
             if ask_yes_no "Update anyway? (local changes are saved with git stash)" "n"; then
                 run git -C "$INSTALL_DIR" stash push -m "install.sh $(date +%Y%m%d-%H%M%S)"
                 ok "Local changes saved (git stash list)"
@@ -462,6 +465,8 @@ setup_pm2() {
     # Autostart after reboot (systemd unit for this user)
     if systemctl list-unit-files 2>/dev/null | grep -q "^pm2-$USER.service"; then
         ok "pm2 autostart is already set up"
+    elif [ "$MODE" = "update" ]; then
+        warn "pm2 autostart is not set up - run the installer once without --update"
     else
         info "Setting up the autostart after a reboot ..."
         srun env PATH="$PATH" "$(command -v pm2 || echo pm2)" startup systemd -u "$USER" --hp "$HOME"

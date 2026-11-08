@@ -885,6 +885,8 @@ function initializeSettingsModal() {
 
     initNotificationSettings();
 
+    initSoftwareUpdate();
+
 
     settingsButton.addEventListener(
         "click",
@@ -2222,5 +2224,197 @@ function initNotificationSettings() {
             }
 
         });
+
+}
+
+
+
+/* =========================================================
+   SOFTWARE UPDATE (scripts/install.sh --update)
+   ========================================================= */
+
+let updatePollTimer = null;
+let updateWasRunning = false;
+
+function formatCommitDate(iso) {
+
+    const date = new Date(iso);
+
+    return Number.isNaN(date.getTime())
+        ? ""
+        : date.toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit", year: "numeric" });
+
+}
+
+function renderUpdateStatus(status) {
+
+    const current = document.getElementById("update-current");
+    const run = document.getElementById("update-run");
+    const hint = document.getElementById("update-hint");
+    const list = document.getElementById("update-commits");
+    const log = document.getElementById("update-log");
+
+    if (!current || !run || !hint || !list || !log) return;
+
+    if (!status.available) {
+        current.textContent = status.reason || "Update not available.";
+        run.disabled = true;
+        document.getElementById("update-check").disabled = true;
+        return;
+    }
+
+    current.innerHTML = status.current
+        ? `Installed: <code>${escapeHtml(status.current.hash)}</code> · ${escapeHtml(formatCommitDate(status.current.date))} · ${escapeHtml(status.current.subject)}`
+        : "Installed version unknown";
+
+    if (status.running) {
+        run.disabled = true;
+        hint.innerHTML = `<span class="ok">Updating… SHACK-SERVER restarts at the end (a few minutes).</span>`;
+    }
+    else if (status.checkError) {
+        run.disabled = true;
+        hint.innerHTML = `<span class="err">✖ ${escapeHtml(status.checkError)}</span>`;
+    }
+    else if (status.lastCheck === null) {
+        run.disabled = true;
+        hint.textContent = "";
+    }
+    else if (status.behind > 0) {
+        run.disabled = false;
+        hint.innerHTML = `<span class="ok">${status.behind} new change${status.behind === 1 ? "" : "s"} available</span>`;
+    }
+    else {
+        run.disabled = true;
+        hint.innerHTML = `<span class="ok">✔ Up to date</span>`;
+    }
+
+    if (!status.running && status.lastRun && Date.now() - status.lastRun.at < 24 * 3600_000) {
+        hint.innerHTML += ` <span class="${status.lastRun.ok ? "ok" : "err"}">· last update ${escapeHtml(new Date(status.lastRun.at).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" }))}: ${escapeHtml(status.lastRun.message)}</span>`;
+    }
+
+    list.innerHTML = (status.commits || []).slice(0, 15).map(commit =>
+        `<div class="commit"><code>${escapeHtml(commit.hash)}</code><span class="date">${escapeHtml(formatCommitDate(commit.date))}</span>${escapeHtml(commit.subject)}</div>`
+    ).join("");
+
+    log.hidden = !(status.running || (status.lastRun && !status.lastRun.ok)) || !status.log;
+    log.textContent = status.log || "";
+    log.scrollTop = log.scrollHeight;
+
+}
+
+async function loadUpdateStatus() {
+
+    const response = await fetch("/api/system/update", { cache: "no-store" });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const status = await response.json();
+
+    renderUpdateStatus(status);
+
+    return status;
+
+}
+
+/* while the update runs: poll; the server is away during the restart */
+function pollUpdate() {
+
+    clearTimeout(updatePollTimer);
+
+    updatePollTimer = setTimeout(async () => {
+
+        try {
+
+            const status = await loadUpdateStatus();
+
+            if (status.running) {
+                updateWasRunning = true;
+                pollUpdate();
+                return;
+            }
+
+            if (updateWasRunning && status.lastRun?.ok) {
+                const hint = document.getElementById("update-hint");
+                if (hint) hint.innerHTML = `<span class="ok">✔ Update installed - reloading the page…</span>`;
+                setTimeout(() => location.reload(), 2500);
+            }
+
+            updateWasRunning = false;
+
+        }
+        catch {
+
+            // restart in progress
+            const hint = document.getElementById("update-hint");
+            if (hint) hint.innerHTML = `<span class="ok">SHACK-SERVER is restarting…</span>`;
+            pollUpdate();
+
+        }
+
+    }, 3000);
+
+}
+
+function initSoftwareUpdate() {
+
+    const check = document.getElementById("update-check");
+    const run = document.getElementById("update-run");
+
+    if (!check || !run) return;
+
+    check.addEventListener("click", async () => {
+
+        check.disabled = true;
+        const hint = document.getElementById("update-hint");
+        if (hint) hint.textContent = "Checking GitHub…";
+
+        try {
+            const response = await fetch("/api/system/update/check", { method: "POST" });
+            renderUpdateStatus(await response.json());
+        }
+        catch (error) {
+            if (hint) hint.innerHTML = `<span class="err">✖ ${escapeHtml(error.message)}</span>`;
+        }
+        finally {
+            check.disabled = false;
+        }
+
+    });
+
+    run.addEventListener("click", async () => {
+
+        if (!confirm("Install the update now?\n\nSHACK-SERVER is updated and restarts - this takes a few minutes. A running QSO / contest log is not affected.")) {
+            return;
+        }
+
+        run.disabled = true;
+
+        try {
+            const response = await fetch("/api/system/update/run", { method: "POST" });
+            const result = await response.json();
+            if (!response.ok) {
+                alert(result.message || result.error || "Update could not be started");
+                return;
+            }
+            updateWasRunning = true;
+            pollUpdate();
+        }
+        catch (error) {
+            alert(`Update could not be started: ${error.message}`);
+        }
+
+    });
+
+    loadUpdateStatus()
+        .then(status => {
+            if (status.running) {
+                updateWasRunning = true;
+                pollUpdate();
+            }
+            else if (status.available && (status.lastCheck === null || Date.now() - status.lastCheck > 3600_000)) {
+                check.click();
+            }
+        })
+        .catch(() => undefined);
 
 }

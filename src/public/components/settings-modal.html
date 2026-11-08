@@ -998,6 +998,52 @@
 
 
     <!-- =========================
+         SOFTWARE UPDATE
+         ========================= -->
+
+    <section class="settings-section" data-demo-hide>
+
+        <h2>Software update</h2>
+
+        <div id="update-current" class="update-current">Checking the installed version…</div>
+
+        <div class="backup-row update-actions">
+            <button id="update-check" type="button" class="settings-secondary-button">Check for updates</button>
+            <button id="update-run" type="button" class="settings-secondary-button update-run" disabled>Update now</button>
+            <span id="update-hint" class="backup-hint"></span>
+        </div>
+
+        <div id="update-commits" class="update-commits"></div>
+
+        <pre id="update-log" class="update-log" hidden></pre>
+
+        <style>
+            .update-current { margin: 6px 0 10px; font-size: 13px; color: #c9d6df; }
+            .update-current code { color: #7fe9ff; }
+            .update-actions { margin-bottom: 10px; }
+            .update-run:not(:disabled) { border-color: rgba(140, 255, 0, 0.6); color: #9be05a; }
+            .update-commits { font-size: 12px; color: #9fb3c2; max-height: 180px; overflow: auto; }
+            .update-commits .commit { padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+            .update-commits .commit code { color: #7fe9ff; margin-right: 8px; }
+            .update-commits .commit .date { color: #6f8593; margin-right: 8px; }
+            .update-log {
+                max-height: 220px;
+                overflow: auto;
+                padding: 8px 10px;
+                border: 1px solid var(--border-color, #303640);
+                border-radius: 6px;
+                background: #05090d;
+                color: #b8c7d1;
+                font-size: 11px;
+                line-height: 1.4;
+                white-space: pre-wrap;
+            }
+        </style>
+
+    </section>
+
+
+    <!-- =========================
          OPTIONAL MODULES
          ========================= -->
 
