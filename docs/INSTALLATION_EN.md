@@ -492,6 +492,17 @@ The transceiver reconnects automatically when it is switched on or the USB cable
 
 A serial port can only be opened by one program at a time. If the transceiver should also be controlled by WSJT-X or a logging program, start a shared `rigctld` and in SHACK-SERVER choose the driver **Hamlib** with the connection **"Existing rigctld"** (host and port, default 4532).
 
+### Push notifications for the watch list (optional)
+
+SHACK-SERVER checks every new spot against the **watch list** (dashboard: *ADD TO WATCH*) - also when no browser is open - and sends a notification to your phone via **ntfy**, e.g. `FW3GT DETECTED – 14.001 MHz CW – Wallis & Futuna – via RBN`.
+
+1. Install the **ntfy** app (Android / iOS).
+2. **Settings → Watch list notifications**: tick *Push notifications*, press **Suggest** for a hard to guess topic name, **Save**.
+3. In the ntfy app: *Subscribe to topic* → the same topic name (server ntfy.sh).
+4. **Send test**.
+
+The bell 🔔 next to each callsign in the watch list switches the push for this callsign on or off. The **lockout** (default 15 min) prevents repeated alerts for the same station, **quiet hours** suppress notifications at night. **Link**: the address of your SHACK-SERVER (e.g. the Cloudflare address) - tapping the notification opens it. Spots in the first 2 minutes after a restart do not alert.
+
 ### Backup (Dropbox and/or NAS)
 
 **Settings → Backup** saves the QSO and contest log, the settings and the transceivers once a day (time and number of backups adjustable). Both targets use **rclone**: `sudo apt install rclone`.

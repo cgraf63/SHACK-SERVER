@@ -42,6 +42,10 @@ import {
     backupService
 } from "./services/backup/backup.service.js";
 
+import {
+    watchNotifier
+} from "./services/notifications/watch-notifier.service.js";
+
 import "./services/rbn/rbn-instance.js";
 
 import "./services/telnet/telnet-server.js";
@@ -71,6 +75,9 @@ else {
 
     /* Backup (daily, Settings -> Backup) */
     backupService.start();
+
+    /* Watch list: push notification when a watched callsign is spotted */
+    watchNotifier.start(fusionEngine);
 
 }
 

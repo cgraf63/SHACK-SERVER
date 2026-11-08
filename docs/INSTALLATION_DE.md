@@ -490,6 +490,17 @@ Der Transceiver verbindet sich automatisch neu, wenn er eingeschaltet oder das U
 
 Eine serielle Schnittstelle kann nur von einem Programm gleichzeitig geöffnet werden. Soll der Transceiver zusätzlich von WSJT-X oder einem Logprogramm gesteuert werden, ein gemeinsames `rigctld` starten und in SHACK-SERVER beim Treiber **Hamlib** die Verbindung **„Existing rigctld“** (Host und Port, Standard 4532) wählen.
 
+### Push-Benachrichtigung für die Watchlist (optional)
+
+SHACK-SERVER prüft jeden neuen Spot gegen die **Watchlist** (Dashboard: *ADD TO WATCH*) - auch wenn kein Browser offen ist - und schickt eine Nachricht aufs Handy über **ntfy**, z. B. `FW3GT DETECTED – 14.001 MHz CW – Wallis & Futuna – via RBN`.
+
+1. App **ntfy** installieren (Android / iOS).
+2. **Settings → Watch list notifications**: *Push notifications* ankreuzen, mit **Suggest** einen schwer erratbaren Topic-Namen erzeugen, **Save**.
+3. In der ntfy-App: *Subscribe to topic* → derselbe Topic-Name (Server ntfy.sh).
+4. **Send test**.
+
+Die Glocke 🔔 neben jedem Rufzeichen der Watchlist schaltet die Push-Nachricht für dieses Rufzeichen ein oder aus. Die **Sperrzeit** (Standard 15 min) verhindert wiederholte Alarme derselben Station, **Ruhezeiten** unterdrücken Nachrichten in der Nacht. **Link**: Adresse deines SHACK-SERVER (z. B. die Cloudflare-Adresse) - ein Tipp auf die Nachricht öffnet ihn. Spots in den ersten 2 Minuten nach einem Neustart lösen keinen Alarm aus.
+
 ### Backup (Dropbox und/oder NAS)
 
 **Settings → Backup** sichert QSO- und Contest-Log, Einstellungen und Transceiver einmal täglich (Uhrzeit und Anzahl Sicherungen einstellbar). Beide Ziele laufen über **rclone**: `sudo apt install rclone`.

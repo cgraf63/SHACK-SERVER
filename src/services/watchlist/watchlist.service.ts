@@ -11,6 +11,8 @@ export interface WatchlistEntry {
     id: number;
     callsign: string;
     created_at: string;
+    /* 1 = push notification to the phone when spotted */
+    push: number;
 }
 
 export class WatchlistService {
@@ -29,35 +31,73 @@ export class WatchlistService {
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
         `);
+
+        const columns =
+            this.db.prepare("PRAGMA table_info(watchlist)").all() as Array<{ name: string }>;
+
+        if (!columns.some(column => column.name === "push")) {
+            this.db.exec("ALTER TABLE watchlist ADD COLUMN push INTEGER NOT NULL DEFAULT 1");
+        }
+    }
+
+    /* Callsigns as a set, for the spot check (cached, rebuilt on changes) */
+    private cache: Map<string, WatchlistEntry> | null = null;
+
+    lookup(callsign: string): WatchlistEntry | undefined {
+
+        if (!this.cache) {
+            this.cache = new Map(this.getAll().map(entry => [entry.callsign, entry]));
+        }
+
+        return this.cache.get(callsign.trim().toUpperCase());
+
+    }
+
+    setPush(callsign: string, push: boolean): WatchlistEntry | null {
+
+        const normalized = callsign.trim().toUpperCase();
+
+        this.db
+            .prepare("UPDATE watchlist SET push = ? WHERE callsign = ?")
+            .run(push ? 1 : 0, normalized);
+
+        this.cache = null;
+
+        return this.db
+            .prepare("SELECT id, callsign, created_at, push FROM watchlist WHERE callsign = ?")
+            .get(normalized) as unknown as WatchlistEntry | null;
+
     }
 
     getAll(): WatchlistEntry[] {
         return this.db
             .prepare(`
-                SELECT id, callsign, created_at
+                SELECT id, callsign, created_at, push
                 FROM watchlist
                 ORDER BY id ASC
             `)
             .all() as unknown as WatchlistEntry[];
     }
 
-    add(callsign: string): WatchlistEntry | null {
+    add(callsign: string, push = true): WatchlistEntry | null {
         const normalized = callsign.trim().toUpperCase();
 
-        if (!normalized) {
+        if (!/^[A-Z0-9]{1,10}(\/[A-Z0-9]{1,10}){0,2}$/.test(normalized)) {
             return null;
         }
 
         this.db
             .prepare(`
-                INSERT OR IGNORE INTO watchlist (callsign)
-                VALUES (?)
+                INSERT OR IGNORE INTO watchlist (callsign, push)
+                VALUES (?, ?)
             `)
-            .run(normalized);
+            .run(normalized, push ? 1 : 0);
+
+        this.cache = null;
 
         return this.db
             .prepare(`
-                SELECT id, callsign, created_at
+                SELECT id, callsign, created_at, push
                 FROM watchlist
                 WHERE callsign = ?
             `)
@@ -77,6 +117,8 @@ export class WatchlistService {
                 WHERE callsign = ?
             `)
             .run(normalized);
+
+        this.cache = null;
 
         return Number(result.changes) > 0;
     }

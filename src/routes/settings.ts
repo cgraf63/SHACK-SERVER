@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { publicUploadSettings } from "../services/settings/upload-accounts.js";
 import { publicBackup } from "../services/backup/backup-settings.js";
+import { publicNotifications } from "../services/notifications/notification-settings.js";
 
 import {
     ShackSettings
@@ -34,7 +35,9 @@ function publicSettings(settings: ShackSettings): unknown {
                 settings.callsign
             ),
         backup:
-            publicBackup(settings.backup)
+            publicBackup(settings.backup),
+        notifications:
+            publicNotifications(settings.notifications)
     };
 
 }

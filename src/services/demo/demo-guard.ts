@@ -33,6 +33,9 @@ const BLOCKED: Array<[string, RegExp]> = [
     /* Antenna rotator */
     ["POST", /^\/api\/rotator\//],
 
+    /* Push notifications */
+    ["POST", /^\/api\/watchlist\/notifications\//],
+
     /* Backup */
     ["POST", /^\/api\/backup\//],
 

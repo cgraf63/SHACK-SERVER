@@ -189,7 +189,7 @@ async function loadComponentsOnce() {
         );
 
     manualQsoScript.src =
-        "js/manual-qso.js";
+        "js/manual-qso.js?v=2";
 
     document.body.appendChild(
         manualQsoScript
@@ -237,7 +237,7 @@ await new Promise(resolve => {
         );
 
     settingsScript.src =
-        "js/settings-modal.js?v=10";
+        "js/settings-modal.js?v=11";
 
     document.body.appendChild(
         settingsScript

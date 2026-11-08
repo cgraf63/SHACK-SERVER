@@ -46,6 +46,33 @@ export class FusionEngine {
     private shack =
         new ShackLocationService();
 
+
+    /*
+     * Listeners for new spots (station not yet in the list on this
+     * frequency / mode) - called after the geo enrichment, so country
+     * and country code are known. Used by the watch list notifier.
+     */
+    private newSpotListeners: Array<(spot: FusionSpot) => void> = [];
+
+    onNewSpot(listener: (spot: FusionSpot) => void): void {
+
+        this.newSpotListeners.push(listener);
+
+    }
+
+    private emitNewSpot(spot: FusionSpot): void {
+
+        for (const listener of this.newSpotListeners) {
+            try {
+                listener(spot);
+            }
+            catch (error) {
+                console.error("New spot listener failed:", error);
+            }
+        }
+
+    }
+
    
 
     addSpot(
@@ -161,7 +188,9 @@ export class FusionEngine {
 
         this.enrichGeo(
             spot
-        );
+        )
+            .catch(() => undefined)
+            .finally(() => this.emitNewSpot(spot));
 
     }
 

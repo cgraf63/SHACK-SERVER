@@ -150,6 +150,10 @@ async function loadSettings() {
             settingsData.backup
         );
 
+        applyNotificationSettings(
+            settingsData.notifications
+        );
+
 
         const callsign =
             document.getElementById(
@@ -613,6 +617,9 @@ async function saveSettings() {
         backup:
             collectBackupSettings(),
 
+        notifications:
+            collectNotificationSettings(),
+
         wsjtx: {
 
             enabled:
@@ -696,6 +703,8 @@ async function saveSettings() {
         setTimeout(loadRotatorStatus, 2500);
 
         afterBackupSaved();
+
+        afterNotificationsSaved();
 
 
         /*
@@ -867,6 +876,8 @@ function initializeSettingsModal() {
     initRotatorSettings();
 
     initBackupSettings();
+
+    initNotificationSettings();
 
 
     settingsButton.addEventListener(
@@ -1899,6 +1910,224 @@ function initBackupSettings() {
             }
             catch (error) {
                 showBackupStatus(`<span class="err">✖ ${escapeHtml(error.message)}</span>`);
+            }
+            finally {
+                button.disabled = false;
+            }
+
+        });
+
+}
+
+
+
+/* =========================================================
+   WATCH LIST NOTIFICATIONS (ntfy)
+   ========================================================= */
+
+function applyNotificationSettings(notifications) {
+
+    const n = notifications || {};
+    const set = (id, value) => { const el = document.getElementById(id); if (el) el.value = value ?? ""; };
+    const check = (id, value) => { const el = document.getElementById(id); if (el) el.checked = value === true; };
+
+    check("notify-enabled", n.enabled);
+    set("notify-ntfy-server", n.ntfy?.server || "https://ntfy.sh");
+    set("notify-ntfy-topic", n.ntfy?.topic);
+    set("notify-ntfy-token", "");
+    set("notify-ntfy-priority", n.ntfy?.priority || "high");
+    set("notify-cooldown", n.cooldownMinutes || 15);
+    check("notify-quiet-enabled", n.quietHours?.enabled);
+    set("notify-quiet-from", n.quietHours?.from || "22:00");
+    set("notify-quiet-to", n.quietHours?.to || "07:00");
+    set("notify-link", n.linkUrl || "");
+
+    const token = document.getElementById("notify-ntfy-token");
+    if (token) {
+        token.placeholder = n.ntfy?.tokenSet ? "saved - leave empty to keep" : "optional - for protected topics";
+    }
+
+    void loadNotificationWatchList();
+    void loadNotificationStatus();
+
+}
+
+function collectNotificationSettings() {
+
+    return {
+        enabled: backupChecked("notify-enabled"),
+        cooldownMinutes: Number(backupValue("notify-cooldown")) || 15,
+        quietHours: {
+            enabled: backupChecked("notify-quiet-enabled"),
+            from: backupValue("notify-quiet-from") || "22:00",
+            to: backupValue("notify-quiet-to") || "07:00"
+        },
+        linkUrl: backupValue("notify-link"),
+        ntfy: {
+            enabled: true,
+            server: backupValue("notify-ntfy-server") || "https://ntfy.sh",
+            topic: backupValue("notify-ntfy-topic"),
+            token: document.getElementById("notify-ntfy-token")?.value.trim() ?? "",
+            priority: backupValue("notify-ntfy-priority") || "high"
+        }
+    };
+
+}
+
+function afterNotificationsSaved() {
+
+    const token = document.getElementById("notify-ntfy-token");
+
+    if (token && token.value) {
+        token.value = "";
+        token.placeholder = "saved - leave empty to keep";
+    }
+
+}
+
+async function loadNotificationWatchList() {
+
+    const box = document.getElementById("notify-watchlist");
+
+    if (!box) return;
+
+    try {
+
+        const response = await fetch("/api/watchlist", { cache: "no-store" });
+        const entries = response.ok ? await response.json() : [];
+
+        if (!entries.length) {
+            box.innerHTML = `<span class="empty">The watch list is empty - add callsigns in the dashboard (ADD TO WATCH).</span>`;
+            return;
+        }
+
+        box.innerHTML = entries.map(entry =>
+            `<label title="Push notification for ${escapeHtml(entry.callsign)} (applies immediately)">
+                <input type="checkbox" data-notify-call="${escapeHtml(entry.callsign)}" ${entry.push !== 0 ? "checked" : ""}>
+                ${escapeHtml(entry.callsign)}
+            </label>`
+        ).join("");
+
+    }
+    catch {
+        box.innerHTML = `<span class="empty">Watch list not available.</span>`;
+    }
+
+}
+
+function showNotificationStatus(html) {
+
+    const info = document.getElementById("notify-status");
+
+    if (info) info.innerHTML = html;
+
+}
+
+function formatTime(at) {
+
+    return new Date(at).toLocaleString("de-CH", { dateStyle: "short", timeStyle: "short" });
+
+}
+
+async function loadNotificationStatus() {
+
+    try {
+
+        const response = await fetch("/api/watchlist/notifications/status", { cache: "no-store" });
+
+        if (!response.ok) return;
+
+        const status = await response.json();
+        const lines = [];
+
+        if (status.lastPush) {
+            lines.push(status.lastPush.ok
+                ? `<span class="target ok">✔ Last push ${escapeHtml(formatTime(status.lastPush.at))}</span>`
+                : `<span class="target err">✖ Last push ${escapeHtml(formatTime(status.lastPush.at))}: ${escapeHtml(status.lastPush.message)}</span>`);
+        }
+
+        for (const hit of (status.recent || []).slice(0, 5)) {
+            lines.push(
+                `<span class="target">${escapeHtml(formatTime(hit.at))} ${escapeHtml(hit.callsign)} ` +
+                `${escapeHtml((Number(hit.frequency) / 1000).toFixed(3))} MHz ${escapeHtml(hit.mode || "")} - ${escapeHtml(hit.result)}</span>`
+            );
+        }
+
+        showNotificationStatus(lines.join("") || "No watch list detections since the server start.");
+
+    }
+    catch {
+        // server not reachable
+    }
+
+}
+
+function initNotificationSettings() {
+
+    document.getElementById("notify-watchlist")
+        ?.addEventListener("change", async event => {
+
+            const box = event.target.closest("[data-notify-call]");
+
+            if (!box) return;
+
+            const call = box.dataset.notifyCall;
+
+            try {
+                await fetch(`/api/watchlist/${encodeURIComponent(call)}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ push: box.checked })
+                });
+                window.shackWatchList?.reload();
+            }
+            catch {
+                box.checked = !box.checked;
+            }
+
+        });
+
+    window.addEventListener("watchlistChanged", () => {
+        void loadNotificationWatchList();
+    });
+
+    document.getElementById("notify-ntfy-generate")
+        ?.addEventListener("click", () => {
+
+            const input = document.getElementById("notify-ntfy-topic");
+            const call = (settingsData?.callsign || "shack").toLowerCase().replace(/[^a-z0-9]/g, "");
+            const random = Array.from(crypto.getRandomValues(new Uint8Array(6)))
+                .map(b => "abcdefghijkmnpqrstuvwxyz23456789"[b % 32]).join("");
+
+            if (input) input.value = `${call}-shack-${random}`;
+
+        });
+
+    document.getElementById("notify-test")
+        ?.addEventListener("click", async event => {
+
+            const button = event.currentTarget;
+
+            button.disabled = true;
+            showNotificationStatus("Sending...");
+
+            try {
+
+                const response = await fetch("/api/watchlist/notifications/test", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ notifications: collectNotificationSettings() })
+                });
+
+                const result = await response.json();
+
+                showNotificationStatus(result.ok
+                    ? `<span class="ok">✔ Test notification sent - check your phone</span>`
+                    : `<span class="err">✖ ${escapeHtml(result.message || result.error || "failed")}</span>`);
+
+            }
+            catch (error) {
+                showNotificationStatus(`<span class="err">✖ ${escapeHtml(error.message)}</span>`);
             }
             finally {
                 button.disabled = false;

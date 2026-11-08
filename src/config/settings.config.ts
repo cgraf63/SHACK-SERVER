@@ -73,6 +73,34 @@ export interface ShackSettings {
     };
     rotator: RotatorSettings;
     backup: BackupSettings;
+    notifications: NotificationSettings;
+}
+
+/*
+ * Push notifications when a callsign of the watch list is spotted
+ * (checked on the server, also without an open browser).
+ * The ntfy token is never sent to the browser.
+ */
+export interface NotificationSettings {
+    enabled: boolean;
+    /* minutes until the same callsign alerts again */
+    cooldownMinutes: number;
+    quietHours: {
+        enabled: boolean;
+        /* local time "HH:MM", may cross midnight */
+        from: string;
+        to: string;
+    };
+    /* link in the notification, e.g. https://shack.example.ch (empty = none) */
+    linkUrl: string;
+    ntfy: {
+        enabled: boolean;
+        server: string;
+        topic: string;
+        /* access token for protected topics / own server (optional) */
+        token: string;
+        priority: "default" | "high" | "max";
+    };
 }
 
 /*
@@ -212,6 +240,13 @@ export const shackSettings: ShackSettings = {
         keep: 14,
         rclone: { enabled: false, remote: "dropbox:SHACK-SERVER" },
         smb: { enabled: false, host: "", share: "", path: "SHACK-SERVER", user: "", password: "", domain: "" }
+    },
+    notifications: {
+        enabled: false,
+        cooldownMinutes: 15,
+        quietHours: { enabled: false, from: "22:00", to: "07:00" },
+        linkUrl: "",
+        ntfy: { enabled: true, server: "https://ntfy.sh", topic: "", token: "", priority: "high" }
     },
     dxspiders: [
         {

@@ -3738,3 +3738,23 @@ D.sidebar.collapsed {
     background: rgba(255, 196, 0, 0.3);
     color: #fff;
 }
+
+
+/* Watch list: push notification on / off per callsign */
+.manual-qso-watch-push {
+    border: 0;
+    background: transparent;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 3px;
+    margin-left: 6px;
+}
+
+.manual-qso-watch-push.off {
+    opacity: 0.45;
+}
+
+.manual-qso-watch-push:hover {
+    opacity: 1;
+}

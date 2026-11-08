@@ -673,6 +673,95 @@
 
 
     <!-- =========================
+         WATCH LIST NOTIFICATIONS
+         ========================= -->
+
+    <section class="settings-section" data-demo-hide>
+
+        <h2>Watch list notifications</h2>
+
+        <p class="radio-settings-intro">
+            The server checks every new spot against the watch list - also when no browser
+            is open - and sends a push notification to your phone via
+            <a href="https://ntfy.sh" target="_blank" rel="noopener">ntfy</a>.
+            Install the ntfy app on the phone and subscribe to the same topic.
+            The topic works like a password: choose a name nobody can guess.
+        </p>
+
+        <label class="source-switch">
+            <input id="notify-enabled" type="checkbox">
+            <span>Push notifications</span>
+        </label>
+
+        <div class="backup-form">
+
+            <label for="notify-ntfy-server">ntfy server</label>
+            <input id="notify-ntfy-server" type="text" placeholder="https://ntfy.sh" spellcheck="false">
+
+            <label for="notify-ntfy-topic">Topic</label>
+            <div class="backup-row">
+                <input id="notify-ntfy-topic" type="text" placeholder="e.g. hb9iso-shack-7k3q" spellcheck="false" autocomplete="off">
+                <button id="notify-ntfy-generate" type="button" class="settings-secondary-button" title="Suggest a hard to guess topic name">Suggest</button>
+            </div>
+
+            <label for="notify-ntfy-token">Access token</label>
+            <input id="notify-ntfy-token" type="password" placeholder="optional - for protected topics" autocomplete="new-password">
+
+            <label for="notify-ntfy-priority">Priority</label>
+            <div class="backup-row">
+                <select id="notify-ntfy-priority">
+                    <option value="default">Normal</option>
+                    <option value="high">High</option>
+                    <option value="max">Urgent</option>
+                </select>
+                <button id="notify-test" type="button" class="settings-secondary-button">Send test</button>
+            </div>
+
+            <label for="notify-cooldown">Lockout</label>
+            <div class="backup-row">
+                <input id="notify-cooldown" type="number" min="1" max="1440">
+                <span class="backup-hint">minutes until the same callsign alerts again</span>
+            </div>
+
+            <label for="notify-quiet-enabled">Quiet hours</label>
+            <div class="backup-row">
+                <input id="notify-quiet-enabled" type="checkbox">
+                <input id="notify-quiet-from" type="time" step="60">
+                <span class="backup-hint">to</span>
+                <input id="notify-quiet-to" type="time" step="60">
+            </div>
+
+            <label for="notify-link">Link</label>
+            <input id="notify-link" type="text" placeholder="https://your-shack-server (opened when tapping the notification)" spellcheck="false">
+
+            <label>Callsigns</label>
+            <div id="notify-watchlist" class="notify-watchlist"></div>
+
+        </div>
+
+        <div id="notify-status" class="upload-service-info"></div>
+
+        <style>
+            .backup-form select {
+                padding: 7px 10px;
+                border: 1px solid var(--border-color, #303640);
+                border-radius: 5px;
+                background: #1a1f26;
+                color: inherit;
+                font: inherit;
+                font-size: 13px;
+            }
+            .notify-watchlist { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
+            .notify-watchlist label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+            .notify-watchlist .empty { color: #7f93a1; font-size: 12px; }
+            #notify-status { margin-left: 28px; }
+            #notify-status .target { display: block; }
+        </style>
+
+    </section>
+
+
+    <!-- =========================
          BACKUP
          ========================= -->
 
@@ -776,7 +865,7 @@
             }
             .backup-row { display: flex; align-items: center; gap: 8px; }
             .backup-row input[type="text"], .backup-row input[type="password"] { flex: 1; }
-            .backup-row input[type="time"] { width: 110px; }
+            .backup-row input[type="time"] { width: 125px; }
             .backup-row input[type="number"] { width: 70px; }
             .backup-inline-label { font-size: 13px; color: #9fb1bd; margin-left: 10px; }
             .backup-hint { font-size: 12px; color: #7f93a1; }

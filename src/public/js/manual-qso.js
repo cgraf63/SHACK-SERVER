@@ -276,12 +276,15 @@ const viewButton =
             "manual-qso-watch-list-items"
         );
 
-    let watchList =
-        JSON.parse(
-            localStorage.getItem(
-                "shack-server-watch-list"
-            ) || "[]"
-        );
+    /*
+        The watch list lives on the server (/api/watchlist): the same
+        list on all devices, and the server sends push notifications
+        when a callsign is spotted (Settings -> Watch list notifications).
+        Entries of the old browser list (localStorage) are moved to the
+        server once.
+    */
+    let watchList = [];
+    let watchPush = new Map();
 
     let watchDetectedCalls = new Set();
     let watchDetectedTimers = new Map();
@@ -409,14 +412,124 @@ const viewButton =
     }
 
 
-    function saveWatchList() {
+    function applyServerWatchList(entries) {
 
-        localStorage.setItem(
-            "shack-server-watch-list",
-            JSON.stringify(watchList)
-        );
+        const list =
+            (Array.isArray(entries) ? entries : [])
+                .map(entry => ({
+                    callsign: String(entry.callsign || "").toUpperCase(),
+                    push: entry.push !== 0 && entry.push !== false
+                }))
+                .filter(entry => entry.callsign);
+
+        const changed =
+            JSON.stringify(list) !==
+            JSON.stringify(watchList.map(call => ({ callsign: call, push: watchPush.get(call) !== false })));
+
+        watchList = list.map(entry => entry.callsign);
+        watchPush = new Map(list.map(entry => [entry.callsign, entry.push]));
+
+        if (changed) {
+            renderWatchList();
+            window.dispatchEvent(new CustomEvent("watchlistChanged"));
+        }
 
     }
+
+    async function loadWatchList() {
+
+        try {
+            const response = await fetch("/api/watchlist", { cache: "no-store" });
+            if (response.ok) {
+                applyServerWatchList(await response.json());
+            }
+        }
+        catch {
+            // server not reachable: keep the current list
+        }
+
+    }
+
+    /* Old browser list -> server, once */
+    async function migrateLocalWatchList() {
+
+        let local = [];
+
+        try {
+            local = JSON.parse(localStorage.getItem("shack-server-watch-list") || "[]");
+        }
+        catch {
+            local = [];
+        }
+
+        if (!Array.isArray(local) || !local.length) {
+            return;
+        }
+
+        let allOk = true;
+
+        for (const callsign of local) {
+            try {
+                const response = await fetch("/api/watchlist", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ callsign })
+                });
+                if (!response.ok && response.status !== 400) allOk = false;
+            }
+            catch {
+                allOk = false;
+            }
+        }
+
+        if (allOk) {
+            try { localStorage.removeItem("shack-server-watch-list"); } catch { /* ignore */ }
+        }
+
+    }
+
+    async function addToWatchList(callsign) {
+
+        const response = await fetch("/api/watchlist", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ callsign })
+        });
+
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.error || `HTTP ${response.status}`);
+        }
+
+        await loadWatchList();
+
+    }
+
+    async function removeFromWatchList(callsign) {
+
+        await fetch(`/api/watchlist/${encodeURIComponent(callsign)}`, { method: "DELETE" });
+
+        await loadWatchList();
+
+    }
+
+    async function setWatchPush(callsign, push) {
+
+        await fetch(`/api/watchlist/${encodeURIComponent(callsign)}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ push })
+        });
+
+        await loadWatchList();
+
+    }
+
+    /* used by the settings (push on / off per callsign) */
+    window.shackWatchList = {
+        reload: loadWatchList,
+        setPush: setWatchPush
+    };
 
 
     function renderWatchList() {
@@ -438,6 +551,9 @@ const viewButton =
             const detected =
                 watchDetectedCalls.has(callsign);
 
+            const push =
+                watchPush.get(callsign) !== false;
+
             row.innerHTML = `
                 <span class="manual-qso-watch-item-call">
                     ${callsign}
@@ -450,6 +566,13 @@ const viewButton =
                             : ""
                     }
                 </span>
+
+                <button
+                    type="button"
+                    class="manual-qso-watch-push ${push ? "on" : "off"}"
+                    data-callsign="${callsign}"
+                    title="${push ? "Push notification to the phone: on (click to switch off)" : "Push notification to the phone: off (click to switch on)"}"
+                >${push ? "🔔" : "🔕"}</button>
 
                 <button
                     type="button"
@@ -524,9 +647,13 @@ const viewButton =
                 }
 
                 watchList.push(callsign);
-
-                saveWatchList();
+                watchPush.set(callsign, true);
                 renderWatchList();
+
+                addToWatchList(callsign).catch(error => {
+                    alert(`Watch list: ${error.message}`);
+                    void loadWatchList();
+                });
 
                 watchCheckbox.checked = true;
 
@@ -549,6 +676,17 @@ const viewButton =
             "click",
             (event) => {
 
+                const pushButton =
+                    event.target.closest(
+                        ".manual-qso-watch-push"
+                    );
+
+                if (pushButton) {
+                    const call = pushButton.dataset.callsign;
+                    void setWatchPush(call, watchPush.get(call) === false);
+                    return;
+                }
+
                 const button =
                     event.target.closest(
                         ".manual-qso-watch-remove"
@@ -566,8 +704,9 @@ const viewButton =
                         call => call !== callsign
                     );
 
-                saveWatchList();
                 renderWatchList();
+
+                void removeFromWatchList(callsign);
 
                 clearWatchAlert();
 
@@ -578,6 +717,14 @@ const viewButton =
 
 
     renderWatchList();
+
+    (async () => {
+        await migrateLocalWatchList();
+        await loadWatchList();
+    })();
+
+    /* other devices / the settings may change the list */
+    setInterval(loadWatchList, 60000);
 
 
     window.checkManualQsoWatch =

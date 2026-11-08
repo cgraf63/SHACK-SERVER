@@ -58,7 +58,7 @@ A yellow **DEMO** bar at the bottom shows that you are in the demo version.
 | Transceiver | simulated only – no real CAT |
 | Remote audio, microphone, PTT, transmitting | disabled |
 | Uploads to QRZ.com / Club Log / LoTW | disabled |
-| WSJT-X interface, SDR, antenna rotator, backup | disabled |
+| WSJT-X interface, SDR, antenna rotator, backup, push notifications | disabled |
 | Log | max. 100 QSOs (contest log: 200) |
 | ADIF import | disabled |
 | Settings | station data only |

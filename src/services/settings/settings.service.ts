@@ -73,6 +73,7 @@ const SETTINGS_FILE =
     );
 
 import { normalizeBackup } from "../backup/backup-settings.js";
+import { normalizeNotifications } from "../notifications/notification-settings.js";
 
 
 export class SettingsService {
@@ -118,6 +119,8 @@ export class SettingsService {
             },
             backup:
                 normalizeBackup(this.settings.backup, this.settings.backup),
+            notifications:
+                normalizeNotifications(this.settings.notifications, this.settings.notifications),
 
             dxspiders:
                 this.settings.dxspiders.map(
@@ -170,6 +173,10 @@ export class SettingsService {
                 (settings as any).backup
                     ? normalizeBackup((settings as any).backup, this.settings.backup)
                     : this.settings.backup,
+            notifications:
+                (settings as any).notifications
+                    ? normalizeNotifications((settings as any).notifications, this.settings.notifications)
+                    : this.settings.notifications,
 
             dxspiders:
                 (Array.isArray(settings.dxspiders)
@@ -273,6 +280,8 @@ export class SettingsService {
                         }),
                     backup:
                         normalizeBackup(parsed.backup ?? shackSettings.backup),
+                    notifications:
+                        normalizeNotifications(parsed.notifications ?? shackSettings.notifications),
 
 
                     dxspiders:
@@ -320,6 +329,8 @@ export class SettingsService {
             },
             backup:
                 normalizeBackup(shackSettings.backup),
+            notifications:
+                normalizeNotifications(shackSettings.notifications),
             dxspiders:
                 shackSettings.dxspiders.map(
                     spider => ({
