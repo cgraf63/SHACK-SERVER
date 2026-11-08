@@ -86,3 +86,6 @@ data/.backup-work-*
 
 # Needed alerts (last alerts, dashboard)
 data/needed-alerts.json
+
+# never commit credentials
+.env.backup*
