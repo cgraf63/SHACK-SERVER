@@ -364,7 +364,7 @@ h2 {
             Add SHACK-SERVER to your home screen for a full-screen app.
             <button class="chip" id="install-btn" type="button">Install</button>
         </div>
-        <h2>NEW ONES</h2>
+        <h2>NEW – "NEEDED" CALLSIGNS</h2>
         <div id="needed-list"><div class="empty">Loading…</div></div>
         <h2 style="margin-top:18px">WATCH LIST</h2>
         <div id="watch-list"><div class="empty">—</div></div>
@@ -874,7 +874,7 @@ h2 {
                     <div class="right"><div class="qrg">${mhz(a.frequency)}</div><div class="age">${esc(a.mode || "")} · ${ago(a.at)}</div></div>
                 </div>`;
             }).join("")
-            : `<div class="empty">No new ones in the last hours.<br><small>Settings → New ones on the dashboard.</small></div>`;
+            : `<div class="empty">No new "needed" callsigns in the last hours.<br><small>Settings → New – "needed" callsigns on the dashboard.</small></div>`;
 
         watch.innerHTML = state.watch.length
             ? state.watch.map((a, i) => `<div class="card" data-watch="${i}">
@@ -917,7 +917,7 @@ h2 {
             `<button type="button" class="chip ${state.band === b ? "active" : ""}" data-band-chip="${b}">${b}</button>`).join("");
 
         document.getElementById("mode-chips").innerHTML = modes.map(m =>
-            `<button type="button" class="chip ${state.mode === m ? "active" : ""}" data-mode-chip="${m}">${m === "NEEDED" ? "★ NEW ONES" : m}</button>`).join("");
+            `<button type="button" class="chip ${state.mode === m ? "active" : ""}" data-mode-chip="${m}">${m === "NEEDED" ? "★ NEEDED" : m}</button>`).join("");
 
     }
 

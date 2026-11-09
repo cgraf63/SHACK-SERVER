@@ -501,16 +501,16 @@ SHACK-SERVER prüft jeden neuen Spot gegen die **Watchlist** (Dashboard: *ADD TO
 
 Die Glocke 🔔 neben jedem Rufzeichen der Watchlist schaltet die Push-Nachricht für dieses Rufzeichen ein oder aus. Die **Sperrzeit** (Standard 15 min) verhindert wiederholte Alarme derselben Station, **Ruhezeiten** unterdrücken Nachrichten in der Nacht. **Link**: Adresse deines SHACK-SERVER (z. B. die Cloudflare-Adresse) - ein Tipp auf die Nachricht öffnet ihn. Spots in den ersten 2 Minuten nach einem Neustart lösen keinen Alarm aus.
 
-### New Ones und «Heard near you» (optional)
+### New – "needed" Callsigns und «Heard near you» (optional)
 
-**Settings → New ones** schickt eine Push-Nachricht (gleiches ntfy-Topic wie die Watchlist), wenn eine Station gespottet wird, die du noch brauchst - ohne Rufzeichen einzutragen. Verglichen wird mit dem Log nach **DXCC-Gebiet** (cty.dat): Ceuta & Melilla, Kanarische Inseln, asiatisches Russland usw. zählen separat.
+**Settings → New – "needed" callsigns** schickt eine Push-Nachricht (gleiches ntfy-Topic wie die Watchlist), wenn eine Station gespottet wird, die du noch brauchst - ohne Rufzeichen einzutragen. Verglichen wird mit dem Log nach **DXCC-Gebiet** (cty.dat): Ceuta & Melilla, Kanarische Inseln, asiatisches Russland usw. zählen separat.
 
 - Stufen: **NEW COUNTRY**, **NEW BAND COUNTRY**, optional **NEW BAND** / **NEW MODE** für eine schon gearbeitete Station.
 - Filter: Bänder, Modes, Mindest-Score, *nur wenn in meiner Region gehört*.
 - Sperrzeit pro Land + Band (ein Pileup alarmiert einmal), Ruhezeiten und Link wie bei der Watchlist.
 - Beispiel: `NEW COUNTRY: FW3GT – Wallis & Futuna Islands – 14.001 MHz CW – heard in EU (3 spotters, 18 dB) – via DX Summit, RBN`
 
-**Heard near you**: SHACK-SERVER liest den kompletten Reverse-Beacon-Network-Feed (CW/RTTY-Skimmer mit SNR und Locator) und die Spotter-Rufzeichen der DX-Cluster. Eine Station gilt als *nah gehört*, wenn ein Spotter im eingestellten Umkreis deines QTH (Standard 1000 km) sie in den letzten 15 Minuten auf diesem Band gemeldet hat. Optional zusätzlich der **PSK-Reporter**-Live-Feed (FT8, FT4, JS8 ...; *Settings → New ones → PSK Reporter*): SHACK-SERVER abonniert nur die Meldungen von Empfängern in den Locator-Feldern innerhalb des Umkreises (MQTT, mqtt.pskreporter.info, Port 1883). Live-Spots und DXpeditions-Seite zeigen ein grünes **NEAR**, der DX-Score bekommt +15. Die letzten New-One-Alarme stehen im Dashboard unter der Watchlist (Klick = abstimmen).
+**Heard near you**: SHACK-SERVER liest den kompletten Reverse-Beacon-Network-Feed (CW/RTTY-Skimmer mit SNR und Locator) und die Spotter-Rufzeichen der DX-Cluster. Eine Station gilt als *nah gehört*, wenn ein Spotter im eingestellten Umkreis deines QTH (Standard 1000 km) sie in den letzten 15 Minuten auf diesem Band gemeldet hat. Optional zusätzlich der **PSK-Reporter**-Live-Feed (FT8, FT4, JS8 ...; *Settings → New – "needed" callsigns → PSK Reporter*): SHACK-SERVER abonniert nur die Meldungen von Empfängern in den Locator-Feldern innerhalb des Umkreises (MQTT, mqtt.pskreporter.info, Port 1883). Live-Spots und DXpeditions-Seite zeigen ein grünes **NEAR**, der DX-Score bekommt +15. Die letzten "needed" Callsigns stehen im Dashboard unter der Watchlist (Klick = abstimmen).
 
 ### Backup (Dropbox und/oder NAS)
 
@@ -943,7 +943,7 @@ Im Browser einmal **Ctrl+F5**, damit die neue Weboberfläche geladen wird.
 
 Auf dem Handy `https://<dein-shack-server>/m` öffnen (unterwegs: die Cloudflare-Access-Adresse + `/m`)
 und **Zum Home-Bildschirm** wählen (iPhone: Teilen-Menü, Android: Browser-Menü oder der Knopf *Install*).
-Die App zeigt New Ones und Watchlist-Treffer, Live-Spots (antippen = abstimmen, mit Split),
+Die App zeigt neue "needed" Callsigns und Watchlist-Treffer, Live-Spots (antippen = abstimmen, mit Split),
 den Transceiver (Band, Mode, Split aus, Rotor) und ein schnelles QSO-Log. Für die Installation ist HTTPS nötig.
 
 **Portabel-Log:** im LOG-Tab auf **PORTABLE** umschalten: eigenes Rufzeichen mit /P oder /M, Locator vom

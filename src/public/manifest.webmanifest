@@ -1,7 +1,7 @@
 {
   "name": "SHACK-SERVER",
   "short_name": "SHACK",
-  "description": "New ones, DX spots, radio and log on your phone",
+  "description": "Needed callsigns, DX spots, radio and log on your phone",
   "start_url": "/m",
   "scope": "/m",
   "display": "standalone",
