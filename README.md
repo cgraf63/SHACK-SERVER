@@ -28,11 +28,11 @@ Open-source platform for intelligent amateur radio information processing.
 
 ![Dashboard](docs/images/screenshots/01-dashboard.jpg)
 
-**Needed alerts - without entering callsigns.** Every new spot is checked against your log by **DXCC entity**: *NEW COUNTRY*, *NEW BAND COUNTRY*, optionally new band / mode for a station. **NEAR** = heard by a spotter close to your QTH (Reverse Beacon Network, PSK Reporter, cluster spotters).
+**New ones - without entering callsigns.** Every new spot is checked against your log by **DXCC entity**: *NEW COUNTRY*, *NEW BAND COUNTRY*, optionally new band / mode for a station. **NEAR** = heard by a spotter close to your QTH (Reverse Beacon Network, PSK Reporter, cluster spotters).
 
 <p align="center"><img src="docs/images/screenshots/needed-alerts.jpg" alt="Needed alerts" width="720"></p>
 
-**Push to your phone** via [ntfy](https://ntfy.sh) - for needed alerts and your watch list, also when no browser is open. Lockout per station / country and band, quiet hours, tap the notification to open SHACK-SERVER.
+**Push to your phone** via [ntfy](https://ntfy.sh) - for new ones and your watch list, also when no browser is open. Lockout per station / country and band, quiet hours, tap the notification to open SHACK-SERVER.
 
 ![Push notifications](docs/images/screenshots/11-settings-notifications.jpg)
 
@@ -54,7 +54,7 @@ Open-source platform for intelligent amateur radio information processing.
 
 **And more:** antenna rotator (Hamlib), remote control and audio for Yaesu transceivers, internal SDR, propagation overview, RBN, backup to Dropbox / NAS, runs on a Raspberry Pi and in any browser.
 
-<sub>Screenshots and video: the Docker demo (simulated transceiver, sample log, real live spots). The needed alerts in the picture are example alerts made from real spots of that moment - in the demo the alerts cannot be switched on.</sub>
+<sub>Screenshots and video: the Docker demo (simulated transceiver, sample log, real live spots). The new-one alerts in the picture are example alerts made from real spots of that moment - in the demo the alerts cannot be switched on.</sub>
 
 ---
 

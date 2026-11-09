@@ -1,8 +1,8 @@
 /*
     SHACK-SERVER - last needed alerts in the dashboard, in the place of
     Priority DX: when there are needed alerts of the last 3 hours, the
-    card shows them ("Needed alerts"), otherwise Priority DX.
-    Data: /api/needed/recent (Settings -> Needed alerts).
+    card shows them ("New ones"), otherwise Priority DX.
+    Data: /api/needed/recent (Settings -> New ones).
     Click on an entry tunes the radio.
 */
 
@@ -50,7 +50,7 @@
         if (priority) priority.hidden = recent.length > 0;
 
         if (title) {
-            title.textContent = recent.length ? "Needed alerts" : "Priority DX";
+            title.textContent = recent.length ? "New ones" : "Priority DX";
             title.title = recent.length
                 ? "Stations you still need (new DXCC entity / band), last 3 hours - click to tune. Without alerts: Priority DX."
                 : "Priority DX: the most distant stations in the live spots";
