@@ -3985,6 +3985,12 @@ D.sidebar.collapsed {
     padding: 14px 16px;
     scrollbar-width: thin;
     scrollbar-color: rgba(181, 108, 255, 0.35) transparent;
+
+    /*
+     * sticky = own stacking layer: the settings and about windows live
+     * inside the sidebar, so the layer must lie above the dashboard
+     */
+    z-index: 9000;
 }
 
 .sidebar::-webkit-scrollbar { width: 6px; }
