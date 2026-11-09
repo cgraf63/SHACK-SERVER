@@ -79,7 +79,7 @@ button { cursor: pointer; }
 
 .rig {
     max-width: 1320px;
-    margin: 22px auto;
+    margin: 14px auto;
     padding: 0 18px 30px;
 }
 
@@ -385,8 +385,8 @@ button { cursor: pointer; }
 /* ---------------- control panels (below) ---------------- */
 
 .panel {
-    margin-top: 18px;
-    padding: 18px 20px 20px;
+    margin-top: 14px;
+    padding: 14px 20px 14px;
     border-radius: 16px;
     background: linear-gradient(180deg, #171b20, #111418);
     border: 1px solid #222930;
@@ -436,14 +436,39 @@ select.k { appearance: none; padding-right: 26px; background-image: linear-gradi
 }
 .toast.show { opacity: 1; }
 
+/* mode groups side by side */
+
+#mode-groups {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px 14px;
+}
+@media (max-width: 1250px) {
+    #mode-groups { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+}
+#mode-groups .group { margin-bottom: 6px; }
+#mode-groups .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+#mode-groups .k { white-space: nowrap; padding: 10px 4px; font-size: 12px; }
+
+/* CW memories in two columns */
+#cw-mems { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; align-content: start; }
+
 /* memories */
 
 .mem-filter { flex: 1; min-width: 160px; text-align: left; }
-.mem-store { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 14px; padding: 12px; border: 1px dashed var(--key-line); border-radius: 10px; }
+.mem-store { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; padding: 8px 12px; border: 1px dashed var(--key-line); border-radius: 10px; }
 .mem-store label { color: var(--dim); font-size: 11px; font-weight: 800; letter-spacing: .1em; }
 .mem-store #mem-ch { width: 80px; }
 .mem-store #mem-name { width: 170px; text-transform: uppercase; text-align: left; }
-.mem-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 8px; }
+.mem-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 8px;
+    /* own scroll area, so the page fits the window */
+    max-height: max(170px, calc(100vh - 820px));
+    overflow-y: auto;
+    padding-right: 4px;
+}
 .mem {
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr) auto;
