@@ -953,3 +953,13 @@ POTA / SOTA / WWFF reference (and the other station's reference for P2P / S2S), 
 (also 2 m / 70 cm). Without network (summit, park) the QSOs are kept on the phone and uploaded automatically
 as soon as SHACK-SERVER is reachable again - each QSO only once. The references go into the ADIF upload
 (MY_SIG, MY_POTA_REF, MY_SOTA_REF, ...). The counter shows the QSOs of the activation (POTA 10, SOTA 4, WWFF 44).
+
+## Yaesu FTX-1 remote page
+
+When the FTX-1 is the active transceiver (selected in the dashboard), the **FTX-1** button in the station row
+opens its own remote page (`/ftx1`): MAIN and SUB like on the radio's display, S-meter / PO / SWR / ALC,
+tuning dial (drag, mouse wheel, arrow keys; steps 10 Hz - 25 kHz), PTT (hold the button or the space bar),
+tuner, split, all bands incl. 2 m / 70 cm / AIR, all modes incl. C4FM DN / VW, filter, DSP (DNR, NB, DNF,
+notch, contour, APF), AF / RF / squelch, ATT, preamp (IPO / AMP1 / AMP2 on HF, on / off on V/UHF), AGC,
+FM repeater shift, CTCSS / DCS, TX power (field head 0.5 - 10 W, SPA-1 / Optima 5 - 100 W), mic gain,
+processor, CW speed, break-in, CW memories 1 - 5 and remote RX audio.

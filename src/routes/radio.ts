@@ -735,8 +735,10 @@ router.post(
             "08", // 12 m
             "09", // 10 m
             "10", // 6 m
-            "11", // GEN
-            "12"  // MW
+            "11", // GEN (FTX-1: GEN / 70 MHz)
+            "12", // MW (FTX-1: AIR)
+            "13", // FTX-1: 144 MHz
+            "14"  // FTX-1: 430 MHz
         ];
 
         if (
@@ -1333,10 +1335,16 @@ router.post(
             const power =
                 Number(value);
 
+            /* FTX-1 field head: 0.5 - 10 W */
+            const powerRange =
+                typeof (activeRadio as any).getPowerRange === "function"
+                    ? (activeRadio as any).getPowerRange()
+                    : { min: 5, max: 100 };
+
             if (
                 !Number.isFinite(power) ||
-                power < 5 ||
-                power > 100
+                power < powerRange.min ||
+                power > powerRange.max
             ) {
                 return res.status(400).json({
                     error: "Invalid power"

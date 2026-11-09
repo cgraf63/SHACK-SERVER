@@ -951,3 +951,13 @@ Handy-GPS, POTA-/SOTA-/WWFF-Referenz (und die Referenz der Gegenstation für P2P
 einem Tipp (auch 2 m / 70 cm). Ohne Netz (Gipfel, Park) bleiben die QSOs auf dem Handy und werden automatisch
 hochgeladen, sobald SHACK-SERVER wieder erreichbar ist - jedes QSO nur einmal. Die Referenzen gehen in den
 ADIF-Upload (MY_SIG, MY_POTA_REF, MY_SOTA_REF, ...). Der Zähler zeigt die QSOs der Aktivierung (POTA 10, SOTA 4, WWFF 44).
+
+## Yaesu FTX-1 Remote-Seite
+
+Ist der FTX-1 der aktive Transceiver (Auswahl im Dashboard), öffnet der Knopf **FTX-1** in der Stationszeile
+eine eigene Remote-Seite (`/ftx1`): MAIN und SUB wie im Display des Geräts, S-Meter / PO / SWR / ALC,
+Abstimmknopf (ziehen, Mausrad, Pfeiltasten; Schritte 10 Hz - 25 kHz), PTT (Knopf halten oder Leertaste),
+Tuner, Split, alle Bänder inkl. 2 m / 70 cm / AIR, alle Modes inkl. C4FM DN / VW, Filter, DSP (DNR, NB, DNF,
+Notch, Contour, APF), AF / RF / Squelch, ATT, Vorverstärker (IPO / AMP1 / AMP2 auf KW, ein / aus auf V/UHF),
+AGC, FM-Relaisablage, CTCSS / DCS, Sendeleistung (Field-Head 0.5 - 10 W, SPA-1 / Optima 5 - 100 W),
+Mic-Gain, Prozessor, CW-Tempo, Break-in, CW-Speicher 1 - 5 und Remote-RX-Audio.

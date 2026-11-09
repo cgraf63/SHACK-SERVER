@@ -15,6 +15,9 @@ import { DEMO_LIMITS, DEMO_MESSAGE } from "./demo-mode.js";
 /* Blocked: method + path pattern (path without query). */
 const BLOCKED: Array<[string, RegExp]> = [
 
+    /* FTX-1 remote page: no FTX-1 in the demo */
+    ["POST", /^\/api\/ftx1\//],
+
     /* Restart, reboot, shutdown of the server / Pi */
     ["POST", /^\/api\/system\//],
 

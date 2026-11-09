@@ -16,6 +16,7 @@ import { demoGuard, demoCounts } from "./services/demo/demo-guard.js";
 import uploadsRouter from "./routes/uploads.js";
 import wsjtxRouter from "./routes/wsjtx.js";
 import rotatorRouter from "./routes/rotator.js";
+import ftx1Router from "./routes/ftx1.js";
 import dxpeditionsRouter from "./routes/dxpeditions.js";
 import backupRouter from "./routes/backup.js";
 import neededRouter from "./routes/needed.js";
@@ -180,6 +181,12 @@ app.use(
     wsjtxRouter
 );
 
+
+// Yaesu FTX-1 remote page
+app.use(
+    "/api/ftx1",
+    ftx1Router
+);
 
 // Antenna rotator (Hamlib rotctld)
 app.use(

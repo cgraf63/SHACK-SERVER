@@ -82,6 +82,18 @@ router.get('/diagnostics', (_req, res) => {
 });
 
 
+router.get('/ftx1', (_req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '..',
+            'public',
+            'ftx1-remote.html'
+        )
+    );
+});
+
+
 router.get('/rgo', (_req, res) => {
     res.sendFile(
         path.join(

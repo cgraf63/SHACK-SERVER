@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b0d10">
+    <title>SHACK-SERVER – FTX-1 Remote</title>
+    <link rel="icon" type="image/png" href="/assets/app/icon-192.png">
+
+    <style>
+
+:root {
+    --page: #0b0d10;
+    --bezel-1: #2a2e33;
+    --bezel-2: #15181c;
+    --screen: #000;
+    --screen-line: #1b2128;
+    --text: #f2f5f7;
+    --dim: #7d8a95;
+    --faint: #3a4550;
+    --main: #2aa8ff;
+    --sub: #ff9d2a;
+    --tx: #ff3b3b;
+    --ok: #59e05a;
+    --amber: #ffcf3a;
+    --key: #1c2229;
+    --key-line: #313b45;
+    --key-on: #0f3550;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+    margin: 0;
+    min-height: 100%;
+    background: radial-gradient(1200px 700px at 50% -10%, #1a1f25 0%, var(--page) 60%);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+/* ---------------- top bar ---------------- */
+
+.appbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 22px;
+    border-bottom: 1px solid #1d2329;
+}
+
+.appbar a.back { color: var(--dim); text-decoration: none; font-size: 13px; }
+.appbar a.back:hover { color: var(--text); }
+.appbar .logo { width: 28px; height: 28px; }
+.appbar .title { font-weight: 800; letter-spacing: .08em; white-space: nowrap; }
+.appbar .title small { color: var(--dim); font-weight: 600; letter-spacing: .04em; margin-left: 8px; }
+.appbar .spacer { flex: 1; }
+.appbar .clock { font-variant-numeric: tabular-nums; color: var(--dim); font-size: 13px; }
+.appbar .clock b { color: var(--text); }
+
+.link-dot { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--dim); letter-spacing: .06em; }
+.link-dot i { width: 9px; height: 9px; border-radius: 50%; background: var(--tx); }
+.link-dot.ok i { background: var(--ok); box-shadow: 0 0 8px rgba(89,224,90,.7); }
+
+.pwr {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--key-line);
+    background: var(--key);
+    font-size: 16px;
+}
+.pwr.on { color: var(--ok); border-color: rgba(89,224,90,.6); }
+
+/* ---------------- rig body ---------------- */
+
+.rig {
+    max-width: 1320px;
+    margin: 22px auto;
+    padding: 0 18px 30px;
+}
+
+.body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 22px;
+    padding: 20px;
+    border-radius: 22px;
+    background: linear-gradient(160deg, var(--bezel-1), var(--bezel-2));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 30px 60px rgba(0,0,0,.55);
+}
+
+/* ---------------- display ---------------- */
+
+.screen {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 14px 10px;
+    border-radius: 10px;
+    background: var(--screen);
+    border: 2px solid #050607;
+    box-shadow: inset 0 0 0 1px #20262c, inset 0 0 40px rgba(42,168,255,.05);
+    overflow: hidden;
+    user-select: none;
+}
+
+.status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--screen-line);
+}
+
+.ind {
+    padding: 2px 7px;
+    border: 1px solid var(--faint);
+    border-radius: 4px;
+    color: var(--faint);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .05em;
+}
+.ind.on { color: var(--text); border-color: #6b7782; }
+.ind.blue { color: var(--main); border-color: rgba(42,168,255,.7); }
+.ind.orange { color: var(--sub); border-color: rgba(255,157,42,.7); }
+.ind.red { color: #fff; background: var(--tx); border-color: var(--tx); }
+.ind.right { margin-left: auto; }
+
+/* MAIN / SUB rows */
+
+.vfo {
+    position: relative;
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 14px;
+    padding: 12px 6px 10px;
+    border-bottom: 1px solid var(--screen-line);
+    cursor: pointer;
+}
+
+.vfo .tag {
+    grid-row: 1 / span 2;
+    align-self: start;
+    margin-top: 6px;
+    padding: 4px 0;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: .08em;
+    color: #000;
+}
+.vfo.main .tag { background: var(--main); }
+.vfo.sub .tag { background: var(--sub); }
+.vfo .tag small { display: block; font-size: 10px; letter-spacing: .02em; opacity: .75; }
+
+.vfo .line { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+
+.vfo .mode {
+    padding: 1px 8px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+.vfo.main .mode { color: var(--main); }
+.vfo.sub .mode { color: var(--sub); }
+
+.vfo .band { color: var(--dim); font-weight: 700; font-size: 14px; }
+.vfo .badges { margin-left: auto; display: flex; gap: 5px; }
+
+.freq {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    letter-spacing: .01em;
+    line-height: 1;
+    white-space: nowrap;
+}
+.freq .hz { font-size: .55em; color: #c9d2d9; margin-left: 2px; }
+.freq.editing { outline: 1px dashed var(--dim); }
+.freq input {
+    width: 8.5ch;
+    background: #0d1116;
+    border: 1px solid var(--main);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: .6em;
+    padding: 2px 8px;
+}
+
+.vfo.main .freq { font-size: 74px; margin: 6px 0 8px; }
+.vfo.sub .freq { font-size: 46px; margin: 6px 0 8px; color: #dfe6ea; }
+
+.vfo.active::before {
+    content: "";
+    position: absolute;
+    left: -14px; top: 12px; bottom: 12px;
+    width: 4px;
+    border-radius: 2px;
+    background: var(--main);
+}
+.vfo.sub.active::before { background: var(--sub); }
+.vfo.txside .tag::after { content: "TX"; display: block; font-size: 10px; color: #fff; background: var(--tx); border-radius: 3px; margin: 4px 6px 0; }
+
+/* bar meter (S / PO) */
+
+.bar {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(40, 1fr);
+    gap: 2px;
+    height: 12px;
+}
+.bar span { background: #10161c; border-radius: 1px; }
+.bar span.lit { background: #e9eef1; }
+.bar span.lit.over { background: var(--tx); }
+.vfo.main .bar span.lit:not(.over) { background: #d5ecff; }
+
+.scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3px;
+    color: var(--dim);
+    font-size: 10px;
+    font-weight: 700;
+}
+.scale .over { color: var(--tx); }
+
+/* TX meters */
+
+.txm {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 10px 6px 8px;
+    border-bottom: 1px solid var(--screen-line);
+}
+.txm label { display: flex; justify-content: space-between; color: var(--dim); font-size: 10px; font-weight: 800; letter-spacing: .08em; margin-bottom: 4px; }
+.txm label b { color: var(--text); font-variant-numeric: tabular-nums; }
+.txm .bar { height: 8px; grid-template-columns: repeat(24, 1fr); }
+.txm .bar span.lit { background: var(--amber); }
+
+/* touch keys inside the display */
+
+.softkeys {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 10px;
+}
+.softkeys button {
+    padding: 9px 0;
+    border: 1px solid var(--key-line);
+    border-radius: 6px;
+    background: linear-gradient(#1f262e, #151a20);
+    color: #cfd8de;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .06em;
+}
+.softkeys button.sel { color: #fff; border-color: var(--main); background: linear-gradient(#11405f, #0b2638); }
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    place-items: center;
+    padding: 30px;
+    background: rgba(0,0,0,.86);
+    text-align: center;
+    z-index: 5;
+}
+.overlay.show { display: grid; }
+.overlay h3 { margin: 0 0 8px; letter-spacing: .06em; }
+.overlay p { color: var(--dim); margin: 0 0 16px; }
+.overlay a { color: var(--main); }
+
+/* ---------------- right side: dial + TX ---------------- */
+
+.side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.sidesel { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+.sidesel button {
+    padding: 9px 0;
+    border-radius: 8px;
+    border: 1px solid var(--key-line);
+    background: var(--key);
+    font-weight: 900;
+    letter-spacing: .08em;
+    font-size: 13px;
+}
+.sidesel button.main.sel { background: var(--main); color: #000; border-color: var(--main); }
+.sidesel button.sub.sel { background: var(--sub); color: #000; border-color: var(--sub); }
+
+.dial-wrap { position: relative; width: 230px; height: 230px; touch-action: none; }
+
+.dial {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+        repeating-conic-gradient(from 0deg, #3c444c 0deg 1.2deg, #262b31 1.2deg 6deg);
+    box-shadow: 0 10px 22px rgba(0,0,0,.6), inset 0 2px 2px rgba(255,255,255,.12);
+    cursor: grab;
+}
+.dial::after {
+    content: "";
+    position: absolute;
+    inset: 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 30%, #3b4249, #1a1e22 70%);
+    box-shadow: inset 0 2px 4px rgba(255,255,255,.08), inset 0 -6px 12px rgba(0,0,0,.6);
+}
+.dial .dimple {
+    position: absolute;
+    z-index: 2;
+    width: 34px; height: 34px;
+    left: calc(50% - 17px);
+    top: 36px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 60%, #15191c, #2c3238);
+    box-shadow: inset 0 3px 6px rgba(0,0,0,.8);
+}
+.dial-wrap:active .dial { cursor: grabbing; }
+
+.steps { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+.steps button {
+    padding: 5px 8px;
+    border-radius: 14px;
+    border: 1px solid var(--key-line);
+    background: var(--key);
+    color: var(--dim);
+    font-size: 11px;
+    font-weight: 800;
+}
+.steps button.sel { color: var(--text); border-color: var(--main); }
+
+.txrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; align-items: center; }
+
+.ptt {
+    width: 112px; height: 112px;
+    justify-self: center;
+    border-radius: 50%;
+    border: 3px solid #4a1d1d;
+    background: radial-gradient(circle at 50% 35%, #5a1f1f, #2a0d0d);
+    color: #ff8c8c;
+    font-weight: 900;
+    font-size: 20px;
+    letter-spacing: .1em;
+    box-shadow: 0 8px 18px rgba(0,0,0,.6);
+    touch-action: none;
+}
+.ptt.on { background: radial-gradient(circle at 50% 35%, #ff4d4d, #b31212); color: #fff; border-color: #ff6b6b; box-shadow: 0 0 26px rgba(255,59,59,.65); }
+
+.txbtns { display: grid; gap: 8px; }
+
+.k {
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--key-line);
+    background: var(--key);
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: .04em;
+}
+.k:hover { border-color: #4b5966; }
+.k.on { background: var(--key-on); border-color: var(--main); color: #cfeaff; }
+.k.warn { border-color: rgba(255,59,59,.5); color: #ff9a9a; }
+.k.amber.on { background: #4a3a06; border-color: var(--amber); color: var(--amber); }
+.k:disabled { opacity: .35; cursor: default; }
+
+/* ---------------- control panels (below) ---------------- */
+
+.panel {
+    margin-top: 18px;
+    padding: 18px 20px 20px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #171b20, #111418);
+    border: 1px solid #222930;
+}
+.panel h2 { margin: 0 0 14px; font-size: 13px; letter-spacing: .14em; color: var(--dim); }
+.panel h2 b { color: var(--text); }
+.pane { display: none; }
+.pane.show { display: block; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.grid.wide { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+
+.group { margin-bottom: 14px; }
+.group > label { display: block; color: var(--dim); font-size: 11px; font-weight: 800; letter-spacing: .1em; margin-bottom: 7px; }
+
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px 28px; }
+
+.slider { display: grid; grid-template-columns: 96px minmax(0, 1fr) 76px; align-items: center; gap: 12px; margin-bottom: 12px; }
+.slider label { color: var(--dim); font-size: 12px; font-weight: 800; letter-spacing: .06em; }
+.slider output { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+input[type=range] { width: 100%; accent-color: var(--main); }
+
+.toggle-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.toggle-row .k { min-width: 92px; }
+
+select.k { appearance: none; padding-right: 26px; background-image: linear-gradient(45deg, transparent 50%, var(--dim) 50%), linear-gradient(135deg, var(--dim) 50%, transparent 50%); background-position: calc(100% - 14px) 52%, calc(100% - 9px) 52%; background-size: 5px 5px; background-repeat: no-repeat; }
+
+.hint { color: var(--dim); font-size: 12px; margin: 4px 0 0; }
+
+.cwmem { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 8px; align-items: center; margin-bottom: 8px; }
+.cwmem span { color: var(--dim); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.toast {
+    position: fixed;
+    left: 50%; bottom: 22px;
+    transform: translateX(-50%);
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: #1d242b;
+    border: 1px solid var(--tx);
+    font-size: 13px;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity .2s;
+    pointer-events: none;
+    z-index: 20;
+}
+.toast.show { opacity: 1; }
+
+/* ---------------- smaller screens ---------------- */
+
+@media (max-width: 1050px) {
+    .body { grid-template-columns: 1fr; }
+    .side { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+    .sidesel, .steps { width: 100%; }
+    .softkeys { grid-template-columns: repeat(5, 1fr); }
+    .vfo.main .freq { font-size: 56px; }
+    .vfo.sub .freq { font-size: 36px; }
+}
+
+@media (max-width: 560px) {
+    .rig { padding: 0 8px 20px; }
+    .body { padding: 10px; }
+    .vfo { grid-template-columns: 1fr; }
+    .vfo .tag { grid-row: auto; width: 74px; margin: 0 0 6px; }
+    .vfo.main .freq { font-size: 42px; }
+    .vfo.sub .freq { font-size: 30px; }
+    .softkeys { grid-template-columns: repeat(3, 1fr); }
+    .appbar { gap: 10px; padding: 10px 12px; }
+    .appbar .clock, .appbar .title small, .appbar a.back span { display: none; }
+}
+
+    </style>
+
+</head>
+
+<body>
+
+<header class="appbar">
+    <a class="back" href="/" title="Back to the dashboard">◀<span> Dashboard</span></a>
+    <img class="logo" src="/assets/shack-server-logo.svg" alt="">
+    <div class="title">FTX-1 <small id="radio-name">REMOTE</small></div>
+    <span class="link-dot" id="link"><i></i><span id="link-text">CONNECTING</span></span>
+    <div class="spacer"></div>
+    <div class="clock" id="clock"></div>
+    <button class="pwr" id="pwr" type="button" title="Transceiver on / off">⏻</button>
+</header>
+
+<main class="rig">
+
+    <section class="body">
+
+        <!-- ================= DISPLAY ================= -->
+
+        <div class="screen" id="screen">
+
+            <div class="status" id="status">
+                <span class="ind" id="i-tx">RX</span>
+                <span class="ind" id="i-split">SPLIT</span>
+                <span class="ind" id="i-att">ATT</span>
+                <span class="ind" id="i-pre">IPO</span>
+                <span class="ind" id="i-agc">AGC</span>
+                <span class="ind" id="i-nar">NAR</span>
+                <span class="ind" id="i-dnr">DNR</span>
+                <span class="ind" id="i-nb">NB</span>
+                <span class="ind" id="i-dnf">DNF</span>
+                <span class="ind" id="i-notch">NOTCH</span>
+                <span class="ind" id="i-cont">CONT</span>
+                <span class="ind" id="i-tone">TONE</span>
+                <span class="ind right" id="i-head">—</span>
+                <span class="ind" id="i-pwr">— W</span>
+            </div>
+
+            <div class="vfo main" id="vfo-main" data-side="MAIN">
+                <div class="tag">MAIN<small>A</small></div>
+                <div class="line">
+                    <span class="mode" id="m-mode">---</span>
+                    <span class="band" id="m-band"></span>
+                    <span class="badges" id="m-badges"></span>
+                </div>
+                <div>
+                    <div class="freq" id="m-freq" title="Click to enter a frequency, mouse wheel to tune">--.---.---</div>
+                    <div class="bar" id="m-bar"></div>
+                    <div class="scale"><span>S1</span><span>3</span><span>5</span><span>7</span><span>9</span><span class="over">+20</span><span class="over">+40</span><span class="over">+60</span></div>
+                </div>
+            </div>
+
+            <div class="vfo sub" id="vfo-sub" data-side="SUB">
+                <div class="tag">SUB<small>B</small></div>
+                <div class="line">
+                    <span class="mode" id="s-mode">---</span>
+                    <span class="band" id="s-band"></span>
+                    <span class="badges" id="s-badges"></span>
+                </div>
+                <div>
+                    <div class="freq" id="s-freq" title="Click to enter a frequency, mouse wheel to tune">--.---.---</div>
+                    <div class="bar" id="s-bar"></div>
+                </div>
+            </div>
+
+            <div class="txm">
+                <div><label>PO <b id="t-po">0</b></label><div class="bar" id="b-po"></div></div>
+                <div><label>SWR <b id="t-swr">–</b></label><div class="bar" id="b-swr"></div></div>
+                <div><label>ALC <b id="t-alc">0</b></label><div class="bar" id="b-alc"></div></div>
+            </div>
+
+            <div class="softkeys" id="softkeys">
+                <button type="button" data-pane="band" class="sel">BAND</button>
+                <button type="button" data-pane="mode">MODE</button>
+                <button type="button" data-pane="filter">FILTER</button>
+                <button type="button" data-pane="dsp">DSP</button>
+                <button type="button" data-pane="rx">RX</button>
+                <button type="button" data-pane="fm">FM</button>
+                <button type="button" data-pane="tx">TX</button>
+                <button type="button" data-pane="cw">CW</button>
+                <button type="button" data-pane="audio">AUDIO</button>
+            </div>
+
+            <div class="overlay" id="overlay">
+                <div>
+                    <h3 id="ov-title">FTX-1 not active</h3>
+                    <p id="ov-text">Select the FTX-1 as transceiver in the dashboard.</p>
+                    <a href="/">Open the dashboard</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ================= DIAL / TX ================= -->
+
+        <div class="side">
+
+            <div class="sidesel">
+                <button type="button" class="main sel" data-side="MAIN">MAIN</button>
+                <button type="button" class="sub" data-side="SUB">SUB</button>
+            </div>
+
+            <div class="dial-wrap" id="dial-wrap" title="Drag or use the mouse wheel to tune">
+                <div class="dial" id="dial"><div class="dimple"></div></div>
+            </div>
+
+            <div class="steps" id="steps"></div>
+
+            <div class="txrow">
+                <button class="ptt" id="ptt" type="button" title="Hold to transmit (space bar)">PTT</button>
+                <div class="txbtns">
+                    <button class="k" id="tune" type="button">TUNE</button>
+                    <button class="k" id="split" type="button">SPLIT</button>
+                    <button class="k" id="swap" type="button">A ⇄ B</button>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ================= CONTROL PANES ================= -->
+
+    <section class="panel">
+
+        <div class="pane show" data-pane="band">
+            <h2>BAND · <b class="side-name">MAIN</b></h2>
+            <div class="grid" id="band-grid"></div>
+            <p class="hint">The FTX-1 recalls the last frequency and mode of the band.</p>
+        </div>
+
+        <div class="pane" data-pane="mode">
+            <h2>MODE · <b class="side-name">MAIN</b></h2>
+            <div id="mode-groups"></div>
+        </div>
+
+        <div class="pane" data-pane="filter">
+            <h2>FILTER · <b class="side-name">MAIN</b></h2>
+            <div class="cols">
+                <div>
+                    <div class="slider"><label>WIDTH</label><input id="f-width" type="range" min="0" max="23" step="1"><output id="o-width">—</output></div>
+                    <div class="slider"><label>SHIFT</label><input id="f-shift" type="range" min="-1200" max="1200" step="20"><output id="o-shift">0 Hz</output></div>
+                    <div class="toggle-row"><button class="k" id="f-nar" type="button">NARROW</button></div>
+                </div>
+                <div>
+                    <div class="toggle-row"><button class="k" id="f-cont" type="button">CONTOUR</button></div>
+                    <div class="slider"><label>CONT FREQ</label><input id="f-contf" type="range" min="10" max="3200" step="10"><output id="o-contf">—</output></div>
+                    <div class="toggle-row"><button class="k" id="f-apf" type="button">APF (CW)</button></div>
+                    <div class="slider"><label>APF OFFSET</label><input id="f-apfo" type="range" min="-250" max="250" step="10"><output id="o-apfo">0 Hz</output></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pane" data-pane="dsp">
+            <h2>DSP · <b class="side-name">MAIN</b></h2>
+            <div class="cols">
+                <div>
+                    <div class="toggle-row"><button class="k" id="d-dnr" type="button">DNR</button></div>
+                    <div class="slider"><label>DNR LEVEL</label><input id="d-dnrl" type="range" min="1" max="10" step="1"><output id="o-dnrl">—</output></div>
+                    <div class="toggle-row"><button class="k" id="d-nb" type="button">NB</button></div>
+                    <div class="slider"><label>NB LEVEL</label><input id="d-nbl" type="range" min="1" max="10" step="1"><output id="o-nbl">—</output></div>
+                </div>
+                <div>
+                    <div class="toggle-row"><button class="k" id="d-dnf" type="button">DNF (auto notch)</button></div>
+                    <div class="toggle-row"><button class="k" id="d-notch" type="button">NOTCH</button></div>
+                    <div class="slider"><label>NOTCH FREQ</label><input id="d-notchf" type="range" min="10" max="3200" step="10"><output id="o-notchf">—</output></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pane" data-pane="rx">
+            <h2>RECEIVER · <b class="side-name">MAIN</b></h2>
+            <div class="cols">
+                <div>
+                    <div class="slider"><label>AF GAIN</label><input id="r-af" type="range" min="0" max="255" step="1"><output id="o-af">—</output></div>
+                    <div class="slider"><label>RF GAIN</label><input id="r-rf" type="range" min="0" max="255" step="1"><output id="o-rf">—</output></div>
+                    <div class="slider"><label>SQUELCH</label><input id="r-sql" type="range" min="0" max="255" step="1"><output id="o-sql">—</output></div>
+                </div>
+                <div>
+                    <div class="group"><label>ATTENUATOR</label><div class="toggle-row"><button class="k" id="r-att" type="button">ATT 12 dB</button></div></div>
+                    <div class="group"><label id="pre-label">PREAMP (HF)</label><div class="toggle-row" id="pre-row"></div></div>
+                    <div class="group"><label>AGC</label><div class="toggle-row" id="agc-row"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pane" data-pane="fm">
+            <h2>FM / REPEATER · <b class="side-name">MAIN</b></h2>
+            <div class="cols">
+                <div>
+                    <div class="group"><label>REPEATER SHIFT</label><div class="toggle-row" id="fm-shift"></div></div>
+                    <div class="group"><label>TONE / SQUELCH TYPE</label><div class="toggle-row" id="fm-tone"></div></div>
+                </div>
+                <div>
+                    <div class="group"><label>CTCSS TONE</label><select class="k" id="fm-ctcss"></select></div>
+                    <div class="group"><label>DCS CODE</label><select class="k" id="fm-dcs"></select></div>
+                    <p class="hint">Shift and tone work in FM / FM-N and C4FM. The repeater offset itself is set in the radio menu (ARS sets it automatically).</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="pane" data-pane="tx">
+            <h2>TRANSMIT</h2>
+            <div class="cols">
+                <div>
+                    <div class="slider"><label>TX POWER</label><input id="t-power" type="range" min="0.5" max="10" step="0.5"><output id="o-power">—</output></div>
+                    <p class="hint" id="power-note"></p>
+                    <div class="slider"><label>MIC GAIN</label><input id="t-mic" type="range" min="0" max="100" step="1"><output id="o-mic">—</output></div>
+                    <div class="slider"><label>MONI</label><input id="t-moni" type="range" min="0" max="100" step="1"><output id="o-moni">—</output></div>
+                </div>
+                <div>
+                    <div class="toggle-row">
+                        <button class="k" id="t-proc" type="button">PROC</button>
+                        <button class="k" id="t-eq" type="button">MIC EQ</button>
+                    </div>
+                    <div class="group"><label>VFO</label>
+                        <div class="toggle-row">
+                            <button class="k" id="t-a2b" type="button">MAIN → SUB</button>
+                            <button class="k" id="t-b2a" type="button">SUB → MAIN</button>
+                            <button class="k warn" id="t-tunestop" type="button">TUNER STOP</button>
+                        </div>
+                    </div>
+                    <p class="hint">TUNE starts the antenna tuner (internal tuner with SPA-1 / Optima, or an external tuner / ATAS as set in the radio).</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="pane" data-pane="cw">
+            <h2>CW</h2>
+            <div class="cols">
+                <div>
+                    <div class="slider"><label>KEY SPEED</label><input id="c-speed" type="range" min="4" max="60" step="1"><output id="o-speed">—</output></div>
+                    <div class="toggle-row"><button class="k" id="c-bkin" type="button">BREAK-IN</button></div>
+                </div>
+                <div id="cw-mems"></div>
+            </div>
+        </div>
+
+        <div class="pane" data-pane="audio">
+            <h2>REMOTE AUDIO</h2>
+            <div class="toggle-row">
+                <button class="k" id="a-rx" type="button">RX AUDIO ON</button>
+                <div class="slider" style="flex:1;min-width:260px;margin:0"><label>VOLUME</label><input id="a-vol" type="range" min="0" max="200" step="1" value="100"><output id="o-vol">100 %</output></div>
+            </div>
+            <p class="hint">Audio comes from the sound card set in Settings → Audio (the FTX-1 USB sound card, e.g. <code>hw:CARD=CODEC,DEV=0</code>).</p>
+        </div>
+
+    </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/ftx1-remote.js?v=1"></script>
+<script src="/js/demo-banner.js?v=1"></script>
+
+</body>
+</html>
