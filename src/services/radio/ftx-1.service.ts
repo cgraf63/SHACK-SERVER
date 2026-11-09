@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import { SerialRadioBase } from "./serial-radio-base.js";
 import type { RadioService } from "./radio.interface.js";
 
@@ -21,6 +24,14 @@ import type { RadioService } from "./radio.interface.js";
  *   - tuner: AC103 start, AC000 stop (ATAS: AC123 / AC120)
  *   - CW memory play: KY0n (n = 1..5)
  *   - FM: SQ squelch, OS repeater shift, CT tone mode, CN tone / DCS
+ *   - split via FT1 (TX on SUB), NOT ST1: with ST1 the firmware locks
+ *     SUB in TX state (Hamlib FTX-1 backend, hardware-verified)
+ *   - BS answers "?" on some firmware: setBand() falls back to a
+ *     typical frequency of the band
+ *   - memories (firmware differs from the manual, Hamlib-verified):
+ *       MR000nn read, MT000nn name (12 chars), MC0nnnnn / MC1nnnnn
+ *       recall on MAIN / SUB, VM000 back to VFO, CH0 / CH1 up / down,
+ *       write = load SUB, MC1nnnnn cursor, VM000, BM; - then restore SUB
  *
  * The driver keeps the method names of the FTDX10 driver, so the
  * dashboard (spot tuning, split) works with it too. The dedicated
@@ -84,6 +95,24 @@ export const FTX1_BANDS: Array<{ code: string; name: string; from: number; to: n
     { code: "14", name: "70cm", from: 430_000_000, to: 440_000_000 }
 ];
 
+/* fallback when BS is refused: typical frequency + mode per band */
+const BAND_DEFAULTS: Record<string, [number, string]> = {
+    "00": [1_840_000, "LSB"], "01": [3_700_000, "LSB"], "02": [5_357_000, "USB"],
+    "03": [7_100_000, "LSB"], "04": [10_120_000, "CW-U"], "05": [14_200_000, "USB"],
+    "06": [18_130_000, "USB"], "07": [21_250_000, "USB"], "08": [24_950_000, "USB"],
+    "09": [28_500_000, "USB"], "10": [50_150_000, "USB"], "12": [118_100_000, "AM"],
+    "13": [145_500_000, "FM"], "14": [433_500_000, "FM"]
+};
+
+export interface Ftx1Memory {
+    channel: number;
+    name: string;
+    frequency: number;
+    mode: string;
+    shift: string;
+    tone: string;
+}
+
 /* CN P2=0: CTCSS tone index 000-049 (0.1 Hz) */
 export const FTX1_CTCSS = [
     670, 693, 719, 744, 770, 797, 825, 854, 885, 915,
@@ -103,6 +132,11 @@ export const FTX1_DCS = [
     462, 464, 465, 466, 503, 506, 516, 523, 526, 532, 546, 565, 606, 612, 624,
     627, 631, 632, 654, 662, 664, 703, 712, 723, 731, 732, 734, 743, 754
 ];
+
+const MEMORY_FILE = path.join(process.cwd(), "data", "ftx1-memories.json");
+
+/* MR P8 (stored tone) uses its own encoding: 1 TSQ, 2 ENC, 3 DCS */
+const MR_TONE = ["", "TSQ", "ENC", "DCS"];
 
 const AGC_NAMES = ["OFF", "FAST", "MID", "SLOW", "AUTO-F", "AUTO-M", "AUTO-S"];
 const TONE_MODES = ["OFF", "ENC", "TSQ", "DCS", "PR FREQ", "REV TONE"];
@@ -134,6 +168,10 @@ interface SideState {
     rptShift: number;
     toneMode: number;
     processor: boolean;
+    ctcssIndex: number;
+    dcsIndex: number;
+    memoryMode: boolean;
+    memoryChannel: number;
 }
 
 function emptySide(): SideState {
@@ -159,7 +197,11 @@ function emptySide(): SideState {
         agc: 4,
         rptShift: 0,
         toneMode: 0,
-        processor: false
+        processor: false,
+        ctcssIndex: 12,
+        dcsIndex: 0,
+        memoryMode: false,
+        memoryChannel: 0
     };
 }
 
@@ -189,7 +231,6 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
 
     /* VS: 0 = MAIN is TX/RX side, 1 = SUB */
     private activeSide: 0 | 1 = 0;
-    private split = false;
     private tx = 0;
 
     private head: Ftx1Head = "unknown";
@@ -212,8 +253,17 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
     private micEq = false;
     private monitorLevel = 0;
 
-    private ctcssIndex = 12;
-    private dcsIndex = 0;
+    /* FT: transmitting side (split = TX side differs from VS side) */
+    private txSide: 0 | 1 = 0;
+
+    /* memory channels (1-99), read on request, kept in data/ */
+    private memories = new Map<number, Ftx1Memory>();
+    private memScan = { running: false, done: 0, total: 0, at: 0, error: "" };
+    private memLoaded = false;
+
+    /* one request waiting for a matching answer (memory read/write) */
+    private waiter: { pattern: RegExp; resolve: (answer: string | null) => void; timer: NodeJS.Timeout } | null = null;
+    private busy = false;
 
     private tuning = false;
     private poweredOn = true;
@@ -245,6 +295,8 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
 
     protected override poll(): void {
 
+        if (this.busy) return;
+
         this.pollCount++;
 
         // fast: frequency, mode, TX, meters
@@ -256,7 +308,7 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
 
         // every 2nd poll: VFO / split / power / tuner
         if (this.pollCount % 2 === 0) {
-            this.write("VS;ST;PC;AC;");
+            this.write("VS;FT;PC;AC;VM0;VM1;MC0;MC1;");
         }
 
         // every 3rd poll: receiver and DSP of the active side
@@ -271,7 +323,8 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
 
         // every 5th poll: TX settings, FM
         if (this.pollCount % 5 === 2) {
-            this.write(`MG;KS;BI;ML1;OS${this.activeSide};CT${this.activeSide};CN00;CN01;RM8;RM7;`);
+            const p = this.activeSide;
+            this.write(`MG;KS;BI;ML1;OS${p};CT${p};CN${p}0;CN${p}1;RM8;RM7;`);
         }
 
         // rarely: CW memories
@@ -294,6 +347,13 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
             const message = this.buffer.slice(0, end + 1).replace(/^[\r\n\s]+/, "");
 
             this.buffer = this.buffer.slice(end + 1);
+
+            if (this.waiter && (message === "?;" || this.waiter.pattern.test(message))) {
+                const w = this.waiter;
+                this.waiter = null;
+                clearTimeout(w.timer);
+                w.resolve(message === "?;" ? null : message);
+            }
 
             if (message === "?;" || message.length < 3) continue;
 
@@ -341,7 +401,10 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
 
         if ((r = m.match(/^TX(\d);$/))) { this.tx = Number(r[1]); return; }
         if ((r = m.match(/^VS([01]);$/))) { this.activeSide = Number(r[1]) as 0 | 1; return; }
-        if ((r = m.match(/^ST([01]);$/))) { this.split = r[1] === "1"; return; }
+        if ((r = m.match(/^ST([01]);$/))) { return; }
+        if ((r = m.match(/^FT([01]);$/))) { this.txSide = Number(r[1]) as 0 | 1; return; }
+        if ((r = m.match(/^VM([01])(\d\d);$/))) { this.side(Number(r[1]) as 0 | 1).memoryMode = r[2] === "11"; return; }
+        if ((r = m.match(/^MC([01])(\d{5});$/))) { this.side(Number(r[1]) as 0 | 1).memoryChannel = Number(r[2]) % 10000; return; }
 
         if ((r = m.match(/^PC([12])([\d.]+);$/))) {
             this.head = r[1] === "2" ? "spa1" : "field";
@@ -420,8 +483,12 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
 
         if ((r = m.match(/^OS([01])(\d);$/))) { this.side(Number(r[1]) as 0 | 1).rptShift = Number(r[2]); return; }
         if ((r = m.match(/^CT([01])(\d);$/))) { this.side(Number(r[1]) as 0 | 1).toneMode = Number(r[2]); return; }
-        if ((r = m.match(/^CN00(\d{3});$/))) { this.ctcssIndex = clamp(Number(r[1]), 0, 49); return; }
-        if ((r = m.match(/^CN01(\d{3});$/))) { this.dcsIndex = clamp(Number(r[1]), 0, 103); return; }
+        if ((r = m.match(/^CN([01])([01])(\d{3});$/))) {
+            const s = this.side(Number(r[1]) as 0 | 1);
+            if (r[2] === "0") s.ctcssIndex = clamp(Number(r[3]), 0, 49);
+            else s.dcsIndex = clamp(Number(r[3]), 0, 103);
+            return;
+        }
 
         if ((r = m.match(/^AC\d\d(\d);$/))) { this.tuning = r[1] !== "0"; return; }
         if ((r = m.match(/^PS([01]);$/))) { this.poweredOn = r[1] === "1"; return; }
@@ -507,23 +574,43 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
         this.setModeB(mode);
     }
 
+    /* split = TX on the other side (FT), see header */
     setSplit(enabled: boolean): void {
-        this.send(enabled ? "ST1;" : "ST0;");
-        this.split = enabled;
+        const tx = enabled ? (1 - this.activeSide) : this.activeSide;
+        this.send(`FT${tx};`);
+        this.txSide = tx as 0 | 1;
     }
 
     getSplit(): boolean {
-        return this.split;
+        return this.txSide !== this.activeSide;
     }
 
     setActiveVfo(vfo: "A" | "B"): void {
+        const split = this.getSplit();
         this.send(vfo === "B" ? "VS1;" : "VS0;");
         this.activeSide = vfo === "B" ? 1 : 0;
+        // VS also moves TX: keep split / no split as it was
+        this.txSide = (split ? 1 - this.activeSide : this.activeSide) as 0 | 1;
+        this.write(`FT${this.txSide};`);
     }
 
     setBand(code: string, vfo: "A" | "B" = "A"): void {
-        if (!FTX1_BANDS.some(b => b.code === code)) throw new Error(`Unsupported FTX-1 band code: ${code}`);
-        this.send(`BS${vfo === "B" ? 1 : 0}${code};`);
+        const band = FTX1_BANDS.find(b => b.code === code);
+        if (!band) throw new Error(`Unsupported FTX-1 band code: ${code}`);
+        const p = vfo === "B" ? 1 : 0;
+        this.send(`BS${p}${code};`);
+        // some firmware answers "?" to BS: then tune to a typical frequency
+        const fallback = BAND_DEFAULTS[code];
+        if (!fallback) return;
+        setTimeout(() => {
+            const f = this.side(p as 0 | 1).frequency;
+            if (f >= band.from && f <= band.to) return;
+            try {
+                if (p === 1) { this.setFrequencyB(fallback[0]); this.setModeB(fallback[1]); }
+                else { this.setFrequency(fallback[0]); this.setMode(fallback[1], fallback[0]); }
+            }
+            catch { /* disconnected */ }
+        }, 900);
     }
 
     setPtt(enabled: boolean): void {
@@ -724,14 +811,14 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
 
     setCtcssTone(index: number): void {
         const v = clamp(Math.round(Number(index)), 0, 49);
-        this.send(`CN00${pad(v, 3)};`);
-        this.ctcssIndex = v;
+        this.send(`CN${this.activeSide}0${pad(v, 3)};`);
+        this.side().ctcssIndex = v;
     }
 
     setDcsCode(index: number): void {
         const v = clamp(Math.round(Number(index)), 0, 103);
-        this.send(`CN01${pad(v, 3)};`);
-        this.dcsIndex = v;
+        this.send(`CN${this.activeSide}1${pad(v, 3)};`);
+        this.side().dcsIndex = v;
     }
 
     swapVfo(): void { this.send("SV;"); }
@@ -767,6 +854,239 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
         return true;
     }
 
+
+
+    /* ------------------------------------------------------------
+       Memory channels
+       ------------------------------------------------------------ */
+
+    private sleep(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /* send one command and wait for the matching answer ("?" = null) */
+    private request(command: string, pattern: RegExp, timeoutMs = 600): Promise<string | null> {
+        return new Promise(resolve => {
+            if (this.waiter) {
+                clearTimeout(this.waiter.timer);
+                this.waiter.resolve(null);
+            }
+            const timer = setTimeout(() => {
+                if (this.waiter?.timer === timer) this.waiter = null;
+                resolve(null);
+            }, timeoutMs);
+            this.waiter = { pattern, resolve, timer };
+            this.write(command);
+        });
+    }
+
+    /* polling paused, earlier answers drained */
+    private async exclusive<T>(work: () => Promise<T>): Promise<T> {
+        if (this.busy) throw new Error("FTX-1 is busy with a memory operation");
+        if (!this.isConnected()) throw new Error("FTX-1 not connected");
+        this.busy = true;
+        try {
+            await this.sleep(350);
+            return await work();
+        }
+        finally {
+            this.busy = false;
+        }
+    }
+
+    private loadMemories(): void {
+        if (this.memLoaded) return;
+        this.memLoaded = true;
+        try {
+            const list = JSON.parse(fs.readFileSync(MEMORY_FILE, "utf8")) as { at: number; memories: Ftx1Memory[] };
+            for (const m of list.memories ?? []) this.memories.set(m.channel, m);
+            this.memScan.at = list.at ?? 0;
+        }
+        catch { /* not read yet */ }
+    }
+
+    private saveMemories(): void {
+        try {
+            fs.mkdirSync(path.dirname(MEMORY_FILE), { recursive: true });
+            fs.writeFileSync(MEMORY_FILE, JSON.stringify({ at: this.memScan.at, memories: this.getMemories() }, null, 1));
+        }
+        catch (error) {
+            console.error("FTX-1 memories: cannot save:", (error as Error).message);
+        }
+    }
+
+    getMemories(): Ftx1Memory[] {
+        this.loadMemories();
+        return [...this.memories.values()].sort((a, b) => a.channel - b.channel);
+    }
+
+    getMemoryScan(): { running: boolean; done: number; total: number; at: number; error: string } {
+        this.loadMemories();
+        return { ...this.memScan };
+    }
+
+    /* MR + MT for one channel; null = not programmed */
+    private async readChannel(channel: number): Promise<Ftx1Memory | null> {
+
+        const ch = pad(channel, 5);
+        const mr = await this.request(`MR${ch};`, new RegExp(`^MR${ch}\\d{9}`));
+
+        if (!mr) return null;
+
+        // MR ch(5) freq(9) clar(+-4) rx tx mode vfo/mem tone(P8) 00 shift
+        const r = mr.match(/^MR\d{5}(\d{9})[+-]\d{4}\d\d([0-9A-J])\d(\d)\d{2}(\d)/);
+
+        if (!r) return null;
+
+        const mt = await this.request(`MT${ch};`, new RegExp(`^MT${ch}`));
+        const name = mt ? mt.slice(7, -1).trim() : "";
+
+        // shift and tone only exist for FM channels
+        const mode = MODE_BY_CODE[r[2] ?? ""] ?? "?";
+        const fm = /^(FM|DATA-FM|C4FM)/.test(mode);
+
+        return {
+            channel,
+            name,
+            frequency: Number(r[1]),
+            mode,
+            tone: fm ? (MR_TONE[Number(r[3])] ?? "") : "",
+            shift: fm ? (["", "+", "−", ""][Number(r[4])] ?? "") : ""
+        };
+
+    }
+
+    /* read channels 1-99 (about 5-10 s), list kept in data/ftx1-memories.json */
+    scanMemories(): void {
+
+        this.loadMemories();
+
+        if (this.memScan.running) return;
+
+        this.memScan = { running: true, done: 0, total: 99, at: this.memScan.at, error: "" };
+
+        void this.exclusive(async () => {
+            const found = new Map<number, Ftx1Memory>();
+            for (let channel = 1; channel <= 99; channel++) {
+                const memory = await this.readChannel(channel);
+                if (memory) found.set(channel, memory);
+                this.memScan.done = channel;
+            }
+            this.memories = found;
+            this.memScan.at = Date.now();
+            this.saveMemories();
+        })
+            .catch(error => { this.memScan.error = (error as Error).message; })
+            .finally(() => { this.memScan.running = false; });
+
+    }
+
+    /* MAIN / SUB into memory mode on this channel */
+    recallMemory(channel: number, side: "MAIN" | "SUB"): void {
+        const ch = clamp(Math.round(Number(channel)), 1, 117);
+        const p = side === "SUB" ? 1 : 0;
+        this.send(`MC${p}${pad(ch, 5)};`);
+        this.side(p).memoryMode = true;
+        this.side(p).memoryChannel = ch;
+    }
+
+    /* back to VFO mode */
+    vfoMode(): void {
+        this.send("VM000;");
+        this.main.memoryMode = false;
+    }
+
+    /* channel up / down (memory mode) */
+    channelStep(up: boolean): void {
+        this.send(up ? "CH0;" : "CH1;");
+    }
+
+    quickMemory(store: boolean): void {
+        this.send(store ? "QI;" : "QR;");
+    }
+
+    async renameMemory(channel: number, name: string): Promise<void> {
+        const ch = clamp(Math.round(Number(channel)), 1, 99);
+        const clean = String(name ?? "").toUpperCase().replace(/[^A-Z0-9 /\-+.]/g, "").slice(0, 12);
+        await this.exclusive(async () => {
+            this.write(`MT${pad(ch, 5)}${clean.padEnd(12, " ")};`);
+            await this.sleep(150);
+            const memory = await this.readChannel(ch);
+            if (memory) this.memories.set(ch, memory);
+            this.saveMemories();
+        });
+    }
+
+    /*
+     * Store the current setting of MAIN or SUB in a channel.
+     * Firmware path (Hamlib, hardware-verified): load the values into
+     * SUB, point the SUB memory cursor at the channel, VFO mode, BM.
+     * SUB is restored afterwards.
+     */
+    async storeMemory(channel: number, from: "MAIN" | "SUB", name: string): Promise<Ftx1Memory | null> {
+
+        const ch = clamp(Math.round(Number(channel)), 1, 99);
+        const source = from === "SUB" ? this.sub : this.main;
+        const frequency = source.frequency;
+        const mode = source.mode;
+        const code = FTX1_MODES[mode];
+
+        if (!frequency || !code) throw new Error("No valid frequency / mode to store");
+
+        const saved = { frequency: this.sub.frequency, mode: FTX1_MODES[this.sub.mode] };
+        const fm = /^(FM|DATA-FM)/.test(mode);
+
+        return this.exclusive(async () => {
+
+            const cmd = async (c: string) => { this.write(c); await this.sleep(60); };
+
+            await cmd(`MC1${pad(ch, 5)};`);
+            await cmd("VM000;");
+            await cmd(`FB${pad(frequency, 9)};`);
+            await cmd(`MD1${code};`);
+
+            if (fm) {
+                if (source.toneMode === 3) {
+                    await cmd("CT13;");
+                    await cmd(`CN11${pad(source.dcsIndex, 3)};`);
+                }
+                else if (source.toneMode === 1 || source.toneMode === 2) {
+                    await cmd(`CT1${source.toneMode};`);
+                    await cmd(`CN10${pad(source.ctcssIndex, 3)};`);
+                }
+                else {
+                    await cmd("CT10;");
+                }
+                await cmd(`OS1${source.rptShift <= 2 ? source.rptShift : 0};`);
+            }
+
+            await cmd("CF10000000;");
+            await cmd("CF10020000;");
+            await cmd("BM;");
+            await this.sleep(200);
+
+            // restore SUB
+            if (fm) await cmd("CT10;");
+            if (saved.frequency) await cmd(`FB${pad(saved.frequency, 9)};`);
+            if (saved.mode) await cmd(`MD1${saved.mode};`);
+
+            const clean = String(name ?? "").toUpperCase().replace(/[^A-Z0-9 /\-+.]/g, "").slice(0, 12);
+            if (clean) {
+                await cmd(`MT${pad(ch, 5)}${clean.padEnd(12, " ")};`);
+            }
+
+            await this.sleep(150);
+
+            const memory = await this.readChannel(ch);
+            if (memory) this.memories.set(ch, memory);
+            this.memScan.at = this.memScan.at || Date.now();
+            this.saveMemories();
+
+            return memory;
+
+        });
+
+    }
 
     /* ------------------------------------------------------------
        Getters (GET /api/radio)
@@ -817,6 +1137,8 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
 
     getState(): Record<string, unknown> {
 
+        this.loadMemories();
+
         const sideState = (s: SideState) => ({
             frequency: s.frequency,
             mode: s.mode,
@@ -842,7 +1164,14 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
             rptShiftCode: s.rptShift,
             toneMode: TONE_MODES[s.toneMode] ?? "OFF",
             toneModeCode: s.toneMode,
-            processor: s.processor
+            processor: s.processor,
+            ctcssIndex: s.ctcssIndex,
+            ctcss: (FTX1_CTCSS[s.ctcssIndex] ?? 0) / 10,
+            dcsIndex: s.dcsIndex,
+            dcs: FTX1_DCS[s.dcsIndex] ?? 0,
+            memoryMode: s.memoryMode,
+            memoryChannel: s.memoryChannel,
+            memoryName: s.memoryMode ? (this.memories.get(s.memoryChannel)?.name ?? "") : ""
         });
 
         const group = bandGroup(this.side().frequency);
@@ -853,7 +1182,8 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
             lastError: this.getLastError(),
             poweredOn: this.getPowerState(),
             activeSide: this.activeSide === 1 ? "SUB" : "MAIN",
-            split: this.split,
+            split: this.getSplit(),
+            txSide: this.txSide === 1 ? "SUB" : "MAIN",
             tx: this.tx > 0,
             tuning: this.tuning,
             main: sideState(this.main),
@@ -878,10 +1208,11 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
             cwSpeed: this.cwSpeed,
             breakIn: this.breakIn,
             monitor: this.monitorLevel,
-            ctcssIndex: this.ctcssIndex,
-            ctcss: (FTX1_CTCSS[this.ctcssIndex] ?? 0) / 10,
-            dcsIndex: this.dcsIndex,
-            dcs: FTX1_DCS[this.dcsIndex] ?? 0,
+            ctcssIndex: this.side().ctcssIndex,
+            ctcss: (FTX1_CTCSS[this.side().ctcssIndex] ?? 0) / 10,
+            dcsIndex: this.side().dcsIndex,
+            dcs: FTX1_DCS[this.side().dcsIndex] ?? 0,
+            memoryScan: { ...this.memScan },
             cwMemories: [...this.cwMemories],
             recentlySet: Date.now() - this.lastSetAt < 1500
         };
@@ -946,6 +1277,14 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
             case "toneMode": return this.setToneMode(num());
             case "ctcss": return this.setCtcssTone(num());
             case "dcs": return this.setDcsCode(num());
+            case "memoryRecall": return this.recallMemory(num(), "MAIN");
+            case "memoryRecallSub": return this.recallMemory(num(), "SUB");
+            case "vfoMode": return this.vfoMode();
+            case "channelUp": return this.channelStep(true);
+            case "channelDown": return this.channelStep(false);
+            case "qmbStore": return this.quickMemory(true);
+            case "qmbRecall": return this.quickMemory(false);
+            case "memoryScan": return this.scanMemories();
             default: throw new Error(`Unknown FTX-1 control: ${control}`);
         }
 

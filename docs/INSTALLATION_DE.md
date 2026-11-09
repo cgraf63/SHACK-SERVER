@@ -961,3 +961,9 @@ Tuner, Split, alle Bänder inkl. 2 m / 70 cm / AIR, alle Modes inkl. C4FM DN / V
 Notch, Contour, APF), AF / RF / Squelch, ATT, Vorverstärker (IPO / AMP1 / AMP2 auf KW, ein / aus auf V/UHF),
 AGC, FM-Relaisablage, CTCSS / DCS, Sendeleistung (Field-Head 0.5 - 10 W, SPA-1 / Optima 5 - 100 W),
 Mic-Gain, Prozessor, CW-Tempo, Break-in, CW-Speicher 1 - 5 und Remote-RX-Audio.
+
+**MEM** (Speicherkanäle): READ CHANNELS liest die Kanäle 1 - 99 mit Name, Frequenz, Mode, Ablage und Ton
+(etwa 10 s, die Liste bleibt in `data/ftx1-memories.json`); Kanal auf MAIN oder SUB abrufen, zurück in den
+VFO-Betrieb, CH ▲ / ▼, QMB ablegen / abrufen, aktuelle Einstellung von MAIN oder SUB in einen Kanal speichern
+(mit Name, Rückfrage vor dem Überschreiben) und Kanäle umbenennen. Split läuft beim FTX-1 über TX auf SUB
+(FT-Befehl), nicht über ST - mit ST sperrt die Firmware den SUB-VFO.

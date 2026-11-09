@@ -93,3 +93,4 @@ data/needed-alerts.json
 # Software update (settings)
 data/update.log
 data/update-state.json
+data/ftx1-memories.json

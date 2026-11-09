@@ -251,7 +251,7 @@ button { cursor: pointer; }
 
 .softkeys {
     display: grid;
-    grid-template-columns: repeat(9, 1fr);
+    grid-template-columns: repeat(10, 1fr);
     gap: 6px;
     margin-top: auto;
     padding-top: 10px;
@@ -436,6 +436,32 @@ select.k { appearance: none; padding-right: 26px; background-image: linear-gradi
 }
 .toast.show { opacity: 1; }
 
+/* memories */
+
+.mem-filter { flex: 1; min-width: 160px; text-align: left; }
+.mem-store { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 14px; padding: 12px; border: 1px dashed var(--key-line); border-radius: 10px; }
+.mem-store label { color: var(--dim); font-size: 11px; font-weight: 800; letter-spacing: .1em; }
+.mem-store #mem-ch { width: 80px; }
+.mem-store #mem-name { width: 170px; text-transform: uppercase; text-align: left; }
+.mem-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 8px; }
+.mem {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border: 1px solid var(--key-line);
+    border-radius: 10px;
+    background: #12171c;
+}
+.mem.cur { border-color: var(--main); }
+.mem .ch { font-weight: 900; color: var(--amber); font-variant-numeric: tabular-nums; }
+.mem .nm { font-weight: 800; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mem .nm small { display: block; color: var(--dim); font-weight: 600; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.mem .acts { display: flex; gap: 5px; }
+.mem .acts .k { padding: 6px 9px; font-size: 11px; }
+.ind.mem-on { color: #000; background: var(--amber); border-color: var(--amber); }
+
 /* ---------------- smaller screens ---------------- */
 
 @media (max-width: 1050px) {
@@ -496,6 +522,7 @@ select.k { appearance: none; padding-right: 26px; background-image: linear-gradi
                 <span class="ind" id="i-notch">NOTCH</span>
                 <span class="ind" id="i-cont">CONT</span>
                 <span class="ind" id="i-tone">TONE</span>
+                <span class="ind" id="i-mem">MEM</span>
                 <span class="ind right" id="i-head">—</span>
                 <span class="ind" id="i-pwr">— W</span>
             </div>
@@ -542,6 +569,7 @@ select.k { appearance: none; padding-right: 26px; background-image: linear-gradi
                 <button type="button" data-pane="fm">FM</button>
                 <button type="button" data-pane="tx">TX</button>
                 <button type="button" data-pane="cw">CW</button>
+                <button type="button" data-pane="mem">MEM</button>
                 <button type="button" data-pane="audio">AUDIO</button>
             </div>
 
@@ -700,6 +728,27 @@ select.k { appearance: none; padding-right: 26px; background-image: linear-gradi
             </div>
         </div>
 
+        <div class="pane" data-pane="mem">
+            <h2>MEMORY CHANNELS <span id="mem-info" style="letter-spacing:.02em;font-weight:600"></span></h2>
+            <div class="toggle-row">
+                <button class="k" id="mem-scan" type="button">READ CHANNELS</button>
+                <button class="k" id="mem-vfo" type="button">VFO MODE</button>
+                <button class="k" id="mem-down" type="button">CH ▼</button>
+                <button class="k" id="mem-up" type="button">CH ▲</button>
+                <button class="k" id="mem-qi" type="button">QMB STORE</button>
+                <button class="k" id="mem-qr" type="button">QMB RECALL</button>
+                <input class="k mem-filter" id="mem-filter" type="search" placeholder="Search name / MHz" autocomplete="off">
+            </div>
+            <div class="mem-store">
+                <label>STORE <b class="side-name">MAIN</b> IN CHANNEL</label>
+                <input class="k" id="mem-ch" type="number" min="1" max="99" step="1">
+                <input class="k" id="mem-name" type="text" maxlength="12" placeholder="NAME (12)" autocomplete="off">
+                <button class="k amber" id="mem-store" type="button">STORE</button>
+                <span class="hint" id="mem-store-info"></span>
+            </div>
+            <div class="mem-list" id="mem-list"></div>
+        </div>
+
         <div class="pane" data-pane="audio">
             <h2>REMOTE AUDIO</h2>
             <div class="toggle-row">
@@ -715,7 +764,7 @@ select.k { appearance: none; padding-right: 26px; background-image: linear-gradi
 
 <div class="toast" id="toast"></div>
 
-<script src="/js/ftx1-remote.js?v=1"></script>
+<script src="/js/ftx1-remote.js?v=2"></script>
 <script src="/js/demo-banner.js?v=1"></script>
 
 </body>

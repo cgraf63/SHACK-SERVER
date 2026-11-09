@@ -14,6 +14,10 @@ import { FTX1_BANDS, FTX1_CTCSS, FTX1_DCS, FTX1_MODES, Ftx1Service } from "../se
  *   GET  /api/ftx1           complete state (MAIN, SUB, DSP, FM, meters)
  *   GET  /api/ftx1/tables    modes, bands, CTCSS / DCS tables
  *   POST /api/ftx1/control   { control, value }
+ *
+ *   GET  /api/ftx1/memories          channel list (read with control "memoryScan")
+ *   POST /api/ftx1/memories/store    { channel, from: MAIN|SUB, name }
+ *   POST /api/ftx1/memories/rename   { channel, name }
  */
 
 const router = Router();
@@ -84,6 +88,66 @@ router.post("/control", (req, res) => {
         const message = error instanceof Error ? error.message : String(error);
         const status = /not connected/i.test(message) ? 503 : 400;
         return res.status(status).json({ error: message });
+    }
+
+});
+
+
+router.get("/memories", (_req, res) => {
+
+    const radio = activeFtx1();
+
+    if (!radio) return notActive(res);
+
+    res.json({ scan: radio.getMemoryScan(), memories: radio.getMemories() });
+
+});
+
+
+router.post("/memories/store", async (req, res) => {
+
+    const radio = activeFtx1();
+
+    if (!radio) return notActive(res);
+
+    const { channel, from, name } = req.body ?? {};
+    const ch = Number(channel);
+
+    if (!Number.isInteger(ch) || ch < 1 || ch > 99) {
+        return res.status(400).json({ error: "Channel 1 - 99" });
+    }
+
+    try {
+        const memory = await radio.storeMemory(ch, from === "SUB" ? "SUB" : "MAIN", String(name ?? ""));
+        if (!memory) return res.status(502).json({ error: "Stored, but the channel could not be read back - check on the radio" });
+        return res.json({ success: true, memory });
+    }
+    catch (error) {
+        return res.status(409).json({ error: error instanceof Error ? error.message : String(error) });
+    }
+
+});
+
+
+router.post("/memories/rename", async (req, res) => {
+
+    const radio = activeFtx1();
+
+    if (!radio) return notActive(res);
+
+    const { channel, name } = req.body ?? {};
+    const ch = Number(channel);
+
+    if (!Number.isInteger(ch) || ch < 1 || ch > 99) {
+        return res.status(400).json({ error: "Channel 1 - 99" });
+    }
+
+    try {
+        await radio.renameMemory(ch, String(name ?? ""));
+        return res.json({ success: true });
+    }
+    catch (error) {
+        return res.status(409).json({ error: error instanceof Error ? error.message : String(error) });
     }
 
 });

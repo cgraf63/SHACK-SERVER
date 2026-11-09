@@ -169,8 +169,9 @@
 
         $("m-mode").textContent = m.mode;
         $("s-mode").textContent = s.mode;
-        $("m-band").textContent = m.band;
-        $("s-band").textContent = s.band;
+        const where = sd => sd.memoryMode ? `M-${String(sd.memoryChannel).padStart(2, "0")}${sd.memoryName ? " " + sd.memoryName : ""}` : sd.band;
+        $("m-band").textContent = where(m);
+        $("s-band").textContent = where(s);
 
         const tone = sd => sd.toneModeCode ? `<span class="ind on">${sd.toneMode}</span>` : "";
         const shift = sd => sd.rptShiftCode ? `<span class="ind on">${sd.rptShift}</span>` : "";
@@ -181,7 +182,7 @@
         $("vfo-sub").classList.toggle("active", side === "SUB");
 
         // TX side: split = SUB transmits
-        const txSub = state.split ? state.activeSide === "MAIN" : state.activeSide === "SUB";
+        const txSub = state.txSide === "SUB";
         $("vfo-main").classList.toggle("txside", !txSub);
         $("vfo-sub").classList.toggle("txside", txSub);
 
@@ -212,6 +213,7 @@
         ind("i-notch", c.notch, "NOTCH", "blue");
         ind("i-cont", c.contour, "CONT", "blue");
         ind("i-tone", c.toneModeCode > 0, c.toneModeCode === 3 ? `DCS ${String(state.dcs).padStart(3, "0")}` : c.toneModeCode ? `${c.toneMode} ${state.ctcss.toFixed(1)}` : "TONE");
+        ind("i-mem", c.memoryMode, c.memoryMode ? `MEM ${String(c.memoryChannel).padStart(2, "0")}` : "MEM", "mem-on");
         ind("i-head", true, state.head === "spa1" ? "SPA-1" : state.head === "field" ? "FIELD" : "—");
         ind("i-pwr", true, `${Number(state.power).toFixed(state.power < 10 && state.power % 1 ? 1 : 0)} W`);
 
@@ -336,6 +338,17 @@
             const span = $(`cw-text-${i + 1}`);
             if (span) span.textContent = text || "(empty)";
         });
+
+        // memory scan progress (state carries it)
+        const scan = state.memoryScan;
+        if (scan) {
+            $("mem-scan").disabled = scan.running;
+            $("mem-scan").textContent = scan.running ? `READING ${scan.done} / ${scan.total}` : "READ CHANNELS";
+            if (memScanRunning && !scan.running) void loadMemories();
+            memScanRunning = scan.running;
+        }
+        $("mem-vfo").classList.toggle("on", !c.memoryMode);
+        document.querySelectorAll(".mem").forEach(el => el.classList.toggle("cur", c.memoryMode && Number(el.dataset.ch) === c.memoryChannel));
 
     }
 
@@ -604,6 +617,180 @@
         $("a-rx").textContent = "RX AUDIO ON";
     }
 
+
+    /* ------------------------------------------------------------
+       Memory channels
+       ------------------------------------------------------------ */
+
+    let memories = [];
+    let memScanRunning = false;
+
+    function esc(text) {
+        return String(text ?? "").replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+    }
+
+    function mhz(hz) {
+        const f = Number(hz) || 0;
+        return f >= 1e8 ? (f / 1e6).toFixed(4) : (f / 1e6).toFixed(3);
+    }
+
+    async function loadMemories() {
+
+        try {
+
+            const response = await fetch("/api/ftx1/memories", { cache: "no-store" });
+            if (!response.ok) return;
+
+            const data = await response.json();
+            memories = data.memories || [];
+
+            const at = data.scan?.at ? new Date(data.scan.at).toLocaleString() : "";
+            $("mem-info").textContent = memories.length
+                ? `· ${memories.length} channels${at ? " · read " + at : ""}`
+                : data.scan?.at ? "· no programmed channels" : "· not read yet";
+
+            // first free channel as default
+            if (!$("mem-ch").value) {
+                const used = new Set(memories.map(m => m.channel));
+                let free = 1;
+                while (used.has(free) && free < 99) free++;
+                $("mem-ch").value = String(free);
+            }
+
+            renderMemories();
+            updateStoreInfo();
+
+        }
+        catch { /* later */ }
+
+    }
+
+    function renderMemories() {
+
+        const q = $("mem-filter").value.trim().toUpperCase();
+        const list = memories.filter(m => !q || m.name.toUpperCase().includes(q) || mhz(m.frequency).includes(q) || String(m.channel) === q);
+        const c = current();
+
+        $("mem-list").innerHTML = list.length
+            ? list.map(m => `
+                <div class="mem${c && c.memoryMode && c.memoryChannel === m.channel ? " cur" : ""}" data-ch="${m.channel}">
+                    <span class="ch">${String(m.channel).padStart(2, "0")}</span>
+                    <span class="nm">${esc(m.name || "—")}<small>${mhz(m.frequency)} MHz · ${esc(m.mode)}${m.shift ? " · " + esc(m.shift) : ""}${m.tone ? " · " + esc(m.tone) : ""}</small></span>
+                    <span class="acts">
+                        <button class="k" type="button" data-recall="MAIN" title="Recall on MAIN">MAIN</button>
+                        <button class="k" type="button" data-recall="SUB" title="Recall on SUB">SUB</button>
+                        <button class="k" type="button" data-rename title="Change name">✎</button>
+                    </span>
+                </div>`).join("")
+            : `<p class="hint">${memories.length ? "No channel matches." : "Press READ CHANNELS to read the memory channels from the FTX-1 (about 10 seconds)."}</p>`;
+
+    }
+
+    function updateStoreInfo() {
+        const ch = Number($("mem-ch").value);
+        const used = memories.find(m => m.channel === ch);
+        $("mem-store-info").textContent = used
+            ? `⚠ channel ${ch} holds ${used.name || "(no name)"} ${mhz(used.frequency)} MHz - will be overwritten`
+            : ch >= 1 && ch <= 99 ? `channel ${ch} is free` : "";
+    }
+
+    async function storeMemory() {
+
+        const ch = Number($("mem-ch").value);
+        const name = $("mem-name").value.trim().toUpperCase();
+        const c = current();
+
+        if (!Number.isInteger(ch) || ch < 1 || ch > 99) return toast("Channel 1 - 99");
+        if (!c || !c.frequency) return toast("No frequency");
+
+        const used = memories.find(m => m.channel === ch);
+        const what = `${mhz(c.frequency)} MHz ${c.mode}${name ? " \"" + name + "\"" : ""}`;
+
+        if (!confirm(used
+            ? `Overwrite channel ${ch} (${used.name || "no name"}, ${mhz(used.frequency)} MHz) with ${what}?`
+            : `Store ${what} in channel ${ch}?`)) return;
+
+        $("mem-store").disabled = true;
+
+        try {
+            const response = await fetch("/api/ftx1/memories/store", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ channel: ch, from: side, name })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+            toast(`✔ Channel ${ch} stored`);
+            $("mem-name").value = "";
+            $("mem-ch").value = "";
+            await loadMemories();
+        }
+        catch (error) {
+            toast(`Store: ${error.message}`);
+        }
+        finally {
+            $("mem-store").disabled = false;
+        }
+
+    }
+
+    async function renameMemory(ch) {
+
+        const m = memories.find(x => x.channel === ch);
+        const name = prompt(`Name for channel ${ch} (max. 12 characters)`, m?.name || "");
+
+        if (name === null) return;
+
+        try {
+            const response = await fetch("/api/ftx1/memories/rename", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ channel: ch, name: name.toUpperCase().slice(0, 12) })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+            await loadMemories();
+        }
+        catch (error) {
+            toast(`Name: ${error.message}`);
+        }
+
+    }
+
+    function setupMemories() {
+
+        on("mem-scan", "click", async () => {
+            if (await control("memoryScan", true)) {
+                memScanRunning = true;
+                $("mem-scan").disabled = true;
+            }
+        });
+        on("mem-vfo", "click", () => void control("vfoMode", true));
+        on("mem-up", "click", () => void control("channelUp", true));
+        on("mem-down", "click", () => void control("channelDown", true));
+        on("mem-qi", "click", () => void control("qmbStore", true));
+        on("mem-qr", "click", () => void control("qmbRecall", true));
+        on("mem-filter", "input", renderMemories);
+        on("mem-ch", "input", updateStoreInfo);
+        on("mem-store", "click", () => void storeMemory());
+        on("mem-name", "keydown", e => { if (e.key === "Enter") void storeMemory(); });
+
+        on("mem-list", "click", e => {
+            const row = e.target.closest(".mem");
+            if (!row) return;
+            const ch = Number(row.dataset.ch);
+            const recall = e.target.closest("[data-recall]");
+            if (recall) {
+                const target = recall.dataset.recall;
+                selectSide(target);
+                void control(target === "SUB" ? "memoryRecallSub" : "memoryRecall", ch);
+                return;
+            }
+            if (e.target.closest("[data-rename]")) void renameMemory(ch);
+        });
+
+    }
+
     /* ------------------------------------------------------------
        Events
        ------------------------------------------------------------ */
@@ -799,9 +986,11 @@
     setupEvents();
     setupDial();
     setupPtt();
+    setupMemories();
     clock();
     void loadTables();
     void poll();
+    void loadMemories();
 
     setInterval(poll, 500);
     setInterval(clock, 1000);

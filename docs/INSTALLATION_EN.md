@@ -963,3 +963,9 @@ tuner, split, all bands incl. 2 m / 70 cm / AIR, all modes incl. C4FM DN / VW, f
 notch, contour, APF), AF / RF / squelch, ATT, preamp (IPO / AMP1 / AMP2 on HF, on / off on V/UHF), AGC,
 FM repeater shift, CTCSS / DCS, TX power (field head 0.5 - 10 W, SPA-1 / Optima 5 - 100 W), mic gain,
 processor, CW speed, break-in, CW memories 1 - 5 and remote RX audio.
+
+**MEM** (memory channels): READ CHANNELS reads channels 1 - 99 with name, frequency, mode, shift and tone
+(about 10 s, the list is kept in `data/ftx1-memories.json`); recall a channel on MAIN or SUB, back to VFO mode,
+CH ▲ / ▼, QMB store / recall, store the current MAIN or SUB setting in a channel (with name, confirmation
+before overwriting) and rename channels. Split on the FTX-1 uses TX on SUB (FT command), not ST - with ST
+the firmware locks the SUB VFO.
