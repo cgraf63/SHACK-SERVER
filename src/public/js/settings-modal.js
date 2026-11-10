@@ -1078,7 +1078,7 @@ function uploadAccountRow(account) {
             <label title="LoTW website login - used to fetch confirmations">Login</label>
             <input class="upload-lotw-username" type="text" autocomplete="off" value="${escapeHtml(lotw.username || "")}" placeholder="LoTW website user (callsign)">
             <label>Password</label>
-            <input class="upload-lotw-password" type="password" autocomplete="off" placeholder="${escapeHtml(lotwPlaceholder)}">
+            <input class="upload-lotw-password" type="password" autocomplete="new-password" placeholder="${escapeHtml(lotwPlaceholder)}">
             <button type="button" class="settings-secondary-button upload-lotw-test">Test</button>
         </div>
         <div class="upload-lotw-cert">
@@ -1087,7 +1087,7 @@ function uploadAccountRow(account) {
                 Add certificate (.p12)
                 <input class="lotw-cert-file" type="file" accept=".p12,.pfx,application/x-pkcs12">
             </label>
-            <input class="lotw-cert-pass" type="password" autocomplete="off" placeholder="certificate password (if any)" ${account.id ? "" : "hidden"}>
+            <input class="lotw-cert-pass" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore placeholder="certificate password (if any)" ${account.id ? "" : "hidden"}>
             <button type="button" class="settings-secondary-button lotw-cert-remove" hidden>Remove certificate</button>
             <button type="button" class="settings-secondary-button lotw-upload-existing" hidden title="Queue all QSOs of this callsign that are not yet in LoTW">Upload existing QSOs</button>
             <button type="button" class="settings-secondary-button lotw-download" hidden title="Fetch new LoTW confirmations now (also automatic every 6 hours)">Fetch confirmations</button>

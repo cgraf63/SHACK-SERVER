@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execFile } from "node:child_process";
+import { gunzipSync } from "node:zlib";
 import { createPrivateKey, createPublicKey, sign, verify, X509Certificate, type KeyObject } from "node:crypto";
 
 
@@ -200,6 +201,50 @@ function pemBlocks(text: string, type: RegExp): string[] {
 
 }
 
+/*
+ * Common mix-ups before OpenSSL sees the file:
+ *   .tq6  (ARRL e-mail, gzip with the signed certificate, no key)
+ *   .tq5  (certificate request)   .tq8 (signed log)
+ *   base64 text of a .p12 -> decoded
+ */
+function checkFileType(data: Buffer): Buffer {
+
+    const TQ6 =
+        "This is the .tq6 file from the ARRL e-mail - it contains no private key. " +
+        "Open it in TQSL on your PC (File → Load Callsign Certificate from file), then " +
+        "Callsign Certificates → right click on your callsign → Save the Callsign Certificate File (.p12) " +
+        "and add that .p12 file here.";
+
+    // DER PKCS#12 starts with a SEQUENCE
+    if (data[0] === 0x30) return data;
+
+    if (data[0] === 0x1f && data[1] === 0x8b) {
+        let inner = "";
+        try { inner = gunzipSync(data).toString("latin1"); } catch { /* not gzip */ }
+        if (/tqsldata|tqslcert|usercert|CERTIFICATE/i.test(inner)) throw new Error(TQ6);
+        if (/tCONTACT|SIGN_LOTW/i.test(inner)) throw new Error("This is a signed log (.tq8), not the callsign certificate (.p12)");
+        throw new Error("This is a compressed file, not the callsign certificate (.p12)");
+    }
+
+    const text = data.toString("latin1");
+
+    if (/tqsldata|<tqslcerts|<usercert/i.test(text)) throw new Error(TQ6);
+    if (/CERTIFICATE REQUEST|tqsl_request/i.test(text) || /BEGIN NEW CERTIFICATE/i.test(text)) {
+        throw new Error("This is the certificate request (.tq5), not the callsign certificate (.p12)");
+    }
+    if (/-----BEGIN CERTIFICATE-----/.test(text) && !/PRIVATE KEY/.test(text)) throw new Error(TQ6);
+
+    // base64 text of a .p12
+    const compact = text.replace(/\s+/g, "");
+    if (/^[A-Za-z0-9+/=]{200,}$/.test(compact)) {
+        const decoded = Buffer.from(compact, "base64");
+        if (decoded[0] === 0x30) return decoded;
+    }
+
+    throw new Error("This file is not a callsign certificate (.p12). In TQSL: Callsign Certificates → right click on your callsign → Save the Callsign Certificate File");
+
+}
+
 function dateOnly(value: string): string {
 
     const match = /(\d{4})-?(\d{2})-?(\d{2})/.exec(value);
@@ -243,6 +288,8 @@ export async function importP12(accountId: string, p12: Buffer, password: string
     if (!p12.length || p12.length > 200_000) {
         throw new Error("Not a certificate file");
     }
+
+    p12 = checkFileType(p12);
 
     fs.mkdirSync(DIRECTORY, { recursive: true, mode: 0o700 });
 
