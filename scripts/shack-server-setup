@@ -20,7 +20,7 @@ get_port() {
 
     local port=""
     if [ -f "$ENV_FILE" ]; then
-        port="$(grep -E '^PORT=' "$ENV_FILE" | tail -n 1 | cut -d= -f2- | tr -d '"[:space:]')"
+        port="$( (grep -E '^PORT=' "$ENV_FILE" || true) | tail -n 1 | cut -d= -f2- | tr -d '"[:space:]')"
     fi
     echo "${port:-3000}"
 

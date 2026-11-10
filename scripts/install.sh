@@ -436,7 +436,7 @@ app_port() {
 
     local port=""
     if [ -f "$INSTALL_DIR/.env" ]; then
-        port="$(grep -E '^PORT=' "$INSTALL_DIR/.env" | tail -n 1 | cut -d= -f2- | tr -d '"[:space:]')"
+        port="$( (grep -E '^PORT=' "$INSTALL_DIR/.env" || true) | tail -n 1 | cut -d= -f2- | tr -d '"[:space:]')"
     fi
     echo "${port:-3000}"
 
