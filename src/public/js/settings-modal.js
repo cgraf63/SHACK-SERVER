@@ -13,6 +13,78 @@ let settingsData = null;
     Open Settings
 */
 
+/*
+    Links from the setup assistant: /?settings=uploads opens the
+    settings at that section.
+*/
+const SETTINGS_SECTIONS = {
+    station: "Station",
+    transceivers: "Transceivers",
+    sources: "DX Sources",
+    uploads: "Log Uploads",
+    wsjtx: "WSJT-X",
+    split: "Split",
+    rotator: "Rotator",
+    watch: "Watch list notifications",
+    needed: "New",
+    backup: "Backup",
+    update: "Software update",
+    modules: "Optional Modules"
+};
+
+function openSettingsFromUrl() {
+
+    const params = new URLSearchParams(location.search);
+    const key = params.get("settings");
+
+    if (key === null) return;
+
+    params.delete("settings");
+    history.replaceState(null, "", location.pathname + (params.toString() ? `?${params}` : "") + location.hash);
+
+    openSettings();
+
+    const title = SETTINGS_SECTIONS[key];
+
+    if (!title) return;
+
+    setTimeout(() => {
+
+        const heading = [...document.querySelectorAll("#settings-modal .settings-section h2")]
+            .find(h => h.textContent.trim().startsWith(title));
+
+        const section = heading?.closest(".settings-section");
+
+        if (!section) return;
+
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+        section.style.transition = "box-shadow .4s";
+        section.style.boxShadow = "0 0 0 2px rgba(0, 229, 255, .6)";
+        setTimeout(() => { section.style.boxShadow = ""; }, 2500);
+
+    }, 450);
+
+}
+
+/* first start (no callsign yet): the setup assistant instead of an empty dashboard */
+async function redirectToSetup() {
+
+    if (location.pathname !== "/" && location.pathname !== "/index.html") return;
+
+    try {
+        const settings = await (await fetch("/api/settings", { cache: "no-store" })).json();
+        const demo = await fetch("/api/demo", { cache: "no-store" }).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+        if (!settings.callsign && !settings.setupCompleted && !demo.demo) {
+            location.replace("/setup");
+        }
+    }
+    catch {
+        // server not reachable: stay
+    }
+
+}
+
+
 function openSettings() {
 
     const modal =
@@ -886,6 +958,10 @@ function initializeSettingsModal() {
     initNotificationSettings();
 
     initSoftwareUpdate();
+
+    openSettingsFromUrl();
+
+    redirectToSetup();
 
 
     settingsButton.addEventListener(

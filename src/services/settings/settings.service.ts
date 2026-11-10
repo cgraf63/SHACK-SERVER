@@ -178,6 +178,19 @@ export class SettingsService {
                     ? normalizeNotifications((settings as any).notifications, this.settings.notifications)
                     : this.settings.notifications,
 
+            qrzLookup:
+                (settings as any).qrzLookup
+                    ? {
+                        username: String((settings as any).qrzLookup.username ?? "").trim(),
+                        // empty password = keep the saved one (same user)
+                        password:
+                            String((settings as any).qrzLookup.password ?? "") ||
+                            (String((settings as any).qrzLookup.username ?? "").trim() === this.settings.qrzLookup?.username
+                                ? this.settings.qrzLookup?.password ?? ""
+                                : "")
+                    }
+                    : this.settings.qrzLookup,
+
             dxspiders:
                 (Array.isArray(settings.dxspiders)
                     ? settings.dxspiders

@@ -76,6 +76,16 @@ export interface ShackSettings {
     notifications: NotificationSettings;
     /* tuning a spot with "UP 2" / "QSX ..." sets split (default on) */
     autoSplit?: boolean;
+    /*
+     * QRZ.com XML lookup (names, grids of the stations worked) - before
+     * only QRZ_USER / QRZ_PASSWORD in .env (still used when this is empty).
+     */
+    qrzLookup?: {
+        username: string;
+        password: string;
+    } | undefined;
+    /* the browser setup assistant (/setup) was finished or skipped */
+    setupCompleted?: boolean;
 }
 
 /*

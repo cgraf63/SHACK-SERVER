@@ -82,6 +82,19 @@ router.get('/diagnostics', (_req, res) => {
 });
 
 
+/* Setup assistant (first start, Settings → Setup assistant) */
+router.get('/setup', (_req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '..',
+            'public',
+            'setup.html'
+        )
+    );
+});
+
+
 router.get('/ftx1', (_req, res) => {
     res.sendFile(
         path.join(

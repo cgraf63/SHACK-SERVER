@@ -53,10 +53,10 @@ The installer
 3. installs **pm2** and sets up **autostart**,
 4. gives the user access to the serial ports (group `dialout`),
 5. downloads SHACK-SERVER from GitHub to `~/SHACK-SERVER` and builds it,
-6. starts the setup assistant for `.env` / QRZ (`scripts/shack-server-setup`),
+6. creates an empty `.env` (only optional values, no questions),
 7. optionally sets up **Caddy** for **HTTPS in the home network** (`https://<IP>` and `https://<hostname>.local`) – optionally also a **public hostname behind Cloudflare**.
 
-At the end it shows the address to open in the browser. Then set up the station and **Transceivers** in **Settings** (chapter 16).
+At the end it shows the address of the **setup assistant** (`http://<IP>:3000/setup`): station (callsign, locator), transceiver (USB port, connection test) and QRZ.com lookup in four short steps. It also starts by itself when the dashboard is opened without a callsign, and can be started again from *Settings → Station*. Everything else (log uploads, LoTW, backup, notifications …) is optional and linked on its last page.
 
 If the user was newly added to the `dialout` group, reboot once (`sudo reboot`).
 
@@ -273,15 +273,9 @@ Afterwards `node_modules` should exist.
 
 # 9. Basic configuration (.env)
 
-`.env` now only holds **credentials and basic technical values**. Everything else (station, DX clusters, transceivers) is set in the web interface (chapter 10).
+`.env` is optional and only holds **basic technical values**. Station, transceivers, QRZ.com and everything else are set in the web interface (setup assistant `/setup`, chapter 10). Existing `QRZ_USER` / `QRZ_PASSWORD` entries keep working as long as no QRZ.com login is set in the browser.
 
-The easiest way to create `.env` is the setup assistant:
-
-```bash
-bash ~/SHACK-SERVER/scripts/shack-server-setup
-```
-
-It makes a backup first, asks for the port and the QRZ credentials (password and API key are not shown) and sets the file permissions.
+`scripts/shack-server-setup` checks the network and shows the address of the setup assistant; `scripts/shack-server-setup --port 8080` changes the HTTP port.
 
 The application loads `.env` via `import "dotenv/config";` in `src/app.ts` – so the file is not configured through PM2.
 
@@ -290,8 +284,8 @@ The application loads `.env` via `import "dotenv/config";` in `src/app.ts` – s
 | Variable | Meaning | Required |
 |---|---|---|
 | `PORT` | HTTP port of SHACK-SERVER (default: `3000`) | no |
-| `QRZ_USER` | QRZ.com username | for QRZ data |
-| `QRZ_PASSWORD` | QRZ.com password | for QRZ data |
+| `QRZ_USER` | QRZ.com username (fallback - better: setup assistant / Settings) | no |
+| `QRZ_PASSWORD` | QRZ.com password (fallback) | no |
 | `QRZ_API_KEY` | QRZ.com API key | for QRZ data |
 | `CONTEST_CONTROL_KEY` | Key for protected contest management functions. Without this value these functions are locked. | no |
 
@@ -333,7 +327,8 @@ ls -l .env
 
 | What | Where | Edit with |
 |---|---|---|
-| QRZ credentials, port, contest key | `.env` | `scripts/shack-server-setup` or an editor |
+| Port, contest key | `.env` | `scripts/shack-server-setup --port` or an editor |
+| QRZ.com lookup login | `data/settings.json` | Setup assistant (`/setup`) |
 | Callsign, operator, locator, club | `data/settings.json` | Web interface → **Settings** → Station |
 | DXSpider, HolyCluster, DX Summit | `data/settings.json` | Web interface → **Settings** → DX Sources |
 | Transceivers (driver, port, baud rate, Hamlib) | `data/radios.json` | Web interface → **Settings** → Transceivers |

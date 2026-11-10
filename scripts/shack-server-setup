@@ -1,8 +1,12 @@
 #!/bin/bash
-
 # ============================================================
-# SHACK-SERVER Setup Assistant
-# Beginner-friendly configuration helper
+# SHACK-SERVER - where to set it up
+#
+# The setup moved to the browser: http://<pi>:3000/setup
+# (station, transceiver, QRZ.com). This script only checks the
+# network and shows the address.
+#
+# Optional: --port 8080   changes the HTTP port (PORT in .env)
 # ============================================================
 
 set -e
@@ -11,239 +15,71 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 ENV_FILE="$PROJECT_DIR/.env"
 
-clear
+
+get_port() {
+
+    local port=""
+    if [ -f "$ENV_FILE" ]; then
+        port="$(grep -E '^PORT=' "$ENV_FILE" | tail -n 1 | cut -d= -f2- | tr -d '"[:space:]')"
+    fi
+    echo "${port:-3000}"
+
+}
+
+
+# --port N: write PORT to .env (restart needed)
+if [ "${1:-}" = "--port" ]; then
+
+    new_port="${2:-}"
+
+    if ! [[ "$new_port" =~ ^[0-9]+$ ]] || [ "$new_port" -lt 1 ] || [ "$new_port" -gt 65535 ]; then
+        echo "Usage: $0 --port 1-65535"
+        exit 1
+    fi
+
+    touch "$ENV_FILE"
+    chmod 600 "$ENV_FILE"
+
+    if grep -qE '^PORT=' "$ENV_FILE"; then
+        sed -i "s|^PORT=.*|PORT=$new_port|" "$ENV_FILE"
+    else
+        printf 'PORT=%s\n' "$new_port" >> "$ENV_FILE"
+    fi
+
+    echo "PORT=$new_port saved. Restart: pm2 restart shack-server"
+    exit 0
+
+fi
+
 
 echo
 echo "============================================================"
-echo "              SHACK-SERVER Setup Assistant"
-echo "============================================================"
-echo
-echo "This assistant helps with the basic configuration."
-echo
-echo "Station, DXSpider, HolyCluster and DX Summit are set up"
-echo "afterwards in the SHACK-SERVER settings (web interface)."
-echo
-echo "Only the environment variables that are actually used"
-echo "are changed here."
-echo
+echo "                    SHACK-SERVER setup"
 echo "============================================================"
 echo
 
-# ------------------------------------------------------------
-# Check project directory
-# ------------------------------------------------------------
+HOST_NAME="$(hostname 2>/dev/null || echo raspberrypi)"
+IP_ADDRESS="$(hostname -I 2>/dev/null | awk '{print $1}')"
+PORT="$(get_port)"
 
-if [ ! -d "$PROJECT_DIR" ]; then
-    echo "ERROR: SHACK-SERVER directory not found:"
-    echo "$PROJECT_DIR"
-    exit 1
-fi
-
-cd "$PROJECT_DIR"
-
-# ------------------------------------------------------------
-# Network check
-# ------------------------------------------------------------
-
-echo
-echo "1. Network check"
-echo "----------------"
-
-HOSTNAME_NOW="$(hostname 2>/dev/null || true)"
-
-echo "Host name: ${HOSTNAME_NOW:-unknown}"
-
-if command -v hostname >/dev/null 2>&1; then
-    IP_ADDRESS="$(hostname -I 2>/dev/null | awk '{print $1}')"
-else
-    IP_ADDRESS=""
-fi
-
-if [ -n "$IP_ADDRESS" ]; then
-    echo "IP address: $IP_ADDRESS"
-else
-    echo "IP address: could not be found"
-fi
+echo "Host name:  $HOST_NAME"
+echo "IP address: ${IP_ADDRESS:-not found}"
 
 if ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; then
-    echo "Internet: OK"
+    echo "Internet:   OK"
 else
-    echo "Internet: NOT REACHABLE"
-    echo "Please check the network connection first."
-fi
-
-# ------------------------------------------------------------
-# .env handling
-# ------------------------------------------------------------
-
-echo
-echo "2. Internet services"
-echo "--------------------"
-
-if [ -f "$ENV_FILE" ]; then
-    echo ".env found."
-else
-    echo ".env not found."
-    echo "A new file is created."
-    touch "$ENV_FILE"
-fi
-
-# Backup before changing anything
-BACKUP_FILE="$ENV_FILE.backup-$(date +%Y%m%d-%H%M%S)"
-
-cp "$ENV_FILE" "$BACKUP_FILE"
-chmod 600 "$ENV_FILE"
-
-echo "Backup created:"
-echo "  $BACKUP_FILE"
-
-# ------------------------------------------------------------
-# Helper functions
-# ------------------------------------------------------------
-
-get_env_value() {
-    local key="$1"
-
-    if [ ! -f "$ENV_FILE" ]; then
-        echo ""
-        return
-    fi
-
-    grep -E "^${key}=" "$ENV_FILE" 2>/dev/null \
-        | tail -n 1 \
-        | cut -d '=' -f 2-
-}
-
-set_env_value() {
-    local key="$1"
-    local value="$2"
-
-    if grep -qE "^${key}=" "$ENV_FILE" 2>/dev/null; then
-        sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"
-    else
-        printf '%s=%s\n' "$key" "$value" >> "$ENV_FILE"
-    fi
-}
-
-ask_value() {
-    local label="$1"
-    local key="$2"
-
-    local old_value
-    old_value="$(get_env_value "$key")"
-
-    if [ -n "$old_value" ]; then
-        read -r -p "$label [$old_value]: " new_value
-        new_value="${new_value:-$old_value}"
-    else
-        read -r -p "$label: " new_value
-    fi
-
-    set_env_value "$key" "$new_value"
-}
-
-ask_secret() {
-    local label="$1"
-    local key="$2"
-
-    local old_value
-    old_value="$(get_env_value "$key")"
-
-    if [ -n "$old_value" ]; then
-        echo "$label"
-        echo "  Already set - ENTER = keep it."
-        read -r -s -p "  New password / token: " new_value
-        echo
-
-        if [ -n "$new_value" ]; then
-            set_env_value "$key" "$new_value"
-        fi
-    else
-        read -r -s -p "$label: " new_value
-        echo
-
-        set_env_value "$key" "$new_value"
-    fi
-}
-
-# ------------------------------------------------------------
-# Port
-# ------------------------------------------------------------
-
-echo
-echo "HTTP port of SHACK-SERVER (default 3000)"
-echo "ENTER = keep the current value."
-
-ask_value "PORT" "PORT"
-
-# ------------------------------------------------------------
-# QRZ
-# ------------------------------------------------------------
-
-echo
-echo "------------------------------------------------------------"
-echo "QRZ"
-echo "------------------------------------------------------------"
-echo
-echo "QRZ.com login for callsign lookups (name, locator, photo)."
-echo "Stored in .env only; password and API key are not shown."
-echo "Logbook uploads (QRZ logbook, Club Log) are set up later in Settings."
-echo
-
-ask_value "QRZ user name" "QRZ_USER"
-ask_secret "QRZ password" "QRZ_PASSWORD"
-ask_secret "QRZ API key" "QRZ_API_KEY"
-
-# ------------------------------------------------------------
-# Security
-# ------------------------------------------------------------
-
-chmod 600 "$ENV_FILE"
-
-# ------------------------------------------------------------
-# Summary
-# ------------------------------------------------------------
-
-echo
-echo "3. Configuration"
-echo "----------------"
-echo
-echo "The basic credentials have been saved."
-echo
-echo "The following settings are NOT kept in .env:"
-echo
-echo "  - Callsign"
-echo "  - Operator"
-echo "  - Locator"
-echo "  - Club"
-echo "  - DXSpider 1–4"
-echo "  - HolyCluster"
-echo "  - DX Summit"
-echo
-echo "They are kept in:"
-echo
-echo "  data/settings.json"
-echo
-echo "and are changed in the web interface (Settings)."
-echo
-
-if [ -n "$IP_ADDRESS" ]; then
-    echo "Open SHACK-SERVER and click Settings in the menu:"
-    echo
-    echo "  http://${IP_ADDRESS}:$(get_env_value PORT | grep -E '^[0-9]+$' || echo 3000)"
-else
-    echo "Open SHACK-SERVER and click Settings in the menu:"
-    echo
-    echo "  http://<SHACK-SERVER-IP>:3000"
+    echo "Internet:   NOT REACHABLE - check the network first"
 fi
 
 echo
-echo "------------------------------------------------------------"
-echo "Setup finished."
-echo "------------------------------------------------------------"
+echo "The setup is done in the browser (station, transceiver,"
+echo "QRZ.com - four short steps):"
 echo
-echo "The .env file is protected with chmod 600."
+[ -n "$IP_ADDRESS" ] && echo "  http://$IP_ADDRESS:$PORT/setup"
+echo "  http://${HOST_NAME,,}.local:$PORT/setup"
 echo
-echo "Backup:"
-echo "  $BACKUP_FILE"
+echo "Everything else (log uploads, LoTW, backup, notifications ...)"
+echo "is in Settings - the assistant links to it at the end."
+echo
+echo "Change the HTTP port:  $0 --port 8080"
 echo

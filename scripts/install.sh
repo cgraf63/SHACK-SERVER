@@ -9,7 +9,8 @@
 #   - serial port permission (group dialout)
 #   - code from GitHub (clone, later: git pull)
 #   - npm install + build
-#   - .env via scripts/shack-server-setup (first install)
+#   - empty .env (port, optional keys) - station, transceiver and
+#     QRZ.com are set up in the browser: http://<pi>/setup
 #   - autostart with pm2
 #   - optional: Caddy as HTTPS proxy in the home network
 #     (+ optional public hostname behind Cloudflare)
@@ -414,25 +415,20 @@ build_app() {
 
 run_setup_assistant() {
 
-    step "7. Basic configuration (.env)"
+    step "7. Basic configuration"
 
-    if [ -f "$INSTALL_DIR/.env" ] && [ "$MODE" = "update" ]; then
-        ok ".env exists - unchanged"
-        return
+    # .env holds only optional values (PORT, keys) - no questions here.
+    if [ ! -f "$INSTALL_DIR/.env" ] && [ "$DRY_RUN" != "1" ]; then
+        touch "$INSTALL_DIR/.env"
+        chmod 600 "$INSTALL_DIR/.env"
+        ok ".env created (empty - defaults are used)"
+    else
+        ok ".env unchanged"
     fi
 
-    if [ -f "$INSTALL_DIR/.env" ] && ! ask_yes_no ".env exists. Start the setup assistant anyway?" "n"; then
-        ok ".env exists - unchanged"
-        return
+    if [ "$MODE" != "update" ]; then
+        info "Station, transceiver and QRZ.com: setup assistant in the browser (see below)"
     fi
-
-    if [ -z "$TTY" ] || [ "$DRY_RUN" = "1" ]; then
-        warn "Setup assistant skipped. Start it later with:"
-        info "bash $INSTALL_DIR/scripts/shack-server-setup"
-        return
-    fi
-
-    bash "$INSTALL_DIR/scripts/shack-server-setup" <"$TTY"
 
 }
 
@@ -724,16 +720,26 @@ summary() {
     fi
     echo "${C_OK}============================================================${C_OFF}"
     echo
-    echo "  Open in the browser:"
-    if command -v caddy >/dev/null 2>&1 && caddyfile_is_ours; then
-        [ -n "$ip" ] && echo "    https://$ip"
-        echo "    https://${host,,}.local"
+    local page="/"
+    [ "$MODE" = "update" ] || page="/setup"
+
+    if [ "$MODE" = "update" ]; then
+        echo "  Open in the browser:"
     else
-        [ -n "$ip" ] && echo "    http://$ip:$port"
-        echo "    http://${host,,}.local:$port"
+        echo "  Open the setup assistant in the browser:"
     fi
-    echo
-    echo "  Then: Settings -> set up the station and the transceivers."
+    if command -v caddy >/dev/null 2>&1 && caddyfile_is_ours; then
+        [ -n "$ip" ] && echo "    https://$ip$page"
+        echo "    https://${host,,}.local$page"
+    else
+        [ -n "$ip" ] && echo "    http://$ip:$port$page"
+        echo "    http://${host,,}.local:$port$page"
+    fi
+    if [ "$MODE" != "update" ]; then
+        echo
+        echo "  Four short steps: station, transceiver, QRZ.com - done."
+        echo "  Everything else (uploads, LoTW, backup, ...) later in Settings."
+    fi
 
     local line
     if [ ${#SUMMARY[@]} -gt 0 ]; then

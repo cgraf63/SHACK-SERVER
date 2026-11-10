@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050d13">
+    <title>SHACK-SERVER – Setup</title>
+    <link rel="icon" type="image/png" href="/assets/app/icon-192.png">
+
+    <style>
+
+:root {
+    --bg: #050d13;
+    --panel: #0c1821;
+    --panel2: #101f2a;
+    --border: #1d3442;
+    --text: #e6eef3;
+    --muted: #8fa3b2;
+    --cyan: #00e5ff;
+    --purple: #b56cff;
+    --yellow: #ffc400;
+    --green: #8cff00;
+    --red: #ff6b6b;
+}
+
+* { box-sizing: border-box; }
+
+/* hidden always wins over display rules below */
+[hidden] { display: none !important; }
+
+html, body {
+    margin: 0;
+    min-height: 100%;
+    background: radial-gradient(1000px 600px at 50% -15%, #10283a 0%, var(--bg) 65%);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+}
+
+button, input, select { font: inherit; color: inherit; }
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 28px 18px 60px; }
+
+header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+header img { width: 46px; height: 46px; }
+header h1 { margin: 0; font-size: 22px; letter-spacing: .06em; color: var(--cyan); }
+header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+header .skip { margin-left: auto; color: var(--muted); font-size: 13px; background: none; border: 0; cursor: pointer; text-decoration: underline; }
+
+/* step indicator */
+
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 18px; }
+.steps div {
+    padding: 8px 4px 0;
+    border-top: 3px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-align: center;
+}
+.steps div.done { border-color: rgba(0,229,255,.45); color: #9fdcea; }
+.steps div.now { border-color: var(--cyan); color: var(--text); }
+
+.card {
+    padding: 24px 26px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: linear-gradient(180deg, var(--panel), #0a141c);
+    box-shadow: 0 20px 50px rgba(0,0,0,.45);
+}
+
+.card h2 { margin: 0 0 6px; font-size: 20px; }
+.card .lead { margin: 0 0 20px; color: var(--muted); line-height: 1.5; }
+
+.step { display: none; }
+.step.show { display: block; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+.full { grid-column: 1 / -1; }
+
+label.f { display: block; }
+label.f span { display: block; margin-bottom: 6px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .06em; }
+label.f span b { color: var(--yellow); }
+
+input[type=text], input[type=password], select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--panel2);
+    font-size: 15px;
+}
+input:focus, select:focus { outline: none; border-color: var(--cyan); }
+input.upper { text-transform: uppercase; font-weight: 700; letter-spacing: .04em; }
+input.bad { border-color: var(--red); }
+
+.inline { display: flex; gap: 8px; }
+.inline > input, .inline > select { flex: 1; min-width: 0; }
+
+.note { margin-top: 6px; min-height: 18px; color: var(--muted); font-size: 13px; }
+.note.ok { color: var(--green); }
+.note.err { color: var(--red); }
+
+.btn {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--panel2);
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.btn:hover { border-color: #3b5a6c; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.primary { background: linear-gradient(180deg, #13a6c2, #0b7f98); border-color: #18b8d6; color: #fff; }
+.btn.ghost { background: transparent; }
+
+.nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--border); }
+.nav .right { display: flex; gap: 10px; }
+
+.box {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(255,255,255,.02);
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+.box b { color: var(--text); }
+
+.radio-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.radio-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel2);
+}
+.radio-item .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--red); flex: 0 0 auto; }
+.radio-item .dot.on { background: var(--green); box-shadow: 0 0 8px rgba(140,255,0,.6); }
+.radio-item .t { flex: 1; min-width: 0; }
+.radio-item .t b { display: block; }
+.radio-item .t small { color: var(--muted); }
+.radio-item .tag { padding: 2px 8px; border-radius: 10px; background: rgba(0,229,255,.12); color: var(--cyan); font-size: 11px; font-weight: 800; }
+
+.summary { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.summary div { display: flex; gap: 10px; align-items: baseline; }
+.summary .i { width: 20px; flex: 0 0 auto; text-align: center; }
+.summary .ok { color: var(--green); }
+.summary .warn { color: var(--yellow); }
+
+.extras { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.extras a {
+    display: block;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel2);
+    color: var(--text);
+    text-decoration: none;
+}
+.extras a:hover { border-color: var(--purple); }
+.extras a b { display: block; margin-bottom: 3px; }
+.extras a small { color: var(--muted); line-height: 1.4; }
+
+h3 { margin: 22px 0 10px; font-size: 13px; letter-spacing: .1em; color: var(--yellow); }
+
+@media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+    .card { padding: 18px 16px; }
+    .steps div { font-size: 10px; }
+    header .skip { display: none; }
+    #r-form .nav { flex-direction: column; align-items: stretch; }
+    .nav .btn { padding: 10px 12px; }
+}
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="wrap">
+
+    <header>
+        <img src="/assets/shack-server-logo.svg" alt="">
+        <div>
+            <h1>SHACK-SERVER SETUP</h1>
+            <p>The essentials in four short steps - everything else can wait.</p>
+        </div>
+        <button class="skip" id="skip" type="button">Skip - set up later</button>
+    </header>
+
+    <div class="steps" id="steps">
+        <div data-step="1">1 · STATION</div>
+        <div data-step="2">2 · TRANSCEIVER</div>
+        <div data-step="3">3 · QRZ.COM</div>
+        <div data-step="4">4 · DONE</div>
+    </div>
+
+    <main class="card">
+
+        <!-- 1 STATION -->
+        <section class="step" data-step="1">
+            <h2>Your station</h2>
+            <p class="lead">Your callsign is used for the cluster login and the log, the locator for distances, beam headings and "heard near you".</p>
+
+            <div class="grid">
+                <label class="f">
+                    <span>CALLSIGN <b>*</b></span>
+                    <input id="s-call" class="upper" type="text" autocomplete="off" spellcheck="false" placeholder="HB9XYZ">
+                    <div class="note" id="s-call-note"></div>
+                </label>
+                <label class="f">
+                    <span>YOUR NAME</span>
+                    <input id="s-name" type="text" autocomplete="off" placeholder="First name">
+                </label>
+                <label class="f">
+                    <span>LOCATOR <b>*</b></span>
+                    <div class="inline">
+                        <input id="s-grid" class="upper" type="text" autocomplete="off" spellcheck="false" placeholder="JN36BK" maxlength="8">
+                        <button class="btn" id="s-gps" type="button" title="Locator from this device's position">📍</button>
+                    </div>
+                    <div class="note" id="s-grid-note"></div>
+                </label>
+                <label class="f">
+                    <span>CLUB (OPTIONAL)</span>
+                    <input id="s-club" type="text" autocomplete="off" placeholder="e.g. USKA section">
+                </label>
+            </div>
+        </section>
+
+        <!-- 2 TRANSCEIVER -->
+        <section class="step" data-step="2">
+            <h2>Transceiver</h2>
+            <p class="lead">Connect the transceiver with USB and switch it on. SHACK-SERVER then reads frequency and mode, and spots are tuned with one click.</p>
+
+            <div class="radio-list" id="r-list"></div>
+
+            <div id="r-form">
+                <div class="grid">
+                    <label class="f full">
+                        <span>MODEL</span>
+                        <select id="r-driver"></select>
+                        <div class="note" id="r-driver-note"></div>
+                    </label>
+                    <label class="f full">
+                        <span>USB PORT</span>
+                        <div class="inline">
+                            <select id="r-port"></select>
+                            <button class="btn" id="r-refresh" type="button" title="Search again">↻</button>
+                        </div>
+                        <div class="note" id="r-port-note"></div>
+                    </label>
+                    <label class="f">
+                        <span>BAUD RATE</span>
+                        <select id="r-baud"></select>
+                    </label>
+                    <label class="f" id="r-civ-wrap" hidden>
+                        <span>CI-V ADDRESS (HEX)</span>
+                        <input id="r-civ" type="text" class="upper" autocomplete="off" placeholder="A4">
+                    </label>
+                </div>
+                <div class="nav" style="margin-top:16px;padding-top:0;border:0">
+                    <button class="btn" id="r-test" type="button">Test connection</button>
+                    <button class="btn primary" id="r-save" type="button">Use this transceiver</button>
+                </div>
+                <div class="note" id="r-result"></div>
+            </div>
+
+            <div class="box" id="r-hamlib" hidden>
+                Hamlib transceivers (Kenwood, Elecraft, Xiegu, Flex …) need the model list and are set up in
+                <a href="/?settings=transceivers" style="color:var(--cyan)">Settings → Transceivers</a>.
+                You can finish this assistant first.
+            </div>
+        </section>
+
+        <!-- 3 QRZ -->
+        <section class="step" data-step="3">
+            <h2>QRZ.com lookup</h2>
+            <p class="lead">With a QRZ.com login SHACK-SERVER shows name, QTH and locator of the stations you work and fills them into the log. A free account works; the XML subscription gives data for every callsign.</p>
+
+            <div class="grid">
+                <label class="f">
+                    <span>QRZ.COM USER NAME</span>
+                    <input id="q-user" class="upper" type="text" autocomplete="off" spellcheck="false" placeholder="usually your callsign">
+                </label>
+                <label class="f">
+                    <span>PASSWORD</span>
+                    <input id="q-pass" type="password" autocomplete="new-password" placeholder="QRZ.com password">
+                </label>
+            </div>
+            <div class="nav" style="margin-top:14px;padding-top:0;border:0">
+                <button class="btn" id="q-test" type="button">Test login</button>
+                <span></span>
+            </div>
+            <div class="note" id="q-result"></div>
+
+            <div class="box">
+                Uploading QSOs to QRZ.com, Club Log or LoTW is set up separately in
+                <b>Settings → Log Uploads</b> (link on the next page).
+            </div>
+        </section>
+
+        <!-- 4 DONE -->
+        <section class="step" data-step="4">
+            <h2>Ready to go</h2>
+            <p class="lead">The basic setup is done. The dashboard shows spots, your transceiver and the band conditions.</p>
+
+            <div class="summary" id="summary"></div>
+
+            <button class="btn primary" id="finish" type="button" style="width:100%;padding:14px">Open the dashboard</button>
+
+            <h3>OPTIONAL - WHEN YOU NEED IT</h3>
+            <div class="extras">
+                <a href="/?settings=uploads"><b>Log uploads</b><small>QRZ.com logbook, Club Log, LoTW (incl. confirmations)</small></a>
+                <a href="/?settings=watch"><b>Push to your phone</b><small>Watch list alarms via the ntfy app</small></a>
+                <a href="/?settings=needed"><b>New "needed" callsigns</b><small>Alarm for new countries / bands</small></a>
+                <a href="/?settings=sources"><b>DX sources</b><small>Cluster nodes, HolyCluster, DX Summit</small></a>
+                <a href="/?settings=backup"><b>Backup</b><small>Daily to Dropbox or a NAS</small></a>
+                <a href="/?settings=rotator"><b>Rotator</b><small>Turn the beam to the DX station</small></a>
+                <a href="/?settings=wsjtx"><b>WSJT-X / JTDX</b><small>FT8 QSOs straight into the log</small></a>
+                <a href="/m" target="_blank"><b>Phone app</b><small>Open /m on the phone and add it to the home screen</small></a>
+            </div>
+        </section>
+
+        <div class="nav" id="nav">
+            <button class="btn ghost" id="back" type="button">← Back</button>
+            <div class="right">
+                <button class="btn ghost" id="later" type="button">Skip this step</button>
+                <button class="btn primary" id="next" type="button">Next →</button>
+            </div>
+        </div>
+        <div class="note err" id="save-error"></div>
+
+    </main>
+
+</div>
+
+<script>
+
+(function () {
+
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+
+    let step = 1;
+    let settings = {};
+    let drivers = [];
+    let ports = [];
+    let radios = { radios: [], activeRadioId: null };
+    let qrzOk = null;
+
+    /* ------------------------------------------------------------ */
+
+    async function api(path, options) {
+        const response = await fetch(path, { cache: "no-store", ...(options || {}) });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || data.message || `HTTP ${response.status}`);
+        return data;
+    }
+
+    function send(path, method, body) {
+        return api(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+    }
+
+    function saveSettings(patch) {
+        return send("/api/settings", "PUT", patch).then(data => { settings = data; return data; });
+    }
+
+    function note(id, text, kind) {
+        const el = $(id);
+        el.textContent = text || "";
+        el.className = `note${kind ? " " + kind : ""}`;
+    }
+
+    function esc(text) {
+        return String(text ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    }
+
+    /* ------------------------------------------------------------
+       Steps
+       ------------------------------------------------------------ */
+
+    function show(n) {
+
+        step = n;
+
+        document.querySelectorAll(".step").forEach(s => s.classList.toggle("show", Number(s.dataset.step) === n));
+        document.querySelectorAll("#steps div").forEach(d => {
+            const k = Number(d.dataset.step);
+            d.className = k < n ? "done" : k === n ? "now" : "";
+        });
+
+        $("back").style.visibility = n > 1 && n < 4 ? "visible" : "hidden";
+        $("nav").hidden = n === 4;
+        $("later").hidden = n === 1;
+        $("next").textContent = n === 3 ? "Finish →" : "Next →";
+        note("save-error", "");
+
+        if (n === 2) void loadRadioStep();
+        if (n === 4) renderSummary();
+
+        window.scrollTo(0, 0);
+
+    }
+
+    /* ------------------------------------------------------------
+       1 Station
+       ------------------------------------------------------------ */
+
+    const CALL_RE = /^[A-Z0-9]{1,4}\/?[A-Z0-9]*\d[A-Z0-9]*[A-Z](\/[A-Z0-9]+)?$/;
+    const GRID_RE = /^[A-R]{2}\d{2}([A-X]{2}(\d{2})?)?$/;
+
+    let lookupTimer = null;
+
+    function checkCall() {
+
+        const call = $("s-call").value.trim().toUpperCase();
+
+        $("s-call").classList.toggle("bad", call.length > 2 && !CALL_RE.test(call));
+
+        clearTimeout(lookupTimer);
+
+        if (call.length < 3) return note("s-call-note", "");
+
+        lookupTimer = setTimeout(async () => {
+            try {
+                const e = await api(`/api/dxcc/lookup/${encodeURIComponent(call)}`);
+                note("s-call-note", `${e.name} · ${e.continent} · CQ ${e.cqZone} · ITU ${e.ituZone}`, "ok");
+            }
+            catch {
+                note("s-call-note", CALL_RE.test(call) ? "" : "Check the callsign", "err");
+            }
+        }, 300);
+
+    }
+
+    function checkGrid() {
+        const grid = $("s-grid").value.trim().toUpperCase();
+        const ok = GRID_RE.test(grid);
+        $("s-grid").classList.toggle("bad", grid.length >= 4 && !ok);
+        note("s-grid-note", grid && !ok && grid.length >= 4 ? "Format: 2 letters, 2 digits, 2 letters (e.g. JN36BK)" : grid.length === 4 && ok ? "Tip: 6 characters are more precise" : "", grid && !ok && grid.length >= 4 ? "err" : "");
+    }
+
+    function maidenhead(lat, lon) {
+        const x = lon + 180, y = lat + 90;
+        return String.fromCharCode(65 + Math.floor(x / 20)) + String.fromCharCode(65 + Math.floor(y / 10)) +
+            Math.floor((x % 20) / 2) + Math.floor(y % 10) +
+            String.fromCharCode(65 + Math.floor((x % 2) * 12)) + String.fromCharCode(65 + Math.floor((y % 1) * 24));
+    }
+
+    function useGps() {
+        if (!navigator.geolocation) return note("s-grid-note", "This browser has no location", "err");
+        note("s-grid-note", "Locating…");
+        navigator.geolocation.getCurrentPosition(
+            p => { $("s-grid").value = maidenhead(p.coords.latitude, p.coords.longitude); checkGrid(); note("s-grid-note", `From this device (±${Math.round(p.coords.accuracy)} m) - correct it if the device is not at the station`, "ok"); },
+            e => note("s-grid-note", e.code === 1 ? "No permission - the browser allows location only over HTTPS. Enter the locator by hand." : e.message, "err"),
+            { enableHighAccuracy: true, timeout: 15000 }
+        );
+    }
+
+    async function saveStation() {
+
+        const callsign = $("s-call").value.trim().toUpperCase();
+        const locator = $("s-grid").value.trim().toUpperCase();
+
+        if (!CALL_RE.test(callsign)) { $("s-call").focus(); throw new Error("Please enter your callsign"); }
+        if (!GRID_RE.test(locator)) { $("s-grid").focus(); throw new Error("Please enter your locator (e.g. JN36BK)"); }
+
+        await saveSettings({
+            callsign,
+            operatorName: $("s-name").value.trim(),
+            locator: locator.slice(0, 6),
+            club: $("s-club").value.trim()
+        });
+
+    }
+
+    /* ------------------------------------------------------------
+       2 Transceiver
+       ------------------------------------------------------------ */
+
+    function driver() {
+        return drivers.find(d => d.protocol === $("r-driver").value);
+    }
+
+    async function loadRadioStep() {
+
+        try {
+            [drivers, radios] = await Promise.all([api("/api/radios/drivers"), api("/api/radios")]);
+        }
+        catch (error) {
+            note("r-result", `Cannot read the transceiver list: ${error.message}`, "err");
+            return;
+        }
+
+        drivers = drivers.filter(d => d.protocol !== "demo");
+
+        if (!$("r-driver").options.length) {
+            $("r-driver").innerHTML = drivers.map(d => `<option value="${esc(d.protocol)}">${esc(d.label)}</option>`).join("");
+        }
+
+        renderRadios();
+        onDriver();
+        await loadPorts();
+
+    }
+
+    function renderRadios() {
+
+        const list = radios.radios || [];
+
+        $("r-list").innerHTML = list.map(r => `
+            <div class="radio-item">
+                <span class="dot ${r.status?.connected ? "on" : ""}"></span>
+                <div class="t"><b>${esc(r.name)}</b><small>${esc(r.device || r.host || "")} · ${r.status?.connected ? (r.status.frequency ? (r.status.frequency / 1e6).toFixed(3) + " MHz " + esc(r.status.mode || "") : "connected") : esc(r.status?.lastError || "not connected")}</small></div>
+                ${r.id === radios.activeRadioId ? '<span class="tag">ACTIVE</span>' : ""}
+            </div>`).join("");
+
+        if (list.length) {
+            $("r-list").insertAdjacentHTML("beforeend",
+                `<div class="note">Already set up${list.length > 1 ? " - the active one is used" : ""}. Press Next, or add another transceiver below.</div>`);
+        }
+
+    }
+
+    function onDriver() {
+
+        const d = driver();
+
+        if (!d) return;
+
+        const hamlib = Boolean(d.needsHamlibModel);
+
+        $("r-hamlib").hidden = !hamlib;
+        $("r-test").disabled = hamlib;
+        $("r-save").disabled = hamlib;
+        $("r-civ-wrap").hidden = !d.needsCivAddress;
+        if (d.needsCivAddress && !$("r-civ").value) $("r-civ").value = (d.defaultCivAddress ?? 0xA4).toString(16).toUpperCase();
+
+        $("r-baud").innerHTML = (d.baudRates || []).filter(b => b > 0).map(b =>
+            `<option value="${b}" ${b === d.defaultBaudRate ? "selected" : ""}>${b}</option>`).join("");
+
+        note("r-driver-note", [d.models, d.hint].filter(Boolean).join(" - "));
+        note("r-result", "");
+
+    }
+
+    async function loadPorts() {
+
+        try {
+            ports = await api("/api/radios/ports");
+        }
+        catch {
+            ports = [];
+        }
+
+        const free = ports.filter(p => !p.inUseBy);
+
+        $("r-port").innerHTML = ports.length
+            ? ports.map(p => `<option value="${esc(p.path)}" ${p.inUseBy ? "disabled" : ""}>${esc(p.label)}${p.inUseBy ? ` - used by ${esc(p.inUseBy)}` : ""}</option>`).join("")
+            : `<option value="">No USB transceiver found</option>`;
+
+        if (free[0]) $("r-port").value = free[0].path;
+
+        note("r-port-note",
+            !ports.length ? "Switch the transceiver on, connect the USB cable and press ↻." :
+            !free.length ? "All found ports are used by configured transceivers." :
+            "Yaesu with two ports (CP2105): take Interface 0 / the \"Enhanced\" port for CAT.",
+            !ports.length ? "err" : "");
+
+    }
+
+    function radioBody() {
+        const d = driver();
+        const body = {
+            name: d?.label || "Transceiver",
+            protocol: d?.protocol,
+            device: $("r-port").value,
+            baudRate: Number($("r-baud").value),
+            enabled: true,
+            connection: "serial"
+        };
+        if (d?.needsCivAddress) body.civAddress = $("r-civ").value.trim();
+        return body;
+    }
+
+    async function testRadio() {
+
+        if (!$("r-port").value) return note("r-result", "Choose the USB port first", "err");
+
+        $("r-test").disabled = true;
+        note("r-result", "Testing… (a few seconds)");
+
+        try {
+            const r = await send("/api/radios/test", "POST", radioBody());
+            note("r-result", r.ok ? `✔ ${r.message}` : `✖ ${r.message}${r.hint ? " - " + r.hint : ""}`, r.ok ? "ok" : "err");
+            return r.ok;
+        }
+        catch (error) {
+            note("r-result", `✖ ${error.message}`, "err");
+            return false;
+        }
+        finally {
+            $("r-test").disabled = false;
+        }
+
+    }
+
+    async function saveRadio() {
+
+        if (!$("r-port").value) return note("r-result", "Choose the USB port first", "err");
+
+        const body = radioBody();
+
+        // unique name: "Yaesu FTDX10", "Yaesu FTDX10 (2)" ...
+        const names = new Set((radios.radios || []).map(r => r.name.toLowerCase()));
+        let name = body.name;
+        for (let i = 2; names.has(name.toLowerCase()); i++) name = `${body.name} (${i})`;
+        body.name = name;
+
+        $("r-save").disabled = true;
+
+        try {
+            const created = await send("/api/radios", "POST", body);
+            await send("/api/radio/active", "POST", { radioId: created.id }).catch(() => undefined);
+            note("r-result", `✔ ${created.name} added and selected. It connects in a few seconds.`, "ok");
+            radios = await api("/api/radios");
+            renderRadios();
+            await loadPorts();
+            setTimeout(async () => { radios = await api("/api/radios").catch(() => radios); renderRadios(); }, 4000);
+        }
+        catch (error) {
+            note("r-result", `✖ ${error.message}`, "err");
+        }
+        finally {
+            $("r-save").disabled = false;
+        }
+
+    }
+
+    /* ------------------------------------------------------------
+       3 QRZ
+       ------------------------------------------------------------ */
+
+    async function testQrz() {
+
+        $("q-test").disabled = true;
+        note("q-result", "Checking…");
+
+        try {
+            const r = await send("/api/settings/qrz-test", "POST", { username: $("q-user").value.trim(), password: $("q-pass").value });
+            qrzOk = r.ok;
+            note("q-result", `${r.ok ? "✔" : "✖"} ${r.message}`, r.ok ? "ok" : "err");
+        }
+        catch (error) {
+            note("q-result", `✖ ${error.message}`, "err");
+        }
+        finally {
+            $("q-test").disabled = false;
+        }
+
+    }
+
+    async function saveQrz() {
+
+        const username = $("q-user").value.trim();
+        const password = $("q-pass").value;
+
+        if (!username) return;
+        if (!password && !settings.qrzLookup?.passwordSet) throw new Error("Enter the QRZ.com password (or skip this step)");
+
+        await saveSettings({ qrzLookup: { username, password } });
+
+        if (qrzOk === null && password) await testQrz();
+
+    }
+
+    /* ------------------------------------------------------------
+       4 Done
+       ------------------------------------------------------------ */
+
+    async function renderSummary() {
+
+        radios = await api("/api/radios").catch(() => radios);
+
+        const active = (radios.radios || []).find(r => r.id === radios.activeRadioId);
+        const qrz = settings.qrzLookup || {};
+
+        const line = (ok, text) => `<div><span class="i ${ok ? "ok" : "warn"}">${ok ? "✔" : "•"}</span><span>${text}</span></div>`;
+
+        $("summary").innerHTML =
+            line(Boolean(settings.callsign), `Station <b>${esc(settings.callsign || "-")}</b> · ${esc(settings.locator || "no locator")}${settings.operatorName ? " · " + esc(settings.operatorName) : ""}`) +
+            line(Boolean(active), active ? `Transceiver <b>${esc(active.name)}</b>${active.status?.connected ? " - connected" : " - connects when switched on"}` : "No transceiver yet - add it later in Settings → Transceivers") +
+            line(Boolean(qrz.username || qrz.fromEnv), qrz.username ? `QRZ.com lookup as <b>${esc(qrz.username)}</b>` : qrz.fromEnv ? "QRZ.com lookup from the .env file" : "No QRZ.com lookup - names are not filled in");
+
+        saveSettings({ setupCompleted: true }).catch(() => undefined);
+
+    }
+
+    /* ------------------------------------------------------------
+       Navigation
+       ------------------------------------------------------------ */
+
+    async function next(skip) {
+
+        $("next").disabled = true;
+        note("save-error", "");
+
+        try {
+            if (!skip) {
+                if (step === 1) await saveStation();
+                if (step === 3) await saveQrz();
+            }
+            show(step + 1);
+        }
+        catch (error) {
+            note("save-error", error.message, "err");
+        }
+        finally {
+            $("next").disabled = false;
+        }
+
+    }
+
+    $("next").addEventListener("click", () => void next(false));
+    $("later").addEventListener("click", () => void next(true));
+    $("back").addEventListener("click", () => show(Math.max(1, step - 1)));
+
+    $("skip").addEventListener("click", async () => {
+        if (!confirm("Skip the setup assistant? You can start it again in Settings.")) return;
+        await saveSettings({ setupCompleted: true }).catch(() => undefined);
+        location.href = "/";
+    });
+
+    $("finish").addEventListener("click", () => { location.href = "/"; });
+
+    $("s-call").addEventListener("input", e => { e.target.value = e.target.value.toUpperCase(); checkCall(); });
+    $("s-grid").addEventListener("input", e => { e.target.value = e.target.value.toUpperCase(); checkGrid(); });
+    $("s-gps").addEventListener("click", useGps);
+    $("q-user").addEventListener("input", () => { qrzOk = null; });
+    $("q-pass").addEventListener("input", () => { qrzOk = null; });
+
+    $("r-driver").addEventListener("change", onDriver);
+    $("r-refresh").addEventListener("click", () => void loadPorts());
+    $("r-test").addEventListener("click", () => void testRadio());
+    $("r-save").addEventListener("click", () => void saveRadio());
+    $("q-test").addEventListener("click", () => void testQrz());
+
+    document.addEventListener("keydown", e => {
+        if (e.key === "Enter" && step !== 4 && e.target.tagName === "INPUT") void next(false);
+    });
+
+    /* ------------------------------------------------------------
+       Start: fill in what is set already
+       ------------------------------------------------------------ */
+
+    (async () => {
+
+        try {
+            settings = await api("/api/settings");
+        }
+        catch { /* first start */ }
+
+        $("s-call").value = settings.callsign || "";
+        $("s-name").value = settings.operatorName || "";
+        $("s-grid").value = settings.locator || "";
+        $("s-club").value = settings.club || "";
+        $("q-user").value = settings.qrzLookup?.username || "";
+        if (settings.qrzLookup?.passwordSet) $("q-pass").placeholder = "•••••••• saved";
+        if (settings.qrzLookup?.fromEnv) note("q-result", "A QRZ.com login is set in the .env file - enter it here to manage it in the settings.");
+
+        if (settings.callsign) checkCall();
+
+        show(1);
+        $("s-call").focus();
+
+    })();
+
+})();
+
+</script>
+
+</body>
+</html>

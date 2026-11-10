@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { QRZService } from "../services/geo/qrz.service.js";
 import { publicUploadSettings } from "../services/settings/upload-accounts.js";
 import { publicBackup } from "../services/backup/backup-settings.js";
 import { publicNotifications } from "../services/notifications/notification-settings.js";
@@ -37,7 +38,13 @@ function publicSettings(settings: ShackSettings): unknown {
         backup:
             publicBackup(settings.backup),
         notifications:
-            publicNotifications(settings.notifications)
+            publicNotifications(settings.notifications),
+        qrzLookup: {
+            username: settings.qrzLookup?.username || "",
+            password: "",
+            passwordSet: Boolean(settings.qrzLookup?.password),
+            fromEnv: !settings.qrzLookup?.username && Boolean(process.env.QRZ_USER && process.env.QRZ_PASSWORD)
+        }
     };
 
 }
@@ -76,6 +83,25 @@ router.get(
     }
 );
 
+
+
+/* QRZ.com login test (setup assistant): typed or saved credentials */
+router.post(
+    "/qrz-test",
+    async (req, res) => {
+
+        const saved = settingsService.get().qrzLookup;
+        const username = String(req.body?.username || saved?.username || process.env.QRZ_USER || "").trim();
+        const password = String(req.body?.password || (username === saved?.username ? saved?.password : "") || (username === process.env.QRZ_USER ? process.env.QRZ_PASSWORD : "") || "");
+
+        if (!username || !password) {
+            return res.json({ ok: false, message: "Enter user name and password" });
+        }
+
+        res.json(await new QRZService().testLogin(username, password));
+
+    }
+);
 
 
 router.put(

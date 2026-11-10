@@ -45,6 +45,45 @@ export class QRZService {
         new CallsignResolverService();
 
 
+    private sessionCredentials = "";
+
+    /*
+     * Login test (setup assistant / Settings): QRZ answers with a
+     * session key, or with an error text. SubExp = end of the XML
+     * subscription ("non-subscriber" = names only for some calls).
+     */
+    async testLogin(username: string, password: string): Promise<{ ok: boolean; message: string }> {
+
+        try {
+
+            const response = await axios.get("https://xmldata.qrz.com/xml/current/", {
+                params: { username, password, agent: "SHACK-SERVER" },
+                timeout: 8000
+            });
+
+            const session = this.parser.parse(response.data)?.QRZDatabase?.Session;
+
+            if (session?.Key) {
+                const sub = String(session.SubExp ?? "");
+                return {
+                    ok: true,
+                    message: /non-subscriber/i.test(sub)
+                        ? "Login OK - no XML subscription: QRZ gives full data only for some callsigns"
+                        : `Login OK${sub ? ` - XML subscription until ${sub}` : ""}`
+                };
+            }
+
+            return { ok: false, message: String(session?.Error || "QRZ.com did not accept the login") };
+
+        }
+        catch (error) {
+
+            return { ok: false, message: `QRZ.com not reachable: ${this.getErrorMessage(error)}` };
+
+        }
+
+    }
+
     async lookup(
         call: string
     ): Promise<DxLocation | null> {
@@ -755,6 +794,14 @@ return result;
 
     private async getSession()
         : Promise<string | null> {
+
+        // new login after a change of the credentials (Settings)
+        const credentials = `${qrzConfig.username}\u0000${qrzConfig.password}`;
+
+        if (credentials !== this.sessionCredentials) {
+            this.sessionKey = null;
+            this.sessionCredentials = credentials;
+        }
 
         if (
             this.sessionKey &&
