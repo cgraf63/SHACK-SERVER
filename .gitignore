@@ -94,3 +94,5 @@ data/needed-alerts.json
 data/update.log
 data/update-state.json
 data/ftx1-memories.json
+data/lotw/
+data/lotw-state.json

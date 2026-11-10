@@ -149,8 +149,9 @@ export function buildSignedLog(credentials: LotwCredentials, station: StationLoc
     out += `<CERTIFICATE:${certBody.length + 1}>${certBody}\n`;
     out += "<eor>\n\n";
 
-    // station records: one per grid square
+    // station records (one per grid square) come before all contacts
     const stations = new Map<string, number>();
+    let contacts = "";
 
     const stationFor = (grid: string): number => {
 
@@ -230,10 +231,12 @@ export function buildSignedLog(credentials: LotwCredentials, station: StationLoc
         contact += field("SIGNDATA", signData);
         contact += "<eor>\n\n";
 
-        out += contact;
+        contacts += contact;
         included.push(index);
 
     });
+
+    out += contacts;
 
     return { gzip: gzipSync(Buffer.from(out, "latin1"), { level: 9 }), text: out, skipped, included };
 

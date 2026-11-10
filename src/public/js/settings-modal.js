@@ -1027,6 +1027,14 @@ function uploadAccountRow(account) {
             ? "•••••••• saved"
             : "Club Log app password";
 
+    const lotw =
+        account.lotw || {};
+
+    const lotwPlaceholder =
+        lotw.passwordSet
+            ? "•••••••• saved"
+            : "LoTW website password";
+
     const placeholder =
         qrz.apiKeyFromEnv
             ? "Key from .env - enter to replace"
@@ -1062,6 +1070,29 @@ function uploadAccountRow(account) {
             <input class="upload-clublog-password" type="password" autocomplete="off" placeholder="${escapeHtml(clublogPlaceholder)}">
             <button type="button" class="settings-secondary-button upload-clublog-test">Test</button>
         </div>
+        <div class="upload-service-row upload-lotw-row">
+            <label class="source-switch" title="Upload new QSOs to LoTW (needs the certificate below)">
+                <input class="upload-lotw-enabled" type="checkbox" ${lotw.enabled ? "checked" : ""}>
+                <span>LoTW</span>
+            </label>
+            <label title="LoTW website login - used to fetch confirmations">Login</label>
+            <input class="upload-lotw-username" type="text" autocomplete="off" value="${escapeHtml(lotw.username || "")}" placeholder="LoTW website user (callsign)">
+            <label>Password</label>
+            <input class="upload-lotw-password" type="password" autocomplete="off" placeholder="${escapeHtml(lotwPlaceholder)}">
+            <button type="button" class="settings-secondary-button upload-lotw-test">Test</button>
+        </div>
+        <div class="upload-lotw-cert">
+            <span class="lotw-cert-info">${account.id ? "Certificate: loading…" : "Save the account first, then add the LoTW certificate."}</span>
+            <label class="settings-secondary-button file-button" ${account.id ? "" : "hidden"}>
+                Add certificate (.p12)
+                <input class="lotw-cert-file" type="file" accept=".p12,.pfx,application/x-pkcs12">
+            </label>
+            <input class="lotw-cert-pass" type="password" autocomplete="off" placeholder="certificate password (if any)" ${account.id ? "" : "hidden"}>
+            <button type="button" class="settings-secondary-button lotw-cert-remove" hidden>Remove certificate</button>
+            <button type="button" class="settings-secondary-button lotw-upload-existing" hidden title="Queue all QSOs of this callsign that are not yet in LoTW">Upload existing QSOs</button>
+            <button type="button" class="settings-secondary-button lotw-download" hidden title="Fetch new LoTW confirmations now (also automatic every 6 hours)">Fetch confirmations</button>
+            <span title="Station location zones for LoTW - empty = from the DXCC entity">CQ <input class="lotw-cq" type="number" min="1" max="40" value="${lotw.cqZone ?? ""}"> ITU <input class="lotw-itu" type="number" min="1" max="90" value="${lotw.ituZone ?? ""}"></span>
+        </div>
         <div class="upload-service-info upload-account-info"></div>
     `;
 
@@ -1079,12 +1110,20 @@ function uploadAccountRow(account) {
     row.querySelector(".upload-clublog-test")
         .addEventListener("click", () => testUploadAccount(row, "clublog"));
 
+    row.querySelector(".upload-lotw-test")
+        .addEventListener("click", () => testUploadAccount(row, "lotw"));
+
+    setupLotwCert(row);
+
     return row;
 
 }
 
 
 function applyUploadSettings(uploads) {
+
+    // fresh LoTW certificate / confirmation status for the rows
+    lotwStatusCache = null;
 
     const list =
         document.getElementById("upload-accounts");
@@ -1159,10 +1198,196 @@ function collectUploadAccounts() {
                 password:
                     row.querySelector(".upload-clublog-password").value.trim()
 
+            },
+
+            lotw: {
+
+                enabled:
+                    row.querySelector(".upload-lotw-enabled").checked,
+
+                username:
+                    row.querySelector(".upload-lotw-username").value.trim(),
+
+                /* empty = keep the saved password */
+                password:
+                    row.querySelector(".upload-lotw-password").value.trim(),
+
+                cqZone:
+                    Number(row.querySelector(".lotw-cq").value) || null,
+
+                ituZone:
+                    Number(row.querySelector(".lotw-itu").value) || null
+
             }
 
         }))
         .filter(account => account.callsign);
+
+}
+
+
+/*
+    LoTW certificate per account: upload .p12, show the data,
+    remove, queue existing QSOs, fetch confirmations
+*/
+
+let lotwStatusCache = null;
+
+async function lotwStatus(force) {
+
+    if (!lotwStatusCache || force) {
+        lotwStatusCache = fetch("/api/lotw/status", { cache: "no-store" })
+            .then(response => response.ok ? response.json() : null)
+            .catch(() => null);
+    }
+
+    return lotwStatusCache;
+
+}
+
+function lotwInfoHtml(cert, download) {
+
+    if (!cert) {
+        return "No LoTW certificate yet.";
+    }
+
+    const expired = new Date(cert.validTo) < new Date();
+    const soon = !expired && new Date(cert.validTo) - Date.now() < 60 * 86400000;
+
+    let html =
+        `Certificate <b>${escapeHtml(cert.callsign)}</b> · DXCC ${escapeHtml(String(cert.dxcc))}` +
+        ` · QSOs ${escapeHtml(cert.qsoFirstDate || "?")} – ${escapeHtml(cert.qsoEndDate || "?")}` +
+        ` · <span class="${expired || soon ? "err" : ""}">valid until ${escapeHtml(cert.validTo.slice(0, 10))}${expired ? " (EXPIRED)" : soon ? " (renew soon)" : ""}</span>`;
+
+    if (download) {
+        html += `<br>Confirmations: ${download.running ? "fetching…" : `<span class="${download.ok ? "" : "err"}">${escapeHtml(download.message || "")}</span>`}` +
+            (download.lastRun ? ` (${escapeHtml(new Date(download.lastRun).toLocaleString())})` : "");
+    }
+
+    return html;
+
+}
+
+async function refreshLotwCert(row, force) {
+
+    const id = row.dataset.accountId;
+
+    if (!id) return;
+
+    const status = await lotwStatus(force);
+    const entry = status?.accounts?.find(item => item.id === id);
+    const cert = entry?.certificate || null;
+
+    row.querySelector(".lotw-cert-info").innerHTML = lotwInfoHtml(cert, entry?.download);
+    row.querySelector(".lotw-cert-remove").hidden = !cert;
+    row.querySelector(".lotw-upload-existing").hidden = !cert;
+    row.querySelector(".lotw-download").hidden = !row.querySelector(".upload-lotw-username").value.trim();
+
+}
+
+async function lotwPost(url, body, method = "POST") {
+
+    const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: method === "DELETE" ? undefined : JSON.stringify(body || {})
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+
+    return data;
+
+}
+
+function setupLotwCert(row) {
+
+    const info = row.querySelector(".upload-account-info");
+    const id = () => row.dataset.accountId;
+
+    const show = (ok, text) => {
+        info.innerHTML = `<span class="${ok ? "ok" : "err"}">${ok ? "✔" : "✖"} LoTW: ${escapeHtml(text)}</span>`;
+    };
+
+    row.querySelector(".lotw-cert-file").addEventListener("change", async event => {
+
+        const file = event.target.files?.[0];
+        event.target.value = "";
+
+        if (!file || !id()) return;
+
+        info.textContent = "LoTW: reading certificate…";
+
+        try {
+            const buffer = new Uint8Array(await file.arrayBuffer());
+            let binary = "";
+            for (let i = 0; i < buffer.length; i++) binary += String.fromCharCode(buffer[i]);
+            const data = await lotwPost("/api/lotw/certificate", {
+                accountId: id(),
+                p12: btoa(binary),
+                password: row.querySelector(".lotw-cert-pass").value
+            });
+            row.querySelector(".lotw-cert-pass").value = "";
+            show(true, `certificate ${data.certificate.callsign} added${data.warning ? " - " + data.warning : ""}. Tick "LoTW" and save to upload new QSOs.`);
+            await refreshLotwCert(row, true);
+        }
+        catch (error) {
+            show(false, error.message);
+        }
+
+    });
+
+    row.querySelector(".lotw-cert-remove").addEventListener("click", async () => {
+
+        if (!confirm("Remove the LoTW certificate of this account from SHACK-SERVER?")) return;
+
+        try {
+            await lotwPost(`/api/lotw/certificate/${encodeURIComponent(id())}`, null, "DELETE");
+            show(true, "certificate removed");
+            await refreshLotwCert(row, true);
+        }
+        catch (error) {
+            show(false, error.message);
+        }
+
+    });
+
+    row.querySelector(".lotw-upload-existing").addEventListener("click", async () => {
+
+        if (!confirm("Upload all QSOs of this callsign (inside the certificate period) that are not yet in LoTW? LoTW ignores duplicates.")) return;
+
+        try {
+            const data = await lotwPost("/api/lotw/upload-existing", { accountId: id() });
+            show(true, data.queued ? `${data.queued} QSOs queued - uploaded in the background` : "nothing to upload - all QSOs are queued or uploaded already");
+        }
+        catch (error) {
+            show(false, error.message);
+        }
+
+    });
+
+    row.querySelector(".lotw-download").addEventListener("click", async event => {
+
+        const button = event.target;
+        button.disabled = true;
+        info.textContent = "LoTW: fetching confirmations (can take a minute)…";
+
+        try {
+            const data = await lotwPost("/api/lotw/download", { accountId: id() });
+            show(data.success, data.message);
+        }
+        catch (error) {
+            show(false, error.message);
+        }
+        finally {
+            button.disabled = false;
+            await refreshLotwCert(row, true);
+        }
+
+    });
+
+    void refreshLotwCert(row, false);
 
 }
 
@@ -1191,6 +1416,18 @@ async function testUploadAccount(row, service) {
         if (key) body.apiKey = key;
 
     }
+    else if (service === "lotw") {
+
+        const username =
+            row.querySelector(".upload-lotw-username").value.trim();
+
+        const password =
+            row.querySelector(".upload-lotw-password").value.trim();
+
+        if (username) body.username = username;
+        if (password) body.password = password;
+
+    }
     else {
 
         const email =
@@ -1209,7 +1446,7 @@ async function testUploadAccount(row, service) {
     }
 
     const label =
-        service === "qrz" ? "QRZ.com" : "Club Log";
+        service === "qrz" ? "QRZ.com" : service === "lotw" ? "LoTW" : "Club Log";
 
     button.disabled = true;
     info.textContent = `Testing ${label}...`;

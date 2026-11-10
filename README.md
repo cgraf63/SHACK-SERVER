@@ -110,7 +110,7 @@ As an alternative you can secure the https using cloudflare.
 ## Fully blown internal SDR (SDR Receiver needed of Course) using our own code.
 <img width="1907" height="1021" alt="image" src="https://github.com/user-attachments/assets/2669fc8c-9eed-4804-9768-0d2d8181cf65" />
 
-## Configurable uploads to QRZ.com and Club Log (LoTW in preparation)
+## Configurable uploads to QRZ.com, Club Log and LoTW (signed on the Pi, no TQSL needed; LoTW confirmations count in the DXCC table)
 <img width="858" height="322" alt="image" src="https://github.com/user-attachments/assets/3a11fde5-a803-4d5b-8ae7-ff60ef06f2eb" />
 
 ## WSJTX Integration

@@ -967,3 +967,15 @@ Mic-Gain, Prozessor, CW-Tempo, Break-in, CW-Speicher 1 - 5 und Remote-RX-Audio.
 VFO-Betrieb, CH ▲ / ▼, QMB ablegen / abrufen, aktuelle Einstellung von MAIN oder SUB in einen Kanal speichern
 (mit Name, Rückfrage vor dem Überschreiben) und Kanäle umbenennen. Split läuft beim FTX-1 über TX auf SUB
 (FT-Befehl), nicht über ST - mit ST sperrt die Firmware den SUB-VFO.
+
+
+## LoTW (Logbook of the World)
+
+SHACK-SERVER signiert QSOs selbst und lädt sie zu LoTW hoch - TQSL ist auf dem Pi nicht nötig.
+
+1. In TQSL am PC: *Callsign Certificates* → Rechtsklick aufs Rufzeichen → *Save the Callsign Certificate File* → `.p12`-Datei (Passwort optional).
+2. *Settings → Log Uploads*: zuerst das Logbuch-Konto (Rufzeichen) speichern, dann *Add certificate (.p12)* (ein gesetztes Passwort vor der Dateiauswahl eintragen).
+3. **LoTW** anhaken und speichern: Neue QSOs werden im Hintergrund hochgeladen (eine signierte Datei pro Paket). *Upload existing QSOs* stellt das bestehende Log ein (nur QSOs im Zeitraum des Zertifikats).
+4. Für Bestätigungen das **LoTW-Web-Login** (Benutzer / Passwort) eintragen. Bestätigungen werden alle 6 Stunden geholt (oder *Fetch confirmations*), über Rufzeichen, Band, Mode-Gruppe und Zeit (± 30 min) zugeordnet und zählen in der DXCC-Tabelle als bestätigt.
+
+Der Standort nimmt den Locator (Settings → Station), die DXCC-Nummer aus dem Zertifikat und die CQ-/ITU-Zone des Landes (pro Konto überschreibbar, wenn ein Land mehrere Zonen hat). Portabel geloggte QSOs mit anderem Locator (Handy-App) bekommen einen eigenen Standort. Noch nicht unterstützt: US-Staat / County, kanadische Provinz und andere Unterteilungen (WAS / VUCC nach Staat).

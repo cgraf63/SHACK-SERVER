@@ -969,3 +969,15 @@ processor, CW speed, break-in, CW memories 1 - 5 and remote RX audio.
 CH ▲ / ▼, QMB store / recall, store the current MAIN or SUB setting in a channel (with name, confirmation
 before overwriting) and rename channels. Split on the FTX-1 uses TX on SUB (FT command), not ST - with ST
 the firmware locks the SUB VFO.
+
+
+## LoTW (Logbook of the World)
+
+SHACK-SERVER signs and uploads QSOs to LoTW itself - TQSL is not needed on the Pi.
+
+1. In TQSL on your PC: *Callsign Certificates* → right click on your callsign → *Save the Callsign Certificate File* → `.p12` file (password optional).
+2. *Settings → Log Uploads*: save the logbook account (callsign) first, then *Add certificate (.p12)* (enter the password before choosing the file, if you set one).
+3. Tick **LoTW** and save: new QSOs are uploaded in the background (one signed file per batch). *Upload existing QSOs* queues the existing log (only QSOs inside the certificate period).
+4. For confirmations enter the **LoTW website login** (username / password). Confirmations are fetched every 6 hours (or *Fetch confirmations*), matched by callsign, band, mode group and time (± 30 min) and count as confirmed in the DXCC table.
+
+The station location uses your locator (Settings → Station), the DXCC entity of the certificate and the CQ / ITU zone of the entity (override per account if your country has several zones). QSOs logged portable with another locator (phone app) get their own station location. Not supported yet: US state / county, Canadian province and other sub-divisions (WAS / VUCC by state).

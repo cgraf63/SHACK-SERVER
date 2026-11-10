@@ -171,6 +171,43 @@ class UploadQueueService {
      * ------------------------------------------------------------------ */
 
     /*
+     * Existing log QSOs of one account for one service (e.g. LoTW
+     * after the certificate was added). QSOs already queued or
+     * uploaded for this service are left alone. filter: extra check
+     * (LoTW: QSO date inside the certificate period).
+     */
+    enqueueExisting(service: UploadServiceId, accountId: string, filter?: (qso: UploadQso) => boolean): number {
+
+        const known = new Set(
+            (this.db.prepare(`
+                SELECT record_id FROM log_uploads WHERE source = 'qso' AND service = ?
+            `).all(service) as Array<{ record_id: number }>).map(row => Number(row.record_id))
+        );
+
+        let count = 0;
+
+        for (const record of qsoService.getAllQso()) {
+
+            const id = Number(record.id);
+
+            if (!id || known.has(id)) continue;
+
+            const qso = this.loadQso("qso", id);
+
+            if (!qso || this.accountFor(qso)?.id !== accountId) continue;
+            if (filter && !filter(qso)) continue;
+
+            count += this.enqueue("qso", id, [service]);
+
+        }
+
+        if (count) setTimeout(() => void this.processBatch(), 1500);
+
+        return count;
+
+    }
+
+    /*
      * Queue a QSO for all enabled services (new QSO).
      * Returns the number of rows queued.
      */

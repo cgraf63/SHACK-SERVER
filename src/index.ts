@@ -1,3 +1,4 @@
+import { lotwDownload } from "./services/lotw/lotw-download.service.js";
 import app from './app.js';
 import { DEMO_MODE } from "./services/demo/demo-mode.js";
 import { seedDemoData } from "./services/demo/demo-data.js";
@@ -76,8 +77,11 @@ if (DEMO_MODE) {
 }
 else {
 
-    /* Online logbook uploads (QRZ.com, ...) */
+    /* Online logbook uploads (QRZ.com, Club Log, LoTW) */
     uploadQueue.start();
+
+    /* LoTW confirmations (every 6 hours, accounts with a LoTW login) */
+    lotwDownload.start();
 
     /* WSJT-X / JTDX: QSOs logged there arrive via UDP */
     wsjtxService.start();

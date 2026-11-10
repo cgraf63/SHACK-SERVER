@@ -15,6 +15,10 @@ import { DEMO_LIMITS, DEMO_MESSAGE } from "./demo-mode.js";
 /* Blocked: method + path pattern (path without query). */
 const BLOCKED: Array<[string, RegExp]> = [
 
+    /* LoTW: certificate, downloads */
+    ["POST", /^\/api\/lotw\//],
+    ["DELETE", /^\/api\/lotw\//],
+
     /* FTX-1 remote page: no FTX-1 in the demo */
     ["POST", /^\/api\/ftx1\//],
 

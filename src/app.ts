@@ -14,6 +14,7 @@ import settingsRouter from "./routes/settings.js";
 import { DEMO_MODE, DEMO_LIMITS } from "./services/demo/demo-mode.js";
 import { demoGuard, demoCounts } from "./services/demo/demo-guard.js";
 import uploadsRouter from "./routes/uploads.js";
+import lotwRouter from "./routes/lotw.js";
 import wsjtxRouter from "./routes/wsjtx.js";
 import rotatorRouter from "./routes/rotator.js";
 import ftx1Router from "./routes/ftx1.js";
@@ -172,6 +173,12 @@ app.use(
 app.use(
     "/api/uploads",
     uploadsRouter
+);
+
+// ARRL Logbook of the World (certificate, confirmations)
+app.use(
+    "/api/lotw",
+    lotwRouter
 );
 
 
