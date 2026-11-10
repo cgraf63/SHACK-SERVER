@@ -13,7 +13,8 @@ const router =
       POST /api/system/reboot    reboot the Raspberry Pi
       POST /api/system/shutdown  switch the Raspberry Pi off
     Reboot / shutdown use "sudo -n systemctl ..." - the default Pi user
-    may do this without a password. If not, the error is shown.
+    may do this without a password, the "shack" user of the ready-made
+    image only these two commands (sudoers rule). If not, the error is shown.
 */
 
 function systemctl(action: "reboot" | "poweroff"): Promise<string | null> {
@@ -51,9 +52,9 @@ for (const [route, action, text] of [
 
             console.log(`System ${action} requested from web interface`);
 
-            // check sudo first (sudo -n -v: no password prompt)
+            // check first: is exactly this command allowed without a password?
             const allowed = await new Promise<boolean>(resolve =>
-                execFile("sudo", ["-n", "true"], { timeout: 5000 }, error => resolve(!error)));
+                execFile("sudo", ["-n", "-l", "systemctl", action], { timeout: 5000 }, error => resolve(!error)));
 
             if (!allowed) {
                 return res.status(500).json({
