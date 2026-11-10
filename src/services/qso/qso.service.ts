@@ -245,8 +245,8 @@ export class QsoService {
         }
 
 
-        /* Activity references (POTA / SOTA / WWFF / ...) */
-        for (const column of ["my_sig", "my_sig_info", "sig", "sig_info"]) {
+        /* Activity references (POTA / SOTA / WWFF / ...) + LoTW confirmation */
+        for (const column of ["my_sig", "my_sig_info", "sig", "sig_info", "lotw_qsl_rcvd", "lotw_qslrdate"]) {
             if (!columnNames.includes(column)) {
                 this.db.exec(`ALTER TABLE qso ADD COLUMN ${column} TEXT`);
             }
@@ -608,8 +608,11 @@ updateQso(
 /* Light rows for the DXCC worked index (needed alerts) */
 getWorkedRows(): Array<{ call: string; band: string; mode: string; qsl_received: number; country_code: string | null }> {
 
+    /* confirmed = paper / eQSL "QSL received" or LoTW */
     return this.db.prepare(`
-        SELECT call, band, mode, qsl_received, country_code
+        SELECT call, band, mode,
+               CASE WHEN qsl_received = 1 OR lotw_qsl_rcvd = 'Y' THEN 1 ELSE 0 END AS qsl_received,
+               country_code
         FROM qso
     `).all() as unknown as Array<{ call: string; band: string; mode: string; qsl_received: number; country_code: string | null }>;
 
@@ -758,6 +761,33 @@ const rows =
         this.db.prepare(`
             UPDATE qso SET my_sig = ?, my_sig_info = ?, sig = ?, sig_info = ? WHERE id = ?
         `).run(clean(refs.my_sig), clean(refs.my_sig_info), clean(refs.sig), clean(refs.sig_info), id);
+
+    }
+
+    /* LoTW: QSOs of one callsign (for matching confirmations) */
+    findByCall(call: string): Array<{ id: number; call: string; band: string; mode: string; qso_date: string; time_on_utc: string; lotw_qsl_rcvd: string | null }> {
+
+        return this.db.prepare(`
+            SELECT id, call, band, mode, qso_date, time_on_utc, lotw_qsl_rcvd
+            FROM qso
+            WHERE UPPER(call) = UPPER(?)
+        `).all(call) as unknown as Array<{ id: number; call: string; band: string; mode: string; qso_date: string; time_on_utc: string; lotw_qsl_rcvd: string | null }>;
+
+    }
+
+    setLotwConfirmed(id: number, qslDate: string): void {
+
+        this.db.prepare(`
+            UPDATE qso SET lotw_qsl_rcvd = 'Y', lotw_qslrdate = ? WHERE id = ?
+        `).run(qslDate || null, id);
+
+    }
+
+    countLotwConfirmed(): number {
+
+        const row = this.db.prepare(`SELECT COUNT(*) AS n FROM qso WHERE lotw_qsl_rcvd = 'Y'`).get() as { n: number };
+
+        return Number(row?.n) || 0;
 
     }
 

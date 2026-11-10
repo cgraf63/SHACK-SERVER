@@ -2,7 +2,7 @@ import type { LogbookAccount } from "../../config/settings.config.js";
 import type { UploadQso } from "./adif-export.js";
 
 
-export type UploadServiceId = "qrz" | "clublog";
+export type UploadServiceId = "qrz" | "clublog" | "lotw";
 
 
 export interface UploadResult {
@@ -17,6 +17,12 @@ export interface UploadResult {
      * QSO rejected by the logbook).
      */
     permanent?: boolean;
+
+    /*
+     * Batch uploads only: one result per QSO (same order as the
+     * QSOs), e.g. LoTW skips QSOs outside the certificate period.
+     */
+    results?: UploadResult[];
 
 }
 
@@ -52,6 +58,12 @@ export interface Uploader {
     ): Promise<UploadResult>;
 
     batchMinimum?: number;
+
+    /*
+     * Batch also the QSOs of the normal log, not only contest
+     * sessions (LoTW: one signed file instead of one per QSO).
+     */
+    batchAll?: boolean;
 
     /*
      * Optional: the service must not be contacted for this account at

@@ -20,6 +20,7 @@ export interface DxccEntity {
     name: string;
     continent: string;
     cqZone: number;
+    ituZone: number;
     latitude: number;
     longitude: number;
 }
@@ -73,6 +74,7 @@ class DxccService {
                 name: (header[0] ?? "").trim(),
                 continent: (header[3] ?? "").trim().toUpperCase(),
                 cqZone: Number(header[1]) || 0,
+                ituZone: Number(header[2]) || 0,
                 latitude: Number(header[4]) || 0,
                 longitude: -(Number(header[5]) || 0)
             };

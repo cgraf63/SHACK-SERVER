@@ -208,6 +208,20 @@ export interface LogbookAccount {
         /* Club Log application password (Settings → App Passwords) */
         password: string;
     };
+    /*
+     * ARRL Logbook of the World.
+     * Upload: QSOs are signed with the callsign certificate (.p12,
+     * stored in data/lotw/, not in the settings).
+     * Confirmations: LoTW website login.
+     */
+    lotw: {
+        enabled: boolean;
+        username: string;
+        password: string;
+        /* station location zones, empty = from cty.dat */
+        cqZone: number | null;
+        ituZone: number | null;
+    };
 }
 
 

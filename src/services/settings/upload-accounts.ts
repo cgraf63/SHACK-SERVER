@@ -65,8 +65,24 @@ function normalizeAccount(raw: any): LogbookAccount | null {
             enabled: raw?.clublog?.enabled === true,
             email: text(raw?.clublog?.email),
             password: text(raw?.clublog?.password)
+        },
+        lotw: {
+            enabled: raw?.lotw?.enabled === true,
+            username: text(raw?.lotw?.username),
+            password: text(raw?.lotw?.password),
+            cqZone: zone(raw?.lotw?.cqZone, 40),
+            ituZone: zone(raw?.lotw?.ituZone, 90)
         }
     };
+
+}
+
+
+function zone(value: unknown, max: number): number | null {
+
+    const number = Number(value);
+
+    return Number.isInteger(number) && number >= 1 && number <= max ? number : null;
 
 }
 
@@ -187,6 +203,17 @@ export function mergeUploadSettings(
                     previous?.clublog.password,
                     raw?.clublog?.clearPassword
                 )
+            },
+            lotw: {
+                enabled: raw?.lotw?.enabled === true,
+                username: text(raw?.lotw?.username),
+                password: secret(
+                    raw?.lotw?.password,
+                    previous?.lotw?.password,
+                    raw?.lotw?.clearPassword
+                ),
+                cqZone: raw?.lotw?.cqZone,
+                ituZone: raw?.lotw?.ituZone
             }
         });
 
@@ -237,6 +264,14 @@ export function publicUploadSettings(
                     email: account.clublog.email,
                     password: "",
                     passwordSet: Boolean(account.clublog.password)
+                },
+                lotw: {
+                    enabled: account.lotw.enabled,
+                    username: account.lotw.username,
+                    password: "",
+                    passwordSet: Boolean(account.lotw.password),
+                    cqZone: account.lotw.cqZone,
+                    ituZone: account.lotw.ituZone
                 }
             };
 

@@ -9,6 +9,7 @@ import { qsoToAdif, type UploadQso } from "./adif-export.js";
 import type { Uploader, UploadServiceId } from "./uploader.js";
 import { qrzUploader } from "./qrz-uploader.js";
 import { clublogUploader } from "./clublog-uploader.js";
+import { lotwUploader } from "./lotw-uploader.js";
 import { settingsService } from "../settings/settings.service.js";
 import { findAccount, normalizeCallsign } from "../settings/upload-accounts.js";
 import type { LogbookAccount } from "../../config/settings.config.js";
@@ -47,7 +48,8 @@ interface UploadRow {
 
 const UPLOADERS: Uploader[] = [
     qrzUploader,
-    clublogUploader
+    clublogUploader,
+    lotwUploader
 ];
 
 const WORKER_INTERVAL_MS = 20_000;
@@ -559,10 +561,10 @@ class UploadQueueService {
                 WHERE status = 'pending'
                   AND next_try_at <= ?
                   AND service = ?
-                  AND source = 'contest'
+                  AND (source = 'contest' OR ?)
                 ORDER BY id ASC
                 LIMIT 5000
-            `).all(Date.now(), uploader.id) as unknown as UploadRow[];
+            `).all(Date.now(), uploader.id, uploader.batchAll ? 1 : 0) as unknown as UploadRow[];
 
             const groups = new Map<string, {
                 account: LogbookAccount;
@@ -605,12 +607,12 @@ class UploadQueueService {
                     { account: group.account }
                 );
 
-                for (const row of group.rows) {
-                    this.markResult(row, result, null);
-                }
+                group.rows.forEach((row, index) => {
+                    this.markResult(row, result.results?.[index] ?? result, null);
+                });
 
                 const log =
-                    `${uploader.label}: ${group.rows.length} contest QSOs for ` +
+                    `${uploader.label}: ${group.rows.length} QSOs for ` +
                     `${group.account.callsign} - ${result.message}`;
 
                 if (result.ok) {
