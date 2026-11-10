@@ -207,7 +207,9 @@ button { cursor: pointer; }
     background: var(--main);
 }
 .vfo.sub.active::before { background: var(--sub); }
-.vfo.txside .tag::after { content: "TX"; display: block; font-size: 10px; color: #fff; background: var(--tx); border-radius: 3px; margin: 4px 6px 0; }
+/* TX side: red TRX, other side: green RX */
+.vfo .tag::after { content: "RX"; display: block; font-size: 10px; color: #04140a; background: var(--ok); border-radius: 3px; margin: 4px 6px 0; }
+.vfo.txside .tag::after { content: "TRX"; color: #fff; background: var(--tx); }
 
 /* bar meter (S / PO) */
 
