@@ -114,7 +114,7 @@ router.post("/download", async (req, res) => {
 
 router.post("/upload-existing", (req, res) => {
 
-    const target = account(req.body?.accountId);
+    let target = account(req.body?.accountId);
 
     if (!target) return res.status(404).json({ error: "Unknown account" });
 
@@ -122,7 +122,19 @@ router.post("/upload-existing", (req, res) => {
 
     if (!cert) return res.status(400).json({ error: "No certificate for this account" });
 
-    if (!target.lotw.enabled) return res.status(400).json({ error: "Enable LoTW upload for this account first (and save)" });
+    // LoTW ticked in the form but not saved yet: switch it on now
+    if (!target.lotw.enabled && req.body?.enable === true) {
+        const id = target.id;
+        settingsService.update({
+            uploads: {
+                accounts: settingsService.get().uploads.accounts.map(a =>
+                    a.id === id ? { ...a, lotw: { ...a.lotw, enabled: true } } : a)
+            }
+        } as any);
+        target = account(id);
+    }
+
+    if (!target?.lotw.enabled) return res.status(400).json({ error: "Tick \"LoTW\" for this account first" });
 
     const date = (value: string) => {
         const d = String(value || "").replace(/\D/g, "");

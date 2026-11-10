@@ -1355,10 +1355,17 @@ function setupLotwCert(row) {
 
     row.querySelector(".lotw-upload-existing").addEventListener("click", async () => {
 
+        const enabled = row.querySelector(".upload-lotw-enabled");
+
+        if (!enabled.checked) {
+            show(false, 'tick "LoTW" first - new QSOs are then uploaded automatically too');
+            return;
+        }
+
         if (!confirm("Upload all QSOs of this callsign (inside the certificate period) that are not yet in LoTW? LoTW ignores duplicates.")) return;
 
         try {
-            const data = await lotwPost("/api/lotw/upload-existing", { accountId: id() });
+            const data = await lotwPost("/api/lotw/upload-existing", { accountId: id(), enable: true });
             show(true, data.queued ? `${data.queued} QSOs queued - uploaded in the background` : "nothing to upload - all QSOs are queued or uploaded already");
         }
         catch (error) {
