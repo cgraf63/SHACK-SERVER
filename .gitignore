@@ -100,3 +100,8 @@ data/lotw-state.json
 # Call check: SCP callsign database (downloaded weekly)
 data/scp.txt
 data/scp.txt.tmp
+
+# old copies of source files
+*.backup-before-*
+*.pre-score*
+*.before.claude
