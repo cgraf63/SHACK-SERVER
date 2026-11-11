@@ -30,12 +30,19 @@ jobs:
         with:
           fetch-depth: 0   # date of the last change of the manual
 
+      # no apt: pandoc and the Inter font from their GitHub releases
       - name: Tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y pandoc fonts-inter fonts-dejavu-core
+          curl -fsSL --retry 3 -o /tmp/pandoc.deb https://github.com/jgm/pandoc/releases/download/3.1.3/pandoc-3.1.3-1-amd64.deb
+          sudo dpkg -i /tmp/pandoc.deb
+          curl -fsSL --retry 3 -o /tmp/inter.zip https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip
+          mkdir -p ~/.local/share/fonts/inter
+          unzip -q -o /tmp/inter.zip -d /tmp/inter
+          find /tmp/inter -name "Inter-*.otf" -o -name "Inter-*.ttf" | grep -v Display | xargs -I{} cp {} ~/.local/share/fonts/inter/
+          fc-cache -f >/dev/null
+          fc-list | grep -c "Inter" || true
           pip install --break-system-packages playwright pypdf
-          python3 -m playwright install --with-deps chromium
+          python3 -m playwright install chromium
 
       - name: Build
         run: python3 docs/manual/build.py
