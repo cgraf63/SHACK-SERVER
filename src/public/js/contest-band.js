@@ -1947,51 +1947,28 @@ function updateContestSerialNumber(qsos) {
         return;
     }
 
-    const contestId =
-        String(
-            window.contestId || ""
-        ).trim();
-
+    /*
+     * Next serial = highest serial sent in this session + 1.
+     * The list holds only the QSOs of the active session (all
+     * operators, plus QSOs still waiting in the offline queue).
+     * Before: compared with a "contest_id" / notes field the contest
+     * QSOs do not have - the field always showed 1.
+     */
     let maxSerial = 0;
 
-    qsos
-        .filter(
-            qso =>
-                String(
-                    qso.contest_id ?? ""
-                ).trim() === contestId
-        )
-        .forEach(
-            qso => {
+    (qsos || []).forEach(qso => {
 
-                const notes =
-                    String(
-                        qso.notes || ""
-                    );
+        const sent =
+            String(qso.exchange_sent ?? "").trim() ||
+            (String(qso.notes || "").match(/Contest Exchange Sent:\s*(\d+)/i)?.[1] ?? "");
 
-                const match =
-                    notes.match(
-                        /Contest Exchange Sent:\s*(\d+)/i
-                    );
+        const serial = /^\d+$/.test(sent) ? Number(sent) : NaN;
 
-                if (!match) {
-                    return;
-                }
+        if (Number.isInteger(serial) && serial > maxSerial) {
+            maxSerial = serial;
+        }
 
-                const serial =
-                    Number(
-                        match[1]
-                    );
-
-                if (
-                    Number.isInteger(serial) &&
-                    serial > maxSerial
-                ) {
-                    maxSerial = serial;
-                }
-
-            }
-        );
+    });
 
     exchangeInput.value =
         String(maxSerial + 1);
