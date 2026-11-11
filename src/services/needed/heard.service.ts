@@ -120,6 +120,27 @@ class HeardService {
 
     }
 
+    /* diagnostics: stations and reports in the 15-minute window, per source */
+    stats(): { calls: number; reports: number; bySource: Record<string, number>; newest: number } {
+
+        const limit = Date.now() - WINDOW_MS;
+        const bySource: Record<string, number> = {};
+        let reports = 0;
+        let newest = 0;
+
+        for (const list of this.reports.values()) {
+            for (const report of list) {
+                if (report.at < limit) continue;
+                reports++;
+                bySource[report.source || "?"] = (bySource[report.source || "?"] ?? 0) + 1;
+                if (report.at > newest) newest = report.at;
+            }
+        }
+
+        return { calls: this.reports.size, reports, bySource, newest };
+
+    }
+
     private prune(): void {
 
         const limit = Date.now() - WINDOW_MS;

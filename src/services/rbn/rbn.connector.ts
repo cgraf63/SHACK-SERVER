@@ -81,6 +81,27 @@ private callsignResolverService =
     private stopped = false;
     private reconnectTimer: NodeJS.Timeout | undefined;
 
+    /*
+     * Watchdog: the RBN sends several lines per second. A connection that
+     * stays silent (half-open TCP after a network or router hiccup) is
+     * never closed by the OS - then "heard near you" (NEAR) dies quietly.
+     * No data for 3 minutes -> reconnect.
+     */
+    private lastData = 0;
+    private watchdog: NodeJS.Timeout | undefined;
+    private static readonly SILENCE_MS = 3 * 60_000;
+
+    /* for the diagnostics: last data received, lines since the start */
+    getStatus(): { connected: boolean; lastData: number; lines: number } {
+        return {
+            connected: !!this.socket && !this.socket.destroyed && this.socket.readyState === "open",
+            lastData: this.lastData,
+            lines: this.lines
+        };
+    }
+
+    private lines = 0;
+
     connect(): void {
 
         this.stopped = false;
@@ -121,6 +142,21 @@ private callsignResolverService =
         this.socket =
             new net.Socket();
 
+        this.socket.setKeepAlive(true, 60_000);
+
+        this.lastData = Date.now();
+
+        this.watchdog ??= setInterval(() => {
+            if (this.stopped || !this.socket || this.socket.destroyed) return;
+            if (Date.now() - this.lastData > RbnConnector.SILENCE_MS) {
+                console.warn(`RBN: no data for ${Math.round((Date.now() - this.lastData) / 1000)} s - reconnecting`);
+                this.lastData = Date.now();
+                // "close" -> reconnect in 30 s
+                this.socket.destroy();
+            }
+        }, 30_000);
+        this.watchdog.unref?.();
+
 
         this.socket.connect(
 
@@ -154,6 +190,8 @@ private callsignResolverService =
             "data",
 
             data => {
+
+                this.lastData = Date.now();
 
                 this.buffer +=
                     data.toString();
@@ -229,6 +267,8 @@ private callsignResolverService =
     private async handleLine(
         line: string
     ): Promise<void> {
+
+        this.lines++;
 
         const spot =
             parseRbnLine(
