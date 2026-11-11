@@ -2594,6 +2594,31 @@ if (slider) {
 }
 
 
+/* the callsign field stands out: grey with an orange frame */
+.manual-qso-card #manual-qso-call {
+
+    background: #2b3138;
+    border: 1.5px solid #ff9800;
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+
+}
+
+.manual-qso-card #manual-qso-call::placeholder {
+
+    color: #9aa4ad;
+
+}
+
+.manual-qso-card #manual-qso-call:focus {
+
+    border-color: #ffb340;
+    box-shadow: 0 0 6px rgba(255, 152, 0, 0.45);
+
+}
+
+
 .manual-qso-qrz-button {
 
     width: 34px;
