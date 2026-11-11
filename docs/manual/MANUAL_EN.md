@@ -381,6 +381,8 @@ The FTDX10 interface is modelled on the radio: VFO A and B, all modes, filters (
 
 ## Yaesu FTX-1
 
+![FTX-1 page](images/remote-ftx1.jpg)
+
 If the FTX-1 is the active transceiver, the **FTX-1** button on the dashboard opens its own page, designed after the radio's display:
 
 - **MAIN** and **SUB** as on the radio; the transmitting side is marked **TRX** in red, the other one **RX** in green.

@@ -381,6 +381,8 @@ Die Oberfläche des FTDX10 lehnt sich an das Gerät an: VFO A und B, alle Modes,
 
 ## Yaesu FTX-1
 
+![FTX-1-Seite](images/remote-ftx1.jpg)
+
 Ist der FTX-1 der aktive Transceiver, öffnet der Knopf **FTX-1** im Dashboard eine eigene Seite, gestaltet nach dem Display des Geräts:
 
 - **MAIN** und **SUB** wie am Gerät; die Sendeseite ist rot mit **TRX** markiert, die andere grün mit **RX**.
