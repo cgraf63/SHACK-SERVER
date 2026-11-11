@@ -26,7 +26,7 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0   # date of the last change of the manual
 
@@ -47,7 +47,7 @@ jobs:
       - name: Build
         run: python3 docs/manual/build.py
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: manual
           path: docs/manual/out/*
