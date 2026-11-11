@@ -170,7 +170,9 @@ def build_pdf(lang, browser):
             wanted = normalize(entry)
             found = ""
             for index in range(position, len(bookmarks)):
-                if normalize(bookmarks[index][0]) == wanted:
+                # some Chromium versions repeat the title in the bookmark
+                title = normalize(bookmarks[index][0])
+                if title == wanted or (title.startswith(wanted) and title == wanted * (len(title) // max(len(wanted), 1))):
                     found = str(bookmarks[index][1])
                     position = index + 1
                     break
