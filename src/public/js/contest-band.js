@@ -1993,11 +1993,86 @@ function updateContestExchangeSent() {
         .trim()
         .toLowerCase();
 
-    if (exchangeType === "cq_zone") {
+    if (!["cq_zone", "itu_zone", "locator"].includes(exchangeType)) {
+        return;
+    }
 
-        exchangeInput.value = "14";
+    /*
+     * CQ zone / ITU zone / locator of the contest station: the station
+     * (club) callsign and grid of the contest session (Contest Manager),
+     * otherwise the own callsign / locator from Settings.
+     * Before: CQ zone fixed to 14 (Switzerland).
+     * Only fills the field when it is empty or still holds the value
+     * filled in this way (a value typed by hand stays).
+     */
+    contestOwnStation().then(own => {
+
+        const value =
+            exchangeType === "cq_zone" ? own.cqZone
+            : exchangeType === "itu_zone" ? own.ituZone
+            : own.locator;
+
+        if (!value) return;
+
+        if (exchangeInput.value && exchangeInput.dataset.auto !== exchangeInput.value) return;
+
+        exchangeInput.value = String(value);
+        exchangeInput.dataset.auto = String(value);
+
+    });
+
+}
+
+const contestStationCache = new Map();
+
+function contestOwnStation() {
+
+    const session =
+        typeof activeContestSession !== "undefined" ? activeContestSession : null;
+
+    const sessionCall = String(session?.station_callsign || "").trim().toUpperCase();
+    const sessionGrid = String(session?.station_grid || "").trim().toUpperCase();
+    const key = `${sessionCall}|${sessionGrid}`;
+
+    if (!contestStationCache.has(key)) {
+
+        contestStationCache.set(key, (async () => {
+
+            try {
+
+                let callsign = sessionCall;
+                let locator = sessionGrid;
+
+                if (!callsign || !locator) {
+                    const settings = await (await fetch("/api/settings", { cache: "no-store" })).json();
+                    callsign ||= String(settings?.callsign || "").trim();
+                    locator ||= String(settings?.locator || "").trim().toUpperCase();
+                }
+
+                let entity = null;
+
+                if (callsign) {
+                    const response = await fetch(`/api/dxcc/lookup/${encodeURIComponent(callsign)}`, { cache: "no-store" });
+                    if (response.ok) entity = await response.json();
+                }
+
+                return {
+                    cqZone: entity?.cqZone || "",
+                    ituZone: entity?.ituZone || "",
+                    locator: locator.slice(0, 4)
+                };
+
+            }
+            catch {
+                contestStationCache.delete(key);
+                return { cqZone: "", ituZone: "", locator: "" };
+            }
+
+        })());
 
     }
+
+    return contestStationCache.get(key);
 
 }
 
