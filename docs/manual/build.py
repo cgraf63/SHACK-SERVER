@@ -208,6 +208,7 @@ def build_pdf(lang, browser):
         "/Subject": f"{LANGS[lang]['version']} {meta.get('version', '')}, {date}",
     })
     writer.page_mode = "/UseOutlines"
+    fix_bookmark_titles(writer)
     target = OUT / LANGS[lang]["pdf"]
     with open(target, "wb") as handle:
         writer.write(handle)
@@ -218,6 +219,26 @@ def build_pdf(lang, browser):
 
     print(f"  {target.relative_to(REPO)}: {body_pages + 1} pages")
     return target
+
+
+def fix_bookmark_titles(writer):
+    """Some Chromium versions write a bookmark title twice ("AbcAbc")."""
+    from pypdf.generic import NameObject, TextStringObject
+
+    def walk(node):
+        while node is not None:
+            node = node.get_object()
+            title = str(node.get("/Title", ""))
+            half = len(title) // 2
+            if title and len(title) % 2 == 0 and title[:half] == title[half:]:
+                node[NameObject("/Title")] = TextStringObject(title[:half])
+            if "/First" in node:
+                walk(node["/First"])
+            node = node.get("/Next")
+
+    outlines = writer._root_object.get("/Outlines")
+    if outlines is not None and "/First" in outlines.get_object():
+        walk(outlines.get_object()["/First"])
 
 
 def build_docx(lang):
