@@ -526,6 +526,18 @@ rm -f ~/SHACK-SERVER/data/shack-server.db-wal ~/SHACK-SERVER/data/shack-server.d
 pm2 start shack-server
 ```
 
+### Rufzeichen-Prüfung beim Tippen (Manual QSO)
+
+Beim Tippen eines Rufzeichens in **Manual QSO / Watch** öffnet sich unter dem Feld eine Liste:
+
+- sofort das **Land** des Präfixes mit CQ-/ITU-Zone (wird auch ins Formular übernommen) - „SQ2" → Polen
+- **Vorschläge**, die besten zuerst: Stationen, die gerade **gespottet** sind - vor allem die nahe der Transceiver-Frequenz (grünes Abzeichen **HERE**), dann Rufzeichen aus dem **eigenen Log** (`LOG 3×`), der **Watch-Liste** und der **SCP-Datenbank** (Super Check Partial, rund 180'000 aktive Rufzeichen von Club Log, wöchentlich nach `data/scp.txt` geladen)
+- der getippte Teil darf irgendwo im Rufzeichen stehen („Q2A" findet SQ2ABC); `?` steht für ein unbekanntes Zeichen („SQ2?BC")
+- falsch verstanden: Rufzeichen mit **einem Zeichen anders, zu wenig oder zu viel** erscheinen mit `≈` - in CW / SSB ähnliche Zeichen (S/H/5, B/D/6, M/N ...) zuerst
+- leeres Feld: die Stationen, die nahe der Transceiver-Frequenz gespottet sind
+
+Pfeiltasten + Enter oder ein Klick übernehmen einen Vorschlag: Rufzeichen, Band, Mode und Frequenz (wenn gespottet) werden eingetragen und die QRZ.com-Abfrage läuft.
+
 ### Split (automatisch)
 
 Steht im Spot "UP 2", "UP 1-3", "DOWN 1", "QSX 14025", "QSX 025" oder "LSN 14.205", setzt **TUNE** die Empfangsfrequenz auf VFO A, die Sendefrequenz auf VFO B und schaltet Split ein; die Live-Spots zeigen den Split als oranges Abzeichen neben der Frequenz (z. B. `UP 2`). Das Abstimmen auf einen Spot ohne Split schaltet Split wieder aus. Unterstützt: Yaesu FTDX10, RGO ONE und alle Transceiver über Hamlib mit Split-Steuerung. FT8-/FT4-Spots werden ohne Split abgestimmt (DXpedition-Modus in WSJT-X). Ausschalten unter *Settings → Split*.

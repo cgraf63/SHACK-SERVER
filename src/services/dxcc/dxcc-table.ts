@@ -147,7 +147,7 @@ function isoNames(): Map<string, string> {
 
 
 /* flag (ISO code) for an entity that is not in the log */
-function entityFlag(key: string, name: string): string {
+export function entityFlag(key: string, name: string): string {
 
     if (flagCache.has(key)) return flagCache.get(key) ?? "";
 

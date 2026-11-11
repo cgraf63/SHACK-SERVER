@@ -764,6 +764,17 @@ const rows =
 
     }
 
+    /* call check: every worked callsign with QSO count and last date */
+    getCallSummary(): Array<{ call: string; n: number; last: string }> {
+
+        return this.db.prepare(`
+            SELECT UPPER(call) AS call, COUNT(*) AS n, MAX(qso_date) AS last
+            FROM qso
+            GROUP BY UPPER(call)
+        `).all() as unknown as Array<{ call: string; n: number; last: string }>;
+
+    }
+
     /* LoTW: QSOs of one callsign (for matching confirmations) */
     findByCall(call: string): Array<{ id: number; call: string; band: string; mode: string; qso_date: string; time_on_utc: string; lotw_qsl_rcvd: string | null }> {
 

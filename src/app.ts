@@ -22,6 +22,7 @@ import dxpeditionsRouter from "./routes/dxpeditions.js";
 import backupRouter from "./routes/backup.js";
 import neededRouter from "./routes/needed.js";
 import dxccRouter from "./routes/dxcc.js";
+import callCheckRouter from "./routes/callcheck.js";
 import networkRouter from "./routes/network.js";
 import indexRouter from "./routes/index.js";
 import propagationRouter from "./routes/propagation.js";
@@ -217,6 +218,12 @@ app.use(
 app.use(
     "/api/needed",
     neededRouter
+);
+
+// Call check while typing a callsign (Manual QSO)
+app.use(
+    "/api/callcheck",
+    callCheckRouter
 );
 
 // DXCC table (entities x bands, worked / confirmed)

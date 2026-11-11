@@ -528,6 +528,18 @@ rm -f ~/SHACK-SERVER/data/shack-server.db-wal ~/SHACK-SERVER/data/shack-server.d
 pm2 start shack-server
 ```
 
+### Call check while typing (Manual QSO)
+
+While a callsign is typed in **Manual QSO / Watch**, a list opens below the field:
+
+- the **country** of the prefix with CQ / ITU zone at once (also filled into the form) - "SQ2" → Poland
+- **suggestions**, best first: stations **spotted on the air** - above all the ones near the transceiver frequency (green **HERE** badge), then calls from the **own log** (`LOG 3×`), the **watch list** and the **SCP database** (Super Check Partial, about 180,000 active callsigns from Club Log, downloaded weekly to `data/scp.txt`)
+- the typed text may be anywhere in the call ("Q2A" finds SQ2ABC); `?` stands for an unknown character ("SQ2?BC")
+- misheard calls: calls with **one character different, missing or extra** are shown with `≈` - CW / SSB look-alikes (S/H/5, B/D/6, M/N ...) first
+- empty field: the stations spotted near the transceiver frequency
+
+Arrow keys + Enter or a click take a suggestion: callsign, band, mode and frequency (if spotted) are filled in and the QRZ.com lookup runs.
+
 ### Split (automatic)
 
 When a spot says "UP 2", "UP 1-3", "DOWN 1", "QSX 14025", "QSX 025" or "LSN 14.205", **TUNE** sets the RX frequency on VFO A, the TX frequency on VFO B and switches split on; the live spots show the split as an orange badge next to the frequency (e.g. `UP 2`). Tuning a spot without split switches split off again. Supported: Yaesu FTDX10, RGO ONE and all transceivers via Hamlib with split control. FT8 / FT4 spots are tuned without split (DXpedition mode in WSJT-X). Switch it off under *Settings → Split*.

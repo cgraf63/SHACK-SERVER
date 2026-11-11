@@ -1,5 +1,6 @@
 import { lotwDownload } from "./services/lotw/lotw-download.service.js";
 import app from './app.js';
+import { callCheckService } from "./services/callcheck/call-check.service.js";
 import { DEMO_MODE } from "./services/demo/demo-mode.js";
 import { seedDemoData } from "./services/demo/demo-data.js";
 import { createServer } from "node:http";
@@ -63,6 +64,9 @@ import "./services/rbn/rbn-instance.js";
 
 import "./services/telnet/telnet-server.js";
 radioManager.start();
+
+/* call check while typing (Manual QSO): SCP database, weekly */
+callCheckService.start();
 
 sotaPotaService.start();
 

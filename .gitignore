@@ -96,3 +96,7 @@ data/update-state.json
 data/ftx1-memories.json
 data/lotw/
 data/lotw-state.json
+
+# Call check: SCP callsign database (downloaded weekly)
+data/scp.txt
+data/scp.txt.tmp
