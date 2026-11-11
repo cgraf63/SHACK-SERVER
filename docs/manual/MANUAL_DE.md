@@ -303,7 +303,7 @@ Nach der Wahl eines Contests legt man eine Session an, startet, pausiert und bee
 
 ## QSO-Erfassung
 
-Die QSO-Erfassung enthält Rufzeichen, Name, Locator, RST gesendet und empfangen sowie die Exchange-Felder. Welche Exchange-Felder nötig sind, legt die Contest-Konfiguration fest. Ein Klick auf einen Spot in der Live-Bandanzeige trägt Rufzeichen, Mode und Frequenz ein.
+Die QSO-Erfassung enthält Rufzeichen, Name, Locator, RST gesendet und empfangen sowie die Exchange-Felder. Welche Exchange-Felder nötig sind, legt die Contest-Konfiguration fest. Ist als gesendeter Exchange **Serial Number** eingestellt, trägt SHACK-SERVER die nächste laufende Nummer selbst ein: die höchste bisher gesendete Nummer der Session plus 1 – über alle Operatoren hinweg. Ein Klick auf einen Spot in der Live-Bandanzeige trägt Rufzeichen, Mode und Frequenz ein.
 
 ## Live-Band
 

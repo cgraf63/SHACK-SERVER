@@ -303,7 +303,7 @@ After choosing a contest you create a session, start, pause and end it. The cont
 
 ## QSO entry
 
-QSO entry contains callsign, name, locator, RST sent and received and the exchange fields. Which exchange fields are needed is set in the contest configuration. A click on a spot in the live band display fills in callsign, mode and frequency.
+QSO entry contains callsign, name, locator, RST sent and received and the exchange fields. Which exchange fields are needed is set in the contest configuration. If the sent exchange is set to **Serial Number**, SHACK-SERVER fills in the next number itself: the highest number sent in the session plus 1 – across all operators. A click on a spot in the live band display fills in callsign, mode and frequency.
 
 ## Live band
 
