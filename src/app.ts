@@ -33,6 +33,7 @@ import contestsRouter from "./routes/contests.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import rbnRouter from "./routes/rbn.js";
+import sdrRouter from "./routes/sdr.js";
 
 const __filename =
     fileURLToPath(import.meta.url);
@@ -248,6 +249,11 @@ app.use(
 
 
 // RBN
+app.use(
+    "/api/sdr",
+    sdrRouter
+);
+
 app.use(
     "/api/rbn",
     rbnRouter

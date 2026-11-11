@@ -8,6 +8,17 @@
 const $ = id => document.getElementById(id);
 
 let sdrSocket = null;
+
+/*
+ * CONNECT / DISCONNECT: DISCONNECT stops the RSP1B on the server
+ * (shack-sdr takes a whole CPU core while it runs). The page stays
+ * connected for the status. Tab hidden for 60 s -> stopped as well,
+ * back -> started again.
+ */
+let sdrRunning = false;
+let sdrWanted = true;
+let userStopped = false;
+let autoPaused = false;
 let sdrFrames = 0;
 
 let freeze = false;
@@ -88,13 +99,33 @@ function log(message) {
 }
 
 function setStatus(connected) {
+    const socketOpen =
+        connected && sdrSocket && sdrSocket.readyState === WebSocket.OPEN;
+    const running = socketOpen && sdrRunning;
     if ($("dot")) {
-        $("dot").classList.toggle("on", connected);
+        $("dot").classList.toggle("on", !!running);
     }
     if ($("status")) {
         $("status").textContent =
-            connected ? "CONNECTED" : "DISCONNECTED";
+            !socketOpen ? "DISCONNECTED"
+            : running ? "CONNECTED"
+            : sdrWanted ? "STARTING …"
+            : autoPaused ? "STOPPED (IDLE)"
+            : "STOPPED";
     }
+    if ($("connect")) {
+        const on = socketOpen && sdrWanted;
+        $("connect").textContent = on ? "DISCONNECT" : "CONNECT";
+        $("connect").classList.toggle("active", on);
+    }
+}
+
+function requestSdr(want) {
+    sdrWanted = want;
+    if (sdrSocket && sdrSocket.readyState === WebSocket.OPEN) {
+        sdrSocket.send(JSON.stringify({ type: want ? "sdr_start" : "sdr_stop" }));
+    }
+    setStatus(true);
 }
 
 function sendCommand(command) {
@@ -132,6 +163,20 @@ function handleInfo(message) {
     if (message.type === "info" && message.text) {
         log(message.text);
     }
+
+    if (message.type === "sdr-status") {
+        const wasRunning = sdrRunning;
+        sdrRunning = message.status === "running";
+        if (typeof message.wanted === "boolean") sdrWanted = message.wanted;
+        if (wasRunning !== sdrRunning) {
+            log(sdrRunning ? "RSP1B running" : "RSP1B stopped" +
+                (message.wantedBy ? "" : " - CPU free"));
+        }
+        if (!sdrRunning && $("eventStatus")) {
+            $("eventStatus").textContent = "RSP1B STOPPED";
+        }
+        setStatus(true);
+    }
 }
 
 function connectSdr() {
@@ -141,7 +186,9 @@ function connectSdr() {
         return;
     }
 
-    const url = sdrUrl();
+    // stopped by the user / idle: reconnect for the status only
+    const url = sdrUrl() + (userStopped || autoPaused ? "?standby=1" : "");
+    sdrWanted = !(userStopped || autoPaused);
     log("Connecting to " + url);
 
     try {
@@ -154,6 +201,7 @@ function connectSdr() {
     sdrSocket.binaryType = "arraybuffer";
 
     sdrSocket.onopen = () => {
+        sdrRunning = false;
         setStatus(true);
         log("SHACK-SERVER SDR connected");
     };
@@ -232,6 +280,7 @@ function connectSdr() {
     };
 
     sdrSocket.onclose = () => {
+        sdrRunning = false;
         setStatus(false);
         log("SDR WebSocket disconnected");
         sdrSocket = null;
@@ -692,12 +741,44 @@ if ($("spectrum")) {
 
 if ($("connect")) {
     $("connect").onclick = () => {
-        if (sdrSocket) {
-            log("Already connected to /sdr");
+        autoPaused = false;
+        if (!sdrSocket || sdrSocket.readyState !== WebSocket.OPEN) {
+            userStopped = false;
+            connectSdr();
             return;
         }
-        connectSdr();
+        if (sdrWanted) {
+            userStopped = true;
+            requestSdr(false);
+            log("DISCONNECT - RSP1B stopped on the server");
+        } else {
+            userStopped = false;
+            requestSdr(true);
+            log("CONNECT - starting the RSP1B");
+        }
     };
+
+    /* tab in the background for 60 s: stop the RSP1B; back: start again */
+    let hiddenTimer = null;
+    document.addEventListener("visibilitychange", () => {
+        clearTimeout(hiddenTimer);
+        if (document.hidden) {
+            hiddenTimer = setTimeout(() => {
+                if (sdrWanted && !userStopped) {
+                    autoPaused = true;
+                    requestSdr(false);
+                    log("Page hidden for 60 s - RSP1B stopped");
+                }
+            }, 60000);
+        }
+        else if (autoPaused) {
+            autoPaused = false;
+            if (!userStopped) {
+                requestSdr(true);
+                log("Page visible again - starting the RSP1B");
+            }
+        }
+    });
 }
 
 if ($("freeze")) {
@@ -729,12 +810,21 @@ if ($("scan")) {
             $("scan").classList.remove("active");
             log("Full scan stopped");
         } else {
-            sendCommand({
+            // a FULL SCAN needs the RSP1B running (it takes ~2 s to start)
+            const startScan = () => sendCommand({
                 type: "scan",
                 start: MIN_HZ,
                 stop: MAX_HZ,
                 step: Number($("scanStep").value)
             });
+            if (!sdrRunning) {
+                userStopped = false;
+                autoPaused = false;
+                requestSdr(true);
+                setTimeout(startScan, 2500);
+            } else {
+                startScan();
+            }
             $("scanStatus").textContent = "SCAN RUNNING …";
             $("scan").classList.add("active");
             log("Full scan 1-1000 MHz started");

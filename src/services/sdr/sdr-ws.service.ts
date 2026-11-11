@@ -1,6 +1,6 @@
 import { WebSocketServer, WebSocket } from "ws";
 import type { Server } from "node:http";
-import { spawn, type ChildProcessByStdio } from "node:child_process";
+import { execFileSync, spawn, type ChildProcessByStdio } from "node:child_process";
 import type { Readable, Writable } from "node:stream";
 import { SDR_BINARY } from "./sdr-binary.js";
 
@@ -94,11 +94,103 @@ function processSdrData(data: Buffer): void {
     }
 }
 
-function startSdrProcess(): void {
+/*
+ * The RSP1B runs only while it is needed - the native process takes a
+ * whole CPU core while streaming:
+ *   - every connected page "wants" the SDR, unless it sent "sdr_stop"
+ *     (DISCONNECT on /sdr, or a remote page hidden for 60 s)
+ *   - nobody wants it any more: stop at once after "sdr_stop", 60 s
+ *     after the last page closed (a reload does not restart it)
+ *   - a FULL SCAN keeps it running (until scan_stop, at most 15 min)
+ */
+const IDLE_STOP_MS = 60_000;
+const SWEEP_MAX_MS = 15 * 60_000;
+const KILL_AFTER_MS = 5_000;
 
-    if (sdrProcess) {
+const wanting = new WeakMap<WebSocket, boolean>();
+let idleTimer: NodeJS.Timeout | null = null;
+let sweepUntil = 0;
+let stopping: Promise<void> | null = null;
+let orphansChecked = false;
+
+function wantedBy(): number {
+    let count = 0;
+    for (const client of clients) {
+        if (wanting.get(client) !== false) count++;
+    }
+    return count;
+}
+
+function sweepRunning(): boolean {
+    return sweepUntil > Date.now();
+}
+
+export function sdrStatus() {
+    return {
+        running: !!sdrProcess,
+        pid: sdrProcess?.pid ?? null,
+        clients: clients.size,
+        wantedBy: wantedBy(),
+        sweep: sweepRunning(),
+        autoStopInSeconds: idleTimer ? Math.round(IDLE_STOP_MS / 1000) : null
+    };
+}
+
+function broadcastStatus(): void {
+
+    const status = sdrStatus();
+
+    for (const client of clients) {
+        if (client.readyState !== WebSocket.OPEN) continue;
+        client.send(JSON.stringify({
+            type: "sdr-status",
+            status: status.running ? "running" : "stopped",
+            wanted: wanting.get(client) !== false,
+            clients: status.clients,
+            wantedBy: status.wantedBy,
+            sweep: status.sweep
+        }));
+    }
+
+}
+
+/* a shack-sdr left over from an earlier server run (would block the RSP1B) */
+function killOrphans(): void {
+
+    if (orphansChecked) return;
+    orphansChecked = true;
+
+    try {
+        execFileSync("pkill", ["-x", "shack-sdr"], { stdio: "ignore", timeout: 3000 });
+        console.log("SDR: stopped a leftover shack-sdr process");
+    }
+    catch {
+        // none running (pkill exit 1)
+    }
+
+}
+
+let starting = false;
+
+async function startSdrProcess(): Promise<void> {
+
+    if (starting || sdrProcess) return;
+
+    starting = true;
+
+    try {
+        if (stopping) await stopping;
+    }
+    finally {
+        starting = false;
+    }
+
+    // stopped meanwhile by everybody, or started by another call
+    if (sdrProcess || wantedBy() === 0) {
         return;
     }
+
+    killOrphans();
 
     console.log(
         "SDR: starting native SDR process"
@@ -141,6 +233,8 @@ function startSdrProcess(): void {
         }
     );
 
+    child.stdin.on("error", () => { /* process gone */ });
+
     child.on(
         "error",
         (error) => {
@@ -150,8 +244,9 @@ function startSdrProcess(): void {
                 error
             );
 
-            sdrProcess = null;
+            if (sdrProcess === child) sdrProcess = null;
             rxBuffer = Buffer.alloc(0);
+            broadcastStatus();
         }
     );
 
@@ -163,24 +258,105 @@ function startSdrProcess(): void {
                 `SDR: native process exited code=${code} signal=${signal}`
             );
 
-            sdrProcess = null;
+            if (sdrProcess === child) sdrProcess = null;
             rxBuffer = Buffer.alloc(0);
+            broadcastStatus();
         }
     );
+
+    broadcastStatus();
 }
 
-function stopSdrProcess(): void {
+/* SIGTERM, wait for the exit; SIGKILL when it hangs (SDRplay API) */
+function stopSdrProcess(reason = ""): Promise<void> {
 
-    if (!sdrProcess) {
-        return;
+    if (idleTimer) {
+        clearTimeout(idleTimer);
+        idleTimer = null;
+    }
+
+    const child = sdrProcess;
+
+    if (!child) {
+        return stopping ?? Promise.resolve();
     }
 
     console.log(
-        "SDR: stopping native SDR process"
+        `SDR: stopping native SDR process${reason ? ` (${reason})` : ""}`
     );
 
-    sdrProcess.kill("SIGTERM");
     sdrProcess = null;
+    sweepUntil = 0;
+
+    stopping = new Promise<void>(resolve => {
+
+        const done = () => {
+            clearTimeout(killer);
+            stopping = null;
+            resolve();
+        };
+
+        const killer = setTimeout(() => {
+            console.warn("SDR: native process did not stop - SIGKILL");
+            try { child.kill("SIGKILL"); } catch { /* gone */ }
+        }, KILL_AFTER_MS);
+
+        if (child.exitCode !== null || child.signalCode !== null) {
+            done();
+            return;
+        }
+
+        child.once("exit", done);
+
+        try { child.kill("SIGTERM"); } catch { done(); }
+
+    });
+
+    broadcastStatus();
+
+    return stopping;
+}
+
+/* after every change: start, stop now, or stop in 60 s */
+function updateSdr(trigger: "request" | "disconnect" | "connect"): void {
+
+    if (wantedBy() > 0) {
+        if (idleTimer) {
+            clearTimeout(idleTimer);
+            idleTimer = null;
+        }
+        void startSdrProcess();
+        return;
+    }
+
+    if (!sdrProcess) return;
+
+    if (sweepRunning()) {
+        // FULL SCAN still running: check again later
+        if (!idleTimer) {
+            idleTimer = setTimeout(() => {
+                idleTimer = null;
+                updateSdr("disconnect");
+            }, Math.min(IDLE_STOP_MS, sweepUntil - Date.now() + 1000));
+        }
+        return;
+    }
+
+    if (trigger === "request") {
+        void stopSdrProcess("stopped by the user");
+        return;
+    }
+
+    if (!idleTimer) {
+        console.log(`SDR: nobody uses the SDR - stopping in ${IDLE_STOP_MS / 1000} s`);
+        idleTimer = setTimeout(() => {
+            idleTimer = null;
+            if (wantedBy() === 0 && !sweepRunning()) void stopSdrProcess("idle");
+            else updateSdr("disconnect");
+        }, IDLE_STOP_MS);
+        broadcastStatus();
+    }
+
 }
 
 export function startSdrWebSocket(server: Server): void {
@@ -222,7 +398,7 @@ export function startSdrWebSocket(server: Server): void {
 
     wss.on(
         "connection",
-        (socket) => {
+        (socket, request: { url?: string }) => {
 
             console.log(
                 "SDR WS: client connected"
@@ -234,21 +410,15 @@ export function startSdrWebSocket(server: Server): void {
                 `SDR WS: clients=${clients.size}`
             );
 
-            socket.send(
-                JSON.stringify({
-                    type: "sdr-status",
-                    status: "connected"
-                })
-            );
+            /* "?standby=1": only status, the page was stopped (DISCONNECT) */
+            const standby =
+                new URL(request?.url ?? "/sdr", "http://localhost").searchParams.get("standby") === "1";
 
-            /*
-             * Start RSP1B when the first browser
-             * client connects.
-             */
-            if (clients.size === 1) {
-                console.log("SDR WS: first client -> starting SDR");
-                startSdrProcess();
-            }
+            wanting.set(socket, !standby);
+
+            /* start the RSP1B (or keep it running) */
+            updateSdr("connect");
+            broadcastStatus();
 
             /*
              * JSON-Kommandos vom Browser an den
@@ -257,10 +427,6 @@ export function startSdrWebSocket(server: Server): void {
             socket.on(
                 "message",
                 (data) => {
-
-                    if (!sdrProcess || !sdrProcess.stdin) {
-                        return;
-                    }
 
                     let text: string;
 
@@ -275,6 +441,27 @@ export function startSdrWebSocket(server: Server): void {
                     try {
                         command = JSON.parse(text);
                     } catch (_) {
+                        return;
+                    }
+
+                    /* CONNECT / DISCONNECT on /sdr, idle remote pages */
+                    if (command.type === "sdr_stop" || command.type === "sdr_start") {
+                        wanting.set(socket, command.type === "sdr_start");
+                        updateSdr("request");
+                        broadcastStatus();
+                        if (command.type === "sdr_stop" && sdrProcess && wantedBy() > 0) {
+                            socket.send(JSON.stringify({
+                                type: "info",
+                                text: `SDR keeps running - still used by ${wantedBy()} other page(s) (e.g. a remote page)`
+                            }));
+                        }
+                        return;
+                    }
+
+                    if (command.type === "scan") sweepUntil = Date.now() + SWEEP_MAX_MS;
+                    if (command.type === "scan_stop") sweepUntil = 0;
+
+                    if (!sdrProcess || !sdrProcess.stdin) {
                         return;
                     }
 
@@ -353,16 +540,12 @@ export function startSdrWebSocket(server: Server): void {
                     clients.delete(socket);
 
                     console.log(
-                        "SDR WS: client disconnected"
+                        `SDR WS: client disconnected, clients=${clients.size}`
                     );
 
-                    /*
-                     * Stop RSP1B when the last
-                     * browser client disconnects.
-                     */
-                    if (clients.size === 0) {
-                        stopSdrProcess();
-                    }
+                    /* nobody left: stop in 60 s (a page reload does not restart the RSP1B) */
+                    updateSdr("disconnect");
+                    broadcastStatus();
                 }
             );
 
@@ -371,10 +554,7 @@ export function startSdrWebSocket(server: Server): void {
                 () => {
 
                     clients.delete(socket);
-
-                    if (clients.size === 0) {
-                        stopSdrProcess();
-                    }
+                    updateSdr("disconnect");
                 }
             );
         }
@@ -384,15 +564,17 @@ export function startSdrWebSocket(server: Server): void {
      * Make sure PM2 shutdown also stops the
      * native SDR process.
      */
-    process.once(
-        "SIGINT",
-        stopSdrProcess
-    );
+    /*
+     * pm2 stop / restart: stop the native SDR process too, then exit
+     * (a signal listener would otherwise keep Node running until pm2
+     * kills it - and leave shack-sdr behind).
+     */
+    const shutdown = () => {
+        void stopSdrProcess("shutdown").finally(() => process.exit(0));
+    };
 
-    process.once(
-        "SIGTERM",
-        stopSdrProcess
-    );
+    process.once("SIGINT", shutdown);
+    process.once("SIGTERM", shutdown);
 
     console.log(
         "SDR WS: listening on /sdr"

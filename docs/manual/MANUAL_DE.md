@@ -418,6 +418,8 @@ SHACK-SERVER hat eine eigene SDR-Seite für den **SDRplay RSP1B**: Spektrum und 
 
 Auf den Fernsteuerungsseiten dient der RSP1B als separates SDR für Spektrum und Wasserfall des Transceivers. Er ist unabhängig vom CAT-Anschluss; die Frequenz des Transceivers bestimmt, welcher Ausschnitt angezeigt wird.
 
+**CONNECT / DISCONNECT:** Der RSP1B läuft nur, solange ihn jemand braucht – im Betrieb belegt er einen ganzen Prozessorkern des Raspberry Pi. **DISCONNECT** stoppt ihn auf dem Server (Anzeige oben rechts **STOPPED**), **CONNECT** startet ihn wieder (**CONNECTED**). Zusätzlich schaltet er sich selbst ab: 60 Sekunden nachdem die letzte Seite geschlossen wurde und wenn die SDR-Seite oder eine Fernsteuerungsseite 60 Sekunden im Hintergrund liegt. Ein laufender **FULL SCAN** wird nicht unterbrochen. Beim nächsten Öffnen startet er von selbst.
+
 Die SDR-Seite wird unter *Settings → Optional Modules* eingeschaltet.
 
 # RBN & Memory

@@ -1448,6 +1448,27 @@ function initRitXitControl() {
 (() => {
 
     let sdrSocket = null;
+
+/* SDR waterfall: tab hidden for 60 s -> the RSP1B may stop (it takes a
+   whole CPU core on the server); visible again -> start it again */
+(() => {
+    let hiddenTimer = null;
+    let paused = false;
+    const send = type => {
+        try {
+            if (sdrSocket && sdrSocket.readyState === WebSocket.OPEN) sdrSocket.send(JSON.stringify({ type }));
+        } catch (_) { /* not connected */ }
+    };
+    document.addEventListener("visibilitychange", () => {
+        clearTimeout(hiddenTimer);
+        if (document.hidden) {
+            hiddenTimer = setTimeout(() => { send("sdr_stop"); paused = true; }, 60000);
+        } else if (paused) {
+            paused = false;
+            send("sdr_start");
+        }
+    });
+})();
     let sdrFrames = 0;
 
     const spectrumCanvas =
