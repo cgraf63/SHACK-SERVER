@@ -305,15 +305,6 @@ main { max-width:none !important; }
                 EXPORT ADIF
             </button>
 
-            <button
-                id="qso-log-export-cabrillo"
-                class="qso-log-export"
-                type="button"
-                disabled
-            >
-                EXPORT CABRILLO
-            </button>
-
             <input
                 id="qso-log-import-file"
                 type="file"
@@ -468,39 +459,12 @@ async function loadQsoLog() {
     }
 }
 
-function updateCabrilloButton() {
-
-    const button =
-        document.getElementById(
-            "qso-log-export-cabrillo"
-        );
-
-    const filter =
-        document.getElementById(
-            "qso-log-contest-filter"
-        );
-
-    if (!button || !filter) {
-        return;
-    }
-
-    button.disabled =
-        !filter.value;
-
-}
-
-
 function renderQsoLog() {
     const body = document.getElementById("qso-log-body");
     const count = document.getElementById("qso-log-count");
     const search =
         document.getElementById(
             "qso-log-search"
-        );
-
-    const contestSelect =
-        document.getElementById(
-            "qso-log-contest-filter"
         );
 
     const searchText =
@@ -794,29 +758,6 @@ document.querySelectorAll(
         renderQsoLog();
     });
 });
-document.getElementById(
-    "qso-log-export-cabrillo"
-).addEventListener(
-    "click",
-    () => {
-
-        const filter =
-            document.getElementById(
-                "qso-log-contest-filter"
-            );
-
-        if (!filter || !filter.value) {
-            return;
-        }
-
-        console.log(
-            "Cabrillo export requested:",
-            filter.value
-        );
-
-    }
-);
-
 document.addEventListener("keydown",event=>{ if(event.key==="Escape") closeEditQsoDialog(); });
 
 
