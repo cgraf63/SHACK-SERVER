@@ -24,6 +24,7 @@ import json
 import re
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -122,7 +123,9 @@ def outline_pages(pdf_path):
 
 
 def normalize(text):
-    return re.sub(r"\s+", " ", re.sub(r"^[\d.]+\s+", "", text)).strip().lower()
+    # NFC: Chromium may write "Ü" decomposed into the bookmarks
+    text = unicodedata.normalize("NFC", text)
+    return re.sub(r"\s+", " ", re.sub(r"^[\d.]+\s+", "", text)).strip().casefold()
 
 
 def build_pdf(lang, browser):
