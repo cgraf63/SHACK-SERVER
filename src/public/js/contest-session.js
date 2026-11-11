@@ -1469,10 +1469,11 @@ async function contestSessionAction(
 
     if (lifecycleActions.includes(action)) {
 
+        // masked input (screen recordings); window.prompt as fallback
         const controlKey =
-            window.prompt(
-                "Contest control key:"
-            );
+            window.askPassword
+                ? await window.askPassword("Contest control key:")
+                : window.prompt("Contest control key:");
 
         if (controlKey === null) {
             return;

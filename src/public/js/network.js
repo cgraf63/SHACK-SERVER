@@ -1081,10 +1081,9 @@
         }
 
         const password =
-            window.prompt(
-                `WiFi password for "${ssid}"`,
-                ""
-            );
+            window.askPassword
+                ? await window.askPassword(`WiFi password for "${ssid}"`)
+                : window.prompt(`WiFi password for "${ssid}"`, "");
 
         if (password === null) {
             return;
