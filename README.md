@@ -58,6 +58,10 @@ Open-source platform for intelligent amateur radio information processing.
 
 ---
 
+## User manual
+
+**[User manual (PDF, English)](https://github.com/cgraf63/SHACK-SERVER/releases/download/manual/SHACK-SERVER_Manual_EN.pdf)** · **[Benutzerhandbuch (PDF, Deutsch)](https://github.com/cgraf63/SHACK-SERVER/releases/download/manual/SHACK-SERVER_Handbuch_DE.pdf)** – always the latest version, built from [docs/manual](docs/manual). Installation: [English](docs/INSTALLATION_EN.md) · [Deutsch](docs/INSTALLATION_DE.md).
+
 ## Try it - demo on Windows, macOS or Linux
 
 No Raspberry Pi and no transceiver needed. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), then run:

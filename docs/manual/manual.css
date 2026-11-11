@@ -1,0 +1,408 @@
+/* SHACK-SERVER manual - print layout (Chromium, A4) */
+
+:root {
+    --ink: #1c2530;
+    --muted: #5d6b78;
+    --line: #d6dde4;
+    --accent: #0a8fa3;
+    --accent-dark: #0b5f6d;
+    --night: #08131b;
+    --cyan: #00e5ff;
+    --soft: #f2f6f8;
+}
+
+@page {
+    size: A4;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.5;
+    color: var(--ink);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+body {
+    margin: 0;
+    background: #fff;
+}
+
+/* the cover and the body are printed separately (build.py) */
+body.only-cover .toc,
+body.only-cover .content,
+body.no-cover .cover {
+    display: none;
+}
+
+body:not(.only-cover):not(.no-cover) .cover {
+    margin-bottom: 40px;
+}
+
+/* ------------------------------------------------------------ cover */
+
+.cover {
+    width: 210mm;
+    height: 296mm;
+    background:
+        radial-gradient(circle at 50% 36%, rgba(0, 229, 255, 0.16), transparent 52%),
+        linear-gradient(180deg, #0b1922 0%, var(--night) 100%);
+    color: #e8f1f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+.cover-inner {
+    width: 150mm;
+}
+
+.cover-logo {
+    width: 78mm;
+    border-radius: 10px;
+    box-shadow: 0 0 40px rgba(0, 229, 255, 0.25);
+}
+
+.cover-title {
+    font-size: 40pt;
+    letter-spacing: 3px;
+    font-weight: 800;
+    margin: 16mm 0 2mm;
+    color: #ffffff;
+    border: 0;
+    padding: 0;
+    break-before: auto;
+}
+
+.cover-title::before {
+    content: none !important;
+}
+
+.cover-subtitle {
+    font-size: 20pt;
+    color: var(--cyan);
+    font-weight: 600;
+}
+
+.cover-tagline {
+    margin-top: 6mm;
+    font-size: 11pt;
+    letter-spacing: 2px;
+    color: #9fb4bf;
+}
+
+.cover-meta {
+    margin-top: 30mm;
+    font-size: 10pt;
+    color: #9fb4bf;
+    line-height: 1.8;
+}
+
+/* ------------------------------------------------------------ table of contents */
+
+.toc {
+    break-after: page;
+}
+
+.toc-title {
+    break-before: auto !important;
+}
+
+.toc-title::before {
+    content: none !important;
+}
+
+.toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: toc2;
+}
+
+.toc > ul {
+    counter-reset: toc1;
+}
+
+.toc > ul > li {
+    counter-increment: toc1;
+    margin-top: 5px;
+    font-weight: 600;
+}
+
+.toc > ul > li > ul > li {
+    counter-increment: toc2;
+    font-weight: 400;
+    margin-left: 22px;
+    font-size: 9.5pt;
+}
+
+.toc a {
+    display: flex;
+    align-items: baseline;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 1.5px 0;
+}
+
+.toc > ul > li > a::before {
+    content: counter(toc1);
+    width: 22px;
+    flex: none;
+    color: var(--accent);
+}
+
+.toc > ul > li > ul > li > a::before {
+    content: counter(toc1) "." counter(toc2);
+    width: 34px;
+    flex: none;
+    color: var(--muted);
+}
+
+/* unnumbered chapters (pandoc class) */
+.toc li.unnumbered,
+.toc > ul > li:has(> a[href="#über-dieses-handbuch"]),
+.toc > ul > li:has(> a[href="#about-this-manual"]) {
+    counter-increment: none;
+}
+
+.toc > ul > li:has(> a[href="#über-dieses-handbuch"]) > a::before,
+.toc > ul > li:has(> a[href="#about-this-manual"]) > a::before {
+    content: "";
+}
+
+.toc a::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px dotted #b9c3cc;
+    margin: 0 6px;
+    order: 2;
+    position: relative;
+    top: -3px;
+}
+
+.toc .toc-page {
+    order: 3;
+    min-width: 18px;
+    text-align: right;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ headings + numbering */
+
+.content {
+    counter-reset: h1;
+}
+
+h1, h2, h3, h4 {
+    color: var(--ink);
+    line-height: 1.25;
+    break-after: avoid;
+    page-break-after: avoid;
+}
+
+h1 {
+    font-size: 21pt;
+    font-weight: 800;
+    margin: 0 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent);
+    break-before: page;
+}
+
+.content section.level1:first-child > h1 {
+    break-before: auto;
+}
+
+.content h1 {
+    counter-increment: h1;
+    counter-reset: h2;
+}
+
+.content h1::before {
+    content: counter(h1);
+    color: var(--accent);
+    margin-right: 12px;
+}
+
+.content h2 {
+    counter-increment: h2;
+    counter-reset: h3;
+}
+
+.content h2::before {
+    content: counter(h1) "." counter(h2);
+    color: var(--accent);
+    margin-right: 10px;
+    font-weight: 700;
+}
+
+.content .unnumbered > h1,
+.content h1.unnumbered {
+    counter-increment: none;
+}
+
+.content .unnumbered > h1::before,
+.content h1.unnumbered::before {
+    content: none;
+}
+
+h2 {
+    font-size: 14pt;
+    font-weight: 700;
+    margin: 22px 0 8px;
+}
+
+h3 {
+    font-size: 11.5pt;
+    font-weight: 700;
+    margin: 18px 0 6px;
+    color: var(--accent-dark);
+}
+
+h4 {
+    font-size: 10pt;
+    margin: 14px 0 4px;
+}
+
+/* keep a heading with the first lines after it */
+h1 + *, h2 + *, h3 + * {
+    break-before: avoid;
+}
+
+/* ------------------------------------------------------------ text */
+
+p {
+    margin: 0 0 8px;
+    orphans: 3;
+    widows: 3;
+}
+
+ul, ol {
+    margin: 0 0 9px;
+    padding-left: 20px;
+}
+
+li {
+    margin: 2px 0;
+}
+
+li > ul, li > ol {
+    margin: 2px 0 2px;
+}
+
+a {
+    color: var(--accent-dark);
+    text-decoration: none;
+}
+
+strong {
+    font-weight: 700;
+}
+
+code {
+    font-family: "JetBrains Mono", "DejaVu Sans Mono", Consolas, monospace;
+    font-size: 0.88em;
+    background: var(--soft);
+    border: 1px solid #e3e9ee;
+    border-radius: 3px;
+    padding: 0 3px;
+}
+
+pre {
+    background: var(--soft);
+    border: 1px solid #e3e9ee;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 8.5pt;
+    overflow: hidden;
+    white-space: pre-wrap;
+    break-inside: avoid;
+}
+
+pre code {
+    border: 0;
+    padding: 0;
+    background: none;
+}
+
+/* ------------------------------------------------------------ images */
+
+figure {
+    margin: 10px 0 14px;
+    text-align: center;
+    break-inside: avoid;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    vertical-align: top;
+}
+
+figure img {
+    max-height: 125mm;
+    object-fit: contain;
+}
+
+p > img {
+    margin: 4px 8px 4px 0;
+}
+
+figcaption {
+    font-size: 8.5pt;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+/* ------------------------------------------------------------ tables */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6px 0 14px;
+    font-size: 9pt;
+}
+
+thead {
+    display: table-header-group;
+}
+
+tr {
+    break-inside: avoid;
+}
+
+th {
+    text-align: left;
+    background: #e6f3f5;
+    color: var(--accent-dark);
+    font-weight: 700;
+    border-bottom: 1.5px solid var(--accent);
+    padding: 5px 8px;
+}
+
+td {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+}
+
+tbody tr:nth-child(even) td {
+    background: #f8fafb;
+}
+
+blockquote {
+    margin: 10px 0;
+    padding: 6px 12px;
+    border-left: 3px solid var(--accent);
+    background: var(--soft);
+}

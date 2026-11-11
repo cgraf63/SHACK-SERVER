@@ -1,0 +1,56 @@
+# Builds the user manual (German + English) as PDF and Word from
+# docs/manual/*.md and publishes it in the release "manual":
+#   https://github.com/cgraf63/SHACK-SERVER/releases/tag/manual
+# Fixed download links, e.g.
+#   .../releases/download/manual/SHACK-SERVER_Handbuch_DE.pdf
+
+name: Manual
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/manual/**"
+      - "docs/images/screenshots/**"
+      - ".github/workflows/manual.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: manual
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # date of the last change of the manual
+
+      - name: Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc fonts-inter fonts-dejavu-core
+          pip install --break-system-packages playwright pypdf
+          python3 -m playwright install --with-deps chromium
+
+      - name: Build
+        run: python3 docs/manual/build.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manual
+          path: docs/manual/out/*
+
+      - name: Publish (release "manual")
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view manual >/dev/null 2>&1; then
+            gh release create manual --target main --title "User manual / Benutzerhandbuch" \
+              --notes "Always the latest user manual (German and English, PDF and Word). Built automatically from docs/manual."
+          fi
+          gh release upload manual docs/manual/out/* --clobber
