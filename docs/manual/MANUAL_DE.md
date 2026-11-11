@@ -239,9 +239,12 @@ Gespeicherte QSOs landen im [QSO-Log](#qso-log) und werden – wenn eingerichtet
 
 # QSO-Log
 
-![QSO-Log](../images/screenshots/06-qso-log.jpg)
+![QSO-Log](images/qso-log.jpg)
 
-Das QSO-Log verwaltet alle QSOs. Die Tabelle lässt sich nach Datum, Zeit, Rufzeichen, Name, Band, Mode, Quelle, Land und weiteren Feldern sortieren. QSOs lassen sich bearbeiten und löschen.
+Das QSO-Log verwaltet alle QSOs. Die Tabelle lässt sich nach Datum, Zeit, Rufzeichen, Name, Band, Mode, Quelle, Frequenz, Land und weiteren Feldern sortieren. Mit **Edit** und **Delete** lassen sich QSOs bearbeiten und löschen.
+
+- **Source** zeigt, woher ein QSO stammt: **Spot** (aus den Live-Spots), **Manual** (von Hand erfasst), **ADIF** (importiert) oder zum Beispiel WSJT-X. Das Auswahlfeld **All sources** zeigt nur eine Quelle.
+- **QS** / **QR**: QSL-Karte gesendet / erhalten.
 
 Die Spalte **Upload** zeigt für jedes QSO den Stand bei QRZ.com (Q), Club Log (C) und LoTW (L): ✓ hochgeladen, … wartend, ✖ Fehler. Der Mauszeiger über dem Zeichen zeigt Zeitpunkt oder Fehlermeldung. Bestätigungen aus LoTW werden angezeigt und zählen in der [DXCC-Tabelle](#dxcc-tabelle).
 

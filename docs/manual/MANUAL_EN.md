@@ -239,9 +239,12 @@ Saved QSOs go into the [QSO log](#qso-log) and – if set up – are uploaded to
 
 # QSO log
 
-![QSO log](../images/screenshots/06-qso-log.jpg)
+![QSO log](images/qso-log.jpg)
 
-The QSO log holds all QSOs. The table can be sorted by date, time, callsign, name, band, mode, source, country and more. QSOs can be edited and deleted.
+The QSO log holds all QSOs. The table can be sorted by date, time, callsign, name, band, mode, source, frequency, country and more. **Edit** and **Delete** change or remove a QSO.
+
+- **Source** shows where a QSO came from: **Spot** (from the live spots), **Manual** (entered by hand), **ADIF** (imported) or, for example, WSJT-X. The **All sources** selector shows a single source only.
+- **QS** / **QR**: QSL card sent / received.
 
 The **Upload** column shows the state of every QSO at QRZ.com (Q), Club Log (C) and LoTW (L): ✓ uploaded, … waiting, ✖ error. Hovering over the mark shows the time or the error message. LoTW confirmations are shown and count in the [DXCC table](#dxcc-table).
 
