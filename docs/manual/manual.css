@@ -65,9 +65,14 @@ body:not(.only-cover):not(.no-cover) .cover {
 }
 
 .cover-logo {
-    width: 78mm;
-    border-radius: 10px;
-    box-shadow: 0 0 40px rgba(0, 229, 255, 0.25);
+    width: 100mm;
+    /* the black of the picture disappears, only the light stays */
+    mix-blend-mode: screen;
+    /* soft edge: no visible square */
+    -webkit-mask-image: radial-gradient(circle, #000 58%, transparent 71%);
+    mask-image: radial-gradient(circle, #000 58%, transparent 71%);
+    border: 0;
+    border-radius: 0;
 }
 
 .cover-title {
