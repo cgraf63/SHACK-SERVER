@@ -2091,36 +2091,8 @@ router.post(
         }
 
 
-        const allowedModes = [
-            "LSB",
-            "USB",
-            "SSB",
-            "CW",
-            "CW-R",
-            "CW-L",
-            "AM",
-            "FM"
-        ];
-
-
         const normalizedMode =
-            mode.toUpperCase();
-
-
-        if (
-            !allowedModes.includes(
-                normalizedMode
-            )
-        ) {
-
-            return res.status(400).json({
-
-                error:
-                    "Unsupported mode"
-
-            });
-
-        }
+            tuneMode(mode, frequency);
 
 
         console.log(
@@ -2164,6 +2136,25 @@ activeRadio.setMode(
 
 
 /*
+    Spot modes -> transceiver modes for the tune routes.
+    Spots, DXpeditions and needed alerts send FT8, FT4, RTTY, PHONE,
+    DIGI ... - they used to get "Unsupported mode". Digital modes are
+    tuned in USB (like the phone app), PHONE / SSB by the band.
+*/
+function tuneMode(mode: string, frequency: number): string {
+
+    const m = String(mode || "").trim().toUpperCase();
+
+    if (["LSB", "USB", "CW", "CW-R", "CW-L", "AM", "FM"].includes(m)) return m;
+    if (m === "SSB" || m === "PHONE") return frequency < 10_000_000 ? "LSB" : "USB";
+
+    // FT8, FT4, RTTY, PSK, JS8, digital, unknown
+    return "USB";
+
+}
+
+
+/*
     Tune to a spot, with split when the spot says so
     (POST /api/radio/tune-split {frequency, mode, txFrequency|null}).
 
@@ -2192,11 +2183,7 @@ router.post(
             return res.status(400).json({ error: "Invalid mode" });
         }
 
-        const normalizedMode = mode.toUpperCase();
-
-        if (!["LSB", "USB", "SSB", "CW", "CW-R", "CW-L", "AM", "FM"].includes(normalizedMode)) {
-            return res.status(400).json({ error: "Unsupported mode" });
-        }
+        const normalizedMode = tuneMode(mode, frequency);
 
         const radio = activeRadio as any;
 
