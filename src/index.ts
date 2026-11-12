@@ -6,6 +6,7 @@ import { seedDemoData } from "./services/demo/demo-data.js";
 import { createServer } from "node:http";
 import { startAudioWebSocket } from "./services/audio/audio-ws.service.js";
 import { startSdrWebSocket } from "./services/sdr/sdr-ws.service.js";
+import { startIc7300ScopeWebSocket } from "./services/radio/ic7300-scope-ws.js";
 
 import {
     fusionEngine
@@ -148,6 +149,7 @@ const server =
 if (!DEMO_MODE) {
     startAudioWebSocket(server);
     startSdrWebSocket(server);
+    startIc7300ScopeWebSocket(server);
 }
 
 server.listen(PORT, () => {

@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#05080f">
+<title>SHACK-SERVER – IC-7300 Remote</title>
+<link rel="icon" type="image/png" href="/assets/app/icon-192.png">
+
+<style>
+
+/* Icom touchscreen look: deep blue-black glass, white digits,
+   Icom blue for active keys, grey touch keys with a light top edge */
+:root {
+    --page: #05080f;
+    --case-1: #2b2f36;
+    --case-2: #15171b;
+    --glass-1: #0b1424;
+    --glass-2: #02050b;
+    --line: #1b2a40;
+    --text: #f4f7fb;
+    --dim: #8b9bb0;
+    --faint: #3b4a60;
+    --blue: #3d8bff;
+    --blue-2: #1f5fc4;
+    --cyan: #6fd3ff;
+    --tx: #ff4141;
+    --rx: #3fe07a;
+    --amber: #ffc83d;
+    --key-1: #3b424d;
+    --key-2: #22272e;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+    margin: 0;
+    min-height: 100%;
+    background:
+        radial-gradient(900px 500px at 20% -10%, #14203a 0%, transparent 60%),
+        var(--page);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- top bar */
+
+.top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 22px;
+    border-bottom: 1px solid #111a28;
+}
+
+.brand {
+    font-weight: 800;
+    letter-spacing: 3px;
+    font-size: 17px;
+}
+
+.brand small {
+    color: var(--dim);
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-left: 8px;
+    font-size: 11px;
+}
+
+.conn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--dim);
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.conn i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #55606e;
+}
+
+.conn.ok i { background: var(--rx); box-shadow: 0 0 8px var(--rx); }
+.conn.bad i { background: var(--tx); box-shadow: 0 0 8px var(--tx); }
+
+.top .spacer { flex: 1; }
+
+.clock {
+    font-variant-numeric: tabular-nums;
+    color: var(--dim);
+    font-size: 13px;
+}
+
+.clock b { color: var(--text); }
+
+.top a {
+    color: var(--dim);
+    text-decoration: none;
+    border: 1px solid #243246;
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+}
+
+/* ---------------------------------------------------------------- layout */
+
+.wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 18px;
+    max-width: 1760px;
+    margin: 14px auto 0;
+    padding: 0 22px 20px;
+}
+
+/* the radio: dark case, glass screen */
+.case {
+    background: linear-gradient(180deg, var(--case-1), var(--case-2));
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+
+.screen {
+    position: relative;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, .035), transparent 30%),
+        linear-gradient(180deg, var(--glass-1), var(--glass-2));
+    border-radius: 8px;
+    border: 1px solid #000;
+    box-shadow: inset 0 0 0 1px #0f1b2e, inset 0 0 40px rgba(0, 0, 0, .7);
+    overflow: hidden;
+}
+
+/* status icons along the top edge */
+.icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 9px 12px 7px;
+    border-bottom: 1px solid var(--line);
+}
+
+.ico {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .6px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--faint);
+    border: 1px solid #142236;
+}
+
+.ico.on {
+    color: #fff;
+    background: #1d3d6e;
+    border-color: #2d5fa8;
+}
+
+.ico.warn {
+    color: #1a1200;
+    background: var(--amber);
+    border-color: var(--amber);
+}
+
+.ico.tx {
+    color: #fff;
+    background: var(--tx);
+    border-color: var(--tx);
+}
+
+.ico.rx {
+    color: #062312;
+    background: var(--rx);
+    border-color: var(--rx);
+}
+
+/* meter + frequency block */
+.head {
+    display: grid;
+    grid-template-columns: 330px minmax(0, 1fr);
+    gap: 18px;
+    padding: 12px 16px 6px;
+    align-items: center;
+}
+
+.meter {
+    cursor: pointer;
+    user-select: none;
+}
+
+.meter-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--dim);
+    margin-bottom: 3px;
+    font-variant-numeric: tabular-nums;
+}
+
+.meter-scale .red { color: #ff7a7a; }
+
+.meter-bar {
+    position: relative;
+    height: 14px;
+    border-radius: 2px;
+    background:
+        repeating-linear-gradient(90deg, #0d1a2c 0 5px, #071019 5px 6px);
+    overflow: hidden;
+}
+
+.meter-bar i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0;
+    background:
+        repeating-linear-gradient(90deg, #e9f3ff 0 5px, transparent 5px 6px);
+    transition: width .12s linear;
+}
+
+.meter-bar i.hot {
+    background:
+        repeating-linear-gradient(90deg, #ff6d6d 0 5px, transparent 5px 6px);
+}
+
+.meter-foot {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--dim);
+}
+
+.meter-foot b {
+    color: var(--cyan);
+    letter-spacing: 1px;
+}
+
+.freq-block {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    min-width: 0;
+}
+
+.vfo-tag {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+    padding-bottom: 12px;
+}
+
+.tag {
+    white-space: nowrap;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: #e8eef7;
+    color: #0a1220;
+}
+
+.tag.mode {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid #c9d6e8;
+}
+
+.tag.fil {
+    background: transparent;
+    color: var(--cyan);
+    border: 1px solid #2c5f86;
+}
+
+.freq {
+    font-weight: 300;
+    font-size: clamp(54px, 6.4vw, 104px);
+    line-height: .9;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    user-select: none;
+    cursor: ns-resize;
+}
+
+.freq span[data-step] { display: inline-block; }
+.freq span[data-step]:hover { color: var(--cyan); }
+.freq .dot { color: #6f8099; }
+.freq .small { font-size: .55em; color: #cfdaeb; }
+
+.vfo-b {
+    margin-left: auto;
+    text-align: right;
+    padding-bottom: 10px;
+    font-size: 12px;
+    color: var(--dim);
+    white-space: nowrap;
+}
+
+.vfo-b b {
+    display: block;
+    font-weight: 400;
+    font-size: 22px;
+    color: #c9d6e8;
+    font-variant-numeric: tabular-nums;
+}
+
+.vfo-b.split b { color: var(--amber); }
+
+/* scope */
+.scope {
+    position: relative;
+    margin: 6px 12px 0;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: #01040a;
+    cursor: crosshair;
+}
+
+.scope canvas {
+    display: block;
+    width: 100%;
+}
+
+#spectrum { height: 170px; }
+#waterfall { height: 210px; }
+
+.scope-msg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dim);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.scope-hover {
+    position: absolute;
+    top: 6px;
+    padding: 2px 6px;
+    font-size: 11px;
+    background: rgba(5, 12, 24, .85);
+    border: 1px solid #22406a;
+    border-radius: 3px;
+    pointer-events: none;
+    display: none;
+    font-variant-numeric: tabular-nums;
+}
+
+.scope-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px 10px;
+    font-size: 12px;
+    color: var(--dim);
+    flex-wrap: wrap;
+}
+
+.scope-bar .val {
+    min-width: 72px;
+    text-align: center;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.scope-bar .gap { flex: 1; }
+
+/* touch keys */
+.k {
+    background: linear-gradient(180deg, var(--key-1), var(--key-2));
+    border: 1px solid #0d1015;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    color: #dfe7f2;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 1px 0 rgba(0, 0, 0, .5);
+    min-width: 42px;
+}
+
+.k:hover { filter: brightness(1.15); }
+.k:active { transform: translateY(1px); }
+
+.k.on {
+    background: linear-gradient(180deg, #4a95ff, var(--blue-2));
+    color: #fff;
+    border-color: #0c2d5f;
+}
+
+.k.red.on {
+    background: linear-gradient(180deg, #ff6b6b, #c41f1f);
+    border-color: #5f0c0c;
+}
+
+.k.sm { padding: 5px 9px; min-width: 34px; font-size: 11px; }
+
+/* soft keys under the screen */
+.softkeys {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.softkeys .k {
+    padding: 11px 6px;
+    font-size: 13px;
+}
+
+/* panel of the selected soft key */
+.panel {
+    margin-top: 12px;
+    background: linear-gradient(180deg, #121821, #0b0f15);
+    border: 1px solid #1c2633;
+    border-radius: 12px;
+    padding: 14px 16px;
+    min-height: 150px;
+}
+
+.panel h3 {
+    margin: 0 0 10px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--dim);
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.row + .row { margin-top: 10px; }
+
+.grid2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px 22px;
+}
+
+.slider {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr) 54px;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--dim);
+}
+
+.slider output {
+    text-align: right;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+input[type=range] {
+    width: 100%;
+    accent-color: var(--blue);
+}
+
+input[type=text] {
+    background: #070b11;
+    border: 1px solid #263346;
+    color: var(--text);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font: inherit;
+    min-width: 0;
+}
+
+.hint {
+    font-size: 11.5px;
+    color: var(--dim);
+    margin-top: 8px;
+}
+
+/* right column: dial + transmit */
+.side {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.side .case {
+    padding: 18px;
+}
+
+.dial-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 6px 0 4px;
+}
+
+.dial {
+    position: relative;
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 50% 38%, #3a3f47 0%, #1c1f24 55%, #0d0f12 100%);
+    box-shadow:
+        0 10px 24px rgba(0, 0, 0, .7),
+        inset 0 2px 1px rgba(255, 255, 255, .12),
+        inset 0 -6px 14px rgba(0, 0, 0, .6);
+    cursor: grab;
+    touch-action: none;
+}
+
+.dial::before {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, #2c3138 0 2deg, #16191d 2deg 4deg);
+    opacity: .7;
+}
+
+.dial::after {
+    content: "";
+    position: absolute;
+    inset: 28px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 45% 35%, #33383f, #17191d 70%);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, .1);
+}
+
+.dial i {
+    position: absolute;
+    z-index: 2;
+    top: 40px;
+    left: calc(50% - 13px);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #20242a, #08090b);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, .8), 0 1px 0 rgba(255, 255, 255, .08);
+    transform-origin: 13px 65px;
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.ptt {
+    width: 100%;
+    padding: 18px 0;
+    font-size: 20px;
+    letter-spacing: 4px;
+    font-weight: 800;
+    border-radius: 12px;
+    border: 1px solid #3d0b0b;
+    color: #ffd9d9;
+    background: linear-gradient(180deg, #5a1414, #2a0707);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
+    touch-action: none;
+}
+
+.ptt.on {
+    background: linear-gradient(180deg, #ff4a4a, #b01212);
+    color: #fff;
+    box-shadow: 0 0 22px rgba(255, 65, 65, .55);
+}
+
+.side-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.side-grid .k { padding: 10px 6px; }
+
+.rit {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--dim);
+}
+
+.rit output {
+    flex: 1;
+    text-align: center;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* overlay when the IC-7300 is not the active transceiver */
+.notice {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(3, 6, 12, .82);
+    z-index: 50;
+}
+
+.notice.show { display: flex; }
+
+.notice div {
+    max-width: 440px;
+    background: #0e1521;
+    border: 1px solid #263a5a;
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.notice a { color: var(--cyan); }
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #10213a;
+    border: 1px solid #2d5fa8;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity .2s;
+    pointer-events: none;
+    z-index: 60;
+}
+
+.toast.show { opacity: 1; }
+
+/* smaller screens */
+@media (max-width: 1180px) {
+    .wrap { grid-template-columns: minmax(0, 1fr); }
+    .side { display: grid; grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 760px) {
+    .wrap { padding: 0 10px 16px; }
+    .top { padding: 10px 12px; flex-wrap: wrap; }
+    .head { grid-template-columns: minmax(0, 1fr); }
+    .softkeys { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .side { grid-template-columns: minmax(0, 1fr); }
+    #waterfall { height: 150px; }
+    #spectrum { height: 130px; }
+    .vfo-b { display: none; }
+    .freq-block { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .vfo-tag { flex-direction: row; padding-bottom: 0; }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="top">
+    <div class="brand">IC-7300<small>REMOTE</small></div>
+    <div class="conn" id="conn"><i></i><span id="conn-text">CONNECTING …</span></div>
+    <div class="spacer"></div>
+    <div class="clock" id="clock"></div>
+    <a href="/">Dashboard</a>
+</div>
+
+<div class="wrap">
+
+    <main>
+
+        <div class="case">
+            <div class="screen">
+
+                <div class="icons" id="icons"></div>
+
+                <div class="head">
+
+                    <div class="meter" id="meter" title="Click: S / PO / SWR / ALC">
+                        <div class="meter-scale" id="meter-scale"></div>
+                        <div class="meter-bar"><i id="meter-fill"></i></div>
+                        <div class="meter-foot"><b id="meter-name">S</b><span id="meter-value">—</span></div>
+                    </div>
+
+                    <div class="freq-block">
+                        <div class="vfo-tag">
+                            <span class="tag" id="vfo-tag">VFO A</span>
+                            <span class="tag mode" id="mode-tag">USB</span>
+                            <span class="tag fil" id="fil-tag">FIL1</span>
+                        </div>
+                        <div class="freq" id="freq" title="Mouse wheel on a digit tunes it · click to type a frequency">—</div>
+                        <div class="vfo-b" id="vfo-b">VFO B<b id="freq-b">—</b></div>
+                    </div>
+
+                </div>
+
+                <div class="scope" id="scope">
+                    <canvas id="spectrum"></canvas>
+                    <canvas id="waterfall"></canvas>
+                    <div class="scope-msg" id="scope-msg">Waiting for the spectrum scope of the IC-7300 …</div>
+                    <div class="scope-hover" id="scope-hover"></div>
+                </div>
+
+                <div class="scope-bar">
+                    <button class="k sm" id="sc-mode">CENT</button>
+                    <span>SPAN</span>
+                    <button class="k sm" id="sc-span-down">−</button>
+                    <span class="val" id="sc-span">±25 kHz</span>
+                    <button class="k sm" id="sc-span-up">+</button>
+                    <span style="margin-left:10px">REF</span>
+                    <button class="k sm" id="sc-ref-down">−</button>
+                    <span class="val" id="sc-ref">0.0 dB</span>
+                    <button class="k sm" id="sc-ref-up">+</button>
+                    <span style="margin-left:10px">SPEED</span>
+                    <button class="k sm" id="sc-speed">MID</button>
+                    <span class="gap"></span>
+                    <span>Click in the scope to tune</span>
+                </div>
+
+            </div>
+
+            <div class="softkeys" id="softkeys">
+                <button class="k on" data-panel="band">BAND</button>
+                <button class="k" data-panel="mode">MODE</button>
+                <button class="k" data-panel="rx">RX / DSP</button>
+                <button class="k" data-panel="tx">TX</button>
+                <button class="k" data-panel="cw">CW</button>
+                <button class="k" data-panel="voice">VOICE</button>
+                <button class="k" data-panel="audio">AUDIO</button>
+                <button class="k" data-panel="info">INFO</button>
+            </div>
+        </div>
+
+        <!-- panels -->
+        <section class="panel" data-panel="band">
+            <h3>BAND</h3>
+            <div class="row" id="bands"></div>
+            <div class="hint">Returns to the last frequency and mode used on the band.</div>
+        </section>
+
+        <section class="panel" data-panel="mode" hidden>
+            <h3>MODE</h3>
+            <div class="row" id="modes"></div>
+            <div class="row">
+                <button class="k" id="data">DATA</button>
+                <span style="width:14px"></span>
+                <button class="k" data-filter="1">FIL1</button>
+                <button class="k" data-filter="2">FIL2</button>
+                <button class="k" data-filter="3">FIL3</button>
+            </div>
+            <div class="grid2" style="margin-top:12px">
+                <label class="slider">TWIN PBT IN<input type="range" id="pbtIn" min="-1200" max="1200" step="50"><output id="pbtIn-v"></output></label>
+                <label class="slider">TWIN PBT OUT<input type="range" id="pbtOut" min="-1200" max="1200" step="50"><output id="pbtOut-v"></output></label>
+            </div>
+            <div class="row" style="margin-top:8px"><button class="k sm" id="pbt-reset">PBT CLEAR</button></div>
+        </section>
+
+        <section class="panel" data-panel="rx" hidden>
+            <h3>RX / DSP</h3>
+            <div class="row">
+                <span class="hint" style="margin:0 4px 0 0">P.AMP</span>
+                <button class="k" data-preamp="0">OFF</button>
+                <button class="k" data-preamp="1">P.AMP1</button>
+                <button class="k" data-preamp="2">P.AMP2</button>
+                <button class="k" id="att">ATT 20</button>
+                <span style="width:14px"></span>
+                <span class="hint" style="margin:0 4px 0 0">AGC</span>
+                <button class="k" data-agc="FAST">FAST</button>
+                <button class="k" data-agc="MID">MID</button>
+                <button class="k" data-agc="SLOW">SLOW</button>
+            </div>
+            <div class="row">
+                <button class="k" id="nb">NB</button>
+                <button class="k" id="nr">NR</button>
+                <button class="k" id="anf">AN</button>
+                <button class="k" id="manualNotch">MN</button>
+            </div>
+            <div class="grid2" style="margin-top:12px">
+                <label class="slider">NB LEVEL<input type="range" id="nbLevel" min="0" max="9"><output id="nbLevel-v"></output></label>
+                <label class="slider">NR LEVEL<input type="range" id="nrLevel" min="0" max="15"><output id="nrLevel-v"></output></label>
+                <label class="slider">RF GAIN<input type="range" id="rf" min="0" max="100"><output id="rf-v"></output></label>
+                <label class="slider">SQL<input type="range" id="sql" min="0" max="100"><output id="sql-v"></output></label>
+            </div>
+        </section>
+
+        <section class="panel" data-panel="tx" hidden>
+            <h3>TX</h3>
+            <div class="grid2">
+                <label class="slider">RF POWER<input type="range" id="power" min="0" max="100"><output id="power-v"></output></label>
+                <label class="slider">MIC GAIN<input type="range" id="mic" min="0" max="100"><output id="mic-v"></output></label>
+                <label class="slider">COMP LEVEL<input type="range" id="compLevel" min="0" max="10"><output id="compLevel-v"></output></label>
+            </div>
+            <div class="row" style="margin-top:12px">
+                <button class="k" id="comp">COMP</button>
+                <button class="k" id="vox">VOX</button>
+                <button class="k" id="mon">MONI</button>
+                <span style="width:14px"></span>
+                <button class="k" id="tuner">TUNER</button>
+                <button class="k" id="tune-2">TUNE</button>
+            </div>
+            <div class="hint">RF power 100 % = 100 W. TUNE starts the internal antenna tuner.</div>
+        </section>
+
+        <section class="panel" data-panel="cw" hidden>
+            <h3>CW</h3>
+            <div class="grid2">
+                <label class="slider">KEY SPEED<input type="range" id="keySpeed" min="6" max="48"><output id="keySpeed-v"></output></label>
+                <div class="row">
+                    <span class="hint" style="margin:0 4px 0 0">BK-IN</span>
+                    <button class="k" data-bkin="OFF">OFF</button>
+                    <button class="k" data-bkin="SEMI">SEMI</button>
+                    <button class="k" data-bkin="FULL">FULL</button>
+                </div>
+            </div>
+            <div class="row" style="margin-top:12px">
+                <input type="text" id="cw-text" placeholder="Text to send in CW (Enter)" style="flex:1;min-width:220px" maxlength="120">
+                <button class="k on" id="cw-send">SEND</button>
+                <button class="k red" id="cw-stop">STOP</button>
+            </div>
+            <div class="row" id="cw-macros"></div>
+            <div class="hint">Macros: right-click (or long press) to edit. {CALL} = own callsign.</div>
+        </section>
+
+        <section class="panel" data-panel="voice" hidden>
+            <h3>VOICE MEMORIES (VOICE TX)</h3>
+            <div class="row" id="voices"></div>
+            <div class="hint">Plays the voice memories T1 - T8 recorded in the IC-7300 (MENU › VOICE).</div>
+        </section>
+
+        <section class="panel" data-panel="audio" hidden>
+            <h3>AUDIO</h3>
+            <div class="row">
+                <button class="k" id="a-rx">RX AUDIO ON</button>
+            </div>
+            <div class="grid2" style="margin-top:12px">
+                <label class="slider">VOLUME<input type="range" id="a-vol" min="0" max="200" value="100"><output id="a-vol-v">100</output></label>
+                <label class="slider">AF GAIN (RIG)<input type="range" id="af" min="0" max="100"><output id="af-v"></output></label>
+            </div>
+            <div class="hint">Receive audio from the IC-7300 USB sound card (Settings › Audio device). Microphone audio from the browser is not supported yet.</div>
+        </section>
+
+        <section class="panel" data-panel="info" hidden>
+            <h3>INFO</h3>
+            <div id="info" class="hint" style="line-height:1.7;margin:0"></div>
+        </section>
+
+    </main>
+
+    <aside class="side">
+
+        <div class="case">
+            <div class="dial-wrap">
+                <div class="dial" id="dial" title="Drag or turn the mouse wheel"><i id="dial-dot"></i></div>
+            </div>
+            <div class="steps" id="steps"></div>
+            <div class="rit">
+                <button class="k sm" id="rit">RIT</button>
+                <button class="k sm" id="rit-down">−</button>
+                <output id="rit-v">0 Hz</output>
+                <button class="k sm" id="rit-up">+</button>
+                <button class="k sm" id="rit-clear">CLR</button>
+            </div>
+        </div>
+
+        <div class="case">
+            <button class="ptt" id="ptt" title="Hold (or hold the space bar)">PTT</button>
+            <div class="side-grid">
+                <button class="k" id="tune">TUNE</button>
+                <button class="k" id="split">SPLIT</button>
+                <button class="k" id="vfo-swap">A ⇄ B</button>
+                <button class="k" id="vfo-equal">A = B</button>
+            </div>
+        </div>
+
+    </aside>
+
+</div>
+
+<div class="notice" id="notice"><div id="notice-text"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="/js/ic7300-remote.js?v=1"></script>
+
+</body>
+</html>

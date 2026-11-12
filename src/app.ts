@@ -18,6 +18,7 @@ import lotwRouter from "./routes/lotw.js";
 import wsjtxRouter from "./routes/wsjtx.js";
 import rotatorRouter from "./routes/rotator.js";
 import ftx1Router from "./routes/ftx1.js";
+import ic7300Router from "./routes/ic7300.js";
 import dxpeditionsRouter from "./routes/dxpeditions.js";
 import backupRouter from "./routes/backup.js";
 import neededRouter from "./routes/needed.js";
@@ -195,6 +196,12 @@ app.use(
 app.use(
     "/api/ftx1",
     ftx1Router
+);
+
+// Icom IC-7300 remote page
+app.use(
+    "/api/ic7300",
+    ic7300Router
 );
 
 // Antenna rotator (Hamlib rotctld)

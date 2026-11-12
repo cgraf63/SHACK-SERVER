@@ -264,7 +264,7 @@
         parts.push(portLabel(radio.device));
         parts.push(radio.baudRate ? `${radio.baudRate} Bd` : "model default baud rate");
 
-        if (radio.protocol === "icom" && radio.civAddress !== undefined) {
+        if ((radio.protocol === "icom" || radio.protocol === "ic7300") && radio.civAddress !== undefined) {
             parts.push(`CI-V ${hex2(radio.civAddress)}`);
         }
 

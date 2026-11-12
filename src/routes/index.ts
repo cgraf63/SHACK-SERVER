@@ -106,6 +106,17 @@ router.get('/ftx1', (_req, res) => {
     );
 });
 
+router.get('/ic7300', (_req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '..',
+            'public',
+            'ic7300-remote.html'
+        )
+    );
+});
+
 
 router.get('/rgo', (_req, res) => {
     res.sendFile(

@@ -31,7 +31,7 @@ SHACK-SERVER sammelt diese Daten, führt sie zusammen, bewertet sie und zeigt si
 - **Logbuch** mit ADIF-Import und -Export, automatischem Upload zu **QRZ.com**, **Club Log** und **LoTW** sowie Übernahme der QSOs aus **WSJT-X**.
 - **DXCC-Tabelle** und **aktuelle DXpeditionen**, verglichen mit dem eigenen Log.
 - **Contest-Konsole** für mehrere Operatoren mit eigenem Contest-Log und Cabrillo-Export.
-- **Fernsteuerung** des Transceivers über das Internet, mit Audio und Mikrofon, für Yaesu FTDX10, Yaesu FTX-1 und RGO ONE; Unterstützung des CTR2-MIDI-Bedienteils.
+- **Fernsteuerung** des Transceivers über das Internet, mit Audio und Mikrofon, für Yaesu FTDX10, Yaesu FTX-1, Icom IC-7300 und RGO ONE; Unterstützung des CTR2-MIDI-Bedienteils.
 - **Eingebautes SDR** (SDRplay RSP1B) mit Spektrum und Wasserfall.
 - **Antennenrotor** über Hamlib.
 - **Handy-App** mit Portabel-Log für POTA, SOTA und WWFF.
@@ -56,7 +56,7 @@ Der Server ist in **TypeScript** geschrieben und läuft mit **Node.js**. Die Obe
 
 Die Daten liegen in einer **SQLite**-Datenbank. Sie lässt sich auch im laufenden Betrieb sichern; das eingebaute Backup kopiert sie täglich nach Dropbox, Google Drive, OneDrive oder auf ein NAS (siehe [Backup](#backup)).
 
-Für die Transceiver gibt es eigene Treiber (Yaesu FTDX10, Yaesu FTX-1, RGO ONE, Icom CI-V, QRP Labs QMX) und zusätzlich die Bibliothek **Hamlib** für rund 400 weitere Modelle.
+Für die Transceiver gibt es eigene Treiber (Yaesu FTDX10, Yaesu FTX-1, RGO ONE, Icom IC-7300, Icom CI-V, QRP Labs QMX) und zusätzlich die Bibliothek **Hamlib** für rund 400 weitere Modelle.
 
 Externe Dienste wie QRZ.com, Club Log, LoTW, SOTA, POTA, NOAA und SIDC sind eingebunden, damit alles auf einem Dashboard zusammenkommt.
 
@@ -128,7 +128,7 @@ Actual Propagation vergleicht das Modell (NOAA/SIDC) mit der Wirklichkeit (Anzah
 
 Im Bereich **Station** steht der aktive Transceiver mit Name, CAT-Status, Frequenz, Betriebsart und Leistung. Links daneben wählt man aus den eingerichteten Transceivern den aktiven aus; es ist immer nur einer aktiv.
 
-Ist ein Transceiver mit eigener Fernsteuerungsseite aktiv (FTDX10, FTX-1, RGO ONE), öffnet der Knopf mit seinem Namen diese Seite (siehe [Fernsteuerung](#fernsteuerung)).
+Ist ein Transceiver mit eigener Fernsteuerungsseite aktiv (FTDX10, FTX-1, IC-7300, RGO ONE), öffnet der Knopf mit seinem Namen diese Seite (siehe [Fernsteuerung](#fernsteuerung)).
 
 ## Rotorsteuerung
 
@@ -332,7 +332,8 @@ SHACK-SERVER bedient alle Transceiver über eine gemeinsame Schnittstelle. Das D
 | Yaesu FTDX10 | USB / CAT, eigener Treiber | integriert, mit Fernsteuerungsseite |
 | Yaesu FTX-1 | USB / CAT, eigener Treiber | integriert, mit Fernsteuerungsseite |
 | RGO ONE | USB / CAT, eigener Treiber | integriert, mit Fernsteuerungsseite |
-| Icom IC-705, IC-7300, IC-7300 MK2 | USB / CI-V, eigener Treiber | vorbereitet, Hardwaretest offen |
+| Icom IC-7300, IC-7300MK2 | USB / CI-V, eigener Treiber | integriert, mit Fernsteuerungsseite und Scope; Test am Gerät offen |
+| Icom IC-705 und andere Icom | USB / CI-V, eigener Treiber | vorbereitet, Hardwaretest offen |
 | QRP Labs QMX / QMX+ | USB / CAT, eigener Treiber | vorbereitet, Hardwaretest offen |
 | rund 400 weitere Modelle | Hamlib | integriert |
 
@@ -397,6 +398,21 @@ Ist der FTX-1 der aktive Transceiver, öffnet der Knopf **FTX-1** im Dashboard e
 **MEM – Speicherkanäle:** **READ CHANNELS** liest die Kanäle 1–99 mit Name, Frequenz, Mode, Ablage und Ton (etwa 10 Sekunden). Ein Kanal lässt sich auf MAIN oder SUB abrufen; CH ▲/▼ blättert, QMB legt ab und ruft ab. Die aktuelle Einstellung von MAIN oder SUB lässt sich mit Namen in einen Kanal speichern (mit Rückfrage vor dem Überschreiben), Kanäle lassen sich umbenennen.
 
 Die Seite passt ohne Scrollen auf einen Bildschirm mit 1920 × 1080 Punkten.
+
+## Icom IC-7300
+
+![IC-7300-Seite](images/remote-ic7300.jpg)
+
+Ist der IC-7300 (oder IC-7300MK2) der aktive Transceiver, öffnet der Knopf **IC-7300** im Dashboard eine eigene Seite im Stil des IC-7300-Touchscreens:
+
+- **Spektrum und Wasserfall direkt aus dem IC-7300** über USB – kein SDR nötig. Ein Klick ins Spektrum stimmt dorthin ab, das Mausrad stimmt im eingestellten Schritt. CENT/FIX, Span (±2,5 kHz bis ±500 kHz), Referenzpegel und Geschwindigkeit wie am Gerät. Das Gerät sendet die Scope-Daten nur, solange die Seite offen ist.
+- **Frequenz:** Mausrad über einer Ziffer stimmt genau diese Stelle; Klick auf die Frequenz öffnet die Eingabe. Abstimmknopf (ziehen oder Mausrad), Schritte 10 Hz bis 10 kHz, Pfeiltasten.
+- **Statuszeile** wie oben im Display: RX/TX, P.AMP, ATT, AGC, NB, NR, AN, MN, COMP, VOX, BK-IN, SPLIT, RIT, TUNER, Band.
+- **Instrument:** S, PO, SWR, ALC – Klick wechselt, AUTO zeigt beim Senden PO.
+- **Soft-Keys** unten: BAND, MODE (mit DATA, FIL1–3, Twin-PBT), RX/DSP (P.AMP, ATT, AGC, NB, NR, AN, MN, RF-Gain, Squelch), TX (Leistung, Mic-Gain, Kompressor, VOX, Monitor, Tuner), CW (Tempo, Break-in, Text senden, Makros F1–F5), VOICE (Sprachspeicher T1–T8), AUDIO.
+- **PTT** (Knopf halten oder Leertaste), TUNE, SPLIT, A⇄B, A=B, RIT.
+
+Einstellungen am IC-7300: *SET › Connectors › CI-V*: **CI-V USB Baud Rate** 115200, **CI-V Address** 94h (IC-7300MK2: B6h), **CI-V Transceive** ON, **CI-V USB Echo Back** OFF. In SHACK-SERVER als Treiber **Icom IC-7300 / IC-7300MK2** wählen.
 
 ## RGO ONE, QRP Labs QMX und andere
 

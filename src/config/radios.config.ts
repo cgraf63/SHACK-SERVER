@@ -9,6 +9,7 @@ export interface RadioConfig {
         | "ftx-1"
         | "ftdx10"
         | "icom"
+        | "ic7300"
         | "qmx"
         | "hamlib"
         | "demo";

@@ -11,7 +11,7 @@ Für SOTA- und POTA-Aktivierungen wird neben dem Callsign ein kleines Dreieck an
 
 Die Applikation kann die gefundenen Callsigns auf Wunsch auf einer zoombaren Karte darstellen. Zusätzlich beinhaltet SHACK-SERVER ein einfaches Logprogramm mit ADIF-Import und ADIF-Export sowie eine Contest-Konsole.
 
-Transceiver werden per CAT angesteuert: mit eigenen Treibern (Yaesu FTDX10, Yaesu FTX-1, RGO-One, Icom CI-V, QRP Labs QMX) und über **Hamlib** für mehrere Hundert weitere Modelle.
+Transceiver werden per CAT angesteuert: mit eigenen Treibern (Yaesu FTDX10, Yaesu FTX-1, RGO-One, Icom IC-7300 (mit Fernsteuerungsseite und Scope), Icom CI-V, QRP Labs QMX) und über **Hamlib** für mehrere Hundert weitere Modelle.
 
 Diese Anleitung beschreibt die Installation auf einem Raspberry Pi mit:
 
@@ -471,7 +471,7 @@ Transceiver werden in der Weboberfläche eingerichtet – ohne Dateien zu bearbe
 **Settings → Transceivers → + Add Transceiver**
 
 1. **Transceiver / driver** wählen:
-   - eigene Treiber: Yaesu FTDX10, Yaesu FTX-1, RGO-One, Icom CI-V, QRP Labs QMX
+   - eigene Treiber: Yaesu FTDX10, Yaesu FTX-1, RGO-One, Icom IC-7300 (mit Fernsteuerungsseite und Scope), Icom CI-V, QRP Labs QMX
    - **Hamlib - other transceivers** für alle weiteren Modelle (Hersteller und Modell aus der Liste wählen)
 2. **Serial port** wählen. Erkannte Schnittstellen werden mit lesbarem Namen angezeigt; bei Yaesu-Geräten mit CP2105-Chip ist der CAT-Port („Interface 0“) markiert.
 3. **Baud rate** – muss zur CAT-Einstellung im Menü des Transceivers passen. Bei Hamlib meist „Model default“.

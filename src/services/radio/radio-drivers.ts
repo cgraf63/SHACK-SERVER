@@ -5,6 +5,7 @@ import { Ftdx10Service } from "./ftdx10.service.js";
 import { Ftx1Service } from "./ftx-1.service.js";
 import { RgoOneService } from "./rgo-one.service.js";
 import { IcomService } from "./icom.service.js";
+import { Ic7300Service } from "./ic7300.service.js";
 import { QmxService } from "./qmx.service.js";
 import { HamlibService } from "./hamlib.service.js";
 import { DemoRadioService } from "./demo-radio.service.js";
@@ -110,9 +111,23 @@ const DRIVERS: RadioDriver[] = [
     },
 
     {
+        protocol: "ic7300",
+        label: "Icom IC-7300 / IC-7300MK2",
+        models: "IC-7300, IC-7300MK2",
+        defaultBaudRate: 115200,
+        baudRates: [9600, 19200, 38400, 57600, 115200],
+        hint:
+            "IC-7300 menu SET > Connectors > CI-V: CI-V USB Baud Rate 115200 (or Auto), " +
+            "CI-V Address 94h (IC-7300MK2: B6h), CI-V Transceive ON. " +
+            "With its own remote page and the spectrum scope of the radio.",
+        needsCivAddress: true,
+        defaultCivAddress: 0x94,
+        create: c => new Ic7300Service(c.device, c.baudRate, c.civAddress ?? 0x94),
+    },
+    {
         protocol: "icom",
         label: "Icom CI-V",
-        models: "IC-705, IC-7300, IC-7610, IC-9700, …",
+        models: "IC-705, IC-7610, IC-9700, …",
         defaultBaudRate: 115200,
         baudRates: [4800, 9600, 19200, 38400, 57600, 115200],
         hint:

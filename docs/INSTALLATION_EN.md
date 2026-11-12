@@ -11,7 +11,7 @@ For SOTA and POTA activations a small triangle is shown next to the callsign –
 
 On request the application shows the spotted callsigns on a zoomable map. SHACK-SERVER also includes a simple logbook with ADIF import and ADIF export, and a contest console.
 
-Transceivers are controlled via CAT: with built-in drivers (Yaesu FTDX10, Yaesu FTX-1, RGO-One, Icom CI-V, QRP Labs QMX) and via **Hamlib** for several hundred further models.
+Transceivers are controlled via CAT: with built-in drivers (Yaesu FTDX10, Yaesu FTX-1, RGO-One, Icom IC-7300 (with remote page and scope), Icom CI-V, QRP Labs QMX) and via **Hamlib** for several hundred further models.
 
 This guide describes the installation on a Raspberry Pi with:
 
@@ -473,7 +473,7 @@ Transceivers are set up in the web interface – without editing files:
 **Settings → Transceivers → + Add Transceiver**
 
 1. Choose the **Transceiver / driver**:
-   - built-in drivers: Yaesu FTDX10, Yaesu FTX-1, RGO-One, Icom CI-V, QRP Labs QMX
+   - built-in drivers: Yaesu FTDX10, Yaesu FTX-1, RGO-One, Icom IC-7300 (with remote page and scope), Icom CI-V, QRP Labs QMX
    - **Hamlib - other transceivers** for all other models (choose manufacturer and model from the list)
 2. Choose the **Serial port**. Detected ports are shown with a readable name; for Yaesu radios with a CP2105 chip the CAT port ("Interface 0") is marked.
 3. **Baud rate** – must match the CAT setting in the transceiver's menu. With Hamlib usually "Model default".
