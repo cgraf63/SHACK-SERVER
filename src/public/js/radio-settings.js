@@ -483,7 +483,7 @@
      * keepBaud: baud rate of the transceiver being edited (form opened);
      * null when the user picks another driver -> that driver's default.
      */
-    function onDriverChange(keepBaud) {
+    function onDriverChange(keepBaud, userChange = false) {
 
         const driver = driverOf($("radio-driver").value);
         if (!driver) return;
@@ -507,7 +507,13 @@
             el.hidden = !civ;
         });
 
-        if (civ && !$("radio-civ").value) {
+        // empty, or still a default of another driver (A4 -> 94 when
+        // switching from "Icom CI-V" to the IC-7300): take this default
+        const driverDefaults = state.drivers
+            .filter(d => d.needsCivAddress)
+            .map(d => hex2(d.defaultCivAddress ?? 0xA4));
+        const currentCiv = $("radio-civ").value.trim().toUpperCase();
+        if (civ && (!currentCiv || (userChange && driverDefaults.includes(currentCiv) && currentCiv !== hex2(driver.defaultCivAddress ?? 0xA4)))) {
             $("radio-civ").value = hex2(driver.defaultCivAddress ?? 0xA4);
         }
 
@@ -870,7 +876,7 @@
         $("radio-test").addEventListener("click", testConnection);
         $("radio-save").addEventListener("click", saveForm);
 
-        $("radio-driver").addEventListener("change", () => onDriverChange(null));
+        $("radio-driver").addEventListener("change", () => onDriverChange(null, true));
         $("radio-port").addEventListener("change", onPortChange);
         $("radio-hamlib-mfg").addEventListener("change", () => renderHamlibModelOptions(null));
         $("radio-hamlib-model").addEventListener("change", onHamlibModelChange);

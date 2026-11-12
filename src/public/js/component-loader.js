@@ -254,7 +254,7 @@ await new Promise(resolve => {
         );
 
     radioSettingsScript.src =
-        "js/radio-settings.js?v=3";
+        "js/radio-settings.js?v=4";
 
     document.body.appendChild(
         radioSettingsScript
