@@ -1003,7 +1003,7 @@ setFrequencyB(frequency: number): void {
         );
     }
 
-    setMode(mode: string, _frequency: number): void {
+    setMode(mode: string, frequency: number): void {
         const modes: Record<string, string> = {
             LSB: "1",
             USB: "2",
@@ -1022,7 +1022,29 @@ setFrequencyB(frequency: number): void {
             "DATA-FM-N": "F",
         };
 
-        const normalizedMode = mode.toUpperCase();
+        /*
+         * Spots, DXpeditions, the phone app and the tune routes use the
+         * general names (CW, CW-R, SSB, FT8 ...) - map them to the FTDX10
+         * modes. Before: "CW" was refused ("Unsupported FTDX10 mode").
+         */
+        const lowerSideband = frequency > 0 && frequency < 10_000_000;
+        const aliases: Record<string, string> = {
+            CW: "CW-U",
+            "CW-R": "CW-L",
+            SSB: lowerSideband ? "LSB" : "USB",
+            RTTY: "RTTY-L",
+            "RTTY-R": "RTTY-U",
+            FT8: "DATA-U",
+            FT4: "DATA-U",
+            DIGI: "DATA-U",
+            DATA: "DATA-U",
+            "USB-D": "DATA-U",
+            "LSB-D": "DATA-L",
+            "FM-D": "DATA-FM",
+        };
+
+        const requested = mode.toUpperCase();
+        const normalizedMode = aliases[requested] ?? requested;
         const code = modes[normalizedMode];
 
         if (code === undefined) {

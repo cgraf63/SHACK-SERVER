@@ -277,9 +277,22 @@ export class QmxService
             };
 
 
+        // general names from spots / tune routes
+        const requested = mode.toUpperCase();
+        const aliases: Record<string, string> = {
+            "CW-R": "CWR",
+            "CW-L": "CWR",
+            "CW-U": "CW",
+            SSB: frequency > 0 && frequency < 10_000_000 ? "LSB" : "USB",
+            FT8: "USB",
+            FT4: "USB",
+            DIGI: "USB",
+            DATA: "USB",
+            RTTY: "FSK",
+        };
         const code =
             codes[
-                mode.toUpperCase()
+                aliases[requested] ?? requested
             ];
 
 
