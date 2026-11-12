@@ -366,7 +366,7 @@ A serial port can only be opened by one program at a time. If WSJT-X or a loggin
 
 If the spot says "UP 2", "UP 1-3", "DOWN 1", "QSX 14025", "QSX 025" or "LSN 14.205", **TUNE** sets the receive frequency on VFO A, the transmit frequency on VFO B and switches split on. Tuning a spot without split switches split off again. FT8 and FT4 spots are tuned without split (DXpedition mode in WSJT-X).
 
-Supported: Yaesu FTDX10, Yaesu FTX-1, RGO ONE and all transceivers via Hamlib with split control. Switch it off under *Settings → Split*.
+Supported: Yaesu FTDX10, Yaesu FTX-1, RGO ONE and all transceivers via Hamlib with split control. Switch it off under *Settings → Split & CW*. *Settings → Split & CW* also sets the **CW sideband**: CW-U or CW-L (Icom: CW or CW-R). It is used for every CW spot and every click on "CW", on all bands.
 
 # Remote control
 
@@ -553,7 +553,7 @@ Open the settings with **Settings** in the sidebar. They are divided into sectio
 | DX Sources | switch DX clusters (DXSpider), DX Summit and HolyCluster on and off, add your own clusters | [DX and live spots](#dx-and-live-spots) |
 | Log Uploads | QRZ.com, Club Log, LoTW per callsign | [Online logbooks](#online-logbooks) |
 | WSJT-X | take over QSOs from WSJT-X / JTDX | [WSJT-X](#wsjt-x) |
-| Split | switch automatic split on and off | [Split](#split) |
+| Split & CW | switch automatic split on and off, CW sideband (CW-U / CW-L) | [Split](#split) |
 | Rotator | antenna rotator | [Antenna rotator](#antenna-rotator) |
 | Watch list notifications | push notifications, lockout, quiet hours | [Notifications](#notifications) |
 | New – "needed" callsigns | alerts for new countries and bands, heard near you | [Notifications](#notifications) |

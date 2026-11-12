@@ -178,6 +178,9 @@ export class SettingsService {
                     ? normalizeNotifications((settings as any).notifications, this.settings.notifications)
                     : this.settings.notifications,
 
+            cwSideband:
+                ((settings as any).cwSideband ?? this.settings.cwSideband) === "CW-L" ? "CW-L" : "CW-U",
+
             qrzLookup:
                 (settings as any).qrzLookup
                     ? {

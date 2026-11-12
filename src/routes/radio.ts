@@ -1,5 +1,7 @@
 import { Router } from "express";
 
+import { settingsService } from "../services/settings/settings.service.js";
+
 import {
     radioManager
 } from "../services/radio/radio-manager.js";
@@ -2141,11 +2143,22 @@ activeRadio.setMode(
     DIGI ... - they used to get "Unsupported mode". Digital modes are
     tuned in USB (like the phone app), PHONE / SSB by the band.
 */
+/*
+    "CW" from a spot or a mode button: the sideband the operator uses
+    (Settings -> Split & CW). CW-L = Yaesu CW-L, Icom CW-R, Hamlib CWR.
+    Not frequency dependent.
+*/
+function cwMode(): string {
+    return settingsService.get().cwSideband === "CW-L" ? "CW-R" : "CW";
+}
+
+
 function tuneMode(mode: string, frequency: number): string {
 
     const m = String(mode || "").trim().toUpperCase();
 
-    if (["LSB", "USB", "CW", "CW-R", "CW-L", "AM", "FM"].includes(m)) return m;
+    if (m === "CW") return cwMode();
+    if (["LSB", "USB", "CW-R", "CW-L", "AM", "FM"].includes(m)) return m;
     if (m === "SSB" || m === "PHONE") return frequency < 10_000_000 ? "LSB" : "USB";
 
     // FT8, FT4, RTTY, PSK, JS8, digital, unknown
@@ -2295,7 +2308,7 @@ router.post(
         ];
 
         const normalizedMode =
-            mode.toUpperCase();
+            mode.toUpperCase() === "CW" ? cwMode() : mode.toUpperCase();
 
         if (!allowedModes.includes(normalizedMode)) {
             return res.status(400).json({

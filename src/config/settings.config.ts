@@ -76,6 +76,9 @@ export interface ShackSettings {
     notifications: NotificationSettings;
     /* tuning a spot with "UP 2" / "QSX ..." sets split (default on) */
     autoSplit?: boolean;
+    /* "CW" from spots / mode buttons: upper or lower sideband CW
+       (Yaesu CW-U / CW-L, Icom CW / CW-R) - the operator's habit */
+    cwSideband?: "CW-U" | "CW-L";
     /*
      * QRZ.com XML lookup (names, grids of the stations worked) - before
      * only QRZ_USER / QRZ_PASSWORD in .env (still used when this is empty).

@@ -220,6 +220,8 @@ async function loadSettings() {
 
         const autoSplitBox = document.getElementById("auto-split");
         if (autoSplitBox) autoSplitBox.checked = settingsData.autoSplit !== false;
+        const cwSideband = document.getElementById("cw-sideband");
+        if (cwSideband) cwSideband.value = settingsData.cwSideband === "CW-L" ? "CW-L" : "CW-U";
 
         applyBackupSettings(
             settingsData.backup
@@ -691,6 +693,8 @@ async function saveSettings() {
 
         autoSplit:
             document.getElementById("auto-split")?.checked !== false,
+        cwSideband:
+            document.getElementById("cw-sideband")?.value === "CW-L" ? "CW-L" : "CW-U",
 
         backup:
             collectBackupSettings(),

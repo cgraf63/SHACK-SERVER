@@ -366,7 +366,7 @@ Eine serielle Schnittstelle kann nur ein Programm gleichzeitig öffnen. Soll der
 
 Steht im Spot „UP 2“, „UP 1-3“, „DOWN 1“, „QSX 14025“, „QSX 025“ oder „LSN 14.205“, setzt **TUNE** die Empfangsfrequenz auf VFO A, die Sendefrequenz auf VFO B und schaltet Split ein. Das Abstimmen auf einen Spot ohne Split schaltet Split wieder aus. FT8- und FT4-Spots werden ohne Split abgestimmt (DXpedition-Modus in WSJT-X).
 
-Unterstützt: Yaesu FTDX10, Yaesu FTX-1, RGO ONE und alle Transceiver über Hamlib mit Split-Steuerung. Ausschalten unter *Settings → Split*.
+Unterstützt: Yaesu FTDX10, Yaesu FTX-1, RGO ONE und alle Transceiver über Hamlib mit Split-Steuerung. Ausschalten unter *Settings → Split & CW*. Unter *Settings → Split & CW* stellt man ausserdem das **CW-Seitenband** ein: CW-U oder CW-L (Icom: CW bzw. CW-R). Es gilt für jeden CW-Spot und jeden Klick auf „CW“, auf allen Bändern.
 
 # Fernsteuerung
 
@@ -553,7 +553,7 @@ Die Settings öffnet man über **Settings** in der Seitenleiste. Sie sind in Abs
 | DX Sources | DX-Cluster (DXSpider), DX Summit, HolyCluster ein- und ausschalten, eigene Cluster hinzufügen | [DX- und Live-Spots](#dx--und-live-spots) |
 | Log Uploads | QRZ.com, Club Log, LoTW pro Rufzeichen | [Online-Logbücher](#online-logbücher) |
 | WSJT-X | QSOs aus WSJT-X / JTDX übernehmen | [WSJT-X](#wsjt-x) |
-| Split | automatischen Split ein- und ausschalten | [Split](#split) |
+| Split & CW | automatischen Split ein- und ausschalten, CW-Seitenband (CW-U / CW-L) | [Split](#split) |
 | Rotator | Antennenrotor | [Antennenrotor](#antennenrotor) |
 | Watch list notifications | Push-Nachrichten, Sperrzeit, Ruhezeiten | [Benachrichtigungen](#benachrichtigungen) |
 | New – "needed" callsigns | Meldungen für neue Länder und Bänder, Heard near you | [Benachrichtigungen](#benachrichtigungen) |
