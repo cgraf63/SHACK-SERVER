@@ -1,6 +1,6 @@
 {
   "name": "shack-server",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Modern amateur radio station server with REST API, WebSocket support and plugin architecture.",
   "private": true,
   "type": "module",

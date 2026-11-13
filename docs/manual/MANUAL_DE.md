@@ -94,7 +94,7 @@ Jeder Schritt kann übersprungen werden. Den Assistenten erreicht man später je
 
 ## Updates
 
-**Settings → Software update** zeigt, ob eine neue Version bereitsteht, und installiert sie per Knopfdruck. Danach im Browser die Seite mit **Ctrl+F5** neu laden.
+**Settings → Software update** zeigt, ob eine neue Version bereitsteht, und installiert sie per Knopfdruck. Danach im Browser die Seite mit **Ctrl+F5** neu laden. Versionen sind nummeriert, z. B. **v1.0.3**: Die ersten beiden Stellen setzt ein Release (v1.0.0, v1.1.0 …), die letzte zählt jede Änderung danach hoch.
 
 # Dashboard
 

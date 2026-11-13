@@ -2570,6 +2570,13 @@ function formatCommitDate(iso) {
 
 }
 
+/* version (v1.0.3) when the commit has one, otherwise the commit id */
+function commitLabel(commit) {
+    return commit.version
+        ? `<code class="version" title="Commit ${escapeHtml(commit.hash)}">v${escapeHtml(commit.version)}</code>`
+        : `<code>${escapeHtml(commit.hash)}</code>`;
+}
+
 function renderUpdateStatus(status) {
 
     const current = document.getElementById("update-current");
@@ -2588,7 +2595,7 @@ function renderUpdateStatus(status) {
     }
 
     current.innerHTML = status.current
-        ? `Installed: <code>${escapeHtml(status.current.hash)}</code> · ${escapeHtml(formatCommitDate(status.current.date))} · ${escapeHtml(status.current.subject)}`
+        ? `Installed: ${commitLabel(status.current)} · ${escapeHtml(formatCommitDate(status.current.date))} · ${escapeHtml(status.current.subject)}`
         : "Installed version unknown";
 
     if (status.running) {
@@ -2617,7 +2624,7 @@ function renderUpdateStatus(status) {
     }
 
     list.innerHTML = (status.commits || []).slice(0, 15).map(commit =>
-        `<div class="commit"><code>${escapeHtml(commit.hash)}</code><span class="date">${escapeHtml(formatCommitDate(commit.date))}</span>${escapeHtml(commit.subject)}</div>`
+        `<div class="commit">${commitLabel(commit)}<span class="date">${escapeHtml(formatCommitDate(commit.date))}</span>${escapeHtml(commit.subject)}</div>`
     ).join("");
 
     log.hidden = !(status.running || (status.lastRun && !status.lastRun.ok)) || !status.log;

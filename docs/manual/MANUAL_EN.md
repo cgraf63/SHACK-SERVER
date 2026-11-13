@@ -94,7 +94,7 @@ Every step can be skipped. You can open the assistant again at any time with the
 
 ## Updates
 
-**Settings → Software update** shows whether a new version is available and installs it with one click. Afterwards reload the page in the browser with **Ctrl+F5**.
+**Settings → Software update** shows whether a new version is available and installs it with one click. Afterwards reload the page in the browser with **Ctrl+F5**. Versions are numbered, e.g. **v1.0.3**: the first two parts are set by a release (v1.0.0, v1.1.0 …), the last one counts every change after it.
 
 # Dashboard
 

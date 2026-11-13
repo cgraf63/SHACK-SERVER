@@ -27,6 +27,8 @@ export interface CommitInfo {
     hash: string;
     date: string;
     subject: string;
+    /* "1.0.3" = 3 commits after the tag v1.0.0; "" without a release tag */
+    version: string;
 }
 
 export interface UpdateStatus {
@@ -68,8 +70,35 @@ function parseCommits(text: string): CommitInfo[] {
         .filter(Boolean)
         .map(line => {
             const [hash = "", date = "", ...subject] = line.split("\t");
-            return { hash, date, subject: subject.join("\t") };
+            return { hash, date, subject: subject.join("\t"), version: "" };
         });
+
+}
+
+/*
+ * Version of a commit from the release tags (vMAJOR.MINOR.PATCH):
+ * the tag itself is that version, every later commit counts the
+ * patch number up - v1.0.0 + 3 commits = 1.0.3. A new release tag
+ * (e.g. v1.1.0) starts counting again.
+ */
+async function commitVersion(hash: string): Promise<string> {
+
+    try {
+        const described = await git(["describe", "--tags", "--long", "--match", "v[0-9]*.[0-9]*.[0-9]*", "--exclude", "*-*", hash]);
+        const match = /^v(\d+)\.(\d+)\.(\d+)-(\d+)-g[0-9a-f]+$/.exec(described);
+        if (!match) return "";
+        return `${match[1]}.${match[2]}.${Number(match[3]) + Number(match[4])}`;
+    }
+    catch {
+        return "";
+    }
+
+}
+
+async function withVersions(commits: CommitInfo[]): Promise<CommitInfo[]> {
+
+    const versions = await Promise.all(commits.map(commit => commitVersion(commit.hash)));
+    return commits.map((commit, index) => ({ ...commit, version: versions[index] ?? "" }));
 
 }
 
@@ -181,11 +210,13 @@ class UpdateService {
                 git(["log", "-1", "--format=%h%x09%cI%x09%s"])
             ]);
 
+            const [current] = await withVersions(parseCommits(head));
+
             return {
                 ...base,
                 available: true,
                 branch,
-                current: parseCommits(head)[0] ?? null
+                current: current ?? null
             };
 
         }
@@ -208,12 +239,12 @@ class UpdateService {
 
                 const branch = await git(["rev-parse", "--abbrev-ref", "HEAD"]);
 
-                await git(["fetch", "--quiet", "origin", branch], 60_000);
+                await git(["fetch", "--quiet", "--tags", "origin", branch], 60_000);
 
                 const upstream = `origin/${branch}`;
 
                 this.behind = Number(await git(["rev-list", "--count", `HEAD..${upstream}`])) || 0;
-                this.commits = parseCommits(await git(["log", "--format=%h%x09%cI%x09%s", "-n", "30", `HEAD..${upstream}`]));
+                this.commits = await withVersions(parseCommits(await git(["log", "--format=%h%x09%cI%x09%s", "-n", "30", `HEAD..${upstream}`])));
                 this.checkError = "";
 
             }
