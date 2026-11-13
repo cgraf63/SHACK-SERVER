@@ -3328,6 +3328,9 @@ function setupContestCallCheck(callInput) {
                 if (modeInput && mode) modeInput.value = mode;
                 const frequencyInput = document.getElementById("contest-frequency-input");
                 if (frequencyInput && air.frequency > 0) frequencyInput.value = formatContestKHz(air.frequency * 1000);
+
+                // CAT: tune the transceiver to the spot (like a spot click)
+                if (air.frequency > 0) tuneContestRadio(air.frequency, air.mode);
             }
 
             lookupContestSpotCallsign(match.call);
