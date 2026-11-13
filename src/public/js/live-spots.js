@@ -1894,6 +1894,11 @@ if (tuneButton) {
             );
 
 
+            // other dashboard parts (Manual QSO) follow the spot at once
+            window.dispatchEvent(new CustomEvent("shack:spot-tuned", {
+                detail: { call: spotCall, frequencyHz, mode }
+            }));
+
             try {
 
                 /*

@@ -195,29 +195,34 @@ const viewButton =
     );
 
     /*
-        Band, mode and frequency follow the transceiver (CAT) while the
-        fields are not changed by hand. An own entry or a picked
-        suggestion holds the field until the callsign is cleared.
+        Band, mode and frequency follow the transceiver (CAT).
+        Every change of the radio (VFO knob, spot click, tune) updates
+        the fields again - also after an own entry. An own entry stays
+        only until the radio moves. A spot click fills them at once,
+        also without CAT.
     */
     const radioFollow = (() => {
 
-        const ids = ["manual-qso-band", "manual-qso-mode", "manual-qso-frequency"];
         const unit = document.querySelector(".manual-qso-frequency-unit");
+        const field = id => document.getElementById(id);
 
         const FT8 = [1840, 3573, 7074, 10136, 14074, 18100, 21074, 24915, 28074, 50313];
         const FT4 = [3575.5, 7047.5, 10140, 14080, 18104, 21140, 24919, 28180, 50318];
 
         const near = (list, khz) => list.some(value => Math.abs(value - khz) <= 3);
 
+        let lastKhz = null;
+        let lastMode = null;
+
         function bandFromKhz(khz) {
-            if (typeof qsoBandFromKHz === "function") return qsoBandFromKHz(khz);
-            return "";
+            return typeof qsoBandFromKHz === "function" ? qsoBandFromKHz(khz) : "";
         }
 
         function logMode(radioMode, khz) {
             const mode = String(radioMode || "").toUpperCase();
             if (mode.startsWith("CW")) return "CW";
-            if (mode === "USB" || mode === "LSB" || mode === "AM" || mode === "FM") return mode;
+            if (["USB", "LSB", "AM", "FM", "FT8", "FT4"].includes(mode)) return mode;
+            if (mode === "SSB") return khz < 10000 ? "LSB" : "USB";
             if (mode.startsWith("RTTY")) return "RTTY";
             if (/DATA|PKT|-D$|DIG/.test(mode)) {
                 if (near(FT8, khz)) return "FT8";
@@ -232,40 +237,30 @@ const viewButton =
             input.value = value;
         }
 
-        function hold(id) {
-            const input = document.getElementById(id);
-            if (input) input.dataset.manual = "1";
+        function formatKhz(khz) {
+            return khz.toFixed(3).replace(/0+$/, "").replace(/\.$/, ".0");
         }
 
-        function release() {
-            for (const id of ids) {
-                const input = document.getElementById(id);
-                if (input) input.dataset.manual = "";
-            }
+        function setFrequency(khz) {
+            const frequency = field("manual-qso-frequency");
+            if (frequency) frequency.value = formatKhz(khz);
+            setOption(field("manual-qso-band"), bandFromKhz(khz));
         }
 
-        /* band and frequency belong together: changing one holds both */
-        const holdGroup = id => id === "manual-qso-mode" ? [id] : ["manual-qso-band", "manual-qso-frequency"];
+        /* a typed frequency sets its band */
+        field("manual-qso-frequency")?.addEventListener("input", event => {
+            const value = Number(String(event.target.value).replace(",", "."));
+            const khz = value > 0 && value < 1000 ? value * 1000 : value;
+            setOption(field("manual-qso-band"), bandFromKhz(khz));
+        });
 
-        for (const id of ids) {
-            const input = document.getElementById(id);
-            const onEdit = event => {
-                if (!event.isTrusted) return;
-                holdGroup(id).forEach(hold);
-                // a typed frequency sets its band
-                if (id === "manual-qso-frequency") {
-                    const value = Number(String(input.value).replace(",", "."));
-                    const khz = value > 0 && value < 1000 ? value * 1000 : value;
-                    setOption(document.getElementById("manual-qso-band"), bandFromKhz(khz));
-                }
-            };
-            input?.addEventListener("input", onEdit);
-            input?.addEventListener("change", onEdit);
-        }
-
-        // a new QSO: clearing the callsign follows the radio again
-        callInput.addEventListener("input", () => {
-            if (!callInput.value.trim()) release();
+        /* spot click in the live spots: take it at once */
+        window.addEventListener("shack:spot-tuned", event => {
+            const khz = Number(event.detail?.frequencyHz) / 1000;
+            if (!(khz > 0)) return;
+            setFrequency(khz);
+            setOption(field("manual-qso-mode"), logMode(event.detail.mode, khz));
+            setTimeout(poll, 600);
         });
 
         async function poll() {
@@ -282,14 +277,20 @@ const viewButton =
                     if (data.connected && hz > 0) {
                         following = true;
                         const khz = hz / 1000;
-                        const band = document.getElementById("manual-qso-band");
-                        const mode = document.getElementById("manual-qso-mode");
-                        const frequency = document.getElementById("manual-qso-frequency");
-                        if (band && band.dataset.manual !== "1") setOption(band, bandFromKhz(khz));
-                        if (mode && mode.dataset.manual !== "1") setOption(mode, logMode(data.mode, khz));
-                        if (frequency && frequency.dataset.manual !== "1" && document.activeElement !== frequency) {
-                            frequency.value = khz.toFixed(khz % 1 ? 3 : 1).replace(/0+$/, "").replace(/\.$/, ".0");
+                        const frequency = field("manual-qso-frequency");
+                        // only when the radio moved - an own entry stays until then
+                        if (khz !== lastKhz && document.activeElement !== frequency) {
+                            lastKhz = khz;
+                            setFrequency(khz);
                         }
+                        const mode = String(data.mode || "");
+                        if (mode !== lastMode) {
+                            lastMode = mode;
+                            setOption(field("manual-qso-mode"), logMode(mode, khz));
+                        }
+                    }
+                    else {
+                        lastKhz = lastMode = null;
                     }
                 }
             }
@@ -298,17 +299,16 @@ const viewButton =
             }
 
             if (unit) {
-                const held = document.getElementById("manual-qso-frequency")?.dataset.manual === "1";
-                unit.classList.toggle("following", following && !held);
-                unit.title = following && !held ? "Follows the transceiver (CAT)" : "";
+                unit.classList.toggle("following", following);
+                unit.title = following ? "Follows the transceiver (CAT)" : "";
             }
 
         }
 
         poll();
-        setInterval(poll, 2000);
+        setInterval(poll, 1000);
 
-        return { hold, release };
+        return { poll };
 
     })();
 
@@ -380,7 +380,6 @@ const viewButton =
 
             onPick(match) {
                 if (match.onAir) {
-                    ["manual-qso-band", "manual-qso-mode", "manual-qso-frequency"].forEach(radioFollow.hold);
                     const band = field("manual-qso-band");
                     if (band && [...band.options].some(o => o.value === match.onAir.band)) band.value = match.onAir.band;
                     const mode = field("manual-qso-mode");
