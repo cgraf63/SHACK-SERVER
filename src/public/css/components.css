@@ -4195,6 +4195,18 @@ D.sidebar.collapsed {
     font-weight: 700;
 }
 
+.callcheck-badge.dupe {
+    border-color: #ff3b3b;
+    background: #ff3b3b;
+    color: #fff;
+    font-weight: 700;
+}
+
+.callcheck-badge.worked {
+    border-color: rgba(255, 196, 0, 0.6);
+    color: var(--yellow);
+}
+
 .callcheck-none {
     padding: 10px;
     color: var(--muted);

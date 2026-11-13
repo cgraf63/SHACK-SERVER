@@ -305,6 +305,8 @@ After choosing a contest you create a session, start, pause and end it. The cont
 
 QSO entry contains callsign, name, locator, RST sent and received and the exchange fields. Which exchange fields are needed is set in the contest configuration. If the sent exchange is set to **Serial Number**, SHACK-SERVER fills in the next number itself: the highest number sent in the session plus 1 – across all operators. With **CQ Zone**, **ITU Zone** or **Locator** the value comes from the station (club) callsign and the grid of the contest in the Contest Manager. A click on a spot in the live band display fills in callsign, mode and frequency.
 
+While you type the callsign, the **call check** appears just like on the dashboard: country and zones from the prefix, suggestions from spots, your own log and the SCP database. In addition each suggestion shows the contest status of the session: **DUPE** (red) when the callsign is already logged on the selected band, and in yellow the bands it was already worked on. Take a suggestion with ↑/↓ and Enter or with a click – for a spot also band, mode and frequency. Enter logs the QSO only when no suggestion is highlighted. The first Esc closes the list, the second clears the entry.
+
 ## Live band
 
 The live band display shows the spot activity on the selected band. The labels are spread over several lanes so they do not overlap.

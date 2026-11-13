@@ -3237,7 +3237,105 @@ function handleContestEscape(event) {
     }
 
     event.preventDefault();
+
+    // Open suggestions: the first ESC only closes them.
+    if (contestCallCheck?.isOpen()) {
+        contestCallCheck.close();
+        return;
+    }
+
     resetContestQsoEntry();
+
+}
+
+/*
+ * Call check while typing (js/callcheck.js): prefix -> country,
+ * suggestions from spots / log / SCP, plus DUPE and worked bands
+ * of this contest session.
+ */
+let contestCallCheck = null;
+
+const CONTEST_MODE_FROM_SPOT = {
+    SSB: "SSB", USB: "SSB", LSB: "SSB", PHONE: "SSB", PH: "SSB",
+    CW: "CW", "CW-R": "CW",
+    RTTY: "RTTY", "RTTY-R": "RTTY", PSK31: "RTTY",
+    FT8: "FT8", FT4: "FT8"
+};
+
+function setupContestCallCheck(callInput) {
+
+    if (contestCallCheck || typeof window.attachCallCheck !== "function") {
+        return;
+    }
+
+    const bandKey = () => {
+        const band = String(document.getElementById("contest-band-input")?.value || "").trim();
+        return band ? `${band}m` : "";
+    };
+
+    // an own entry in the country field wins over the prefix
+    document.getElementById("contest-country")?.addEventListener("input", event => {
+        event.target.dataset.fromPrefix = "";
+    });
+
+    contestCallCheck = window.attachCallCheck(callInput, {
+
+        frequencyKhz() {
+            if (isContestCatEnabled() && contestCat.connected && contestCat.hz > 0) {
+                return contestCat.hz / 1000;
+            }
+            const value = Number(String(document.getElementById("contest-frequency-input")?.value || "").replace(",", "."));
+            return Number.isFinite(value) && value > 0 ? value : "";
+        },
+
+        // country from the prefix at once (QRZ / spot lookup may refine it)
+        onEntity(entity) {
+            const country = document.getElementById("contest-country");
+            if (!country) return;
+            if (country.value && country.dataset.fromPrefix !== "1") return;
+            country.value = entity?.name || "";
+            country.dataset.fromPrefix = entity ? "1" : "";
+        },
+
+        badges(match) {
+            const current = bandKey();
+            const worked = [...contestWorkedByBand.entries()]
+                .filter(([, calls]) => calls.has(match.call))
+                .map(([key]) => key);
+            const badges = [];
+            if (current && worked.includes(current)) {
+                badges.push({ cls: "dupe", text: "DUPE", title: `Already worked on ${current} in this contest` });
+            }
+            const others = worked.filter(key => key !== current);
+            if (others.length) {
+                badges.push({ cls: "worked", text: others.join(" "), title: "Worked on these bands in this contest" });
+            }
+            return badges;
+        },
+
+        onPick(match) {
+
+            const air = match.onAir;
+
+            if (air) {
+                const bandInput = document.getElementById("contest-band-input");
+                const band = String(air.band || "").replace(/m$/i, "");
+                if (bandInput && [...bandInput.options].some(o => o.value === band) && bandInput.value !== band) {
+                    bandInput.value = band;
+                }
+                const modeInput = document.getElementById("contest-mode-input");
+                const mode = CONTEST_MODE_FROM_SPOT[String(air.mode || "").toUpperCase()];
+                if (modeInput && mode) modeInput.value = mode;
+                const frequencyInput = document.getElementById("contest-frequency-input");
+                if (frequencyInput && air.frequency > 0) frequencyInput.value = formatContestKHz(air.frequency * 1000);
+            }
+
+            lookupContestSpotCallsign(match.call);
+            checkContestDupe({ refresh: false });
+
+        }
+
+    });
 
 }
 
@@ -3277,6 +3375,12 @@ function handleContestEnterKey(event) {
     event.preventDefault();
     event.stopPropagation();
 
+    // A highlighted call-check suggestion is taken, not logged.
+    if (target.id === "contest-call" && contestCallCheck?.pickHighlighted()) {
+        return;
+    }
+
+    contestCallCheck?.close();
     logContestQso();
 
 }
@@ -3490,6 +3594,8 @@ function setupContestQsoLogger() {
 
             }
         );
+
+        setupContestCallCheck(callInput);
 
         /*
          * Dupe check when leaving the callsign field.
