@@ -76,18 +76,20 @@ function parseCommits(text: string): CommitInfo[] {
 }
 
 /*
- * Version of a commit from the release tags (vMAJOR.MINOR.PATCH):
- * the tag itself is that version, every later commit counts the
- * patch number up - v1.0.0 + 3 commits = 1.0.3. A new release tag
- * (e.g. v1.1.0) starts counting again.
+ * Version of a commit from "version" in package.json: the commit that
+ * set it is that version, every later commit counts the patch number
+ * up - 1.0.0 + 3 commits = 1.0.3. A new release (e.g. "1.1.0" in
+ * package.json) starts counting again.
  */
 async function commitVersion(hash: string): Promise<string> {
 
     try {
-        const described = await git(["describe", "--tags", "--long", "--match", "v[0-9]*.[0-9]*.[0-9]*", "--exclude", "*-*", hash]);
-        const match = /^v(\d+)\.(\d+)\.(\d+)-(\d+)-g[0-9a-f]+$/.exec(described);
+        const pkg = JSON.parse(await git(["show", `${hash}:package.json`]));
+        const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(String(pkg.version ?? ""));
         if (!match) return "";
-        return `${match[1]}.${match[2]}.${Number(match[3]) + Number(match[4])}`;
+        const release = await git(["log", "-1", "--format=%H", "-G", "\"version\"", hash, "--", "package.json"]);
+        const count = release ? Number(await git(["rev-list", "--count", `${release}..${hash}`])) || 0 : 0;
+        return `${match[1]}.${match[2]}.${Number(match[3]) + count}`;
     }
     catch {
         return "";
@@ -239,7 +241,7 @@ class UpdateService {
 
                 const branch = await git(["rev-parse", "--abbrev-ref", "HEAD"]);
 
-                await git(["fetch", "--quiet", "--tags", "origin", branch], 60_000);
+                await git(["fetch", "--quiet", "origin", branch], 60_000);
 
                 const upstream = `origin/${branch}`;
 
