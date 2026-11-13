@@ -142,6 +142,8 @@ Manual QSO is for quickly looking up a callsign that does not appear in the live
 
 ![Manual QSO](images/manual-qso.jpg){width=32%} ![After the QRZ lookup](images/manual-qso-qrz.jpg){width=36%}
 
+When a transceiver is connected via CAT, **band, mode and frequency** follow its values (green **kHz · CAT**). If you change a field by hand or take a spot suggestion, your value stays; as soon as the callsign field is cleared, the fields follow the transceiver again.
+
 - **Enter** or **VIEW** looks the call up on QRZ.com: name, country, zones, locator.
 - **VIEW** (the "eyes") also opens a window with a map and the QRZ picture.
 - **→ QSO** opens the QSO window with this data.

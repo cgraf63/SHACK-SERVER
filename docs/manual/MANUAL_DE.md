@@ -142,6 +142,8 @@ Manual QSO dient dazu, schnell ein Rufzeichen nachzuschlagen, das nicht in den L
 
 ![Manual QSO](images/manual-qso.jpg){width=32%} ![Nach der QRZ-Abfrage](images/manual-qso-qrz.jpg){width=36%}
 
+Ist ein Transceiver per CAT verbunden, übernehmen **Band, Mode und Frequenz** laufend dessen Werte (grün **kHz · CAT**). Änderst du ein Feld von Hand oder übernimmst einen Spot-Vorschlag, bleibt dein Wert stehen; sobald das Rufzeichenfeld geleert wird, folgen die Felder wieder dem Transceiver.
+
 - **Enter** oder **VIEW** fragt QRZ.com ab: Name, Land, Zonen, Locator.
 - **VIEW** (die „Augen“) öffnet zusätzlich ein Fenster mit Karte und QRZ-Bild.
 - **→ QSO** öffnet das QSO-Fenster mit den übernommenen Daten.

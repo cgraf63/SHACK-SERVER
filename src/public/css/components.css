@@ -3931,6 +3931,17 @@ D.sidebar.collapsed {
     color: #8fa3b2;
 }
 
+/* band / mode / frequency follow the transceiver */
+.mq-line .manual-qso-frequency-unit.following {
+    color: #3ddc84;
+}
+
+.mq-line .manual-qso-frequency-unit.following::after {
+    content: " · CAT";
+    font-size: 10px;
+    letter-spacing: .04em;
+}
+
 .mq-line .manual-qso-open-button {
     white-space: nowrap;
 }

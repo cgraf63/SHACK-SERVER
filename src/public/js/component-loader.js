@@ -189,7 +189,7 @@ async function loadComponentsOnce() {
         );
 
     manualQsoScript.src =
-        "js/manual-qso.js?v=4";
+        "js/manual-qso.js?v=5";
 
     document.body.appendChild(
         manualQsoScript
