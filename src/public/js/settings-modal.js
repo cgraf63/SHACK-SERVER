@@ -226,6 +226,8 @@ async function loadSettings() {
         const setBox = (id, on) => { const el = document.getElementById(id); if (el) el.checked = Boolean(on); };
         setBox("cw-decoder-show", cw.decoder);
         setBox("cw-encoder-show", cw.encoder);
+        setBox("cw-contest-decoder-show", cw.contestDecoder);
+        setBox("cw-contest-encoder-show", cw.contestEncoder);
         const cwWpm = document.getElementById("cw-wpm");
         if (cwWpm) cwWpm.value = cw.wpm || 22;
         const cwPitch = document.getElementById("cw-pitch");
@@ -707,6 +709,8 @@ async function saveSettings() {
         cw: {
             decoder: document.getElementById("cw-decoder-show")?.checked === true,
             encoder: document.getElementById("cw-encoder-show")?.checked === true,
+            contestDecoder: document.getElementById("cw-contest-decoder-show")?.checked === true,
+            contestEncoder: document.getElementById("cw-contest-encoder-show")?.checked === true,
             wpm: Number(document.getElementById("cw-wpm")?.value) || 22,
             pitch: Number(document.getElementById("cw-pitch")?.value) || 0
         },

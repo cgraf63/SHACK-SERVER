@@ -12,14 +12,25 @@
  *
  * Every line shown takes the place of one live spot row
  * (window.shackCwLines, read by live-spots.js).
+ *
+ * Contest console (contest.html): the same lines at the bottom of the
+ * console, switched on separately (contestDecoder / contestEncoder),
+ * a callsign goes into the contest callsign field.
  */
 (() => {
 
-    const main = document.querySelector("main");
+    const contestView = document.getElementById("contest-view-console");
+    const contest = Boolean(contestView);
+    const main = contestView || document.querySelector("main");
     if (!main) return;
 
+    const callFieldId = contest ? "contest-call" : "manual-qso-call";
+    const flags = s => contest
+        ? { decoder: Boolean(s.contestDecoder), encoder: Boolean(s.contestEncoder) }
+        : { decoder: Boolean(s.showDecoder), encoder: Boolean(s.showEncoder) };
+
     const bar = document.createElement("div");
-    bar.className = "cw-line";
+    bar.className = contest ? "cw-line cw-line-contest" : "cw-line";
     bar.hidden = true;
     bar.innerHTML = `
         <div class="cw-row cw-rx" hidden>
@@ -69,7 +80,7 @@
         const html = escapeHtml(text).replace(CALL, match =>
             NOT_CALLS.has(match) || !/[0-9]/.test(match) || !/[A-Z]/.test(match)
                 ? match
-                : `<span class="cw-call" data-call="${match}" title="Into Manual QSO">${match}</span>`);
+                : `<span class="cw-call" data-call="${match}" title="${contest ? "Into the contest callsign field" : "Into Manual QSO"}">${match}</span>`);
 
         $("cw-text").innerHTML = `<span>${html}</span>`;
 
@@ -85,13 +96,14 @@
     function apply(s) {
 
         state = s;
+        const show = flags(s);
 
-        rx.hidden = !s.showDecoder;
-        tx.hidden = !s.showEncoder;
-        bar.hidden = !s.showDecoder && !s.showEncoder;
-        setLines((s.showDecoder ? 1 : 0) + (s.showEncoder ? 1 : 0));
+        rx.hidden = !show.decoder;
+        tx.hidden = !show.encoder;
+        bar.hidden = !show.decoder && !show.encoder;
+        if (!contest) setLines((show.decoder ? 1 : 0) + (show.encoder ? 1 : 0));
 
-        if (s.showDecoder) {
+        if (show.decoder) {
 
             if (typeof s.fresh === "string" && seq !== null) {
                 if (s.fresh) text = (text + s.fresh).slice(-600);
@@ -141,7 +153,7 @@
 
     /* decoder shown: fast, otherwise only to notice a change in the settings */
     function schedule() {
-        const fast = state?.showDecoder;
+        const fast = state && flags(state).decoder;
         setTimeout(async () => { await poll(); schedule(); }, fast ? 300 : 3000);
     }
 
@@ -222,7 +234,7 @@
     $("cw-text").addEventListener("click", event => {
         const call = event.target.closest(".cw-call")?.dataset.call;
         if (!call) return;
-        const field = document.getElementById("manual-qso-call");
+        const field = document.getElementById(callFieldId);
         if (!field) return;
         field.value = call;
         field.focus();

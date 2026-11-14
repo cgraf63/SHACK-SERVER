@@ -184,6 +184,8 @@ The lowest two lines of the dashboard can be used for CW (the live spots show fe
 | FTDX10, FTX-1 | through keyer memory 5 (written, played and restored afterwards) |
 | Hamlib | `send_morse`, if the model supports it |
 
+The same two lines are available at the bottom of the **contest console**, switched on separately (*Show the CW decoder / encoder in the contest console*). A click on a callsign in the decoded text puts it into the callsign field there (with call check and dupe display).
+
 ## New – "needed" callsigns
 
 ![New – "needed" callsigns](../images/screenshots/needed-alerts.jpg)

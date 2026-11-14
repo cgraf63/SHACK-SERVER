@@ -85,6 +85,8 @@ export interface ShackSettings {
     cw?: {
         decoder: boolean;
         encoder: boolean;
+        contestDecoder: boolean;        // same lines in the contest console
+        contestEncoder: boolean;
         wpm: number;
         pitch: number;
     };

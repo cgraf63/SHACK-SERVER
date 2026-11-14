@@ -9,8 +9,9 @@ import { cleanCwText } from "./morse.js";
  * CW line of the dashboard:
  *
  *   decoder   RX audio of the transceiver (USB sound card) -> text.
- *             Runs while "Show the CW decoder" is on (Settings ->
- *             Split & CW), pitch from there (0 = automatic).
+ *             Runs while it is shown on the dashboard or in the contest
+ *             console (Settings -> Split & CW), pitch from there
+ *             (0 = automatic).
  *   encoder   text -> CW through the active transceiver
  *             (RadioService.sendCwText), speed from the settings.
  */
@@ -38,7 +39,8 @@ class CwService {
         const cw = settingsService.get().cw;
         this.pitch = cw?.pitch ?? 0;
         this.decoder?.setPitch(this.pitch);
-        this.setEnabled(Boolean(cw?.decoder));
+        // runs when the dashboard or the contest console shows it
+        this.setEnabled(Boolean(cw?.decoder || cw?.contestDecoder));
     }
 
     setEnabled(on: boolean): void {
@@ -97,6 +99,8 @@ class CwService {
             enabled: this.enabled,
             showDecoder: Boolean(cw?.decoder),
             showEncoder: Boolean(cw?.encoder),
+            contestDecoder: Boolean(cw?.contestDecoder),
+            contestEncoder: Boolean(cw?.contestEncoder),
             wpm: cw?.wpm ?? 22,
             pitch: this.pitch,
             seq: this.seq,

@@ -184,6 +184,8 @@ Die untersten zwei Zeilen des Dashboards lassen sich für CW verwenden (die Live
 | FTDX10, FTX-1 | über Keyer-Speicher 5 (wird beschrieben, abgespielt und danach wiederhergestellt) |
 | Hamlib | `send_morse`, sofern das Modell es unterstützt |
 
+Dieselben zwei Zeilen gibt es unten in der **Contest-Konsole**, getrennt einschaltbar (*Show the CW decoder / encoder in the contest console*). Ein Klick auf ein Rufzeichen im decodierten Text setzt es dort ins Callsign-Feld (mit Rufzeichen-Prüfung und Dupe-Anzeige).
+
 ## New – "needed" Callsigns
 
 ![New – "needed" Callsigns](../images/screenshots/needed-alerts.jpg)
