@@ -21,6 +21,7 @@
     let tables = { modes: [], bands: [], steps: [] };
     let myCall = "";
     let sliderBusy = {};
+    let versionBusy = 0;
 
     /* ------------------------------------------------------------ helpers */
 
@@ -64,6 +65,98 @@
         if (hz >= 1e6) return `${hz / 1e6} MHz`;
         if (hz >= 1e3) return `${hz / 1e3} kHz`;
         return `${hz} Hz`;
+    }
+
+    /* ------------------------------------------------------------ tuning */
+
+    /* step of the knob, the LCD, the arrows (here, not on the QMX - older
+       firmware has no TR command); remembered in this browser */
+    const STEPS = [10, 50, 100, 500, 1000, 5000, 10000];
+    let step = 100;
+    try { step = Number(localStorage.getItem("qmx-step")) || 100; } catch { /* no storage */ }
+    if (!STEPS.includes(step)) step = 100;
+
+    function setStep(value) {
+        step = value;
+        try { localStorage.setItem("qmx-step", String(value)); } catch { /* no storage */ }
+        $("step-val").textContent = stepText(step);
+        $("knob-step").textContent = stepText(step);
+    }
+
+    /* the frequency moves at once on the page, the QMX gets at most
+       ~12 commands per second (absolute frequency, nothing gets lost) */
+    const tuning = { target: 0, holdUntil: 0, timer: null, angle: 0 };
+
+    function tuneBy(steps) {
+        if (!state || !steps) return;
+        const now = Date.now();
+        const base = now < tuning.holdUntil && tuning.target ? tuning.target : state.frequency;
+        if (!(base > 0)) return;
+        tuning.target = Math.max(100000, Math.min(60e6, Math.round(base / step) * step + steps * step));
+        tuning.holdUntil = now + 1200;
+        displayLcd(state);
+        if (!tuning.timer) sendTarget();
+    }
+
+    function sendTarget() {
+        tuning.timer = setTimeout(async () => {
+            const target = tuning.target;
+            await control("frequency", target);
+            tuning.timer = null;
+            if (tuning.target !== target) sendTarget();
+        }, 80);
+    }
+
+    function rotateKnob(deg) {
+        tuning.angle = (tuning.angle + deg) % 360;
+        $("knob").style.transform = `rotate(${tuning.angle}deg)`;
+    }
+
+    function setupKnob() {
+
+        const knob = $("knob");
+        let last = null;
+        let acc = 0;
+
+        const angleOf = event => {
+            const r = knob.getBoundingClientRect();
+            return Math.atan2(event.clientY - (r.top + r.height / 2), event.clientX - (r.left + r.width / 2)) * 180 / Math.PI;
+        };
+
+        knob.addEventListener("pointerdown", event => {
+            knob.setPointerCapture(event.pointerId);
+            last = angleOf(event);
+            acc = 0;
+        });
+
+        knob.addEventListener("pointermove", event => {
+            if (last === null) return;
+            const a = angleOf(event);
+            let d = a - last;
+            if (d > 180) d -= 360;
+            if (d < -180) d += 360;
+            last = a;
+            rotateKnob(d);
+            acc += d;
+            // one step per 8 degrees
+            const steps = Math.trunc(acc / 8);
+            if (steps) {
+                acc -= steps * 8;
+                tuneBy(steps);
+            }
+        });
+
+        const end = () => { last = null; };
+        knob.addEventListener("pointerup", end);
+        knob.addEventListener("pointercancel", end);
+
+        knob.addEventListener("wheel", event => {
+            event.preventDefault();
+            const steps = event.deltaY < 0 ? 1 : -1;
+            rotateKnob(steps * 8);
+            tuneBy(steps);
+        }, { passive: false });
+
     }
 
     /* ------------------------------------------------------------ LCD */
@@ -127,6 +220,25 @@
         return line1.padEnd(16, " ").slice(0, 16) + line2.padEnd(16, " ").slice(0, 16);
     }
 
+    /* while tuning the LCD shows the new frequency at once (the QMX
+       answers a moment later) */
+    function withFrequency(text, s, hz) {
+        if (!s.lcd) return syntheticLcd({ ...s, frequency: hz });
+        const line1 = text.slice(0, 16);
+        const match = /\d{1,2}\.\d{3}\.\d{2}/.exec(line1);
+        if (!match) return text;
+        const value = fmtFreq(hz).padStart(match[0].length, " ");
+        const start = match.index + match[0].length - value.length;
+        if (start < 0) return text;
+        return (line1.slice(0, start) + value + line1.slice(match.index + match[0].length)).padEnd(16, " ").slice(0, 16) + text.slice(16);
+    }
+
+    function displayLcd(s) {
+        let text = s.lcd || syntheticLcd(s);
+        if (tuning.target && Date.now() < tuning.holdUntil) text = withFrequency(text, s, tuning.target);
+        drawLcd(text);
+    }
+
     /* touch / mouse tuning on the LCD */
     (() => {
 
@@ -156,7 +268,7 @@
             moved = Math.max(moved, Math.abs(dx));
             const steps = Math.trunc(dx / 14);
             if (steps !== accumulated) {
-                control("tune", steps - accumulated);
+                tuneBy(steps - accumulated);
                 accumulated = steps;
             }
         });
@@ -167,7 +279,7 @@
                 const rect = lcd.getBoundingClientRect();
                 const right = event.clientX - rect.left > rect.width / 2;
                 flash(right ? "right" : "left");
-                control("tune", right ? 1 : -1);
+                tuneBy(right ? 1 : -1);
             }
             startX = null;
         });
@@ -182,7 +294,7 @@
             wheelTimer = setTimeout(() => {
                 const steps = wheelSteps;
                 wheelSteps = 0;
-                if (steps) control("tune", steps);
+                if (steps) tuneBy(steps);
             }, 80);
         }, { passive: false });
 
@@ -247,18 +359,31 @@
     function wire() {
 
         document.querySelectorAll("[data-tune]").forEach(button =>
-            button.addEventListener("click", () => control("tune", Number(button.dataset.tune))));
+            button.addEventListener("click", () => tuneBy(Number(button.dataset.tune))));
 
         $("band-up").addEventListener("click", () => control("bandUp"));
+
+        // band version (saved in the transceiver config)
+        $("band-version").addEventListener("change", async event => {
+            try {
+                const response = await fetch("/api/qmx/bands", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ version: event.target.value })
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) toast(result.error || `Error ${response.status}`);
+                else { versionBusy = Date.now(); setTimeout(poll, 100); }
+            }
+            catch {
+                toast("SHACK-SERVER not reachable");
+            }
+        });
         $("band-down").addEventListener("click", () => control("bandDown"));
 
         const changeStep = direction => {
-            const steps = [...tables.steps].sort((a, b) => a - b).filter(v => v <= 100000);
-            const current = state?.step || 10;
-            let index = steps.indexOf(current);
-            if (index < 0) index = 0;
-            const next = steps[Math.max(0, Math.min(steps.length - 1, index + direction))];
-            if (next && next !== current) control("step", next);
+            const index = STEPS.indexOf(step);
+            setStep(STEPS[Math.max(0, Math.min(STEPS.length - 1, (index < 0 ? 2 : index) + direction))]);
         };
 
         $("step-up").addEventListener("click", () => changeStep(1));
@@ -351,8 +476,8 @@
         // keyboard: arrows tune when no input has the focus
         document.addEventListener("keydown", event => {
             if (event.target.closest("input")) return;
-            if (event.key === "ArrowRight" || event.key === "ArrowUp") { event.preventDefault(); control("tune", event.shiftKey ? 10 : 1); }
-            if (event.key === "ArrowLeft" || event.key === "ArrowDown") { event.preventDefault(); control("tune", event.shiftKey ? -10 : -1); }
+            if (event.key === "ArrowRight" || event.key === "ArrowUp") { event.preventDefault(); tuneBy(event.shiftKey ? 10 : 1); }
+            if (event.key === "ArrowLeft" || event.key === "ArrowDown") { event.preventDefault(); tuneBy(event.shiftKey ? -10 : -1); }
         });
 
     }
@@ -365,7 +490,7 @@
 
     function render(s) {
 
-        drawLcd(s.lcd || syntheticLcd(s));
+        displayLcd(s);
         $("lcd").classList.toggle("tx", s.tx);
 
         $("model").textContent = s.model === "QMX" ? (s.name || "QMX").toUpperCase() : s.model;
@@ -381,13 +506,17 @@
             b.hidden = bands.size > 0 && !bands.has(b.dataset.band);
         });
 
+        const version = $("band-version");
+        if (Date.now() - versionBusy > 1500 && document.activeElement !== version) version.value = s.bandVersion || "auto";
+        version.classList.toggle("ask", Boolean(s.bandVersionUnknown));
+
         setOn("vfo-a", s.vfo === "A");
         setOn("vfo-b", s.vfo === "B");
         setOn("split", s.split);
         setOn("rit", s.rit.on);
 
         $("rit-val").textContent = `${s.rit.offset > 0 ? "+" : ""}${s.rit.offset} Hz`;
-        $("step-val").textContent = stepText(s.step);
+        $("step-val").textContent = stepText(step);
 
         const chips = [
             `<span class="chip ${s.tx ? "tx" : ""}">${s.tx ? (s.keyDown ? "TX · CARRIER" : "TX") : "RX"}</span>`,
@@ -398,7 +527,9 @@
             `<span class="chip">MODE <b>${s.mode}</b></span>`,
             s.bandVersionLabel
                 ? `<span class="chip" title="${s.bandVersionDetected ? "Detected from the radio" : "Set in the transceiver settings"}">${s.bandVersionLabel}${s.bandVersionDetected ? " · AUTO" : ""}</span>`
-                : "",
+                : s.bandVersionUnknown
+                    ? `<span class="chip on" title="The firmware cannot report its band (no BN command)">BANDS: CHOOSE THE QMX VERSION ▸</span>`
+                    : "",
             s.meters.agc ? `<span class="chip">AGC <b>${s.meters.agc} dB</b></span>` : "",
             s.cwPending ? `<span class="chip on">CW SENDING · ${s.cwPending >= 9 ? "9+" : s.cwPending}</span>` : ""
         ];
@@ -503,6 +634,8 @@
 
         buildKeys();
         wire();
+        setupKnob();
+        setStep(step);
 
         clock();
         setInterval(clock, 1000);

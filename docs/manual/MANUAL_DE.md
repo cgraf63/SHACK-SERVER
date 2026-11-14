@@ -446,8 +446,8 @@ Ist ein QMX oder QMX+ der aktive Transceiver, öffnet der Knopf **QMX** im Dashb
 - **LCD:** zeigt die echten 2 × 16 Zeichen des QMX (CAT-Befehl `LC`). Antippen links / rechts stimmt einen Schritt, Wischen oder Mausrad stimmt laufend. Ältere Firmware ohne `LC`: das LCD wird aus Frequenz, Mode und VFO aufgebaut.
 - **Instrumente** im LCD-Stil: S-Meter, beim Senden Leistung und SWR.
 - **Modes** auf einer Zeile (LSB, USB, CW, CW-R, AM, FSK, FSK-R), **Bänder** 160–6 m mit Band ▲/▼ (Band-Knöpfe gehen auf die letzte Frequenz im Band).
-- **Bandversion:** Es erscheinen nur die Bänder des eigenen Geräts – QMX 80/60/40/30/20 m, QMX 60/40/30/20/17/15 m, QMX 20/17/15/12/11/10 m oder QMX+ 160–6 m. **Auto** erkennt die Version am Gerät (Bandnummer `BN` zusammen mit dem aktuellen Band); in den Transceiver-Einstellungen lässt sie sich auch fest einstellen, z. B. wenn die Bandkonfiguration am QMX geändert wurde.
-- **Abstimmen:** Schritte (STEP − / +, wie am Drehknopf), Frequenzeingabe in kHz, Pfeiltasten.
+- **Bandversion:** Es erscheinen nur die Bänder des eigenen Geräts – QMX 80/60/40/30/20 m, QMX 60/40/30/20/17/15 m, QMX 20/17/15/12/11/10 m oder QMX+ 160–6 m. **Auto** erkennt die Version am Gerät (Bandnummer `BN` zusammen mit dem aktuellen Band); fest einstellen lässt sie sich direkt rechts in der Band-Zeile (oder in den Transceiver-Einstellungen). Ältere Firmware (z. B. 1_02) meldet die Bandnummer nicht – dann leuchtet die Auswahl gelb und die Version muss einmal gewählt werden. Befehle, die eine Firmware nicht kennt, werden nach dem Verbinden erkannt und nicht mehr abgefragt.
+- **VFO-Knopf** rechts neben dem LCD: drehen (ziehen) oder Mausrad. **Abstimmen** auch über ◀ ▶, Frequenzeingabe in kHz und Pfeiltasten; die Schrittweite (STEP − / +, 10 Hz – 10 kHz) gilt für Knopf, LCD und Pfeile und bleibt im Browser gespeichert.
 - **VFO A / B, SPLIT, A=B, A↔B, RIT** mit Versatz ±10 / ±50 Hz.
 - **AF-Gain, RF-Gain, CW-Tempo** als Schieber.
 - **CW:** Text senden (auch Makros CQ, eigenes Rufzeichen, 5NN, TU 73), STOP; darunter die Zeile des **CW-Decoders** des QMX.

@@ -173,10 +173,72 @@ button {
 
 .lcd-row {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr 220px auto;
     gap: 22px;
-    align-items: stretch;
+    align-items: center;
 }
+
+/* VFO knob (like the QMX: black knob, LCD-yellow marker) */
+.knob-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.knob {
+    position: relative;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    touch-action: none;
+    cursor: grab;
+    background: repeating-conic-gradient(from 0deg, #34342f 0deg 1.4deg, #1b1b19 1.4deg 7.2deg);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.65), inset 0 2px 2px rgba(255, 255, 255, 0.1);
+}
+
+.knob:active { cursor: grabbing; }
+
+.knob::after {
+    content: "";
+    position: absolute;
+    inset: 13px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 30%, #3a3a35, #121211 72%);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.07), inset 0 -8px 14px rgba(0, 0, 0, 0.6);
+}
+
+.knob .mark {
+    position: absolute;
+    z-index: 2;
+    width: 12px;
+    height: 12px;
+    left: calc(50% - 6px);
+    top: 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #f1f78f, #aebf26);
+    box-shadow: 0 0 10px rgba(226, 239, 90, 0.6);
+}
+
+.knob .dimple {
+    position: absolute;
+    z-index: 2;
+    width: 30px;
+    height: 30px;
+    left: calc(50% - 15px);
+    top: 46px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 60%, #0e0e0d, #2a2a26);
+    box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.8);
+}
+
+.knob-step {
+    color: var(--dim);
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.knob-step b { color: var(--yellow); }
 
 .bezel {
     background: #050505;
@@ -246,7 +308,7 @@ button {
 
 /* meters next to the LCD, in LCD colours */
 .meters {
-    width: 250px;
+    width: auto;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -360,6 +422,23 @@ button {
 .k.sm { min-width: 42px; height: 34px; font-size: 12px; padding: 0 9px; }
 .k.wide { min-width: 86px; }
 .k[hidden] { display: none; }
+
+select.ver {
+    height: 34px;
+    border-radius: 9px;
+    border: 1px solid #3c3b33;
+    background: #11110f;
+    color: var(--yellow);
+    padding: 0 8px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+select.ver.ask {
+    border-color: var(--yellow);
+    box-shadow: 0 0 12px rgba(226, 239, 90, 0.45);
+}
 
 .k.danger {
     color: #ffb4a8;
@@ -544,6 +623,7 @@ input[type="range"]::-moz-range-thumb {
     .wrap { padding: 14px 10px 30px; }
     .case { padding: 18px 12px 18px; border-radius: 14px; }
     .lcd-row { grid-template-columns: 1fr; gap: 12px; }
+    .knob { width: 150px; height: 150px; }
     .meters { width: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .meter { font-size: 11px; padding: 5px 7px 6px; }
     .sliders { grid-template-columns: 1fr; }
@@ -610,6 +690,11 @@ input[type="range"]::-moz-range-thumb {
                 </div>
             </div>
 
+            <div class="knob-wrap">
+                <div class="knob" id="knob" title="VFO: turn (drag) or mouse wheel"><div class="mark"></div><div class="dimple"></div></div>
+                <div class="knob-step">STEP <b id="knob-step">—</b></div>
+            </div>
+
         </div>
 
         <div class="status" id="status"></div>
@@ -626,13 +711,21 @@ input[type="range"]::-moz-range-thumb {
                 <button class="k sm" id="band-down" title="Band down (BD)">▼</button>
                 <span id="bands" style="display:contents"></span>
                 <button class="k sm" id="band-up" title="Band up (BU)">▲</button>
+                <span class="gap"></span>
+                <select id="band-version" class="ver" title="Which bands this QMX has">
+                    <option value="auto">Auto</option>
+                    <option value="80-20">QMX 80–20 m</option>
+                    <option value="60-15">QMX 60–15 m</option>
+                    <option value="20-10">QMX 20–10 m</option>
+                    <option value="plus">QMX+ 160–6 m</option>
+                </select>
             </div>
 
             <div class="row section">
                 <span class="row-title">TUNE</span>
                 <button class="k" data-tune="-10">◀◀</button>
                 <button class="k" data-tune="-1">◀</button>
-                <span class="val" id="step-val" title="Tune step (TR)">—</span>
+                <span class="val" id="step-val" title="Tune step of the knob, LCD and arrows">—</span>
                 <button class="k" data-tune="1">▶</button>
                 <button class="k" data-tune="10">▶▶</button>
                 <button class="k sm" id="step-down" title="Smaller step">STEP −</button>
@@ -706,7 +799,7 @@ input[type="range"]::-moz-range-thumb {
 
 <div class="toast" id="toast"></div>
 
-<script src="js/qmx-remote.js?v=2"></script>
+<script src="js/qmx-remote.js?v=4"></script>
 
 </body>
 

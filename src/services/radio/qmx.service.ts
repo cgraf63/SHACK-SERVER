@@ -76,8 +76,12 @@ export const QMX_STEPS = [10_000_000, 1_000_000, 100_000, 10_000, 1_000, 500, 10
 /* Safety: a carrier (KD1) from the remote page ends after this time */
 const CARRIER_MAX_MS = 15_000;
 
-const FAST_POLL = "IF;FB;SM;LC;TB;";
-const SLOW_POLL = "FR;FT;SP;KS;AG;RG;TR;SA;BN;";
+const FAST_POLL = ["IF", "FB", "SM", "LC", "TB"];
+const SLOW_POLL = ["FR", "FT", "SP", "KS", "AG", "RG", "TR", "SA", "BN"];
+
+/* commands older firmware may not know - asked one by one after
+   connecting, only the known ones are polled (1_02: no BN, RG, TR ...) */
+const OPTIONAL = ["LC", "TB", "BN", "RG", "TR", "SA", "SM", "AG"];
 
 
 export class QmxService extends SerialRadioBase implements RadioService {
@@ -120,7 +124,7 @@ export class QmxService extends SerialRadioBase implements RadioService {
     private readonly bandMemory = new Map<string, number>();
 
     /* band version: configured, or detected from BN + current band */
-    private readonly bandVersion: QmxBandVersion;
+    private bandVersion: QmxBandVersion;
     private detectedVersion: Exclude<QmxBandVersion, "auto"> | null = null;
     private bandNumber = -1;
 
@@ -137,12 +141,56 @@ export class QmxService extends SerialRadioBase implements RadioService {
     }
 
 
+    /* set from the QMX page (saved in the transceiver config) */
+    setBandVersion(version: QmxBandVersion): void {
+        this.bandVersion = version;
+        if (version === "auto") this.detectVersion();
+    }
+
     /* ------------------------------------------------------------ serial */
+
+    private unsupported = new Set<string>();
+    private probing = false;
+    private probeWaiter: { command: string; resolve: (known: boolean) => void } | null = null;
 
     protected override onConnected(): void {
         this.buffer = "";
         this.lcdSupported = true;
-        this.write("VN;OM;ID;IF;FB;MD;KS;BN;");
+        this.unsupported.clear();
+        this.write("VN;OM;ID;IF;FB;MD;KS;");
+        void this.probe();
+    }
+
+    /* one command at a time: an answer = known, "?;" = unknown */
+    private async probe(): Promise<void> {
+
+        this.probing = true;
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        for (const command of OPTIONAL) {
+            if (!this.isConnected()) break;
+            const known = await new Promise<boolean>(resolve => {
+                const timer = setTimeout(() => { this.probeWaiter = null; resolve(false); }, 800);
+                this.probeWaiter = {
+                    command,
+                    resolve: value => { clearTimeout(timer); this.probeWaiter = null; resolve(value); }
+                };
+                this.write(`${command};`);
+            });
+            if (!known) this.unsupported.add(command);
+        }
+
+        this.lcdSupported = !this.unsupported.has("LC");
+        this.probing = false;
+
+        if (this.unsupported.size) {
+            console.log(`QMX CAT: firmware ${this.version || "?"} without ${[...this.unsupported].join(", ")}`);
+        }
+
+    }
+
+    private probeAnswer(command: string): void {
+        if (this.probeWaiter?.command === command) this.probeWaiter.resolve(true);
     }
 
     protected override onDisconnected(): void {
@@ -156,16 +204,20 @@ export class QmxService extends SerialRadioBase implements RadioService {
 
     protected override poll(): void {
 
+        if (this.probing) return;
+
         this.pollCount++;
 
-        // LC only when the firmware knows it
-        let fast = this.lcdSupported ? FAST_POLL : FAST_POLL.replace("LC;", "");
+        // only what the firmware knows
+        const known = (list: string[]) => list.filter(c => !this.unsupported.has(c)).map(c => `${c};`).join("");
+
+        let fast = known(FAST_POLL);
 
         if (this.tx) {
             fast += "PC;SW;";
         }
 
-        this.write(this.pollCount % 5 === 0 ? fast + SLOW_POLL : fast);
+        this.write(this.pollCount % 5 === 0 ? fast + known(SLOW_POLL) : fast);
 
     }
 
@@ -191,7 +243,7 @@ export class QmxService extends SerialRadioBase implements RadioService {
 
             if (this.buffer.startsWith("?;")) {
                 this.buffer = this.buffer.slice(2);
-                this.onError();
+                if (this.probeWaiter) this.probeWaiter.resolve(false);
                 continue;
             }
 
@@ -207,6 +259,7 @@ export class QmxService extends SerialRadioBase implements RadioService {
                 }
                 if (this.buffer.length < 35) return;
                 if (this.buffer[34] === ";") {
+                    this.probeAnswer("LC");
                     this.lcd = this.buffer.slice(2, 34);
                     this.buffer = this.buffer.slice(35);
                     continue;
@@ -218,6 +271,7 @@ export class QmxService extends SerialRadioBase implements RadioService {
                 const count = Number(this.buffer.slice(3, 5));
                 const total = 5 + count + 1;
                 if (this.buffer.length < total) return;
+                this.probeAnswer("TB");
                 this.onDecoded(Number(this.buffer[2]), this.buffer.slice(5, 5 + count));
                 this.buffer = this.buffer.slice(total);
                 continue;
@@ -234,20 +288,6 @@ export class QmxService extends SerialRadioBase implements RadioService {
 
     }
 
-    /* "?;" - an unknown command. The only one we poll that older firmware
-       may not know is LC. */
-    private lastLcRequestErrors = 0;
-
-    private onError(): void {
-        if (this.lcd === "" && this.lcdSupported) {
-            this.lastLcRequestErrors++;
-            if (this.lastLcRequestErrors >= 3) {
-                this.lcdSupported = false;
-                console.log("QMX CAT: no LC command (older firmware) - LCD from the CAT values");
-            }
-        }
-    }
-
     private onDecoded(pending: number, text: string): void {
         this.kyPending = pending;
         if (text) {
@@ -259,6 +299,8 @@ export class QmxService extends SerialRadioBase implements RadioService {
 
         const command = answer.slice(0, 2);
         const value = answer.slice(2);
+
+        this.probeAnswer(command);
         const number = Number(value.trim());
 
         switch (command) {
@@ -583,6 +625,9 @@ export class QmxService extends SerialRadioBase implements RadioService {
                 return version ? QMX_VERSIONS[version].label : "";
             })(),
             bandVersionDetected: this.bandVersion === "auto" && this.detectedVersion !== null,
+            // auto without BN (older firmware): the version must be chosen
+            bandVersionUnknown: this.bandVersion === "auto" && this.detectedVersion === null && this.unsupported.has("BN"),
+            unsupported: [...this.unsupported],
             frequency,
             frequencyA: this.frequency,
             frequencyB: this.frequencyB,
