@@ -450,7 +450,7 @@ If a QMX or QMX+ is the active transceiver, the **QMX** button on the dashboard 
 - **VFO knob** right of the LCD: turn it (drag) or use the mouse wheel. **Tuning** also with ◀ ▶, frequency input in kHz and arrow keys; the step (STEP − / +, 10 Hz – 10 kHz) applies to knob, LCD and arrows and is remembered in the browser.
 - **VFO A / B, SPLIT, A=B, A↔B, RIT** with offset ±10 / ±50 Hz.
 - **AF gain, RF gain, CW speed** as sliders.
-- **CW:** send text (also macros CQ, own callsign, 5NN, TU 73), STOP; below it the line of the QMX **CW decoder**.
+- **CW:** send text (also macros CQ, own callsign, 5NN, TU 73), STOP; below it the line of the QMX **CW decoder**. Noise makes the QMX decoder write lots of single characters; the line therefore shows whole words only and leaves out noise words (single letters except K and R, two characters out of E/T/I/M/N/A, anything with "*").
 - **CARRIER:** a carrier while the button is held, at most 15 seconds – for an antenna tuner or an SWR check.
 
 Settings on the QMX: CAT over the virtual COM port (USB), in the system menu **KY compatibility off** (SHACK-SERVER sends CW text in the QMX format `KY text;`). In SHACK-SERVER choose the driver **QRP Labs QMX / QMX+**.

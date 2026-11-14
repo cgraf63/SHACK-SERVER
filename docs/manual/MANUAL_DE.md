@@ -450,7 +450,7 @@ Ist ein QMX oder QMX+ der aktive Transceiver, öffnet der Knopf **QMX** im Dashb
 - **VFO-Knopf** rechts neben dem LCD: drehen (ziehen) oder Mausrad. **Abstimmen** auch über ◀ ▶, Frequenzeingabe in kHz und Pfeiltasten; die Schrittweite (STEP − / +, 10 Hz – 10 kHz) gilt für Knopf, LCD und Pfeile und bleibt im Browser gespeichert.
 - **VFO A / B, SPLIT, A=B, A↔B, RIT** mit Versatz ±10 / ±50 Hz.
 - **AF-Gain, RF-Gain, CW-Tempo** als Schieber.
-- **CW:** Text senden (auch Makros CQ, eigenes Rufzeichen, 5NN, TU 73), STOP; darunter die Zeile des **CW-Decoders** des QMX.
+- **CW:** Text senden (auch Makros CQ, eigenes Rufzeichen, 5NN, TU 73), STOP; darunter die Zeile des **CW-Decoders** des QMX. Rauschen erzeugt im QMX-Decoder viele Einzelzeichen; die Zeile zeigt deshalb nur ganze Wörter und lässt Rausch-Wörter weg (einzelne Buchstaben ausser K und R, zwei Zeichen aus E/T/I/M/N/A, alles mit „*“).
 - **CARRIER:** Träger, solange der Knopf gedrückt ist, höchstens 15 Sekunden – für einen Antennentuner oder SWR-Kontrolle.
 
 Einstellungen am QMX: CAT über den virtuellen COM-Port (USB), im System-Menü die **KY-Kompatibilität aus** (SHACK-SERVER sendet CW-Text im QMX-Format `KY text;`). In SHACK-SERVER als Treiber **QRP Labs QMX / QMX+** wählen.

@@ -288,11 +288,47 @@ export class QmxService extends SerialRadioBase implements RadioService {
 
     }
 
+    /*
+     * The QMX decoder writes lots of characters out of noise (T T T E
+     * O* TM ...). The page gets whole words, noise words dropped:
+     *   - a word with "*" (not decodable)
+     *   - a single E, T, I, M, N or A
+     *   - two of these letters (TM, ET, EE, NA ...)
+     * A word is complete at a space, or after 3 s without a character.
+     */
+    private decodeWord = "";
+    private decodeWordAt = 0;
+
+    private static noiseWord(word: string): boolean {
+        if (word.includes("*")) return true;
+        // single letters: only K and R are common on their own
+        if (word.length === 1) return /[A-Z]/.test(word) && word !== "K" && word !== "R";
+        return word.length === 2 && /^[ETIMNA]+$/.test(word);
+    }
+
+    private pushWord(): void {
+        const word = this.decodeWord.trim();
+        this.decodeWord = "";
+        if (!word || QmxService.noiseWord(word)) return;
+        this.decoded = `${this.decoded}${word} `.slice(-200);
+    }
+
     private onDecoded(pending: number, text: string): void {
+
         this.kyPending = pending;
+
         if (text) {
-            this.decoded = (this.decoded + text).slice(-200);
+            for (const char of text.toUpperCase()) {
+                if (char === " " || char === "\n" || char === "\r") this.pushWord();
+                else this.decodeWord += char;
+            }
+            this.decodeWordAt = Date.now();
+            if (this.decodeWord.length > 20) this.pushWord();
         }
+        else if (this.decodeWord && Date.now() - this.decodeWordAt > 3000) {
+            this.pushWord();
+        }
+
     }
 
     private parse(answer: string): void {
@@ -808,6 +844,7 @@ export class QmxService extends SerialRadioBase implements RadioService {
 
             case "clearDecoded":
                 this.decoded = "";
+                this.decodeWord = "";
                 return;
 
             default:
