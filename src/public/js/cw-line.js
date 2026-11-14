@@ -48,6 +48,7 @@
             <button type="button" class="cw-btn macro" data-cw="{CALL}">MY</button>
             <button type="button" class="cw-btn macro" data-cw="5NN TU">5NN</button>
             <button type="button" class="cw-btn macro" data-cw="TU 73">TU</button>
+            <span class="cw-error" id="cw-error" hidden></span>
             <span class="cw-info" id="cw-wpm">— WPM</span>
             <button type="button" class="cw-btn send" id="cw-send">SEND</button>
             <button type="button" class="cw-btn stop" id="cw-stop">STOP</button>
@@ -176,19 +177,21 @@
         }
     }
 
+    /* error next to the input, 10 s (the text stays in the input) */
+    let errorTimer = null;
+
     function flash(message) {
         const input = $("cw-input");
+        const error = $("cw-error");
         input.classList.add("error");
-        input.title = message;
-        const keep = input.value;
-        input.value = "";
-        input.placeholder = message;
-        setTimeout(() => {
+        error.textContent = message;
+        error.title = message;
+        error.hidden = false;
+        clearTimeout(errorTimer);
+        errorTimer = setTimeout(() => {
             input.classList.remove("error");
-            input.title = "";
-            if (!input.value) input.value = keep;
-            if (state) apply(state);
-        }, 2500);
+            error.hidden = true;
+        }, 10000);
     }
 
     async function send(raw) {
@@ -196,7 +199,10 @@
         if (!value) return;
         const result = await post("/api/cw/send", { text: value });
         if (result) {
+            clearTimeout(errorTimer);
+            $("cw-error").hidden = true;
             const input = $("cw-input");
+            input.classList.remove("error");
             input.classList.add("sent");
             setTimeout(() => input.classList.remove("sent"), 400);
         }

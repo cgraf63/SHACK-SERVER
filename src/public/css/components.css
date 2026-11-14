@@ -4349,6 +4349,19 @@ D.sidebar.collapsed {
 .cw-row input.error { border-color: var(--red); }
 .cw-row input.error::placeholder { color: var(--red); }
 
+.cw-error {
+    flex: 0 1 auto;
+    max-width: 45%;
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cw-error[hidden] { display: none; }
+
 .cw-btn {
     flex: 0 0 auto;
     height: 27px;
