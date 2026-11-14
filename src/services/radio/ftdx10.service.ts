@@ -1,6 +1,7 @@
 import { SerialRadioBase } from "./serial-radio-base.js";
 import type { RadioService } from "./radio.interface.js";
 import { FTDX10_CAT } from "./ftdx10/ftdx10.cat.js";
+import { MemoryCwSender } from "../cw/memory-cw-sender.js";
 
 export class Ftdx10Service extends SerialRadioBase implements RadioService {
     private buffer = "";
@@ -1171,6 +1172,37 @@ setFrequencyB(frequency: number): void {
 
         return false;
 
+    }
+
+    /*
+     * CW text (dashboard): no "send text" command on the FTDX10 -
+     * written into keyer memory 5 (KM5), played (KY5), afterwards
+     * memory 5 gets its old text back.
+     */
+    private cwSender = new MemoryCwSender({
+        name: "FTDX10",
+        write: command => this.send(command),
+        slot: 5,
+        playCommand: "KY5;",
+        stopCommand: null,
+        originalText: () => this.cwMemories[4] ?? "",
+        wpm: () => this.cwSpeed
+    });
+
+    async sendCwText(text: string): Promise<boolean> {
+        if (!this.isConnected()) return false;
+        if (!(await this.ensureTunerReady())) {
+            console.error("FTDX10: CW text blocked, tuner not ready");
+            return false;
+        }
+        this.cwSender.send(text);
+        return true;
+    }
+
+    async stopCwText(): Promise<boolean> {
+        if (!this.isConnected()) return false;
+        this.cwSender.stop();
+        return true;
     }
 
     async playCwMemory(

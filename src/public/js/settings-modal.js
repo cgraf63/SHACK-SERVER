@@ -222,6 +222,14 @@ async function loadSettings() {
         if (autoSplitBox) autoSplitBox.checked = settingsData.autoSplit !== false;
         const cwSideband = document.getElementById("cw-sideband");
         if (cwSideband) cwSideband.value = settingsData.cwSideband === "CW-L" ? "CW-L" : "CW-U";
+        const cw = settingsData.cw || {};
+        const setBox = (id, on) => { const el = document.getElementById(id); if (el) el.checked = Boolean(on); };
+        setBox("cw-decoder-show", cw.decoder);
+        setBox("cw-encoder-show", cw.encoder);
+        const cwWpm = document.getElementById("cw-wpm");
+        if (cwWpm) cwWpm.value = cw.wpm || 22;
+        const cwPitch = document.getElementById("cw-pitch");
+        if (cwPitch) cwPitch.value = String(cw.pitch || 0);
 
         applyBackupSettings(
             settingsData.backup
@@ -695,6 +703,13 @@ async function saveSettings() {
             document.getElementById("auto-split")?.checked !== false,
         cwSideband:
             document.getElementById("cw-sideband")?.value === "CW-L" ? "CW-L" : "CW-U",
+
+        cw: {
+            decoder: document.getElementById("cw-decoder-show")?.checked === true,
+            encoder: document.getElementById("cw-encoder-show")?.checked === true,
+            wpm: Number(document.getElementById("cw-wpm")?.value) || 22,
+            pitch: Number(document.getElementById("cw-pitch")?.value) || 0
+        },
 
         backup:
             collectBackupSettings(),

@@ -29,6 +29,17 @@ export interface RadioService {
         memory: number
     ): Promise<boolean>;
 
+    /*
+     * Send CW text (A-Z 0-9 and punctuation, already cleaned) and
+     * stop it. Optional: only transceivers that can do it via CAT.
+     */
+    sendCwText?(text: string): Promise<boolean>;
+
+    /* keyer speed in WPM (set before CW text is sent) */
+    setCwSpeed?(wpm: number): void;
+
+    stopCwText?(): Promise<boolean>;
+
 
     /*
      * Lifecycle / status (provided by SerialRadioBase).

@@ -4,8 +4,13 @@ console.log("LIVE SPOTS JS LOADED");
 let currentSpots = [];
 
 function getLiveSpotPageSize() {
-    return window.screen.height < 1100 ? 17 : 21;
+    // every line of the CW decoder / encoder (cw-line.js) takes one row
+    return (window.screen.height < 1100 ? 17 : 21) - (window.shackCwLines || 0);
 }
+
+window.addEventListener("shack:cw-lines", () => {
+    try { renderLiveSpots(); } catch (error) { console.error(error); }
+});
 let liveSpotOffset = 0;
 
 let liveSpotOrder = [];
@@ -1317,8 +1322,7 @@ function renderLiveSpots() {
 
 
     if (pageSlider) {
-        pageSlider.style.height = window.screen.height < 1100 ? "480px" : "640px";
-        pageSlider.style.height = window.screen.height < 1100 ? "480px" : "640px";
+        pageSlider.style.height = `${(window.screen.height < 1100 ? 480 : 640) - 33 * (window.shackCwLines || 0)}px`;
 
         pageSlider.max =
             String(maxOffset);

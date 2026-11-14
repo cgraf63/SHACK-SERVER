@@ -181,6 +181,18 @@ export class SettingsService {
             cwSideband:
                 ((settings as any).cwSideband ?? this.settings.cwSideband) === "CW-L" ? "CW-L" : "CW-U",
 
+            cw: (() => {
+                const cw = { decoder: false, encoder: false, wpm: 22, pitch: 0, ...(this.settings.cw ?? {}), ...((settings as any).cw ?? {}) };
+                const wpm = Math.round(Number(cw.wpm));
+                const pitch = Math.round(Number(cw.pitch));
+                return {
+                    decoder: Boolean(cw.decoder),
+                    encoder: Boolean(cw.encoder),
+                    wpm: Number.isFinite(wpm) ? Math.min(60, Math.max(5, wpm)) : 22,
+                    pitch: Number.isFinite(pitch) && pitch >= 300 && pitch <= 1100 ? pitch : 0
+                };
+            })(),
+
             qrzLookup:
                 (settings as any).qrzLookup
                     ? {

@@ -590,6 +590,26 @@ export class Ic7300Service extends SerialRadioBase implements RadioService {
         return true;
     }
 
+    /* CW text (dashboard): 17, up to 30 characters per frame */
+    async sendCwText(text: string): Promise<boolean> {
+        if (!this.isConnected()) return false;
+        const clean = text.toUpperCase().replace(/[^A-Z0-9 /?.,=+\-@^]/g, "");
+        for (let i = 0; i < clean.length; i += 30) {
+            this.send([0x17], [...Buffer.from(clean.slice(i, i + 30), "ascii")]);
+        }
+        return clean.length > 0;
+    }
+
+    setCwSpeed(wpm: number): void {
+        if (this.isConnected()) this.control("keySpeed", wpm);
+    }
+
+    async stopCwText(): Promise<boolean> {
+        if (!this.isConnected()) return false;
+        this.send([0x17], [0xFF]);
+        return true;
+    }
+
     private normalizeMode(mode: string, frequency: number): { name: string; data: boolean } {
         let m = String(mode || "").trim().toUpperCase();
         let data = false;

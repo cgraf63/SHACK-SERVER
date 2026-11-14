@@ -534,6 +534,27 @@ export class QmxService extends SerialRadioBase implements RadioService {
     }
 
 
+    /* CW text (dashboard): KY in the QMX format, 72 characters per command */
+    async sendCwText(text: string): Promise<boolean> {
+        if (!this.isConnected()) return false;
+        for (let i = 0; i < text.length; i += 72) {
+            this.write(`KY ${text.slice(i, i + 72)};`);
+        }
+        return true;
+    }
+
+    setCwSpeed(wpm: number): void {
+        const value = Math.max(5, Math.min(60, Math.round(wpm)));
+        if (this.write(`KS${String(value).padStart(3, "0")};`)) this.keyerSpeed = value;
+    }
+
+    async stopCwText(): Promise<boolean> {
+        if (!this.isConnected()) return false;
+        this.write("RX;");
+        this.tx = false;
+        return true;
+    }
+
     /* ------------------------------------------------------------ remote page */
 
     private bandOf(hz: number): string {

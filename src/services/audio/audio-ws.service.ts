@@ -14,6 +14,45 @@ const clients =
     new Set<WebSocket>();
 
 
+/*
+ * Other consumers of the RX audio on the server (CW decoder).
+ * The capture runs while a browser listens OR a listener is subscribed.
+ */
+const listeners =
+    new Set<(chunk: Buffer) => void>();
+
+let restartTimer: ReturnType<typeof setTimeout> | null = null;
+
+function consumers(): number {
+    return clients.size + listeners.size;
+}
+
+function updateCapture(): void {
+    if (consumers() > 0) startAudioCapture();
+    else stopAudioCapture();
+}
+
+/* RX audio (S16_LE, mono, shackSettings.audio.sampleRate) for a server
+   side consumer. Returns the unsubscribe function. */
+export function subscribeAudio(listener: (chunk: Buffer) => void): () => void {
+    listeners.add(listener);
+    updateCapture();
+    return () => {
+        listeners.delete(listener);
+        updateCapture();
+    };
+}
+
+export function audioCaptureRunning(): boolean {
+    return audioProcess !== null;
+}
+
+export function audioSettings(): { device: string; sampleRate: number; channels: number; enabled: boolean } {
+    const { device, sampleRate, channels, enabled } = shackSettings.audio;
+    return { device, sampleRate, channels, enabled };
+}
+
+
 function startAudioCapture(): void {
 
     if (audioProcess) {
@@ -66,6 +105,15 @@ function startAudioCapture(): void {
     process.stdout.on(
         "data",
         (chunk: Buffer) => {
+
+            for (const listener of listeners) {
+                try {
+                    listener(chunk);
+                }
+                catch (error) {
+                    console.error("AUDIO: listener error", error);
+                }
+            }
 
             for (const client of clients) {
 
@@ -126,6 +174,14 @@ function startAudioCapture(): void {
 
             audioProcess = null;
 
+            // still wanted (e.g. the transceiver was switched off): retry
+            if (consumers() > 0 && !restartTimer) {
+                restartTimer = setTimeout(() => {
+                    restartTimer = null;
+                    if (consumers() > 0) startAudioCapture();
+                }, 5000);
+            }
+
         }
     );
 
@@ -133,6 +189,11 @@ function startAudioCapture(): void {
 
 
 function stopAudioCapture(): void {
+
+    if (restartTimer) {
+        clearTimeout(restartTimer);
+        restartTimer = null;
+    }
 
     if (!audioProcess) {
         return;
@@ -187,9 +248,7 @@ export function startAudioWebSocket(
             clients.add(socket);
 
 
-            if (clients.size === 1) {
-                startAudioCapture();
-            }
+            updateCapture();
 
 
             socket.on(
@@ -204,9 +263,7 @@ export function startAudioWebSocket(
                     );
 
 
-                    if (clients.size === 0) {
-                        stopAudioCapture();
-                    }
+                    updateCapture();
 
                 }
             );
@@ -218,9 +275,7 @@ export function startAudioWebSocket(
 
                     clients.delete(socket);
 
-                    if (clients.size === 0) {
-                        stopAudioCapture();
-                    }
+                    updateCapture();
 
                 }
             );

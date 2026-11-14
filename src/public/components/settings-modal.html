@@ -639,6 +639,47 @@
             not depending on the frequency.
         </p>
 
+        <h3 style="margin:22px 0 6px">CW line on the dashboard</h3>
+        <p class="radio-settings-intro">
+            The lowest two lines of the dashboard: the <b>decoder</b> writes the CW of the RX audio of
+            the transceiver (its USB sound card) as text, the <b>encoder</b> sends typed text as CW
+            through the active transceiver.
+        </p>
+
+        <label class="source-switch">
+            <input id="cw-decoder-show" type="checkbox">
+            <span>Show the CW decoder</span>
+        </label>
+
+        <label class="source-switch">
+            <input id="cw-encoder-show" type="checkbox">
+            <span>Show the CW encoder (text to CW)</span>
+        </label>
+
+        <label style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap">
+            <span>CW speed</span>
+            <input id="cw-wpm" type="number" min="5" max="60" step="1" style="width:90px">
+            <span>WPM (sending)</span>
+        </label>
+
+        <label style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap">
+            <span>CW pitch for the decoder</span>
+            <select id="cw-pitch" style="max-width:240px">
+                <option value="0">Automatic (strongest tone)</option>
+                <option value="400">400 Hz</option>
+                <option value="450">450 Hz</option>
+                <option value="500">500 Hz</option>
+                <option value="550">550 Hz</option>
+                <option value="600">600 Hz</option>
+                <option value="650">650 Hz</option>
+                <option value="700">700 Hz</option>
+                <option value="750">750 Hz</option>
+                <option value="800">800 Hz</option>
+                <option value="900">900 Hz</option>
+                <option value="1000">1000 Hz</option>
+            </select>
+        </label>
+
     </section>
 
 

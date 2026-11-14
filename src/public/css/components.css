@@ -4229,3 +4229,141 @@ D.sidebar.collapsed {
     font-size: 11px;
     border-top: 1px solid var(--panel-border);
 }
+
+
+/* ------------------------------------------------------------------
+   CW line at the bottom of the dashboard (decoder / encoder)
+   ------------------------------------------------------------------ */
+
+.cw-line {
+    position: sticky;
+    bottom: 0;
+    z-index: 40;
+    margin-top: 12px;
+    background: rgba(8, 19, 27, 0.97);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 4px 10px;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+    display: grid;
+    gap: 4px;
+}
+
+.cw-line[hidden],
+.cw-row[hidden] { display: none; }
+
+.cw-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 29px;
+    min-width: 0;
+}
+
+.cw-tag {
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: var(--cyan);
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    border-radius: 5px;
+    padding: 3px 7px;
+}
+
+.cw-tag.tx {
+    color: var(--orange);
+    border-color: rgba(255, 152, 0, 0.45);
+}
+
+.cw-led {
+    flex: 0 0 auto;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #22313b;
+}
+
+.cw-led.signal { background: #3b5a2a; }
+.cw-led.on { background: var(--green); box-shadow: 0 0 10px var(--green); }
+
+.cw-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    justify-content: flex-end;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #e8f6ff;
+}
+
+.cw-text .cw-empty {
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: .5px;
+    font-family: inherit;
+}
+
+.cw-call {
+    color: var(--yellow);
+    cursor: pointer;
+    border-bottom: 1px dotted rgba(255, 196, 0, 0.6);
+}
+
+.cw-call:hover { color: #fff; background: rgba(255, 196, 0, 0.25); }
+
+.cw-info {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    min-width: 120px;
+    text-align: right;
+}
+
+.cw-tx .cw-info { min-width: 62px; }
+
+.cw-row input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    height: 27px;
+    border-radius: 6px;
+    border: 1px solid var(--panel-border);
+    background: #050b10;
+    color: #fff;
+    padding: 0 10px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 15px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.cw-row input[type="text"]::placeholder { text-transform: none; letter-spacing: 0; font-size: 13px; }
+.cw-row input[type="text"]:focus { outline: none; border-color: var(--orange); }
+.cw-row input.sent { border-color: var(--green); }
+.cw-row input.error { border-color: var(--red); }
+.cw-row input.error::placeholder { color: var(--red); }
+
+.cw-btn {
+    flex: 0 0 auto;
+    height: 27px;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1px solid var(--panel-border);
+    background: #0d1720;
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.cw-btn:hover { border-color: var(--cyan); }
+.cw-btn.send { color: var(--orange); border-color: rgba(255, 152, 0, 0.5); }
+.cw-btn.stop { color: var(--red); border-color: rgba(255, 82, 82, 0.45); }
+.cw-btn.macro { color: var(--muted); }

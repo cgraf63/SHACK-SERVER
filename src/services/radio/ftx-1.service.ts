@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { SerialRadioBase } from "./serial-radio-base.js";
 import type { RadioService } from "./radio.interface.js";
+import { MemoryCwSender } from "../cw/memory-cw-sender.js";
 
 
 /*
@@ -842,6 +843,32 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
         const v = clamp(Math.round(Number(level)), 0, 100);
         this.send(`ML1${pad(v, 3)};`);
         this.monitorLevel = v;
+        return true;
+    }
+
+    /*
+     * CW text (dashboard): written into text memory 5 (KM5), played
+     * (KY05), KY00 stops; afterwards memory 5 gets its old text back.
+     */
+    private cwSender = new MemoryCwSender({
+        name: "FTX-1",
+        write: command => this.send(command),
+        slot: 5,
+        playCommand: "KY05;",
+        stopCommand: "KY00;",
+        originalText: () => this.cwMemories[4] ?? "",
+        wpm: () => this.cwSpeed
+    });
+
+    async sendCwText(text: string): Promise<boolean> {
+        if (!this.isConnected()) return false;
+        this.cwSender.send(text);
+        return true;
+    }
+
+    async stopCwText(): Promise<boolean> {
+        if (!this.isConnected()) return false;
+        this.cwSender.stop();
         return true;
     }
 

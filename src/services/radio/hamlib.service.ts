@@ -501,6 +501,34 @@ export class HamlibService implements RadioService {
     }
 
 
+    /* CW text (dashboard): rigctld send_morse / stop_morse */
+    async sendCwText(text: string): Promise<boolean> {
+        try {
+            await this.send(`b ${text}`, 0);
+            return true;
+        }
+        catch (error) {
+            console.error("HAMLIB: send_morse failed:", error instanceof Error ? error.message : error);
+            return false;
+        }
+    }
+
+    setCwSpeed(wpm: number): void {
+        this.send(`L KEYSPD ${Math.max(5, Math.min(60, Math.round(wpm)))}`, 0).catch(() => {
+            // not every rig has a keyer speed level
+        });
+    }
+
+    async stopCwText(): Promise<boolean> {
+        try {
+            await this.send("\\stop_morse", 0);
+            return true;
+        }
+        catch {
+            return false;
+        }
+    }
+
     /* ==================================================================
        Protocol
        ================================================================== */

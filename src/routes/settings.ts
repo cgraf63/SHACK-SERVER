@@ -18,6 +18,7 @@ import {
 } from "../services/fusion/fusion-instance.js";
 
 
+import { cwService } from "../services/cw/cw.service.js";
 import {
     sourceManager
 } from "../services/sources/source-manager-instance.js";
@@ -138,6 +139,8 @@ router.put(
 
 
 fusionEngine.refreshShackLocation();
+
+cwService.applySettings();
 
 
 sourceManager.restart();

@@ -169,6 +169,21 @@ Arrow keys and **Enter** or a click take a suggestion: callsign, band, mode and 
 
 **WATCH** or **ADD TO WATCH** puts a callsign on the watch list; there is no limit. As soon as the station is spotted, the dashboard shows an alert, for example "K1ABC DETECTED! 14.030 MHz CW". Optionally a push notification goes to your phone as well (see [Notifications](#notifications)).
 
+## CW decoder and CW encoder
+
+![CW lines at the bottom of the dashboard](images/cw-line.jpg)
+
+The lowest two lines of the dashboard can be used for CW (the live spots show fewer rows instead). They are switched on and off under *Settings › Split & CW › CW line on the dashboard*:
+
+- **CW RX – decoder:** decodes the RX audio of the transceiver (its USB sound card, the same as for the remote audio) on the Raspberry Pi. The algorithm is the one of the T-Embed CW key: Goertzel tone detection with automatic pitch, a tracked noise floor, the dot length follows the speed. Pitch and speed are shown; a click on a callsign in the text puts it into Manual QSO. The pitch can also be set fixed (the CW pitch of the transceiver).
+- **CW TX – encoder:** type the text, **Enter** sends it through the active transceiver, **Esc** / STOP stops. Macros CQ, MY, 5NN, TU; `{CALL}` stands for your own callsign. The speed (WPM) comes from the settings and is set on the transceiver before sending.
+
+| Transceiver | Sending CW text |
+|---|---|
+| IC-7300, QMX / QMX+ | directly via CAT |
+| FTDX10, FTX-1 | through keyer memory 5 (written, played and restored afterwards) |
+| Hamlib | `send_morse`, if the model supports it |
+
 ## New – "needed" callsigns
 
 ![New – "needed" callsigns](../images/screenshots/needed-alerts.jpg)
