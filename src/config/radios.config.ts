@@ -51,6 +51,13 @@ export interface RadioConfig {
      */
     hamlibModel?: number;
 
+    /*
+     * QRP Labs QMX band version, only for protocol "qmx":
+     * "auto" (detected from the radio), "80-20", "60-15", "20-10",
+     * "plus" (QMX+ 160-6 m). Default "auto".
+     */
+    qmxBands?: "auto" | "80-20" | "60-15" | "20-10" | "plus";
+
     enabled: boolean;
 
 }

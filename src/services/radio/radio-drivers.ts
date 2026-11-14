@@ -44,6 +44,9 @@ export interface RadioDriverInfo {
 
     defaultCivAddress?: number;
 
+    /* Driver asks for the band version (QRP Labs QMX) */
+    needsQmxBands?: boolean;
+
     /* Driver needs a Hamlib model number */
     needsHamlibModel?: boolean;
 
@@ -151,8 +154,9 @@ const DRIVERS: RadioDriver[] = [
         models: "QMX, QMX+",
         defaultBaudRate: 115200,
         baudRates: [9600, 19200, 38400, 57600, 115200],
-        hint: "USB connection to the QMX (virtual COM port).",
-        create: c => new QmxService(c.device, c.baudRate),
+        hint: "USB connection to the QMX (virtual COM port). Band version: Auto detects it from the radio.",
+        needsQmxBands: true,
+        create: c => new QmxService(c.device, c.baudRate, c.qmxBands ?? "auto"),
     },
 
     {

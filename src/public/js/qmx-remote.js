@@ -374,7 +374,12 @@
         renderMeters(s);
 
         document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("on", b.dataset.mode === s.mode));
-        document.querySelectorAll("[data-band]").forEach(b => b.classList.toggle("on", b.dataset.band === s.band));
+        // only the bands of this QMX version
+        const bands = new Set(s.bands || []);
+        document.querySelectorAll("[data-band]").forEach(b => {
+            b.classList.toggle("on", b.dataset.band === s.band);
+            b.hidden = bands.size > 0 && !bands.has(b.dataset.band);
+        });
 
         setOn("vfo-a", s.vfo === "A");
         setOn("vfo-b", s.vfo === "B");
@@ -391,6 +396,9 @@
             s.split ? `<span class="chip on">SPLIT · TX ${s.txVfo}</span>` : "",
             s.band ? `<span class="chip">BAND <b>${s.band}</b></span>` : "",
             `<span class="chip">MODE <b>${s.mode}</b></span>`,
+            s.bandVersionLabel
+                ? `<span class="chip" title="${s.bandVersionDetected ? "Detected from the radio" : "Set in the transceiver settings"}">${s.bandVersionLabel}${s.bandVersionDetected ? " · AUTO" : ""}</span>`
+                : "",
             s.meters.agc ? `<span class="chip">AGC <b>${s.meters.agc} dB</b></span>` : "",
             s.cwPending ? `<span class="chip on">CW SENDING · ${s.cwPending >= 9 ? "9+" : s.cwPending}</span>` : ""
         ];

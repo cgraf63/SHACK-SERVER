@@ -427,6 +427,7 @@ If a QMX or QMX+ is the active transceiver, the **QMX** button on the dashboard 
 - **LCD:** shows the real 2 × 16 characters of the QMX (CAT command `LC`). Tapping left / right tunes one step, swiping or the mouse wheel tunes continuously. Older firmware without `LC`: the LCD is built from frequency, mode and VFO.
 - **Meters** in LCD style: S-meter, while transmitting power and SWR.
 - **Modes** on one line (LSB, USB, CW, CW-R, AM, FSK, FSK-R), **bands** 160–6 m with band ▲/▼ (band buttons go back to the last frequency on that band).
+- **Band version:** only the bands of your radio appear – QMX 80/60/40/30/20 m, QMX 60/40/30/20/17/15 m, QMX 20/17/15/12/11/10 m or QMX+ 160–6 m. **Auto** detects the version from the radio (band number `BN` together with the current band); in the transceiver settings it can also be set fixed, e.g. when the band configuration of the QMX was changed.
 - **Tuning:** steps (STEP − / +, as on the tuning knob), frequency input in kHz, arrow keys.
 - **VFO A / B, SPLIT, A=B, A↔B, RIT** with offset ±10 / ±50 Hz.
 - **AF gain, RF gain, CW speed** as sliders.

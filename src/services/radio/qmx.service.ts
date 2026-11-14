@@ -41,7 +41,7 @@ export const QMX_MODES: Record<string, string> = {
 const MODE_BY_CODE: Record<string, string> =
     Object.fromEntries(Object.entries(QMX_MODES).map(([name, code]) => [code, name]));
 
-/* HF bands of the QMX+ (QMX: a subset, depending on the build) */
+/* All bands a QMX / QMX+ can have */
 export const QMX_BANDS: Array<{ name: string; low: number; high: number; start: number }> = [
     { name: "160m", low: 1_800_000, high: 2_000_000, start: 1_836_000 },
     { name: "80m", low: 3_500_000, high: 4_000_000, start: 3_573_000 },
@@ -52,9 +52,23 @@ export const QMX_BANDS: Array<{ name: string; low: number; high: number; start: 
     { name: "17m", low: 18_068_000, high: 18_168_000, start: 18_086_000 },
     { name: "15m", low: 21_000_000, high: 21_450_000, start: 21_060_000 },
     { name: "12m", low: 24_890_000, high: 24_990_000, start: 24_906_000 },
+    { name: "11m", low: 26_965_000, high: 27_405_000, start: 27_185_000 },
     { name: "10m", low: 28_000_000, high: 29_700_000, start: 28_060_000 },
     { name: "6m", low: 50_000_000, high: 54_000_000, start: 50_096_000 }
 ];
+
+/*
+ * Band versions: the bands in the order of the radio's band
+ * configuration (= the BN numbers).
+ */
+export type QmxBandVersion = "auto" | "80-20" | "60-15" | "20-10" | "plus";
+
+export const QMX_VERSIONS: Record<Exclude<QmxBandVersion, "auto">, { label: string; bands: string[] }> = {
+    "80-20": { label: "QMX 80/60/40/30/20 m", bands: ["80m", "60m", "40m", "30m", "20m"] },
+    "60-15": { label: "QMX 60/40/30/20/17/15 m", bands: ["60m", "40m", "30m", "20m", "17m", "15m"] },
+    "20-10": { label: "QMX 20/17/15/12/11/10 m", bands: ["20m", "17m", "15m", "12m", "11m", "10m"] },
+    "plus": { label: "QMX+ 160–6 m", bands: ["160m", "80m", "60m", "40m", "30m", "20m", "17m", "15m", "12m", "11m", "10m", "6m"] }
+};
 
 /* TR: tune-knob step */
 export const QMX_STEPS = [10_000_000, 1_000_000, 100_000, 10_000, 1_000, 500, 100, 10];
@@ -63,7 +77,7 @@ export const QMX_STEPS = [10_000_000, 1_000_000, 100_000, 10_000, 1_000, 500, 10
 const CARRIER_MAX_MS = 15_000;
 
 const FAST_POLL = "IF;FB;SM;LC;TB;";
-const SLOW_POLL = "FR;FT;SP;KS;AG;RG;TR;SA;";
+const SLOW_POLL = "FR;FT;SP;KS;AG;RG;TR;SA;BN;";
 
 
 export class QmxService extends SerialRadioBase implements RadioService {
@@ -105,8 +119,13 @@ export class QmxService extends SerialRadioBase implements RadioService {
     /* the last frequency per band - band buttons go back there */
     private readonly bandMemory = new Map<string, number>();
 
+    /* band version: configured, or detected from BN + current band */
+    private readonly bandVersion: QmxBandVersion;
+    private detectedVersion: Exclude<QmxBandVersion, "auto"> | null = null;
+    private bandNumber = -1;
 
-    constructor(device: string, baudRate: number) {
+
+    constructor(device: string, baudRate: number, bandVersion: QmxBandVersion = "auto") {
         super({
             name: "QMX CAT",
             device,
@@ -114,6 +133,7 @@ export class QmxService extends SerialRadioBase implements RadioService {
             pollIntervalMs: 400,
             rxTimeoutMs: 15000,
         });
+        this.bandVersion = bandVersion;
     }
 
 
@@ -122,7 +142,7 @@ export class QmxService extends SerialRadioBase implements RadioService {
     protected override onConnected(): void {
         this.buffer = "";
         this.lcdSupported = true;
-        this.write("VN;OM;ID;IF;FB;MD;KS;");
+        this.write("VN;OM;ID;IF;FB;MD;KS;BN;");
     }
 
     protected override onDisconnected(): void {
@@ -312,6 +332,13 @@ export class QmxService extends SerialRadioBase implements RadioService {
                 if (value) this.ritOn = value === "1";
                 break;
 
+            case "BN":
+                if (value && Number.isFinite(number)) {
+                    this.bandNumber = number;
+                    this.detectVersion();
+                }
+                break;
+
             case "VN":
                 this.version = value;
                 break;
@@ -325,6 +352,35 @@ export class QmxService extends SerialRadioBase implements RadioService {
 
         }
 
+    }
+
+    /*
+     * Auto detection: BN is the position of the current band in the
+     * radio's band list. Only one version has the current band at
+     * that position (40 m = BN 2 on the 80-20 m QMX, 1 on the
+     * 60-15 m QMX, 3 on the QMX+ ...).
+     */
+    private detectVersion(): void {
+
+        if (this.bandVersion !== "auto" || this.bandNumber < 0) return;
+
+        const band = this.bandOf(this.getFrequency());
+        if (!band) return;
+
+        const matches = (Object.keys(QMX_VERSIONS) as Array<keyof typeof QMX_VERSIONS>)
+            .filter(key => QMX_VERSIONS[key].bands[this.bandNumber] === band);
+
+        if (matches.length === 1 && matches[0] !== this.detectedVersion) {
+            this.detectedVersion = matches[0]!;
+            console.log(`QMX CAT: band version ${QMX_VERSIONS[this.detectedVersion].label} (BN${this.bandNumber} = ${band})`);
+        }
+
+    }
+
+    /* the bands of this radio (all, as long as the version is unknown) */
+    getBands(): string[] {
+        const version = this.bandVersion !== "auto" ? this.bandVersion : this.detectedVersion;
+        return version ? QMX_VERSIONS[version].bands : QMX_BANDS.map(b => b.name);
     }
 
     /*
@@ -499,6 +555,13 @@ export class QmxService extends SerialRadioBase implements RadioService {
             error: this.getLastError(),
             model: this.model === "QC" || this.model === "" ? "QMX" : this.model,
             version: this.version,
+            bands: this.getBands(),
+            bandVersion: this.bandVersion,
+            bandVersionLabel: (() => {
+                const version = this.bandVersion !== "auto" ? this.bandVersion : this.detectedVersion;
+                return version ? QMX_VERSIONS[version].label : "";
+            })(),
+            bandVersionDetected: this.bandVersion === "auto" && this.detectedVersion !== null,
             frequency,
             frequencyA: this.frequency,
             frequencyB: this.frequencyB,
@@ -579,6 +642,7 @@ export class QmxService extends SerialRadioBase implements RadioService {
             case "band": {
                 const band = QMX_BANDS.find(b => b.name === String(value));
                 if (!band) throw new Error(`band: ${String(value)} unknown`);
+                if (!this.getBands().includes(band.name)) throw new Error(`${band.name} is not a band of this QMX`);
                 this.setFrequency(this.bandMemory.get(band.name) ?? band.start);
                 return;
             }

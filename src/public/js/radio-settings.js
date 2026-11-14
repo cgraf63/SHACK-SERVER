@@ -268,6 +268,10 @@
             parts.push(`CI-V ${hex2(radio.civAddress)}`);
         }
 
+        if (radio.protocol === "qmx" && radio.qmxBands) {
+            parts.push({ "80-20": "80–20 m", "60-15": "60–15 m", "20-10": "20–10 m", plus: "QMX+ 160–6 m" }[radio.qmxBands] || radio.qmxBands);
+        }
+
         return parts.join(" · ");
 
     }
@@ -466,6 +470,8 @@
                 ? hex2(radio.civAddress)
                 : "";
 
+        $("radio-qmx-bands").value = radio?.qmxBands ?? "auto";
+
         onDriverChange(radio ? radio.baudRate : null);
 
         renderPortOptions(radio ? radio.device : null);
@@ -505,6 +511,10 @@
         const civ = !!driver.needsCivAddress;
         document.querySelectorAll(".radio-civ-field").forEach(el => {
             el.hidden = !civ;
+        });
+
+        document.querySelectorAll(".radio-qmx-field").forEach(el => {
+            el.hidden = !driver.needsQmxBands;
         });
 
         // empty, or still a default of another driver (A4 -> 94 when
@@ -726,6 +736,10 @@
 
         if (driverOf(config.protocol)?.needsCivAddress) {
             config.civAddress = $("radio-civ").value.trim();
+        }
+
+        if (driverOf(config.protocol)?.needsQmxBands) {
+            config.qmxBands = $("radio-qmx-bands").value;
         }
 
         if (driverOf(config.protocol)?.needsHamlibModel) {

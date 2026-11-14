@@ -339,6 +339,13 @@ export function validateRadio(
         radio.civAddress = civ;
     }
 
+    if (protocol === "qmx" && typeof r.qmxBands === "string" && r.qmxBands !== "auto") {
+        if (!["80-20", "60-15", "20-10", "plus"].includes(r.qmxBands)) {
+            throw new RadioConfigError("Invalid QMX band version");
+        }
+        radio.qmxBands = r.qmxBands as NonNullable<RadioConfig["qmxBands"]>;
+    }
+
     if (isHamlib) {
         if (hamlibModel !== undefined) {
             radio.hamlibModel = hamlibModel;
