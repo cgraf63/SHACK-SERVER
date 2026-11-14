@@ -338,7 +338,7 @@ SHACK-SERVER bedient alle Transceiver über eine gemeinsame Schnittstelle. Das D
 | RGO ONE | USB / CAT, eigener Treiber | integriert, mit Fernsteuerungsseite |
 | Icom IC-7300, IC-7300MK2 | USB / CI-V, eigener Treiber | integriert, mit Fernsteuerungsseite und Scope; Test am Gerät offen |
 | Icom IC-705 und andere Icom | USB / CI-V, eigener Treiber | vorbereitet, Hardwaretest offen |
-| QRP Labs QMX / QMX+ | USB / CAT, eigener Treiber | vorbereitet, Hardwaretest offen |
+| QRP Labs QMX / QMX+ | USB / CAT, eigener Treiber | integriert, mit Fernsteuerungsseite; Test am Gerät offen |
 | rund 400 weitere Modelle | Hamlib | integriert |
 
 ## Transceiver einrichten
@@ -418,7 +418,24 @@ Ist der IC-7300 (oder IC-7300MK2) der aktive Transceiver, öffnet der Knopf **IC
 
 Einstellungen am IC-7300: *SET › Connectors › CI-V*: **CI-V USB Baud Rate** 115200, **CI-V Address** 94h (IC-7300MK2: B6h), **CI-V Transceive** ON, **CI-V USB Echo Back** OFF. In SHACK-SERVER als Treiber **Icom IC-7300 / IC-7300MK2** wählen.
 
-## RGO ONE, QRP Labs QMX und andere
+## QRP Labs QMX / QMX+
+
+![QMX-Seite](images/remote-qmx.jpg)
+
+Ist ein QMX oder QMX+ der aktive Transceiver, öffnet der Knopf **QMX** im Dashboard eine eigene Seite im Stil des QMX mit dem gelben Punktmatrix-LCD:
+
+- **LCD:** zeigt die echten 2 × 16 Zeichen des QMX (CAT-Befehl `LC`). Antippen links / rechts stimmt einen Schritt, Wischen oder Mausrad stimmt laufend. Ältere Firmware ohne `LC`: das LCD wird aus Frequenz, Mode und VFO aufgebaut.
+- **Instrumente** im LCD-Stil: S-Meter, beim Senden Leistung und SWR.
+- **Modes** auf einer Zeile (LSB, USB, CW, CW-R, AM, FSK, FSK-R), **Bänder** 160–6 m mit Band ▲/▼ (Band-Knöpfe gehen auf die letzte Frequenz im Band).
+- **Abstimmen:** Schritte (STEP − / +, wie am Drehknopf), Frequenzeingabe in kHz, Pfeiltasten.
+- **VFO A / B, SPLIT, A=B, A↔B, RIT** mit Versatz ±10 / ±50 Hz.
+- **AF-Gain, RF-Gain, CW-Tempo** als Schieber.
+- **CW:** Text senden (auch Makros CQ, eigenes Rufzeichen, 5NN, TU 73), STOP; darunter die Zeile des **CW-Decoders** des QMX.
+- **CARRIER:** Träger, solange der Knopf gedrückt ist, höchstens 15 Sekunden – für einen Antennentuner oder SWR-Kontrolle.
+
+Einstellungen am QMX: CAT über den virtuellen COM-Port (USB), im System-Menü die **KY-Kompatibilität aus** (SHACK-SERVER sendet CW-Text im QMX-Format `KY text;`). In SHACK-SERVER als Treiber **QRP Labs QMX / QMX+** wählen.
+
+## RGO ONE und andere
 
 ![RGO ONE](images/remote-rgo.jpg)
 

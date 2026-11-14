@@ -751,7 +751,8 @@ async function updateStationInline() {
             "ftdx10": { label: "FTDX10", url: "/remote.html" },
             "rgo-one": { label: "RGO ONE", url: "/rgo-remote.html" },
             "ftx-1": { label: "FTX-1", url: "/ftx1" },
-            "ic7300": { label: "IC-7300", url: "/ic7300" }
+            "ic7300": { label: "IC-7300", url: "/ic7300" },
+            "qmx": { label: "QMX", url: "/qmx" }
         };
 
         const remotePage =

@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a09">
+<title>SHACK-SERVER – QMX Remote</title>
+<link rel="icon" type="image/png" href="/assets/app/icon-192.png">
+
+<style>
+
+/* QMX look: black anodised case, the classic yellow-green 1602 LCD
+   with dark dot-matrix characters, black touch keys with LCD-yellow
+   labels */
+:root {
+    --page: #0a0a09;
+    --case-1: #242422;
+    --case-2: #0f0f0e;
+    --line: #2b2a25;
+    --text: #f1f0e6;
+    --dim: #9c9a88;
+    --faint: #4b493f;
+    --lcd-1: #d4e157;
+    --lcd-2: #b4c62a;
+    --lcd-ink: #1d2606;
+    --lcd-off: rgba(29, 38, 6, 0.07);
+    --yellow: #e2ef5a;
+    --yellow-dim: #a9b43a;
+    --tx: #ff4b3a;
+    --rx: #8be04a;
+    --key-1: #2c2c29;
+    --key-2: #181816;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+    margin: 0;
+    min-height: 100%;
+    background:
+        radial-gradient(900px 520px at 50% -12%, #2a2c16 0%, transparent 62%),
+        var(--page);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- top bar */
+
+.top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 22px;
+    border-bottom: 1px solid #1d1c18;
+}
+
+.brand {
+    font-weight: 800;
+    letter-spacing: 3px;
+    font-size: 17px;
+}
+
+.brand small {
+    color: var(--yellow-dim);
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-left: 8px;
+    font-size: 11px;
+}
+
+.conn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--dim);
+    letter-spacing: 1px;
+}
+
+.conn i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #55554c;
+}
+
+.conn.ok i { background: var(--rx); box-shadow: 0 0 8px var(--rx); }
+.conn.bad i { background: var(--tx); box-shadow: 0 0 8px var(--tx); }
+
+.top .spacer { flex: 1; }
+
+.clock {
+    font-variant-numeric: tabular-nums;
+    color: var(--dim);
+    font-size: 13px;
+}
+
+.clock b { color: var(--text); }
+
+.top a {
+    color: var(--dim);
+    text-decoration: none;
+    border: 1px solid #34332b;
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+}
+
+.top a:hover { color: var(--text); }
+
+/* ---------------------------------------------------------------- layout */
+
+.wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 22px 16px 40px;
+}
+
+.case {
+    background: linear-gradient(180deg, var(--case-1), var(--case-2));
+    border: 1px solid #36352e;
+    border-radius: 18px;
+    padding: 22px 26px 24px;
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.06) inset,
+        0 24px 60px rgba(0, 0, 0, 0.55);
+    position: relative;
+}
+
+/* faint screw heads like the real enclosure */
+.case::before,
+.case::after {
+    content: "";
+    position: absolute;
+    top: 12px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #4a4a44, #151513);
+}
+
+.case::before { left: 12px; }
+.case::after { right: 12px; }
+
+.case-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+    color: var(--dim);
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+.case-head b {
+    color: var(--text);
+    font-size: 15px;
+    letter-spacing: 4px;
+}
+
+.case-head .fw { margin-left: auto; letter-spacing: 1px; }
+
+/* ---------------------------------------------------------------- LCD */
+
+.lcd-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 22px;
+    align-items: stretch;
+}
+
+.bezel {
+    background: #050505;
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow:
+        0 0 0 1px #3a3a33,
+        0 2px 0 rgba(255, 255, 255, 0.05),
+        0 10px 24px rgba(0, 0, 0, 0.6) inset;
+}
+
+.lcd {
+    position: relative;
+    border-radius: 4px;
+    background:
+        radial-gradient(120% 140% at 50% 0%, var(--lcd-1) 0%, var(--lcd-2) 100%);
+    box-shadow:
+        0 0 26px rgba(212, 225, 87, 0.28),
+        0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+        0 6px 14px rgba(0, 0, 0, 0.25) inset;
+    cursor: ew-resize;
+    touch-action: none;
+    user-select: none;
+    overflow: hidden;
+}
+
+.lcd canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* touch zones: left half down, right half up */
+.lcd .zone {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    color: var(--lcd-ink);
+    font-size: 22px;
+    font-weight: 800;
+    opacity: 0;
+    transition: opacity .15s;
+    pointer-events: none;
+}
+
+.lcd .zone.left { left: 0; justify-content: flex-start; }
+.lcd .zone.right { right: 0; justify-content: flex-end; }
+.lcd .zone.flash { opacity: .45; }
+
+.lcd.tx {
+    box-shadow:
+        0 0 30px rgba(255, 75, 58, 0.45),
+        0 0 0 2px var(--tx) inset;
+}
+
+.lcd-hint {
+    margin-top: 8px;
+    color: var(--faint);
+    font-size: 11px;
+    letter-spacing: .5px;
+    text-align: center;
+}
+
+/* meters next to the LCD, in LCD colours */
+.meters {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+}
+
+.meter {
+    background: linear-gradient(180deg, #c7d64b, #a8ba25);
+    border-radius: 5px;
+    padding: 6px 9px 7px;
+    color: var(--lcd-ink);
+    box-shadow: 0 0 0 1px #000 inset, 0 0 14px rgba(212, 225, 87, 0.15);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+}
+
+.meter .label {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.meter .bar {
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    gap: 2px;
+    margin-top: 5px;
+    height: 10px;
+}
+
+.meter .bar i {
+    background: rgba(29, 38, 6, 0.1);
+    border-radius: 1px;
+}
+
+.meter .bar i.on { background: var(--lcd-ink); }
+.meter .bar i.on.hot { background: #6b1a06; }
+.meter.idle { opacity: .55; }
+
+/* ---------------------------------------------------------------- status */
+
+.status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0 4px;
+}
+
+.chip {
+    border: 1px solid #3a392f;
+    border-radius: 999px;
+    padding: 4px 11px;
+    font-size: 12px;
+    color: var(--dim);
+    letter-spacing: 1px;
+}
+
+.chip b { color: var(--yellow); font-weight: 700; }
+.chip.on { border-color: var(--yellow-dim); color: var(--yellow); }
+.chip.tx { border-color: var(--tx); color: #fff; background: rgba(255, 75, 58, 0.25); }
+
+/* ---------------------------------------------------------------- keys */
+
+.panel {
+    margin-top: 18px;
+    display: grid;
+    gap: 14px;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.row-title {
+    width: 64px;
+    flex: 0 0 64px;
+    color: var(--dim);
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.k {
+    min-width: 54px;
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 9px;
+    border: 1px solid #3c3b33;
+    background: linear-gradient(180deg, var(--key-1), var(--key-2));
+    color: var(--yellow);
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.08) inset,
+        0 3px 8px rgba(0, 0, 0, 0.45);
+    transition: transform .05s, background .15s;
+}
+
+.k:active { transform: translateY(1px); }
+
+.k.on {
+    background: linear-gradient(180deg, #d9e65a, #aebf26);
+    color: var(--lcd-ink);
+    border-color: #e9f37a;
+    box-shadow: 0 0 14px rgba(226, 239, 90, 0.35);
+}
+
+.k.sm { min-width: 42px; height: 34px; font-size: 12px; padding: 0 9px; }
+.k.wide { min-width: 86px; }
+
+.k.danger {
+    color: #ffb4a8;
+    border-color: #5a2a22;
+}
+
+.k.danger.on {
+    background: linear-gradient(180deg, #ff6a55, #c92d1b);
+    color: #fff;
+    border-color: #ff8a78;
+    box-shadow: 0 0 18px rgba(255, 75, 58, 0.55);
+}
+
+.modes { display: flex; gap: 8px; flex-wrap: nowrap; min-width: 0; }
+.panel > *, .lcd-row > * { min-width: 0; }
+.modes .k { flex: 1 0 auto; }
+
+.val {
+    min-width: 92px;
+    text-align: center;
+    color: var(--yellow);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.gap { flex: 1; }
+
+input[type="text"],
+input[type="number"] {
+    height: 42px;
+    border-radius: 9px;
+    border: 1px solid #3c3b33;
+    background: #11110f;
+    color: var(--text);
+    padding: 0 12px;
+    font: inherit;
+    font-size: 15px;
+}
+
+input:focus { outline: none; border-color: var(--yellow-dim); }
+
+#freq-input { width: 140px; font-variant-numeric: tabular-nums; }
+#cw-text { flex: 1; min-width: 200px; text-transform: uppercase; font-family: ui-monospace, Menlo, Consolas, monospace; }
+
+/* sliders */
+.sliders {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px 22px;
+}
+
+.slider {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--dim);
+}
+
+.slider b {
+    color: var(--yellow);
+    font-variant-numeric: tabular-nums;
+    min-width: 58px;
+    text-align: right;
+    letter-spacing: 0;
+    font-size: 13px;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: #2e2d27;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #f1f78f, #aebf26);
+    border: 2px solid #11110f;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #f1f78f, #aebf26);
+    border: 2px solid #11110f;
+}
+
+/* CW decoder strip */
+.decoder {
+    margin-top: 2px;
+    background: linear-gradient(180deg, #c7d64b, #a8ba25);
+    color: var(--lcd-ink);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    direction: rtl;
+    text-align: left;
+    box-shadow: 0 0 0 1px #000 inset;
+    min-height: 36px;
+}
+
+.decoder span { direction: ltr; unicode-bidi: bidi-override; }
+.decoder .empty { opacity: .45; letter-spacing: 1px; font-weight: 600; }
+
+.section {
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+}
+
+.note {
+    color: var(--faint);
+    font-size: 11px;
+}
+
+/* ---------------------------------------------------------------- overlay / toast */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5, 5, 4, 0.82);
+    z-index: 20;
+    padding: 20px;
+}
+
+.overlay.show { display: flex; }
+
+.overlay .box {
+    max-width: 440px;
+    background: #171714;
+    border: 1px solid #3a392f;
+    border-radius: 14px;
+    padding: 22px 24px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.overlay .box h2 { margin: 0 0 8px; color: var(--yellow); letter-spacing: 2px; font-size: 16px; }
+.overlay .box a { color: var(--yellow); }
+
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translate(-50%, 20px);
+    background: #232320;
+    border: 1px solid #4a4940;
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 10px;
+    opacity: 0;
+    transition: opacity .2s, transform .2s;
+    pointer-events: none;
+    z-index: 30;
+}
+
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------------------------------------------------------------- phone */
+
+@media (max-width: 820px) {
+    .top { padding: 10px 16px; gap: 10px; }
+    .clock { display: none; }
+    .wrap { padding: 14px 10px 30px; }
+    .case { padding: 18px 12px 18px; border-radius: 14px; }
+    .lcd-row { grid-template-columns: 1fr; gap: 12px; }
+    .meters { width: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .meter { font-size: 11px; padding: 5px 7px 6px; }
+    .sliders { grid-template-columns: 1fr; }
+    .row-title { width: 100%; flex-basis: 100%; }
+    .k { min-width: 46px; height: 40px; padding: 0 9px; }
+    #freq-input { width: 0; flex: 1; min-width: 90px; }
+    .modes { gap: 5px; }
+    .modes .k { min-width: 0; flex: 1 1 0; padding: 0 2px; font-size: 12px; letter-spacing: 0; }
+    .row .gap { display: none; }
+    .val { min-width: 70px; }
+    .sliders .slider b { min-width: 52px; }
+    #cw-text { min-width: 0; }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="top">
+    <div class="brand">QMX<small>REMOTE</small></div>
+    <div class="conn" id="conn"><i></i><span id="conn-text">CONNECTING …</span></div>
+    <div class="spacer"></div>
+    <div class="clock" id="clock"></div>
+    <a href="/">Dashboard</a>
+</div>
+
+<div class="wrap">
+
+    <div class="case">
+
+        <div class="case-head">
+            <b id="model">QMX</b>
+            <span>QRP LABS</span>
+            <span class="fw" id="fw"></span>
+        </div>
+
+        <div class="lcd-row">
+
+            <div>
+                <div class="bezel">
+                    <div class="lcd" id="lcd" title="Tap left / right to tune one step · drag or mouse wheel to tune">
+                        <canvas id="lcd-canvas" width="960" height="190"></canvas>
+                        <div class="zone left" id="zone-left">◀</div>
+                        <div class="zone right" id="zone-right">▶</div>
+                    </div>
+                </div>
+                <div class="lcd-hint">Tap left / right to tune one step · drag or mouse wheel to tune</div>
+            </div>
+
+            <div class="meters">
+                <div class="meter" id="m-s">
+                    <div class="label"><span>S</span><span id="m-s-val">—</span></div>
+                    <div class="bar" id="m-s-bar"></div>
+                </div>
+                <div class="meter idle" id="m-po">
+                    <div class="label"><span>PWR</span><span id="m-po-val">—</span></div>
+                    <div class="bar" id="m-po-bar"></div>
+                </div>
+                <div class="meter idle" id="m-swr">
+                    <div class="label"><span>SWR</span><span id="m-swr-val">—</span></div>
+                    <div class="bar" id="m-swr-bar"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <div class="panel">
+
+            <div class="row">
+                <span class="row-title">MODE</span>
+                <div class="modes" id="modes" style="flex:1"></div>
+            </div>
+
+            <div class="row">
+                <span class="row-title">BAND</span>
+                <button class="k sm" id="band-down" title="Band down (BD)">▼</button>
+                <span id="bands" style="display:contents"></span>
+                <button class="k sm" id="band-up" title="Band up (BU)">▲</button>
+            </div>
+
+            <div class="row section">
+                <span class="row-title">TUNE</span>
+                <button class="k" data-tune="-10">◀◀</button>
+                <button class="k" data-tune="-1">◀</button>
+                <span class="val" id="step-val" title="Tune step (TR)">—</span>
+                <button class="k" data-tune="1">▶</button>
+                <button class="k" data-tune="10">▶▶</button>
+                <button class="k sm" id="step-down" title="Smaller step">STEP −</button>
+                <button class="k sm" id="step-up" title="Bigger step">STEP +</button>
+                <span class="gap"></span>
+                <input type="text" id="freq-input" inputmode="decimal" placeholder="kHz" autocomplete="off">
+                <button class="k" id="freq-go">SET</button>
+            </div>
+
+            <div class="row">
+                <span class="row-title">VFO</span>
+                <button class="k" id="vfo-a">VFO A</button>
+                <button class="k" id="vfo-b">VFO B</button>
+                <button class="k" id="split">SPLIT</button>
+                <button class="k" id="a-eq-b" title="Copy VFO A to VFO B">A=B</button>
+                <button class="k" id="swap" title="Swap VFO A and B">A↔B</button>
+                <span class="gap"></span>
+                <button class="k" id="rit">RIT</button>
+                <button class="k sm" data-rit="-50">−50</button>
+                <button class="k sm" data-rit="-10">−10</button>
+                <span class="val" id="rit-val" style="min-width:74px">0 Hz</span>
+                <button class="k sm" data-rit="10">+10</button>
+                <button class="k sm" data-rit="50">+50</button>
+                <button class="k sm" id="rit-clear">CLR</button>
+            </div>
+
+            <div class="sliders section">
+                <label class="slider">AF<input type="range" id="af" min="0" max="320" step="4"><b id="af-val">—</b></label>
+                <label class="slider">RF<input type="range" id="rf" min="0" max="70" step="1"><b id="rf-val">—</b></label>
+                <label class="slider">WPM<input type="range" id="wpm" min="5" max="45" step="1"><b id="wpm-val">—</b></label>
+            </div>
+
+            <div class="section">
+                <div class="row" style="margin-bottom:10px">
+                    <span class="row-title">CW</span>
+                    <input type="text" id="cw-text" placeholder="Text to send (Enter)" maxlength="72" autocomplete="off" spellcheck="false">
+                    <button class="k" id="cw-send">SEND</button>
+                    <button class="k danger" id="cw-stop">STOP</button>
+                </div>
+                <div class="row" style="margin-bottom:10px">
+                    <span class="row-title"></span>
+                    <button class="k sm" data-cw="CQ CQ {CALL} {CALL} K">CQ</button>
+                    <button class="k sm" data-cw="{CALL}">MY CALL</button>
+                    <button class="k sm" data-cw="5NN">5NN</button>
+                    <button class="k sm" data-cw="TU 73">TU 73</button>
+                    <button class="k sm" data-cw="?">?</button>
+                    <span class="gap"></span>
+                    <button class="k sm" id="dec-clear" title="Clear the decoder line">CLR</button>
+                </div>
+                <div class="decoder" id="decoder"><span class="empty">CW decoder of the QMX …</span></div>
+            </div>
+
+            <div class="row section">
+                <span class="row-title">TX</span>
+                <button class="k danger wide" id="carrier" title="Hold: carrier (key down) to tune the antenna, max. 15 s">HOLD · CARRIER</button>
+                <span class="note">Key down while pressed, at most 15 s – for an antenna tuner or SWR check.</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="overlay" id="overlay">
+    <div class="box">
+        <h2 id="ov-title">QMX</h2>
+        <div id="ov-text"></div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/qmx-remote.js?v=1"></script>
+
+</body>
+
+</html>

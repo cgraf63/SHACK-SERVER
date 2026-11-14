@@ -117,6 +117,17 @@ router.get('/ic7300', (_req, res) => {
     );
 });
 
+router.get('/qmx', (_req, res) => {
+    res.sendFile(
+        path.join(
+            __dirname,
+            '..',
+            'public',
+            'qmx-remote.html'
+        )
+    );
+});
+
 
 router.get('/rgo', (_req, res) => {
     res.sendFile(

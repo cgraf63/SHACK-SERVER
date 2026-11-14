@@ -338,7 +338,7 @@ SHACK-SERVER controls all transceivers through one common interface. That is why
 | RGO ONE | USB / CAT, own driver | integrated, with remote page |
 | Icom IC-7300, IC-7300MK2 | USB / CI-V, own driver | integrated, with remote page and scope; test on the radio pending |
 | Icom IC-705 and other Icom | USB / CI-V, own driver | prepared, hardware test pending |
-| QRP Labs QMX / QMX+ | USB / CAT, own driver | prepared, hardware test pending |
+| QRP Labs QMX / QMX+ | USB / CAT, own driver | integrated, with remote page; test on the radio pending |
 | about 400 more models | Hamlib | integrated |
 
 ## Setting up a transceiver
@@ -418,7 +418,24 @@ If the IC-7300 (or IC-7300MK2) is the active transceiver, the **IC-7300** button
 
 Settings on the IC-7300: *SET › Connectors › CI-V*: **CI-V USB Baud Rate** 115200, **CI-V Address** 94h (IC-7300MK2: B6h), **CI-V Transceive** ON, **CI-V USB Echo Back** OFF. In SHACK-SERVER choose the driver **Icom IC-7300 / IC-7300MK2**.
 
-## RGO ONE, QRP Labs QMX and others
+## QRP Labs QMX / QMX+
+
+![QMX page](images/remote-qmx.jpg)
+
+If a QMX or QMX+ is the active transceiver, the **QMX** button on the dashboard opens its own page in the style of the QMX with the yellow dot-matrix LCD:
+
+- **LCD:** shows the real 2 × 16 characters of the QMX (CAT command `LC`). Tapping left / right tunes one step, swiping or the mouse wheel tunes continuously. Older firmware without `LC`: the LCD is built from frequency, mode and VFO.
+- **Meters** in LCD style: S-meter, while transmitting power and SWR.
+- **Modes** on one line (LSB, USB, CW, CW-R, AM, FSK, FSK-R), **bands** 160–6 m with band ▲/▼ (band buttons go back to the last frequency on that band).
+- **Tuning:** steps (STEP − / +, as on the tuning knob), frequency input in kHz, arrow keys.
+- **VFO A / B, SPLIT, A=B, A↔B, RIT** with offset ±10 / ±50 Hz.
+- **AF gain, RF gain, CW speed** as sliders.
+- **CW:** send text (also macros CQ, own callsign, 5NN, TU 73), STOP; below it the line of the QMX **CW decoder**.
+- **CARRIER:** a carrier while the button is held, at most 15 seconds – for an antenna tuner or an SWR check.
+
+Settings on the QMX: CAT over the virtual COM port (USB), in the system menu **KY compatibility off** (SHACK-SERVER sends CW text in the QMX format `KY text;`). In SHACK-SERVER choose the driver **QRP Labs QMX / QMX+**.
+
+## RGO ONE and others
 
 ![RGO ONE](images/remote-rgo.jpg)
 
