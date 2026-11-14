@@ -182,9 +182,9 @@ The lowest two lines of the dashboard can be used for CW (the live spots show fe
 |---|---|
 | IC-7300, QMX / QMX+ | directly via CAT |
 | FTDX10, FTX-1 | through keyer memory 5 (written, played and restored afterwards) |
+| Hamlib | `send_morse`, if the model supports it |
 
 FTDX10: before CW memories and CW text the internal tuner is checked and started if needed. With an **external tuner**, switch off „Use the internal antenna tuner …“ under *Settings › Split & CW* – then nothing is tuned or checked.
-| Hamlib | `send_morse`, if the model supports it |
 
 The same two lines are available at the bottom of the **contest console**, switched on separately (*Show the CW decoder / encoder in the contest console*). A click on a callsign in the decoded text puts it into the callsign field there (with call check and dupe display).
 
