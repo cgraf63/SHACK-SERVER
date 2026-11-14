@@ -79,6 +79,10 @@ export interface ShackSettings {
     /* "CW" from spots / mode buttons: upper or lower sideband CW
        (Yaesu CW-U / CW-L, Icom CW / CW-R) - the operator's habit */
     cwSideband?: "CW-U" | "CW-L";
+    /* FTDX10: the internal antenna tuner is started and checked before
+       CW memories / CW text are sent. false = external tuner: no tuning,
+       no tuner check. Default true. */
+    internalTuner?: boolean;
     /* CW line at the bottom of the dashboard: decoder (RX audio of the
        transceiver -> text) and encoder (text -> CW), speed for sending,
        CW pitch for the decoder (0 = automatic) */

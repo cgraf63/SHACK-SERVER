@@ -222,6 +222,8 @@ async function loadSettings() {
         if (autoSplitBox) autoSplitBox.checked = settingsData.autoSplit !== false;
         const cwSideband = document.getElementById("cw-sideband");
         if (cwSideband) cwSideband.value = settingsData.cwSideband === "CW-L" ? "CW-L" : "CW-U";
+        const internalTuner = document.getElementById("internal-tuner");
+        if (internalTuner) internalTuner.checked = settingsData.internalTuner !== false;
         const cw = settingsData.cw || {};
         const setBox = (id, on) => { const el = document.getElementById(id); if (el) el.checked = Boolean(on); };
         setBox("cw-decoder-show", cw.decoder);
@@ -705,6 +707,8 @@ async function saveSettings() {
             document.getElementById("auto-split")?.checked !== false,
         cwSideband:
             document.getElementById("cw-sideband")?.value === "CW-L" ? "CW-L" : "CW-U",
+
+        internalTuner: document.getElementById("internal-tuner")?.checked !== false,
 
         cw: {
             decoder: document.getElementById("cw-decoder-show")?.checked === true,

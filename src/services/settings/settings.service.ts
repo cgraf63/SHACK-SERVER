@@ -181,6 +181,9 @@ export class SettingsService {
             cwSideband:
                 ((settings as any).cwSideband ?? this.settings.cwSideband) === "CW-L" ? "CW-L" : "CW-U",
 
+            internalTuner:
+                ((settings as any).internalTuner ?? this.settings.internalTuner) !== false,
+
             cw: (() => {
                 const cw = { decoder: false, encoder: false, contestDecoder: false, contestEncoder: false, wpm: 22, pitch: 0, ...(this.settings.cw ?? {}), ...((settings as any).cw ?? {}) };
                 const wpm = Math.round(Number(cw.wpm));

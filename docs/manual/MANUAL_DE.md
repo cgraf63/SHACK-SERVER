@@ -182,6 +182,8 @@ Die untersten zwei Zeilen des Dashboards lassen sich für CW verwenden (die Live
 |---|---|
 | IC-7300, QMX / QMX+ | direkt per CAT |
 | FTDX10, FTX-1 | über Keyer-Speicher 5 (wird beschrieben, abgespielt und danach wiederhergestellt) |
+
+FTDX10: Vor CW-Speichern und CW-Text wird der eingebaute Tuner geprüft und bei Bedarf gestartet. Wer mit einem **externen Tuner** arbeitet, schaltet unter *Settings › Split & CW* „Use the internal antenna tuner …“ aus – dann wird weder abgestimmt noch geprüft.
 | Hamlib | `send_morse`, sofern das Modell es unterstützt |
 
 Dieselben zwei Zeilen gibt es unten in der **Contest-Konsole**, getrennt einschaltbar (*Show the CW decoder / encoder in the contest console*). Ein Klick auf ein Rufzeichen im decodierten Text setzt es dort ins Callsign-Feld (mit Rufzeichen-Prüfung und Dupe-Anzeige).

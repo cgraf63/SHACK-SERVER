@@ -2,6 +2,7 @@ import { SerialRadioBase } from "./serial-radio-base.js";
 import type { RadioService } from "./radio.interface.js";
 import { FTDX10_CAT } from "./ftdx10/ftdx10.cat.js";
 import { MemoryCwSender } from "../cw/memory-cw-sender.js";
+import { settingsService } from "../settings/settings.service.js";
 
 export class Ftdx10Service extends SerialRadioBase implements RadioService {
     private buffer = "";
@@ -1145,6 +1146,11 @@ setFrequencyB(frequency: number): void {
             return false;
         }
 
+        // external tuner (Settings > Split & CW): nothing to check
+        if (settingsService.get().internalTuner === false) {
+            return true;
+        }
+
         console.log("FTDX10: tuner safety check");
 
         /*
@@ -1274,6 +1280,12 @@ setFrequencyB(frequency: number): void {
     async tune(): Promise<boolean> {
         if (!this.isConnected()) {
             return false;
+        }
+
+        // external tuner (Settings > Split & CW): the internal one stays off
+        if (settingsService.get().internalTuner === false) {
+            console.log("FTDX10: external tuner - internal tuner not started");
+            return true;
         }
 
         console.log("FTDX10: starting tuner");
