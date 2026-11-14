@@ -22,7 +22,15 @@ import { MORSE_DECODE } from "./morse.js";
  *   dot length follows (0.85 / 0.15, outliers limited to 0.75..1.33)
  *   gaps: character after 2.5 dots, word after 5 dots
  *
- * Addition for the receiver (other stations, any speed): every 8 marks
+ * Changes for the receiver audio (T-Embed: microphone, own keying):
+ *   - 16 ms Goertzel window (every 8 ms): 3 dB more over the noise
+ *   - noise floor = median of the bins (T-Embed: lowest block -> on
+ *     receiver noise every noise spike was a mark, lots of E and T)
+ *   - key down only at > 12 x the noise per bin, pitch lock at 15 x
+ *   - a mark is dropped when the strongest bin was not at the pitch
+ *   - a weak lone E / T between word gaps is dropped
+ *
+ * Addition for other stations at any speed: every 8 marks
  * the last 16 mark lengths are split into two groups (dots / dashes).
  * When they say a clearly different speed, the dot length jumps there -
  * the slow follower alone gets stuck when the speed changes a lot
@@ -30,13 +38,17 @@ import { MORSE_DECODE } from "./morse.js";
  */
 
 const RATE = 16000;
-const BLOCK = 128;                          // 8 ms
+const BLOCK = 128;                          // 8 ms per step
 const BLOCK_MS = BLOCK * 1000 / RATE;
+/* Goertzel window: 16 ms (T-Embed: 8 ms) - half the bandwidth (~60 Hz),
+   3 dB more signal over the receiver noise; still a step every 8 ms.
+   (An 8 ms window for fast CW was tried: worse at 35-40 WPM too.) */
+const WIN = 256;
 const BIN_LOW = 300;
 const BIN_STEP = 25;
 const BINS = 33;                            // 300 .. 1100 Hz
 
-const HANN = Float32Array.from({ length: BLOCK }, (_, i) => 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (BLOCK - 1)));
+const HANN = Float32Array.from({ length: WIN }, (_, i) => 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (WIN - 1)));
 const COEFF = Float32Array.from({ length: BINS }, (_, b) => 2 * Math.cos(2 * Math.PI * (BIN_LOW + BIN_STEP * b) / RATE));
 
 export interface CwDecoderStats {
@@ -56,6 +68,8 @@ export class CwDecoder {
     private leftover: Buffer | null = null;
 
     private readonly x = new Float32Array(BLOCK);
+    private readonly hist = new Float32Array(WIN);
+    private readonly w = new Float32Array(WIN);
     private n = 0;
     private now = 0;                        // ms of audio processed
 
@@ -69,6 +83,13 @@ export class CwDecoder {
     private confirm = 0;
     private level = 0;
     private enough = false;
+    private noiseP = 0;                     // smoothed median bin power = noise per bin
+    private markBlocks = 0;
+    private markTonal = 0;
+    private markPeak = 0;                   // strongest block of the mark (x noise per bin)
+    private charPeak = 0;                   // strongest mark of the character
+    private held = "";                      // a weak lone E / T, waiting for the next character
+    private wordStart = true;
 
     /* decoder (decodeEvents) */
     private pattern = "";
@@ -148,12 +169,20 @@ export class CwDecoder {
 
     private block(): void {
 
-        const x = this.x;
+        // the last WIN samples (sliding window, one new block)
+        this.hist.copyWithin(0, BLOCK);
+        this.hist.set(this.x, WIN - BLOCK);
+
+        const win = WIN;
+        const offset = 0;
+        const hannW = HANN;
+
+        const x = this.w;
 
         let mean = 0;
-        for (let i = 0; i < BLOCK; i++) mean += x[i]!;
-        mean /= BLOCK;
-        for (let i = 0; i < BLOCK; i++) x[i] = (x[i]! - mean) * HANN[i]!;
+        for (let i = 0; i < win; i++) mean += this.hist[offset + i]!;
+        mean /= win;
+        for (let i = 0; i < win; i++) x[i] = (this.hist[offset + i]! - mean) * hannW[i]!;
 
         const p = new Float32Array(BINS);
         let best = 0;
@@ -161,7 +190,7 @@ export class CwDecoder {
             const k = COEFF[b]!;
             let s1 = 0;
             let s2 = 0;
-            for (let i = 0; i < BLOCK; i++) {
+            for (let i = 0; i < win; i++) {
                 const s = x[i]! + k * s1 - s2;
                 s2 = s1;
                 s1 = s;
@@ -173,9 +202,16 @@ export class CwDecoder {
         const sorted = Float32Array.from(p).sort();
         const med = sorted[BINS >> 1]! + 1e-12;
 
+        // noise per bin: the median of the bins, smoothed (a CW tone
+        // is in 1-3 bins, the median stays noise)
+        this.noiseP = this.noiseP ? this.noiseP + (med - this.noiseP) * 0.02 : med;
+        const noiseP = Math.max(this.noiseP, 1e-12);
+
         // follow the pitch only while a clear tone is there
+        // (T-Embed: 8 x median; on receiver noise one of 33 bins is that
+        // strong in every 8th block - 15 x keeps the lock on noise)
         if (this.fixedBin < 0) {
-            const tonal = p[best]! > med * 8;
+            const tonal = p[best]! > med * 15;
             if (tonal) for (let b = 0; b < BINS; b++) this.binAvg[b] = this.binAvg[b]! * 0.95 + p[b]! * 0.05;
             let cand = 0;
             for (let b = 1; b < BINS; b++) if (this.binAvg[b]! > this.binAvg[cand]!) cand = b;
@@ -183,25 +219,38 @@ export class CwDecoder {
         }
 
         const lock = this.lockBin;
-        let pl = p[lock]!;                                  // +-25 Hz tolerance
-        if (lock > 0 && p[lock - 1]! > pl) pl = p[lock - 1]!;
-        if (lock < BINS - 1 && p[lock + 1]! > pl) pl = p[lock + 1]!;
-        const mag = Math.sqrt(pl) / BLOCK;
+        // +-50 Hz tolerance (T-Embed: +-25 Hz; the lock moves only when a
+        // bin is 1.3 x stronger, and the window is ~125 Hz wide)
+        let pl = 0;
+        for (let b = Math.max(0, lock - 2); b <= Math.min(BINS - 1, lock + 2); b++) if (p[b]! > pl) pl = p[b]!;
+        const mag = Math.sqrt(pl) / win;
 
-        // noise floor and peak
-        if (mag < this.nf) this.nf = mag; else this.nf += (mag - this.nf) * 0.002;
+        // noise floor and peak. T-Embed: the floor follows the lowest
+        // block at once - on receiver noise that is far below the real
+        // noise, every noise spike then looked like a mark (E / T).
+        // Here the floor is the noise of the bins (median).
+        this.nf = Math.sqrt(noiseP) / win;
         if (mag > this.pk) this.pk = mag; else this.pk -= (this.pk - this.nf) * 0.0015;
         if (this.pk < this.nf * 1.2) this.pk = this.nf * 1.2;
         const span = this.pk - this.nf;
         this.level = Math.min(1, Math.max(0, (mag - this.nf) / (span > 1e-6 ? span : 1e-6)));
 
-        const enough = this.pk > this.nf * 5;               // about 14 dB apart
-        const atLock = pl > med * 6;                        // the tone is at the locked pitch
+        const enough = this.pk > this.nf * 4;               // about 12 dB over the noise
+        // key down: tone at the lock bin clearly over the noise per bin
+        // (12 x: noise gets there in < 0.1 % of the blocks)
+        const strong = pl > noiseP * 12 && Math.abs(best - lock) <= 2;
         this.enough = enough;
 
         const want = this.on
-            ? (enough && mag > this.nf + span * 0.35)
-            : (enough && atLock && mag > this.nf + span * 0.6);
+            ? (enough && pl > noiseP * 4 && mag > this.nf + span * 0.3)
+            : (enough && strong && mag > this.nf + span * 0.5);
+
+        // tone quality of the mark: the strongest bin at the lock
+        if (this.on) {
+            this.markBlocks++;
+            if (Math.abs(best - lock) <= 2) this.markTonal++;
+            this.markPeak = Math.max(this.markPeak, pl / noiseP);
+        }
 
         // a change only after 2 blocks (16 ms): single spikes drop out
         if (want !== this.on) {
@@ -225,11 +274,17 @@ export class CwDecoder {
 
         if (down) {
             this.downAt = t;
+            this.markBlocks = 0;
+            this.markTonal = 0;
+            this.markPeak = 0;
             return;
         }
 
         const d = t - this.downAt;
         if (d < 12 || d < 0.3 * this.dit) return;          // spike shorter than a third of a dot
+
+        // noise burst: the tone was not at the lock in most blocks
+        if (this.markBlocks >= 2 && this.markTonal < this.markBlocks * 0.6) return;
 
         const element = d < 2 * this.dit ? "." : "-";
         let estimate = element === "." ? d : d / 3;
@@ -240,6 +295,8 @@ export class CwDecoder {
         if (this.marks.length > 16) this.marks.shift();
         if (this.marks.length >= 8 && this.marks.length % 4 === 0) this.recluster();
 
+        if (!this.pattern) this.charPeak = 0;
+        this.charPeak = Math.max(this.charPeak, this.markPeak);
         this.pattern += element;
         if (this.pattern.length > 9) this.pattern = this.pattern.slice(-9);
         this.upAt = t;
@@ -272,19 +329,50 @@ export class CwDecoder {
 
     }
 
+    /*
+     * Noise that gets through looks like single dots / dashes: lone E
+     * and T. A one-element character at the start of a word with a weak
+     * mark (< 16 dB over the noise per bin) is held back - shown when
+     * another character follows, dropped when the word ends with it.
+     */
+    private character(char: string, single: boolean): void {
+
+        if (this.held) {
+            this.onText(this.held);
+            this.held = "";
+        }
+
+        if (single && this.wordStart && this.charPeak < 40) {
+            this.held = char;
+        }
+        else {
+            this.onText(char);
+        }
+
+        this.wordStart = false;
+
+    }
+
     private gaps(): void {
 
         const gap = this.now - this.upAt;
 
         if (this.pending && gap > 2.5 * this.dit) {
-            this.onText(MORSE_DECODE[this.pattern] ?? "*");
+            this.character(MORSE_DECODE[this.pattern] ?? "*", this.pattern.length === 1);
             this.pattern = "";
             this.pending = false;
         }
 
         if (!this.pending && !this.spaceDone && gap > 5 * this.dit) {
-            this.onText(" ");
+            // a weak E / T alone between two word gaps: noise, dropped
+            if (this.held) {
+                this.held = "";
+            }
+            else {
+                this.onText(" ");
+            }
             this.spaceDone = true;
+            this.wordStart = true;
         }
 
     }

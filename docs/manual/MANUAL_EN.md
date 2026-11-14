@@ -175,7 +175,7 @@ Arrow keys and **Enter** or a click take a suggestion: callsign, band, mode and 
 
 The lowest two lines of the dashboard can be used for CW (the live spots show fewer rows instead). They are switched on and off under *Settings › Split & CW › CW line on the dashboard*:
 
-- **CW RX – decoder:** decodes the RX audio of the transceiver (its USB sound card, the same as for the remote audio) on the Raspberry Pi. The algorithm is the one of the T-Embed CW key: Goertzel tone detection with automatic pitch, a tracked noise floor, the dot length follows the speed. Pitch and speed are shown; a click on a callsign in the text puts it into Manual QSO. The pitch can also be set fixed (the CW pitch of the transceiver).
+- **CW RX – decoder:** decodes the RX audio of the transceiver (its USB sound card, the same as for the remote audio) on the Raspberry Pi. The algorithm is the one of the T-Embed CW key: Goertzel tone detection with automatic pitch, a tracked noise floor, the dot length follows the speed; for receiver noise also a narrower filter (16 ms), the noise floor from the spectrum and a block against single E and T out of the noise. Pitch and speed are shown; a click on a callsign in the text puts it into Manual QSO. The pitch can also be set fixed (the CW pitch of the transceiver).
 - **CW TX – encoder:** type the text, **Enter** sends it through the active transceiver, **Esc** / STOP stops. Macros CQ, MY, 5NN, TU; `{CALL}` stands for your own callsign. The speed (WPM) comes from the settings and is set on the transceiver before sending.
 
 | Transceiver | Sending CW text |
