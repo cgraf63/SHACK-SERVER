@@ -31,7 +31,7 @@ export class MemoryCwSender {
 
     send(text: string): void {
 
-        const max = this.options.maxChars ?? 50;
+        const max = this.options.maxChars ?? 49;      // 50 incl. the "}"
 
         // pieces of whole words
         let piece = "";
@@ -75,7 +75,8 @@ export class MemoryCwSender {
 
         const { write, slot, playCommand } = this.options;
 
-        write(`KM${slot}${piece};`);
+        // "}" = end of the text (as the radio's own memory editor writes it)
+        write(`KM${slot}${piece}};`);
 
         // the radio needs a moment to store the memory
         this.timer = setTimeout(() => {
@@ -92,7 +93,8 @@ export class MemoryCwSender {
 
         // the old text back ("KMn;" alone would be a read, so only when there was one)
         if (this.saved) {
-            this.options.write(`KM${this.options.slot}${this.saved};`);
+            const text = this.saved.endsWith("}") ? this.saved : `${this.saved}}`;
+            this.options.write(`KM${this.options.slot}${text};`);
         }
         this.saved = null;
 

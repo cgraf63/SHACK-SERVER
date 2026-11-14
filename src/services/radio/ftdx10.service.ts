@@ -1072,7 +1072,8 @@ setFrequencyB(frequency: number): void {
     */
     private queryCat(
         prefix: string,
-        timeoutMs = 3000
+        timeoutMs = 3000,
+        command?: string
     ): Promise<string | null> {
 
         return new Promise(resolve => {
@@ -1125,6 +1126,9 @@ setFrequencyB(frequency: number): void {
 
             this.port?.on("data", onData);
 
+            // the read command itself (listener first, so the answer is not missed)
+            if (command) this.send(command);
+
         });
 
     }
@@ -1149,7 +1153,9 @@ setFrequencyB(frequency: number): void {
         */
 
         const response =
-            await this.queryCat("AC", 3000);
+            // ask the radio: AC; (it was never sent - only an AC answer
+            // that came by chance was seen, so the check timed out)
+            await this.queryCat("AC", 3000, "AC;");
 
         if (response === null) {
 
