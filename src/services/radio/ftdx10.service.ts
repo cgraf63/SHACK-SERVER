@@ -1136,7 +1136,7 @@ setFrequencyB(frequency: number): void {
     /*
         Sicherheit vor jedem Senden:
         Tuner starten, warten, Status lesen (AC;).
-        Nur Tuner ON (Antwort beginnt mit "AC01")
+        Nur Tuner ON (Antwort AC001, P3 = 1)
         laesst Senden zu.
     */
     async ensureTunerReady(): Promise<boolean> {
@@ -1172,7 +1172,10 @@ setFrequencyB(frequency: number): void {
 
         console.log("FTDX10: tuner status:", status);
 
-        if (status.startsWith("AC01")) {
+        // AC P1 P2 P3 - P3: 0 tuner off, 1 tuner on, 2 tuning.
+        // (Checked "AC01" before - the FTDX10 answers AC001 with the
+        // tuner on, so the check never passed.)
+        if (/^AC\d\d1/.test(status)) {
             return true;
         }
 
