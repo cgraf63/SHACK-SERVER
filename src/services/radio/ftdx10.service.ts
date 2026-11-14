@@ -1176,14 +1176,15 @@ setFrequencyB(frequency: number): void {
 
     /*
      * CW text (dashboard): no "send text" command on the FTDX10 -
-     * written into keyer memory 5 (KM5), played (KY5), afterwards
+     * written into keyer memory 5 (KM5), played like the memory
+     * button 5 (KYA, message keyer 5), afterwards
      * memory 5 gets its old text back.
      */
     private cwSender = new MemoryCwSender({
         name: "FTDX10",
         write: command => this.send(command),
         slot: 5,
-        playCommand: "KY5;",
+        playCommand: "KYA;",
         stopCommand: null,
         originalText: () => this.cwMemories[4] ?? "",
         wpm: () => this.cwSpeed
@@ -1191,10 +1192,17 @@ setFrequencyB(frequency: number): void {
 
     async sendCwText(text: string): Promise<boolean> {
         if (!this.isConnected()) return false;
+        // like the CW memory buttons: tuner must be on and tuned. Tuned
+        // only when it is not ready yet (not before every line).
         if (!(await this.ensureTunerReady())) {
-            console.error("FTDX10: CW text blocked, tuner not ready");
-            return false;
+            console.log("FTDX10: CW text - tuner not ready, tuning first");
+            const tuned = await this.tune().catch(() => false);
+            if (!tuned || !(await this.ensureTunerReady())) {
+                console.error("FTDX10: CW text blocked, tuner not ready");
+                return false;
+            }
         }
+        console.log(`FTDX10: CW text "${text}"`);
         this.cwSender.send(text);
         return true;
     }

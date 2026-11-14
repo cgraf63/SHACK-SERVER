@@ -135,6 +135,15 @@ class CwService {
             throw new Error("The active transceiver cannot send CW text via CAT");
         }
 
+        // CW mode first (sideband from Settings > Split & CW)
+        const anyRadio = radio as unknown as { getMode?: () => string; getFrequency?: () => number; setMode?: (mode: string, hz: number) => void };
+        const mode = String(anyRadio.getMode?.() ?? "").toUpperCase();
+        if (!mode.startsWith("CW") && typeof anyRadio.setMode === "function") {
+            const sideband = settingsService.get().cwSideband === "CW-L" ? "CW-L" : "CW-U";
+            anyRadio.setMode(sideband, anyRadio.getFrequency?.() ?? 0);
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+
         // the speed of the settings
         const wpm = settingsService.get().cw?.wpm;
         if (wpm && typeof radio.setCwSpeed === "function") {
@@ -148,7 +157,7 @@ class CwService {
         }
 
         const ok = await radio.sendCwText(clean);
-        if (!ok) throw new Error("Transceiver not connected or CW text rejected");
+        if (!ok) throw new Error("Not sent: transceiver not connected or tuner not ready (see the server log)");
 
         return { sent: clean };
 
