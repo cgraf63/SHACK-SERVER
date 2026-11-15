@@ -2653,12 +2653,12 @@ function setupWorkedHelp() {
 
                 <div class="worked-help-row">
                     <span class="worked-help-dot worked-help-yellow">●</span>
-                    <span>Country + Band</span>
+                    <span>Station already worked</span>
                 </div>
 
                 <div class="worked-help-row">
-                    <span class="worked-help-dot worked-help-blue">●</span>
-                    <span>Station already worked</span>
+                    <span class="worked-help-dot worked-help-orange">●</span>
+                    <span>Country + Band</span>
                 </div>
 
                 <div class="worked-help-row">

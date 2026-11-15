@@ -924,12 +924,12 @@
 
 /* Land auf diesem Band bereits gearbeitet */
 .worked-country-band {
-    color: #ffd54f;
+    color: #ff8a1f;
 }
 
 /* Station bereits gearbeitet, anderes Band */
 .worked-station {
-    color: #174ee6;
+    color: #ffe14d;
 }
 
 /* Land bereits gearbeitet, anderes Band */
@@ -974,8 +974,8 @@
 }
 
 .worked-help-green  { color: #00c853; }
-.worked-help-yellow { color: #ffd54f; }
-.worked-help-blue   { color: #174ea6; }
+.worked-help-yellow { color: #ffe14d; }
+.worked-help-orange { color: #ff8a1f; }
 .worked-help-purple { color: #9c6ade; }
 .worked-help-new    { color: #e8e8e8; }
 
