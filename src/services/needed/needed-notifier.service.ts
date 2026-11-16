@@ -4,6 +4,7 @@ import path from "node:path";
 import type { FusionSpot } from "../fusion/spot.model.js";
 import type { NeededAlertSettings } from "../../config/settings.config.js";
 import { dxccService, type DxccEntity } from "../dxcc/dxcc.service.js";
+import { entityFlag } from "../dxcc/dxcc-table.js";
 import { settingsService } from "../settings/settings.service.js";
 import { watchNotifier, inQuietHours } from "../notifications/watch-notifier.service.js";
 import { getWorkedIndex, modeGroup, type WorkedIndex } from "./worked-index.js";
@@ -43,6 +44,8 @@ export interface NeededAlert {
     level: NeededLevel;
     callsign: string;
     entity: string;
+    /* ISO code for the flag ("" when unknown) */
+    flag?: string;
     frequency: number;
     mode: string;
     band: string;
@@ -52,6 +55,21 @@ export interface NeededAlert {
     sources: string[];
     /* sent / quiet hours / notifications off / error ... */
     result: string;
+}
+
+
+function safeEntityFlag(entity: DxccEntity): string {
+    try {
+        return entityFlag(entity.key, entity.name);
+    }
+    catch {
+        return "";
+    }
+}
+
+function flagOf(callsign: string): string {
+    const entity = dxccService.resolve(callsign);
+    return entity ? safeEntityFlag(entity) : "";
 }
 
 
@@ -169,7 +187,8 @@ class NeededNotifier {
 
     getRecent(): NeededAlert[] {
 
-        return this.recent;
+        // flag also for alerts saved before there was one
+        return this.recent.map(alert => alert.flag !== undefined ? alert : { ...alert, flag: flagOf(alert.callsign) });
 
     }
 
@@ -287,6 +306,7 @@ class NeededNotifier {
             level,
             callsign: spot.call.toUpperCase(),
             entity: entity.name,
+            flag: String(spot.countryCode || "").toLowerCase() || safeEntityFlag(entity),
             frequency: spot.frequency,
             mode: spot.mode,
             band: spot.band,

@@ -61,7 +61,7 @@
                  data-khz="${Number(a.frequency) || ""}" data-mode="${esc(a.mode)}"
                  title="${esc(`${a.level}: ${a.callsign} - ${a.entity} - ${(Number(a.frequency) / 1000).toFixed(3)} MHz ${a.mode}${a.heard ? " - " + a.heard : ""} - score ${a.score} - push: ${a.result}. Click to tune.`)}">
                 <span class="needed-alert-level">${esc(SHORT[a.level] || a.level)}</span>
-                <span class="needed-alert-call">${esc(a.callsign)}</span>
+                <span class="needed-alert-call">${a.flag ? `<img class="needed-alert-flag" src="/assets/flags/${esc(a.flag)}.svg" alt="" title="${esc(a.entity)}">` : ""}${esc(a.callsign)}</span>
                 <span class="needed-alert-qrg">${(Number(a.frequency) / 1000).toFixed(3)} ${esc(a.mode && a.mode !== "UNKNOWN" ? a.mode : "")}</span>
                 ${a.nearby ? '<span class="heard-near-badge">NEAR</span>' : ""}
                 <span class="needed-alert-age">${age(a.at)}</span>

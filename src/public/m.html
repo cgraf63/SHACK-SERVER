@@ -866,7 +866,7 @@ h2 {
                 const spot = spotFor(a.callsign);
                 const level = a.level === "NEW COUNTRY" ? `<span class="pill new">NEW</span>` : `<span class="pill band">${esc(a.level.replace("NEW ", ""))}</span>`;
                 return `<div class="card" data-alert="${i}">
-                    ${flag(spot?.countryCode)}
+                    ${flag(spot?.countryCode || a.flag)}
                     <div class="main">
                         <div class="call">${esc(a.callsign)}${level}${a.nearby ? `<span class="pill near">NEAR</span>` : ""}${spot?.split ? `<span class="pill split">${esc(spot.split.label)}</span>` : ""}</div>
                         <div class="sub">${esc(a.entity)}${a.heard ? " · " + esc(a.heard) : ""}</div>

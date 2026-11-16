@@ -3905,6 +3905,17 @@ D.sidebar.collapsed {
 
 .needed-alert-call {
     font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.needed-alert-flag {
+    width: 18px;
+    height: 13px;
+    object-fit: cover;
+    border-radius: 2px;
+    flex: 0 0 auto;
 }
 
 .needed-alert-qrg {
