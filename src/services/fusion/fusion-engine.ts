@@ -236,7 +236,36 @@ export class FusionEngine {
 
 
 
+    /*
+        Geo data (QRZ / locator / prefix list), then flag and country of
+        the DXCC entity (cty.dat) win: the prefix list knows only
+        countries - WP4NHL got the US flag, but it is Puerto Rico, its
+        own DXCC entity (and the worked dots count DXCC entities).
+    */
     private async enrichGeo(
+        spot: FusionSpot
+    ): Promise<void> {
+
+        try {
+            await this.enrichGeoLocation(spot);
+        }
+        finally {
+            try {
+                const entity = dxccService.resolve(spot.call);
+                if (entity) {
+                    const flag = entityFlag(entity.key, entity.name);
+                    if (flag) spot.countryCode = flag;
+                    spot.country = entity.name;
+                }
+            }
+            catch {
+                // no cty.dat yet - keep what the prefix list said
+            }
+        }
+
+    }
+
+    private async enrichGeoLocation(
         spot: FusionSpot
     ): Promise<void> {
 
@@ -377,7 +406,7 @@ export class FusionEngine {
 
   } //Ende if latitude
 
-} //ende enrichGeo()
+} //ende enrichGeoLocation()
 
     refreshShackLocation(): void {
 
