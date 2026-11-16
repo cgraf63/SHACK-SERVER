@@ -1,3 +1,5 @@
+import { dxccService } from "../dxcc/dxcc.service.js";
+import { entityFlag } from "../dxcc/dxcc-table.js";
 import {
     FusionSpot
 } from "./spot.model.js";
@@ -237,6 +239,24 @@ export class FusionEngine {
     private async enrichGeo(
         spot: FusionSpot
     ): Promise<void> {
+
+        /*
+            Flag from the DXCC entity (cty.dat) when the prefix list has
+            none - e.g. 3X (Guinea) was missing, the DXCC page had it.
+        */
+        if (!spot.countryCode) {
+            try {
+                const entity = dxccService.resolve(spot.call);
+                if (entity) {
+                    const flag = entityFlag(entity.key, entity.name);
+                    if (flag) spot.countryCode = flag;
+                    if (!spot.country) spot.country = entity.name;
+                }
+            }
+            catch {
+                // no cty.dat yet
+            }
+        }
 
         const location =
             await this.geo.enrich(
