@@ -214,6 +214,8 @@ The live spots show the stations currently reported, with frequency, mode, count
 
 The coloured dots left of the flag show whether the station, country and band have been worked already. A click on **?** shows the legend.
 
+The **Source** column shows the first source of the spot (RBN or PSK Reporter preferred, otherwise the cluster that reported it first) followed by **+n** for the other sources. Moving the mouse over it – tapping on a phone – shows all sources. The row stays on one line even with many clusters.
+
 ![Legend](images/worked-legend.jpg){width=25%}
 
 **POTA** stations are marked with a green triangle, **SOTA** stations with a white one. You can see at once whether it is a park or a summit activation.

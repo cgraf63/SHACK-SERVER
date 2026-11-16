@@ -214,6 +214,8 @@ Die Live-Spots zeigen die aktuell gemeldeten Stationen mit Frequenz, Mode, Land,
 
 Die farbigen Punkte links der Flagge zeigen, ob Station, Land und Band schon gearbeitet sind. Ein Klick auf **?** zeigt die Legende.
 
+In der Spalte **Source** steht die erste Quelle des Spots (RBN bzw. PSK Reporter bevorzugt, sonst der Cluster, der ihn zuerst gemeldet hat) und dahinter **+n** für die weiteren Quellen. Mit der Maus darüber – am Handy antippen – erscheinen alle Quellen. So bleibt die Zeile auch mit vielen Clustern einzeilig.
+
 ![Legende](images/worked-legend.jpg){width=25%}
 
 **POTA**-Stationen sind mit einem grünen Dreieck markiert, **SOTA**-Stationen mit einem weissen. So sieht man sofort, ob man es mit einer Park- oder Gipfelaktivierung zu tun hat.

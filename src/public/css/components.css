@@ -1060,7 +1060,59 @@
 .live-table .source {
 
     color:var(--cyan);
+    white-space: nowrap;
 
+}
+
+/* SOURCE: first source + "+n", all of them on mouse over */
+.spot-sources {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    cursor: default;
+}
+
+.spot-source-first {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.spot-source-more {
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 700;
+    color: #001b22;
+    background: var(--cyan);
+    border-radius: 9px;
+    padding: 1px 7px;
+}
+
+.spot-sources-tip {
+    position: fixed;
+    z-index: 9999;
+    min-width: 160px;
+    max-width: 320px;
+    background: #0b1720;
+    border: 1px solid rgba(0, 229, 255, 0.45);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #e8f6ff;
+    font-size: 13px;
+    line-height: 1.6;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+}
+
+.spot-sources-tip[hidden] { display: none; }
+
+.spot-sources-tip-head {
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
 }
 
 

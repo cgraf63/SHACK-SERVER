@@ -1480,7 +1480,7 @@ function renderLiveSpots() {
 
 
                 <td class="source">
-                    ${spot.source}
+                    ${renderSpotSources(spot)}
                 </td>
 
   
@@ -3465,5 +3465,80 @@ function maidenheadToLatLon(locator) {
 
         }
     );
+
+})();
+
+
+/*
+ * SOURCE column: one line - the first source (RBN / PSK Reporter
+ * preferred, otherwise the cluster that reported the spot first) and
+ * "+n" for the others. Mouse over (or tap) shows all sources.
+ */
+function spotSourceList(spot) {
+    if (Array.isArray(spot.sources) && spot.sources.length) return spot.sources.map(String);
+    return String(spot.source || "").split(",").map(s => s.trim()).filter(Boolean);
+}
+
+function renderSpotSources(spot) {
+
+    const sources = spotSourceList(spot);
+    if (!sources.length) return "";
+
+    const preferred = sources.find(s => /^(RBN|PSK)/i.test(s)) ?? sources[0];
+    const others = sources.length - 1;
+    const esc = value => String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+    return `<span class="spot-sources" data-sources="${esc(sources.join("\n"))}">` +
+        `<span class="spot-source-first">${esc(preferred)}</span>` +
+        (others > 0 ? `<span class="spot-source-more">+${others}</span>` : "") +
+        `</span>`;
+
+}
+
+(() => {
+
+    let tip = null;
+
+    const hide = () => { if (tip) tip.hidden = true; };
+
+    const show = target => {
+
+        const list = (target.dataset.sources || "").split("\n").filter(Boolean);
+        if (list.length < 2) return hide();
+
+        if (!tip) {
+            tip = document.createElement("div");
+            tip.className = "spot-sources-tip";
+            document.body.appendChild(tip);
+        }
+
+        tip.innerHTML = `<div class="spot-sources-tip-head">${list.length} sources</div>` +
+            list.map((s, i) => `<div>${i === 0 ? "<b>1.</b> " : `${i + 1}. `}${s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c])}</div>`).join("");
+        tip.hidden = false;
+
+        const r = target.getBoundingClientRect();
+        const w = tip.offsetWidth;
+        const h = tip.offsetHeight;
+        const left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
+        const top = r.bottom + 6 + h > window.innerHeight ? r.top - h - 6 : r.bottom + 6;
+        tip.style.left = `${left}px`;
+        tip.style.top = `${top}px`;
+
+    };
+
+    document.addEventListener("mouseover", event => {
+        const target = event.target.closest?.(".spot-sources");
+        if (target) show(target);
+        else hide();
+    });
+
+    // touch: tap shows, the next tap elsewhere hides
+    document.addEventListener("click", event => {
+        const target = event.target.closest?.(".spot-sources");
+        if (target) show(target);
+        else hide();
+    });
+
+    window.addEventListener("scroll", hide, true);
 
 })();
