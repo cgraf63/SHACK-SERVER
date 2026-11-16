@@ -39,6 +39,7 @@
             <div class="cw-text" id="cw-text"><span class="cw-empty">Waiting for CW …</span></div>
             <span class="cw-info" id="cw-info">—</span>
             <button type="button" class="cw-btn" id="cw-clear" title="Clear the text">CLR</button>
+            <button type="button" class="cw-btn run" id="cw-run" title="Start / stop the decoder">STOP</button>
         </div>
         <div class="cw-row cw-tx" hidden>
             <span class="cw-tag tx" title="CW encoder - text to CW through the active transceiver">CW TX</span>
@@ -74,7 +75,7 @@
     function renderText() {
 
         if (!text) {
-            $("cw-text").innerHTML = `<span class="cw-empty">${state?.audio?.receiving === false && state?.enabled ? "No audio from the transceiver (USB sound card)" : "Waiting for CW …"}</span>`;
+            $("cw-text").innerHTML = `<span class="cw-empty">${state?.stopped ? "Decoder stopped - START" : state?.audio?.receiving === false && state?.enabled ? "No audio from the transceiver (USB sound card)" : "Waiting for CW …"}</span>`;
             return;
         }
 
@@ -114,7 +115,12 @@
             }
             seq = s.seq;
 
-            const st = s.stats;
+            const run = $("cw-run");
+            run.textContent = s.stopped ? "START" : "STOP";
+            run.classList.toggle("stopped", Boolean(s.stopped));
+            bar.querySelector(".cw-rx").classList.toggle("stopped", Boolean(s.stopped));
+
+            const st = s.stopped ? null : s.stats;
             bar.querySelector(".cw-led").classList.toggle("on", Boolean(st?.key));
             bar.querySelector(".cw-led").classList.toggle("signal", Boolean(st?.signal));
             $("cw-info").textContent = st
@@ -229,6 +235,11 @@
 
     bar.querySelectorAll("[data-cw]").forEach(button =>
         button.addEventListener("click", () => send(button.dataset.cw)));
+
+    $("cw-run").addEventListener("click", async () => {
+        const result = await post("/api/cw/decoder", { running: Boolean(state?.stopped) });
+        if (result) apply({ ...state, ...result, fresh: "" });
+    });
 
     $("cw-clear").addEventListener("click", async () => {
         await post("/api/cw/clear");

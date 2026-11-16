@@ -4432,3 +4432,6 @@ D.sidebar.collapsed {
 .cw-btn.send { color: var(--orange); border-color: rgba(255, 152, 0, 0.5); }
 .cw-btn.stop { color: var(--red); border-color: rgba(255, 82, 82, 0.45); }
 .cw-btn.macro { color: var(--muted); }
+.cw-btn.run { min-width: 62px; color: var(--red); border-color: rgba(255, 82, 82, 0.45); }
+.cw-btn.run.stopped { color: var(--green); border-color: rgba(140, 255, 0, 0.5); }
+.cw-rx.stopped .cw-text { opacity: .5; }

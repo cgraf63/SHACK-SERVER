@@ -21,6 +21,7 @@ const KEEP = 600;       // characters kept for the dashboard
 class CwService {
 
     private enabled = false;
+    private stopped = false;    // START / STOP in the CW RX line (not saved)
     private pitch = 0;
     private decoder: CwDecoder | null = null;
     private unsubscribe: (() => void) | null = null;
@@ -40,7 +41,13 @@ class CwService {
         this.pitch = cw?.pitch ?? 0;
         this.decoder?.setPitch(this.pitch);
         // runs when the dashboard or the contest console shows it
-        this.setEnabled(Boolean(cw?.decoder || cw?.contestDecoder));
+        this.setEnabled(Boolean((cw?.decoder || cw?.contestDecoder) && !this.stopped));
+    }
+
+    /* START / STOP button: the decoder (and the audio capture for it) stops */
+    setRunning(running: boolean): void {
+        this.stopped = !running;
+        this.applySettings();
     }
 
     setEnabled(on: boolean): void {
@@ -97,6 +104,7 @@ class CwService {
 
         return {
             enabled: this.enabled,
+            stopped: this.stopped,
             showDecoder: Boolean(cw?.decoder),
             showEncoder: Boolean(cw?.encoder),
             contestDecoder: Boolean(cw?.contestDecoder),
