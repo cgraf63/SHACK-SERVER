@@ -4,6 +4,7 @@ Builds the SHACK-SERVER manual as PDF (and Word) from the Markdown files.
 
     python3 docs/manual/build.py            -> docs/manual/out/*.pdf, *.docx
     python3 docs/manual/build.py --lang de  -> only German
+    (also the one-page quick start, quickstart.py)
 
 Needs: pandoc, Python packages playwright + pypdf, Chromium for
 playwright (python -m playwright install chromium), font "Inter".
@@ -274,6 +275,10 @@ def main():
                 build_pdf(lang, browser)
                 if not args.no_docx:
                     build_docx(lang)
+
+            # one-page quick start (installation from the image)
+            import quickstart
+            quickstart.build(browser)
         finally:
             browser.close()
 
