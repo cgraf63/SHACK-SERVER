@@ -42,7 +42,7 @@ SHACK-SERVER collects this data, fuses it, rates it and shows it on one dashboar
 
 SHACK-SERVER was developed for the Raspberry Pi. The goal was a lean, fast system with a professional graphical interface that does not depend on a desktop PC or notebook.
 
-The prototype runs on a Raspberry Pi 4 with 1 GB RAM and a 32 GB SD card; this is the minimum. A Raspberry Pi 4 or 5 with 2 GB RAM or more is recommended, if possible with a small SSD.
+The prototype runs on a Raspberry Pi 4 with 1 GB RAM and a 32 GB SD card; this is the minimum. A Raspberry Pi 4 or 5 with 2 GB RAM or more is recommended, if possible with a small SSD. SHACK-SERVER also runs on a **Raspberry Pi Zero 2 W** (512 MB, Wi-Fi only, one micro-USB port): everything except the SDR, which is hidden there automatically (not enough CPU and USB bandwidth). The image creates a 1 GB swap file at boot there, so that software updates go through.
 
 The idea: the Raspberry Pi sits in the shack and the transceivers are connected to the Pi by USB – not to the PC or notebook. Linux has very stable USB support. The SDRplay RSP1B is connected by USB as well. Nothing has to be installed on the devices you use to operate SHACK-SERVER.
 

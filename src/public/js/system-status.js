@@ -46,6 +46,12 @@ async function updateSystemStatus() {
         const data =
             await response.json();
 
+        // Pi with little RAM (Pi Zero 2 W): no SDR in the menu
+        const sdrButton = document.getElementById("sdr-btn");
+        if (sdrButton && data.capabilities) {
+            sdrButton.style.display = data.capabilities.sdr === false ? "none" : "";
+        }
+
 
         const serverState =
             document.getElementById(

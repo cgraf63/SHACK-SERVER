@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import { sdrAvailable } from "../services/system/capabilities.js";
 import { sdrStatus } from "../services/sdr/sdr-ws.service.js";
 
 
@@ -13,7 +14,7 @@ const router = Router();
  */
 router.get("/status", (_req, res) => {
 
-    res.json(sdrStatus());
+    res.json({ ...sdrStatus(), available: sdrAvailable() });
 
 });
 

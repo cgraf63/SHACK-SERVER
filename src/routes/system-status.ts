@@ -6,6 +6,7 @@ import { exec } from "child_process";
 import { DatabaseSync } from "node:sqlite";
 import { radioManager } from "../services/radio/radio-manager.js";
 import { sourceStatus } from "../services/sources/source-manager-instance.js";
+import { capabilities } from "../services/system/capabilities.js";
 import { wsjtxService } from "../services/wsjtx/wsjtx.service.js";
 
 const router = Router();
@@ -169,6 +170,8 @@ router.get("/", async (_req, res) => {
 
 
     res.json({
+
+        capabilities: capabilities(),
 
         hostname:
             os.hostname(),

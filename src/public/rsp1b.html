@@ -131,5 +131,16 @@
 <script src="/js/rsp1b.js?v=20261111-1"></script>
 
 <script src="/js/demo-banner.js?v=1"></script>
+<script>
+/* Pi with little RAM (Pi Zero 2 W): the SDR is not started there */
+fetch("/api/sdr/status", { cache: "no-store" }).then(r => r.json()).then(status => {
+    if (status.available !== false) return;
+    const box = document.createElement("div");
+    box.style.cssText = "position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(3,10,15,.92);color:#e8f6ff;font:15px/1.6 system-ui,sans-serif;padding:20px;text-align:center";
+    box.innerHTML = '<div style="max-width:440px;border:1px solid #1d3a4a;border-radius:12px;padding:24px;background:#08131b"><h2 style="margin:0 0 10px;color:#00e5ff;font-size:18px">SDR not available</h2>This Raspberry Pi has too little RAM (e.g. Pi Zero 2 W with 512 MB). The SDR (spectrum / waterfall) needs a Pi 4 or 5 and is not started here.<br><br><a href="/" style="color:#00e5ff">Back to the dashboard</a></div>';
+    document.body.appendChild(box);
+}).catch(() => {});
+</script>
+
 </body>
 </html>

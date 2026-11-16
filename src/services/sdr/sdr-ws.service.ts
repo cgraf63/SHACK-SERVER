@@ -2,6 +2,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import type { Server } from "node:http";
 import { execFileSync, spawn, type ChildProcessByStdio } from "node:child_process";
 import type { Readable, Writable } from "node:stream";
+import { sdrAvailable } from "../system/capabilities.js";
 import { SDR_BINARY } from "./sdr-binary.js";
 
 const clients = new Set<WebSocket>();
@@ -175,6 +176,12 @@ let starting = false;
 async function startSdrProcess(): Promise<void> {
 
     if (starting || sdrProcess) return;
+
+    // Pi with little RAM (Pi Zero 2 W): no SDR
+    if (!sdrAvailable()) {
+        console.log("SDR: not available on this Pi (less than 768 MB RAM, e.g. Pi Zero 2 W) - not started");
+        return;
+    }
 
     starting = true;
 

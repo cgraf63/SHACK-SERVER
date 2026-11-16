@@ -42,7 +42,7 @@ SHACK-SERVER sammelt diese Daten, führt sie zusammen, bewertet sie und zeigt si
 
 SHACK-SERVER wurde für den Raspberry Pi entwickelt. Ziel war ein schlankes, schnelles System mit einer professionellen grafischen Oberfläche, unabhängig von Desktop-PC und Notebook.
 
-Der Prototyp läuft auf einem Raspberry Pi 4 mit 1 GB RAM und einer 32-GB-SD-Karte; das ist die Minimalkonfiguration. Empfohlen wird ein Raspberry Pi 4 oder 5 mit 2 GB RAM oder mehr und, wenn möglich, eine kleine SSD.
+Der Prototyp läuft auf einem Raspberry Pi 4 mit 1 GB RAM und einer 32-GB-SD-Karte; das ist die Minimalkonfiguration. Empfohlen wird ein Raspberry Pi 4 oder 5 mit 2 GB RAM oder mehr und, wenn möglich, eine kleine SSD. SHACK-SERVER läuft auch auf einem **Raspberry Pi Zero 2 W** (512 MB, nur WLAN, ein Micro-USB-Anschluss): alles ausser dem SDR, das dort automatisch ausgeblendet wird (zu wenig Rechenleistung und USB-Bandbreite). Das Image legt dort beim Start eine Auslagerungsdatei von 1 GB an, damit Software-Updates durchlaufen.
 
 Die Idee: Der Raspberry Pi steht im Shack, die Funkgeräte hängen per USB am Pi – nicht am PC oder Notebook. Linux hat eine sehr stabile USB-Unterstützung. Ebenfalls per USB wird der SDRplay RSP1B angeschlossen. Auf den Geräten, mit denen man SHACK-SERVER bedient, muss nichts installiert werden.
 
