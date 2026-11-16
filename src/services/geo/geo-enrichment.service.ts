@@ -18,6 +18,8 @@ import {
     CallsignResolverService
 } from "./callsign-resolver.service.js";
 
+import { dxccService } from "../dxcc/dxcc.service.js";
+
 
 export class GeoEnrichmentService {
 
@@ -266,6 +268,35 @@ export class GeoEnrichmentService {
                     Date.now()
 
             };
+
+        }
+
+
+        /*
+            No QRZ (not set up, e.g. a new installation) and no locator:
+            the centre of the DXCC entity from cty.dat - distance and
+            azimuth are approximate, but there. Not cached, so a later
+            QRZ lookup still gets the exact position.
+        */
+        if (
+            location.latitude === undefined ||
+            location.longitude === undefined
+        ) {
+
+            const entity =
+                dxccService.resolve(normalized);
+
+            if (entity && (entity.latitude || entity.longitude)) {
+
+                return {
+                    ...location,
+                    latitude: entity.latitude,
+                    longitude: entity.longitude,
+                    country: location.country ?? entity.name,
+                    continent: location.continent ?? entity.continent
+                };
+
+            }
 
         }
 
