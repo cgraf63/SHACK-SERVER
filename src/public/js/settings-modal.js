@@ -222,6 +222,11 @@ async function loadSettings() {
         if (autoSplitBox) autoSplitBox.checked = settingsData.autoSplit !== false;
         const cwSideband = document.getElementById("cw-sideband");
         if (cwSideband) cwSideband.value = settingsData.cwSideband === "CW-L" ? "CW-L" : "CW-U";
+        const opportunity = settingsData.opportunity || {};
+        const opportunityModes = opportunity.modes || ["CW", "SSB", "DIGITAL", "FM"];
+        document.querySelectorAll(".opportunity-mode").forEach(box => { box.checked = opportunityModes.includes(box.value); });
+        const opportunityAge = document.getElementById("opportunity-age");
+        if (opportunityAge) opportunityAge.value = opportunity.maxAgeMinutes || 10;
         const internalTuner = document.getElementById("internal-tuner");
         if (internalTuner) internalTuner.checked = settingsData.internalTuner !== false;
         const cw = settingsData.cw || {};
@@ -709,6 +714,11 @@ async function saveSettings() {
             document.getElementById("cw-sideband")?.value === "CW-L" ? "CW-L" : "CW-U",
 
         internalTuner: document.getElementById("internal-tuner")?.checked !== false,
+
+        opportunity: {
+            modes: [...document.querySelectorAll(".opportunity-mode")].filter(box => box.checked).map(box => box.value),
+            maxAgeMinutes: Number(document.getElementById("opportunity-age")?.value) || 10
+        },
 
         cw: {
             decoder: document.getElementById("cw-decoder-show")?.checked === true,

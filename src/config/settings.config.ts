@@ -83,6 +83,11 @@ export interface ShackSettings {
        CW memories / CW text are sent. false = external tuner: no tuning,
        no tuner check. Default true. */
     internalTuner?: boolean;
+    /* Best Opportunity tile: modes you work (CW, SSB, DIGITAL, FM), max. spot age in minutes */
+    opportunity?: {
+        modes: string[];
+        maxAgeMinutes: number;
+    };
     /* CW line at the bottom of the dashboard: decoder (RX audio of the
        transceiver -> text) and encoder (text -> CW), speed for sending,
        CW pitch for the decoder (0 = automatic) */

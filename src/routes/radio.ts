@@ -353,6 +353,13 @@ router.get(
                     ? (activeRadio as any).getPowerState()
                     : false,
 
+            // bands of the radio, when it knows them (QMX versions); null = all
+            bands:
+
+                typeof (activeRadio as any).getBands === "function"
+                    ? (activeRadio as any).getBands()
+                    : null,
+
 
             radios:
 

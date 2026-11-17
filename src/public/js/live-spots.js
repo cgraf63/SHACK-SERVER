@@ -1795,216 +1795,7 @@ if (tuneButton) {
 
     tuneButton.addEventListener(
         "click",
-        async event => {
-
-            const button =
-                event.currentTarget;
-
-
-            const spotFrequency =
-                button.dataset.frequency;
-
-
-            const spotMode =
-                button.dataset.mode;
-
-
-            const spotCall =
-                button.dataset.call;
-
-            /* "UP 2" / "QSX ..." in the spot: TX frequency (kHz) */
-            const splitTxKHz =
-                Number(button.dataset.splitTx) || null;
-
-
-            console.log(
-                "TUNE CLICK:",
-                {
-                    call:
-                        spotCall,
-
-                    frequency:
-                        spotFrequency,
-
-                    mode:
-                        spotMode
-                }
-            );
-
-
-            const frequencyKHz =
-                Number(
-                    spotFrequency
-                );
-
-
-            if (
-                !Number.isFinite(
-                    frequencyKHz
-                )
-            ) {
-
-                console.error(
-                    "Invalid spot frequency:",
-                    spotFrequency
-                );
-
-                return;
-
-            }
-
-
-            const frequencyHz =
-                Math.round(
-                    frequencyKHz *
-                    1000
-                );
-
-
-            const mode =
-                mapSpotModeToRgo(
-                    spotMode,
-                    frequencyHz
-                );
-
-
-            if (!mode) {
-
-                console.log(
-                    "Radio tune skipped:",
-                    spotMode
-                );
-
-                return;
-
-            }
-
-
-            console.log(
-                "TUNING RADIO:",
-                {
-                    call:
-                        spotCall,
-
-                    frequencyKHz:
-                        frequencyKHz,
-
-                    frequencyHz:
-                        frequencyHz,
-
-                    mode:
-                        mode
-                }
-            );
-
-
-            // other dashboard parts (Manual QSO) follow the spot at once
-            window.dispatchEvent(new CustomEvent("shack:spot-tuned", {
-                detail: { call: spotCall, frequencyHz, mode }
-            }));
-
-            try {
-
-                /*
-                    Automatic split (Settings, default on): TX on VFO B
-                    for "UP 2" / "QSX ...", otherwise split off.
-                */
-                const autoSplit =
-                    await isAutoSplitEnabled();
-
-                const response =
-                    await fetch(
-                        autoSplit
-                            ? "/api/radio/tune-split"
-                            : "/api/radio/tune",
-                        {
-                            method:
-                                "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body:
-                                JSON.stringify(
-                                    {
-                                        frequency:
-                                            frequencyHz,
-
-                                        mode:
-                                            mode,
-
-                                        ...(autoSplit
-                                            ? { txFrequency: splitTxKHz ? Math.round(splitTxKHz * 1000) : null }
-                                            : {})
-                                    }
-                                )
-                        }
-                    );
-
-
-                const result =
-                    await response.json();
-
-                if (response.ok && autoSplit) {
-
-                    if (result.split) {
-                        showSplitToast(`SPLIT ${spotCall}: RX ${(frequencyHz / 1e6).toFixed(3)} · TX ${(result.txFrequency / 1e6).toFixed(3)} MHz`, "on");
-                    }
-                    else if (result.note) {
-                        showSplitToast(result.note, splitTxKHz ? "warn" : "off");
-                    }
-
-                }
-
-
-                if (
-                    !response.ok
-                ) {
-
-                    console.error(
-                        "Radio tune failed:",
-                        result
-                    );
-
-                    return;
-
-                }
-
-
-                console.log(
-                    "Radio tuned:",
-                    result
-                );
-
-
-                /*
-                    Optional:
-                    Station-Anzeige sofort
-                    aktualisieren
-                */
-
-                if (
-                    typeof updateStationInline ===
-                    "function"
-                ) {
-
-                    updateStationInline();
-
-                }
-
-            }
-            catch (error) {
-
-                console.error(
-                    "Radio tune request failed:",
-                    error
-                );
-
-            }
-
-        }
+        handleSpotTuneClick
     );
 
             }
@@ -2114,122 +1905,132 @@ function calculateSpotScore(spot) {
     return score;
 }
 
+/*
+ * BEST OPPORTUNITY: the best spot you can work right now
+ *   - only bands of the active transceiver (when it knows them, QMX)
+ *   - only your modes and fresh spots (Settings > Best Opportunity)
+ *   - never a station already worked on that band
+ * Shows why (NEW DXCC, new band, NEAR, sources, age); a click tunes
+ * the transceiver like TUNE, the callsign opens the QSO window.
+ */
+const OPPORTUNITY_MODE_GROUPS = {
+    CW: ["CW", "CW-R", "CW-L", "CW-U"],
+    SSB: ["SSB", "USB", "LSB", "AM"],
+    DIGITAL: ["FT8", "FT4", "RTTY", "PSK31", "PSK", "JT65", "JS8", "DIGITAL", "DATA", "MFSK", "OLIVIA"],
+    FM: ["FM"]
+};
+
+let opportunitySettings = { modes: ["CW", "SSB", "DIGITAL", "FM"], maxAgeMinutes: 10 };
+let opportunityBands = null;
+
+async function refreshOpportunityContext() {
+    try {
+        const settings = await (await fetch("/api/settings", { cache: "no-store" })).json();
+        if (settings?.opportunity) opportunitySettings = settings.opportunity;
+    }
+    catch { /* keep */ }
+    try {
+        const radio = await (await fetch("/api/radio", { cache: "no-store" })).json();
+        opportunityBands = Array.isArray(radio?.bands) && radio.bands.length
+            ? new Set(radio.bands.map(b => String(b).toLowerCase()))
+            : null;
+    }
+    catch { /* keep */ }
+}
+
+refreshOpportunityContext();
+setInterval(refreshOpportunityContext, 30000);
+
+function spotAgeSeconds(spot) {
+    const lastSeen = Number(spot.lastSeen);
+    if (lastSeen > 0) return (Date.now() - lastSeen) / 1000;
+    const text = String(spot.age || "").trim().toLowerCase();
+    const value = parseFloat(text);
+    if (!Number.isFinite(value)) return Infinity;
+    if (text.endsWith("h")) return value * 3600;
+    if (text.endsWith("m")) return value * 60;
+    return value;
+}
+
+function opportunityModeOk(spot) {
+    const mode = String(spot.mode || "").toUpperCase();
+    if (!mode || mode === "UNKNOWN") return true;    // unknown: not excluded
+    return (opportunitySettings.modes || []).some(group => (OPPORTUNITY_MODE_GROUPS[group] || []).includes(mode));
+}
+
+function opportunityReasons(spot) {
+    const reasons = [];
+    const worked = getWorkedStatus(spot);
+    if (worked === "new") reasons.push("NEW DXCC");
+    else if (worked === "country" || worked === "station") reasons.push(`NEW BAND ${String(spot.band || "").toUpperCase()}`);
+    if (spot.heard?.nearby) reasons.push("NEAR");
+    const sources = Array.isArray(spot.sources) ? spot.sources.length : 0;
+    if (sources >= 2) reasons.push(`${sources} SOURCES`);
+    const age = spotAgeSeconds(spot);
+    if (Number.isFinite(age)) reasons.push(age < 60 ? `${Math.round(age)} S` : `${Math.round(age / 60)} MIN`);
+    return reasons;
+}
+
 function updateDxOpportunity() {
 
-    const element =
-        document.getElementById(
-            "dx-opportunity-value"
-        );
+    const element = document.getElementById("dx-opportunity-value");
+    if (!element) return;
 
-    if (!element) {
-        return;
-    }
+    const maxAge = (opportunitySettings.maxAgeMinutes || 10) * 60;
 
+    const candidates = [...currentSpots]
+        .filter(spot => spot.call && spot.frequency)
+        .filter(spot => getWorkedStatus(spot) !== "station-band")
+        .filter(spot => !opportunityBands || opportunityBands.has(String(spot.band || "").toLowerCase()))
+        .filter(opportunityModeOk)
+        .filter(spot => spotAgeSeconds(spot) <= maxAge)
+        .map(spot => ({ spot, score: calculateSpotScore(spot) }))
+        .sort((a, b) => b.score - a.score);
 
-    const scoredSpots =
-        [...currentSpots]
-            .filter(
-                spot =>
-                    spot.distance !== undefined &&
-                    spot.call
-            )
-            .map(
-                spot => ({
-                    spot,
-                    score: calculateSpotScore(spot)
-                })
-            )
-            .sort(
-                (a, b) =>
-                    b.score - a.score
-            );
-
-
-    const best =
-        scoredSpots[0];
-
+    const tile = element.closest(".command-item");
+    const best = candidates[0];
 
     if (!best) {
-
-        element.textContent =
-            "No DX data";
-
+        element.innerHTML = `<span class="dx-opportunity-none">Nothing new to work right now</span>`;
+        if (tile) {
+            tile.onclick = null;
+            tile.style.cursor = "";
+            tile.title = "";
+        }
         return;
-
     }
 
+    const dx = best.spot;
+    const mhz = (Number(dx.frequency) / 1000).toFixed(3);
+    const mode = dx.mode && dx.mode !== "UNKNOWN" ? ` ${dx.mode}` : "";
+    const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
-    const dx =
-        best.spot;
+    element.innerHTML = `
+        ${dx.countryCode ? `<img class="dx-flag" src="/assets/flags/${esc(dx.countryCode)}.svg" alt="" title="${esc(dx.country || "")}">` : ""}
+        <span class="dx-opportunity-call" title="Open the QSO window">${esc(dx.call)}</span> ${mhz} MHz${esc(mode)}
+        <span class="dx-opportunity-why">${opportunityReasons(dx).map(esc).join(" · ")}</span>`;
 
+    element.querySelector(".dx-opportunity-call")?.addEventListener("click", event => {
+        event.stopPropagation();
+        if (typeof window.openQsoDialog === "function") window.openQsoDialog(dx, {});
+    });
 
-    console.log(
-        "BEST OPPORTUNITY:",
-        {
-            call: dx.call,
-            score: Math.round(best.score),
-            worked: getWorkedStatus(dx),
-            band: dx.band,
-            distance: dx.distance,
-            age: dx.age,
-            confidence: dx.confidence
-        }
-    );
-
-
-    const mhz =
-        dx.frequency
-            ? (
-                Number(dx.frequency) / 1000
-              ).toFixed(3)
-              + " MHz"
-            : "";
-
-
-    const mode =
-        dx.mode !== "UNKNOWN"
-            ? " " + dx.mode
-            : "";
-
-
-element.innerHTML =
-    `
-    ${
-        dx.countryCode
-            ? `<img class="dx-flag" src="/assets/flags/${dx.countryCode}.svg">`
-            : ""
+    if (tile) {
+        tile.style.cursor = "pointer";
+        tile.title = `Click to tune ${dx.call} on ${mhz} MHz`;
+        tile.onclick = event => {
+            if (event.target.closest(".dx-opportunity-call")) return;
+            // same as the TUNE button of the spot
+            const fake = document.createElement("button");
+            fake.dataset.frequency = dx.frequency;
+            fake.dataset.mode = dx.mode || "";
+            fake.dataset.call = dx.call;
+            fake.dataset.splitTx = dx.split?.txKhz ?? "";
+            handleSpotTuneClick({ currentTarget: fake, target: fake, preventDefault() {}, stopPropagation() {} });
+            tile.classList.add("tuned");
+            setTimeout(() => tile.classList.remove("tuned"), 600);
+        };
     }
-    <span class="dx-opportunity-call">${dx.call}</span> on ${mhz}${mode}
-    `;
-
-const callElement =
-    element.querySelector(".dx-opportunity-call");
-
-if (callElement) {
-
-    callElement.addEventListener(
-        "click",
-        () => {
-
-            if (
-                typeof window.openQsoDialog !==
-                "function"
-            ) {
-                console.error(
-                    "openQsoDialog() is not available."
-                );
-                return;
-            }
-
-            window.openQsoDialog(
-                dx,
-                {}
-            );
-
-        }
-    );
-
-}
 
 }
 
@@ -3542,3 +3343,220 @@ function renderSpotSources(spot) {
     window.addEventListener("scroll", hide, true);
 
 })();
+
+
+/*
+ * TUNE of a spot (button in the row, cells of the row, Best Opportunity):
+ * reads data-frequency / data-mode / data-call / data-split-tx of the
+ * clicked element.
+ */
+async function handleSpotTuneClick(event) {
+
+            const button =
+                event.currentTarget;
+
+
+            const spotFrequency =
+                button.dataset.frequency;
+
+
+            const spotMode =
+                button.dataset.mode;
+
+
+            const spotCall =
+                button.dataset.call;
+
+            /* "UP 2" / "QSX ..." in the spot: TX frequency (kHz) */
+            const splitTxKHz =
+                Number(button.dataset.splitTx) || null;
+
+
+            console.log(
+                "TUNE CLICK:",
+                {
+                    call:
+                        spotCall,
+
+                    frequency:
+                        spotFrequency,
+
+                    mode:
+                        spotMode
+                }
+            );
+
+
+            const frequencyKHz =
+                Number(
+                    spotFrequency
+                );
+
+
+            if (
+                !Number.isFinite(
+                    frequencyKHz
+                )
+            ) {
+
+                console.error(
+                    "Invalid spot frequency:",
+                    spotFrequency
+                );
+
+                return;
+
+            }
+
+
+            const frequencyHz =
+                Math.round(
+                    frequencyKHz *
+                    1000
+                );
+
+
+            const mode =
+                mapSpotModeToRgo(
+                    spotMode,
+                    frequencyHz
+                );
+
+
+            if (!mode) {
+
+                console.log(
+                    "Radio tune skipped:",
+                    spotMode
+                );
+
+                return;
+
+            }
+
+
+            console.log(
+                "TUNING RADIO:",
+                {
+                    call:
+                        spotCall,
+
+                    frequencyKHz:
+                        frequencyKHz,
+
+                    frequencyHz:
+                        frequencyHz,
+
+                    mode:
+                        mode
+                }
+            );
+
+
+            // other dashboard parts (Manual QSO) follow the spot at once
+            window.dispatchEvent(new CustomEvent("shack:spot-tuned", {
+                detail: { call: spotCall, frequencyHz, mode }
+            }));
+
+            try {
+
+                /*
+                    Automatic split (Settings, default on): TX on VFO B
+                    for "UP 2" / "QSX ...", otherwise split off.
+                */
+                const autoSplit =
+                    await isAutoSplitEnabled();
+
+                const response =
+                    await fetch(
+                        autoSplit
+                            ? "/api/radio/tune-split"
+                            : "/api/radio/tune",
+                        {
+                            method:
+                                "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    {
+                                        frequency:
+                                            frequencyHz,
+
+                                        mode:
+                                            mode,
+
+                                        ...(autoSplit
+                                            ? { txFrequency: splitTxKHz ? Math.round(splitTxKHz * 1000) : null }
+                                            : {})
+                                    }
+                                )
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+                if (response.ok && autoSplit) {
+
+                    if (result.split) {
+                        showSplitToast(`SPLIT ${spotCall}: RX ${(frequencyHz / 1e6).toFixed(3)} · TX ${(result.txFrequency / 1e6).toFixed(3)} MHz`, "on");
+                    }
+                    else if (result.note) {
+                        showSplitToast(result.note, splitTxKHz ? "warn" : "off");
+                    }
+
+                }
+
+
+                if (
+                    !response.ok
+                ) {
+
+                    console.error(
+                        "Radio tune failed:",
+                        result
+                    );
+
+                    return;
+
+                }
+
+
+                console.log(
+                    "Radio tuned:",
+                    result
+                );
+
+
+                /*
+                    Optional:
+                    Station-Anzeige sofort
+                    aktualisieren
+                */
+
+                if (
+                    typeof updateStationInline ===
+                    "function"
+                ) {
+
+                    updateStationInline();
+
+                }
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Radio tune request failed:",
+                    error
+                );
+
+            }
+
+        }

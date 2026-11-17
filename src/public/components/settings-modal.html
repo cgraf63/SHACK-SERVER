@@ -700,6 +700,32 @@
     </section>
 
 
+    <section class="settings-section">
+
+        <h2>Best Opportunity</h2>
+
+        <p class="radio-settings-intro">
+            The tile at the top of the dashboard suggests the best spot you can work right now:
+            only bands of the active transceiver, only your modes, only fresh spots, never a
+            station already worked on that band. A click tunes the transceiver.
+        </p>
+
+        <div style="display:flex;gap:18px;flex-wrap:wrap;margin:8px 0 12px">
+            <label class="source-switch"><input type="checkbox" class="opportunity-mode" value="CW"><span>CW</span></label>
+            <label class="source-switch"><input type="checkbox" class="opportunity-mode" value="SSB"><span>SSB</span></label>
+            <label class="source-switch"><input type="checkbox" class="opportunity-mode" value="DIGITAL"><span>Digital (FT8, FT4, RTTY …)</span></label>
+            <label class="source-switch"><input type="checkbox" class="opportunity-mode" value="FM"><span>FM</span></label>
+        </div>
+
+        <label style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span>Spots not older than</span>
+            <input id="opportunity-age" type="number" min="2" max="60" step="1" style="width:80px">
+            <span>minutes</span>
+        </label>
+
+    </section>
+
+
     <section class="settings-section" data-demo-hide>
 
         <h2>Rotator</h2>

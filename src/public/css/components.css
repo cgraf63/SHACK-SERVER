@@ -2847,6 +2847,29 @@ if (slider) {
     white-space: nowrap;
     font-size: 12px;
 }
+
+/* why this spot: NEW DXCC · NEAR · 3 SOURCES · 2 MIN */
+.dx-opportunity-why {
+    display: block;
+    margin-top: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .8px;
+    color: #b98cff;
+    text-shadow: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dx-opportunity-none {
+    color: #8a7ca3;
+    font-weight: 500;
+    text-shadow: none;
+}
+
+.command-item.tile-opportunity.tuned {
+    box-shadow: 0 0 0 2px #b56cff, 0 0 24px rgba(181, 108, 255, .55);
+}
 .dx-opportunity-call,
 .priority-call {
     cursor: pointer !important;

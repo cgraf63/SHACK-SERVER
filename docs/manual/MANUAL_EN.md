@@ -112,7 +112,7 @@ Unlike the current NOAA values, the SIDC forecast predicts propagation for the n
 
 ## Best Opportunity
 
-Best Opportunity shows the spot with the highest [DX score](#the-dx-score) – the station that is most worth working right now. A click opens the QSO window.
+Best Opportunity suggests the spot you can work **now** that is most worth it (highest [DX score](#the-dx-score)). Only bands of the active transceiver (for the QMX its band version), your modes and fresh spots count; stations already in the log on that band never. Below it the reason, e.g. *NEW DXCC · NEAR · 3 SOURCES · 2 MIN*. **A click on the tile tunes the transceiver** (like TUNE), a click on the callsign opens the QSO window. Modes and the maximum spot age: *Settings › Best Opportunity*.
 
 ## Actual Propagation
 

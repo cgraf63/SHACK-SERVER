@@ -184,6 +184,17 @@ export class SettingsService {
             internalTuner:
                 ((settings as any).internalTuner ?? this.settings.internalTuner) !== false,
 
+            opportunity: (() => {
+                const given = (settings as any).opportunity ?? this.settings.opportunity ?? {};
+                const all = ["CW", "SSB", "DIGITAL", "FM"];
+                const modes = Array.isArray(given.modes) ? given.modes.map((m: unknown) => String(m).toUpperCase()).filter((m: string) => all.includes(m)) : all;
+                const age = Math.round(Number(given.maxAgeMinutes));
+                return {
+                    modes: modes.length ? modes : all,
+                    maxAgeMinutes: Number.isFinite(age) ? Math.min(60, Math.max(2, age)) : 10
+                };
+            })(),
+
             cw: (() => {
                 const cw = { decoder: false, encoder: false, contestDecoder: false, contestEncoder: false, wpm: 22, pitch: 0, ...(this.settings.cw ?? {}), ...((settings as any).cw ?? {}) };
                 const wpm = Math.round(Number(cw.wpm));
