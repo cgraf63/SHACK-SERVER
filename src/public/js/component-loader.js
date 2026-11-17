@@ -214,7 +214,7 @@ const sidebarScript =
     );
 
 sidebarScript.src =
-    "js/sidebar.js?v=2";
+    "js/sidebar.js?v=3";
 
 await new Promise(resolve => {
 

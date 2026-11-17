@@ -2093,6 +2093,13 @@ img.flag {
 }
 
 
+.about-version {
+    color: #00e5ff;
+    font-weight: 700;
+    letter-spacing: .5px;
+    font-variant-numeric: tabular-nums;
+}
+
 .about-tagline {
 
     color: #ffffff;

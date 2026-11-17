@@ -91,6 +91,8 @@ function setupSidebar() {
                     "visible"
                 );
 
+                showAboutVersion();
+
             }
         );
 
@@ -226,3 +228,27 @@ window.addEventListener(
     "settingsSaved",
     event => applySidebarModules(event.detail)
 );
+
+
+/* About: installed version (same as Settings > Software update) */
+async function showAboutVersion() {
+
+    const element = document.getElementById("about-version");
+    if (!element) return;
+
+    try {
+        const status = await (await fetch("/api/system/update", { cache: "no-store" })).json();
+        const current = status?.current;
+        if (!current) {
+            element.textContent = "";
+            return;
+        }
+        const date = current.date ? new Date(current.date).toLocaleDateString("de-CH") : "";
+        element.textContent = `Version ${current.version ? `v${current.version}` : current.hash}${date ? ` · ${date}` : ""}`;
+        element.title = `Commit ${current.hash}`;
+    }
+    catch {
+        element.textContent = "";
+    }
+
+}
