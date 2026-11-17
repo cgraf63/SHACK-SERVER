@@ -587,22 +587,23 @@ SHACK-SERVER hat keine eigene Anmeldung. Für den Zugriff aus dem Internet desha
 
 # Settings
 
-Die Settings öffnet man über **Settings** in der Seitenleiste. Sie sind in Abschnitte gegliedert:
+Die Settings öffnet man über **Settings** in der Seitenleiste. Links stehen fünf **Tabs** – Station, Spots & DX, Operating, Log, System –, rechts die Abschnitte des gewählten Tabs. **Save Settings** speichert alle Tabs zusammen; beim nächsten Öffnen erscheint der zuletzt benutzte Tab.
 
-| Abschnitt | Inhalt | Kapitel |
-|---|---|---|
-| Station | Rufzeichen, Name, Locator, Klub; Link zum Setup-Assistenten (auch für das QRZ.com-Login) | [Erste Schritte](#erste-schritte) |
-| Transceivers | Transceiver einrichten, testen, aktivieren | [Station und Transceiver](#station-und-transceiver) |
-| DX Sources | DX-Cluster (DXSpider), DX Summit, HolyCluster ein- und ausschalten, eigene Cluster hinzufügen | [DX- und Live-Spots](#dx--und-live-spots) |
-| Log Uploads | QRZ.com, Club Log, LoTW pro Rufzeichen | [Online-Logbücher](#online-logbücher) |
-| WSJT-X | QSOs aus WSJT-X / JTDX übernehmen | [WSJT-X](#wsjt-x) |
-| Split & CW | automatischen Split ein- und ausschalten, CW-Seitenband (CW-U / CW-L) | [Split](#split) |
-| Rotator | Antennenrotor | [Antennenrotor](#antennenrotor) |
-| Watch list notifications | Push-Nachrichten, Sperrzeit, Ruhezeiten | [Benachrichtigungen](#benachrichtigungen) |
-| New – "needed" callsigns | Meldungen für neue Länder und Bänder, Heard near you | [Benachrichtigungen](#benachrichtigungen) |
-| Backup | tägliche Sicherung nach Dropbox / NAS | [Backup](#backup) |
-| Software update | neue Version installieren | [Updates](#updates) |
-| Optional Modules | RBN & Memory, SDR | [RBN & Memory](#rbn-memory), [SDR](#sdr-sdrplay-rsp1b) |
+| Tab | Abschnitt | Inhalt | Kapitel |
+|---|---|---|---|
+| Station | Station | Rufzeichen, Name, Locator, Klub; Link zum Setup-Assistenten (auch für das QRZ.com-Login) | [Erste Schritte](#erste-schritte) |
+| Station | Transceivers | Transceiver einrichten, testen, aktivieren | [Station und Transceiver](#station-und-transceiver) |
+| Station | Rotator | Antennenrotor | [Antennenrotor](#antennenrotor) |
+| Spots & DX | DX Sources | DX-Cluster (DXSpider), DX Summit, HolyCluster ein- und ausschalten, eigene Cluster hinzufügen | [DX- und Live-Spots](#dx--und-live-spots) |
+| Spots & DX | Watch list notifications | Push-Nachrichten, Sperrzeit, Ruhezeiten | [Benachrichtigungen](#benachrichtigungen) |
+| Spots & DX | New – "needed" callsigns | Meldungen für neue Länder und Bänder, Heard near you | [Benachrichtigungen](#benachrichtigungen) |
+| Spots & DX | Best Opportunity | Modes und maximales Alter der Spots für die Kachel oben im Dashboard | [Best Opportunity](#best-opportunity) |
+| Operating | WSJT-X | QSOs aus WSJT-X / JTDX übernehmen | [WSJT-X](#wsjt-x) |
+| Operating | Split & CW | automatischen Split, CW-Seitenband (CW-U / CW-L), interner Tuner, CW-Zeilen (Decoder / Encoder), CW-Tempo | [Split](#split) |
+| Log | Log Uploads | QRZ.com, Club Log, LoTW pro Rufzeichen | [Online-Logbücher](#online-logbücher) |
+| System | Backup | tägliche Sicherung nach Dropbox / NAS | [Backup](#backup) |
+| System | Software update | neue Version installieren | [Updates](#updates) |
+| System | Optional Modules | RBN & Memory, SDR | [RBN & Memory](#rbn-memory), [SDR](#sdr-sdrplay-rsp1b) |
 
 Zugangsdaten (Passwörter, API-Schlüssel) bleiben auf dem SHACK-SERVER und werden nie an den Browser zurückgeschickt. Ein leeres Passwortfeld heisst: Das gespeicherte Passwort bleibt.
 

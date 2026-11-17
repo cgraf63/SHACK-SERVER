@@ -587,22 +587,23 @@ SHACK-SERVER has no login of its own. For access from the internet, therefore ne
 
 # Settings
 
-Open the settings with **Settings** in the sidebar. They are divided into sections:
+Open the settings with **Settings** in the sidebar. On the left there are five **tabs** – Station, Spots & DX, Operating, Log, System –, on the right the sections of the chosen tab. **Save Settings** saves all tabs together; the next time the last used tab opens.
 
-| Section | Content | Chapter |
-|---|---|---|
-| Station | callsign, name, locator, club; link to the setup assistant (also for the QRZ.com login) | [Getting started](#getting-started) |
-| Transceivers | set up, test and activate transceivers | [Station and transceivers](#station-and-transceivers) |
-| DX Sources | switch DX clusters (DXSpider), DX Summit and HolyCluster on and off, add your own clusters | [DX and live spots](#dx-and-live-spots) |
-| Log Uploads | QRZ.com, Club Log, LoTW per callsign | [Online logbooks](#online-logbooks) |
-| WSJT-X | take over QSOs from WSJT-X / JTDX | [WSJT-X](#wsjt-x) |
-| Split & CW | switch automatic split on and off, CW sideband (CW-U / CW-L) | [Split](#split) |
-| Rotator | antenna rotator | [Antenna rotator](#antenna-rotator) |
-| Watch list notifications | push notifications, lockout, quiet hours | [Notifications](#notifications) |
-| New – "needed" callsigns | alerts for new countries and bands, heard near you | [Notifications](#notifications) |
-| Backup | daily backup to Dropbox / NAS | [Backup](#backup) |
-| Software update | install a new version | [Updates](#updates) |
-| Optional Modules | RBN & Memory, SDR | [RBN & Memory](#rbn-memory), [SDR](#sdr-sdrplay-rsp1b) |
+| Tab | Section | Content | Chapter |
+|---|---|---|---|
+| Station | Station | callsign, name, locator, club; link to the setup assistant (also for the QRZ.com login) | [Getting started](#getting-started) |
+| Station | Transceivers | set up, test and activate transceivers | [Station and transceivers](#station-and-transceivers) |
+| Station | Rotator | antenna rotator | [Antenna rotator](#antenna-rotator) |
+| Spots & DX | DX Sources | switch DX clusters (DXSpider), DX Summit and HolyCluster on and off, add your own clusters | [DX and live spots](#dx-and-live-spots) |
+| Spots & DX | Watch list notifications | push notifications, lockout, quiet hours | [Notifications](#notifications) |
+| Spots & DX | New – "needed" callsigns | alerts for new countries and bands, heard near you | [Notifications](#notifications) |
+| Spots & DX | Best Opportunity | modes and maximum spot age for the tile at the top of the dashboard | [Best Opportunity](#best-opportunity) |
+| Operating | WSJT-X | take over QSOs from WSJT-X / JTDX | [WSJT-X](#wsjt-x) |
+| Operating | Split & CW | automatic split, CW sideband (CW-U / CW-L), internal tuner, CW lines (decoder / encoder), CW speed | [Split](#split) |
+| Log | Log Uploads | QRZ.com, Club Log, LoTW per callsign | [Online logbooks](#online-logbooks) |
+| System | Backup | daily backup to Dropbox / NAS | [Backup](#backup) |
+| System | Software update | install a new version | [Updates](#updates) |
+| System | Optional Modules | RBN & Memory, SDR | [RBN & Memory](#rbn-memory), [SDR](#sdr-sdrplay-rsp1b) |
 
 Credentials (passwords, API keys) stay on SHACK-SERVER and are never sent back to the browser. An empty password field means: the saved password is kept.
 

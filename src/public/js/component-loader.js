@@ -237,7 +237,7 @@ await new Promise(resolve => {
         );
 
     settingsScript.src =
-        "js/settings-modal.js?v=25";
+        "js/settings-modal.js?v=26";
 
     document.body.appendChild(
         settingsScript
@@ -254,7 +254,7 @@ await new Promise(resolve => {
         );
 
     radioSettingsScript.src =
-        "js/radio-settings.js?v=5";
+        "js/radio-settings.js?v=6";
 
     document.body.appendChild(
         radioSettingsScript

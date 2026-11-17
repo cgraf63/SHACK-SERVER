@@ -315,6 +315,68 @@
     overflow-y: auto;
 }
 
+/* ---------- Tabs (settings-modal.js) ---------- */
+
+.settings-dialog .settings-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+}
+
+.settings-tabs {
+    flex: 0 0 170px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 10px;
+    border-right: 1px solid var(--border-color, #303640);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.settings-tab {
+    text-align: left;
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: transparent;
+    color: #8fa3b2;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.settings-tab:hover { color: #e8f6ff; background: rgba(255, 255, 255, 0.05); }
+
+.settings-tab.active {
+    color: #00e5ff;
+    background: rgba(0, 229, 255, 0.08);
+    border-color: rgba(0, 229, 255, 0.35);
+}
+
+.settings-tab[hidden] { display: none; }
+
+.settings-body .settings-content { flex: 1 1 auto; }
+
+.settings-section.tab-hidden { display: none !important; }
+
+/* sections inside one tab: a line between them */
+.settings-body .settings-section:not(.tab-first) {
+    border-top: 1px solid var(--border-color, #303640);
+    padding-top: 22px;
+}
+
+/* room for the tab column */
+.settings-dialog:has(.settings-body) {
+    width: min(1080px, 94vw);
+}
+
+@media (max-width: 700px) {
+    .settings-dialog .settings-body { flex-direction: column; }
+    .settings-tabs { flex: 0 0 auto; flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--border-color, #303640); padding: 8px; }
+    .settings-tab { white-space: nowrap; padding: 8px 12px; }
+}
+
 
 /* ---------- Hamlib ---------- */
 
@@ -327,4 +389,15 @@
 
 .radio-form-grid #radio-tcp-port {
     width: 110px;
+}
+
+/* small number fields in the Split & CW / Best Opportunity sections */
+#opportunity-age,
+#cw-wpm {
+    padding: 6px 8px;
+    border: 1px solid var(--border-color, #303640);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.04);
+    color: inherit;
+    font: inherit;
 }

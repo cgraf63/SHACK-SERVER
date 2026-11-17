@@ -18,6 +18,7 @@ let settingsData = null;
     settings at that section.
 */
 const SETTINGS_SECTIONS = {
+    opportunity: "Best Opportunity",
     station: "Station",
     transceivers: "Transceivers",
     sources: "DX Sources",
@@ -31,6 +32,90 @@ const SETTINGS_SECTIONS = {
     update: "Software update",
     modules: "Optional Modules"
 };
+
+/*
+    Tabs: the sections grouped by task, one tab visible at a time.
+    The sections stay as they are in settings-modal.html - they are only
+    assigned to a tab by their heading. Save saves all tabs.
+*/
+const SETTINGS_TABS = [
+    { id: "station", label: "Station", sections: ["Station", "Transceivers", "Rotator"] },
+    { id: "spots", label: "Spots & DX", sections: ["DX Sources", "Best Opportunity", "New", "Watch list notifications"] },
+    { id: "operating", label: "Operating", sections: ["Split", "WSJT-X"] },
+    { id: "log", label: "Log", sections: ["Log Uploads"] },
+    { id: "system", label: "System", sections: ["Software update", "Backup", "Optional Modules"] }
+];
+
+function settingsSectionTab(section) {
+    const title = section.querySelector("h2")?.textContent.trim() || "";
+    return SETTINGS_TABS.find(tab => tab.sections.some(name => title.startsWith(name)))?.id || "system";
+}
+
+function setupSettingsTabs() {
+
+    const content = document.querySelector("#settings-modal .settings-content");
+    if (!content || content.dataset.tabs === "1") return;
+    content.dataset.tabs = "1";
+
+    const sections = [...content.querySelectorAll(":scope > .settings-section")];
+    sections.forEach(section => { section.dataset.tab = settingsSectionTab(section); });
+
+    const nav = document.createElement("nav");
+    nav.className = "settings-tabs";
+    nav.innerHTML = SETTINGS_TABS.map(tab =>
+        `<button type="button" class="settings-tab" data-tab="${tab.id}">${tab.label}</button>`).join("");
+
+    // header on top, below: tabs | content
+    const body = document.createElement("div");
+    body.className = "settings-body";
+    content.parentNode.insertBefore(body, content);
+    body.appendChild(nav);
+    body.appendChild(content);
+
+    // demo: tabs whose sections are all hidden there are hidden too
+    const demo = () => document.body.classList.contains("demo-mode");
+    for (const tab of SETTINGS_TABS) {
+        const inTab = sections.filter(section => section.dataset.tab === tab.id);
+        const button = nav.querySelector(`[data-tab="${tab.id}"]`);
+        if (inTab.every(section => section.hasAttribute("data-demo-hide"))) button.dataset.demoHide = "1";
+    }
+
+    nav.addEventListener("click", event => {
+        const button = event.target.closest(".settings-tab");
+        if (button) showSettingsTab(button.dataset.tab);
+    });
+
+    let start = "station";
+    try { start = localStorage.getItem("settings-tab") || "station"; } catch { /* no storage */ }
+    if (demo() && nav.querySelector(`[data-tab="${start}"]`)?.dataset.demoHide) start = "station";
+    showSettingsTab(start);
+
+}
+
+function showSettingsTab(id) {
+
+    const content = document.querySelector("#settings-modal .settings-content");
+    if (!content) return;
+
+    if (!SETTINGS_TABS.some(tab => tab.id === id)) id = "station";
+
+    let first = true;
+    content.querySelectorAll(":scope > .settings-section").forEach(section => {
+        const hidden = section.dataset.tab !== id;
+        section.classList.toggle("tab-hidden", hidden);
+        section.classList.toggle("tab-first", !hidden && first);
+        if (!hidden) first = false;
+    });
+
+    document.querySelectorAll("#settings-modal .settings-tab").forEach(button => {
+        button.classList.toggle("active", button.dataset.tab === id);
+        button.hidden = button.dataset.demoHide === "1" && document.body.classList.contains("demo-mode");
+    });
+
+    content.scrollTop = 0;
+    try { localStorage.setItem("settings-tab", id); } catch { /* no storage */ }
+
+}
 
 function openSettingsFromUrl() {
 
@@ -56,6 +141,9 @@ function openSettingsFromUrl() {
         const section = heading?.closest(".settings-section");
 
         if (!section) return;
+
+        setupSettingsTabs();
+        showSettingsTab(section.dataset.tab || settingsSectionTab(section));
 
         section.scrollIntoView({ behavior: "smooth", block: "start" });
         section.style.transition = "box-shadow .4s";
@@ -107,6 +195,7 @@ function openSettings() {
         "open"
     );
 
+    setupSettingsTabs();
 
     loadSettings();
 

@@ -17,7 +17,7 @@
     if (!document.querySelector('link[data-radio-settings]')) {
         const link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = "css/radio-settings.css?v=3";
+        link.href = "css/radio-settings.css?v=4";
         link.dataset.radioSettings = "1";
         document.head.appendChild(link);
     }
