@@ -202,6 +202,7 @@ Die Live-Spots zeigen die aktuell gemeldeten Stationen mit Frequenz, Mode, Land,
 
 - Alle Spalten lassen sich auf- und absteigend **sortieren**, die wichtigen Felder haben **Filter**: Band, Mode (Mehrfachauswahl), Land, Quelle.
 - **Reset filters** löscht alle Filter, **Get new spots** holt neue Spots und behält die Filter.
+- **Search** filtert beim Tippen: Rufzeichen, Land, Kommentar, Mode, Band, Frequenz oder Quelle. Mehrere Wörter müssen alle passen, z. B. „ft8 japan“ oder „3x 40m“. **Esc** leert das Feld.
 - Ein Mauszeiger über der Flagge zeigt das Land.
 - **Augen** (VIEW): Fenster mit Weltkarte, Distanz und Richtung zwischen dem eigenen QTH und der DX-Station.
 - **Zielscheibe** (TUNE): stellt Frequenz und Mode am Transceiver ein.

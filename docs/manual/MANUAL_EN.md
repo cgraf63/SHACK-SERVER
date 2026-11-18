@@ -202,6 +202,7 @@ The live spots show the stations currently reported, with frequency, mode, count
 
 - Every column can be **sorted** up and down, the important fields have **filters**: band, mode (multiple choice), country, source.
 - **Reset filters** clears all filters, **Get new spots** fetches new spots and keeps the filters.
+- **Search** filters while typing: callsign, country, comment, mode, band, frequency or source. Several words must all match, e.g. "ft8 japan" or "3x 40m". **Esc** clears the field.
 - Hovering over the flag shows the country.
 - **Eyes** (VIEW): a window with a world map, distance and bearing between your QTH and the DX station.
 - **Target** (TUNE): sets frequency and mode on the transceiver.

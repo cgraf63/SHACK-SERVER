@@ -397,9 +397,58 @@ function filterSpots(spots) {
                 spot.confidence >= selectedConfidence
             )
 
+            &&
+
+            spotMatchesSearch(spot)
+
     );
 
 }
+
+
+/*
+ * Search field: every word must appear in callsign, country, comment,
+ * mode, band, frequency or source ("3x 40m", "ft8 japan", "14074").
+ */
+let spotSearchText = "";
+
+function spotMatchesSearch(spot) {
+
+    if (!spotSearchText) return true;
+
+    const haystack = [
+        spot.call, spot.country, spot.comment, spot.mode, spot.band,
+        spot.frequency, spot.source, spot.spotter
+    ].map(value => String(value ?? "")).join(" ").toLowerCase();
+
+    return spotSearchText.split(/\s+/).every(word => haystack.includes(word));
+
+}
+
+/* delegated: the component (live-spots.html) may come after this script */
+(() => {
+
+    let timer = null;
+
+    document.addEventListener("input", event => {
+        if (event.target?.id !== "spotSearch") return;
+        const input = event.target;
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            spotSearchText = input.value.trim().toLowerCase();
+            renderLiveSpots();
+        }, 150);
+    });
+
+    // Esc empties the field
+    document.addEventListener("keydown", event => {
+        if (event.target?.id !== "spotSearch" || event.key !== "Escape" || !event.target.value) return;
+        event.target.value = "";
+        spotSearchText = "";
+        renderLiveSpots();
+    });
+
+})();
 
 function updateModeFilter(spots) {
 
@@ -2251,6 +2300,10 @@ if (resetView) {
             selectedCountry = "ALL";
             selectedSource = "ALL";
             selectedConfidence = 0;
+
+            spotSearchText = "";
+            const search = document.getElementById("spotSearch");
+            if (search) search.value = "";
 
 
             /*
