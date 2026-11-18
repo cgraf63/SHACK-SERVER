@@ -192,7 +192,7 @@ Dieselben zwei Zeilen gibt es unten in der **Contest-Konsole**, getrennt einscha
 
 ![New – "needed" Callsigns](../images/screenshots/needed-alerts.jpg)
 
-Unter der Watch-Liste stehen die zuletzt gespotteten Stationen, die man noch braucht – verglichen mit dem eigenen Log nach DXCC-Gebiet: **NEW COUNTRY**, **NEW BAND COUNTRY** und optional neues Band oder neuer Mode für eine schon gearbeitete Station. **NEAR** heisst: Ein Spotter in der Nähe des eigenen QTH hat die Station gehört. Ein Klick stimmt den Transceiver ab. Einrichtung: siehe [Benachrichtigungen](#benachrichtigungen).
+Unter der Watch-Liste stehen die zuletzt gespotteten Stationen, die man noch braucht – verglichen mit dem eigenen Log nach DXCC-Gebiet: **NEW COUNTRY**, **NEW BAND COUNTRY** und optional neues Band oder neuer Mode für eine schon gearbeitete Station. **NEAR** heisst: Ein Spotter in der Nähe des eigenen QTH hat die Station gehört. Ein Klick stimmt den Transceiver ab; mit der Maus über einem Eintrag erscheinen **VIEW** (Details, QRZ) und **LOG** (QSO-Fenster). Einrichtung: siehe [Benachrichtigungen](#benachrichtigungen).
 
 ## DX- und Live-Spots
 

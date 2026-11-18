@@ -192,7 +192,7 @@ The same two lines are available at the bottom of the **contest console**, switc
 
 ![New – "needed" callsigns](../images/screenshots/needed-alerts.jpg)
 
-Below the watch list are the most recently spotted stations you still need – compared with your own log by DXCC entity: **NEW COUNTRY**, **NEW BAND COUNTRY** and optionally a new band or mode for a station already worked. **NEAR** means a spotter close to your QTH heard the station. A click tunes the transceiver. Setting it up: see [Notifications](#notifications).
+Below the watch list are the most recently spotted stations you still need – compared with your own log by DXCC entity: **NEW COUNTRY**, **NEW BAND COUNTRY** and optionally a new band or mode for a station already worked. **NEAR** means a spotter close to your QTH heard the station. A click tunes the transceiver; with the mouse over an entry **VIEW** (details, QRZ) and **LOG** (QSO window) appear. Setting it up: see [Notifications](#notifications).
 
 ## DX and live spots
 

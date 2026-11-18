@@ -4476,3 +4476,41 @@ D.sidebar.collapsed {
 .cw-btn.run { min-width: 62px; color: var(--red); border-color: rgba(255, 82, 82, 0.45); }
 .cw-btn.run.stopped { color: var(--green); border-color: rgba(140, 255, 0, 0.5); }
 .cw-rx.stopped .cw-text { opacity: .5; }
+
+
+/* "needed" list: small VIEW / LOG buttons - shown on mouse over at the
+   right end of the row (over the age), so long calls still fit */
+.needed-alert-item { position: relative; }
+
+.needed-alert-actions {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    gap: 3px;
+    padding-left: 14px;
+    background: linear-gradient(90deg, rgba(10, 20, 28, 0), #0a141c 12px);
+}
+
+.needed-alert-item:hover .needed-alert-actions,
+.needed-alert-item:focus-within .needed-alert-actions {
+    display: inline-flex;
+}
+
+.needed-btn {
+    padding: 1px 6px;
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    border-radius: 4px;
+    background: #0a141c;
+    color: #8fd8e6;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    line-height: 15px;
+    cursor: pointer;
+}
+
+.needed-btn:hover { background: rgba(0, 229, 255, 0.15); color: #fff; }
+.needed-btn.log { border-color: rgba(181, 108, 255, 0.5); color: #c9a2ff; }
+.needed-btn.log:hover { background: rgba(181, 108, 255, 0.18); }
