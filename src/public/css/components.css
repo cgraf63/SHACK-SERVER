@@ -2617,19 +2617,7 @@ img.flag {
     accent-color: var(--cyan);
 }
 
-/* Standard */
-.live-spots-slider {
-    height: 640px;
-}
-
-const slider = document.querySelector(".live-spots-slider");
-
-if (slider) {
-    slider.style.height =
-        window.screen.height >= 1200
-            ? "640px"
-            : "520px";
-}
+/* the height follows the number of rows (live-spots.js) */
 
 
 /* =====================================================
