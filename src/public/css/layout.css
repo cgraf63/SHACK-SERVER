@@ -28,6 +28,12 @@ main {
 
 }
 
+/* CW lines at the bottom: no gap below them, so the sticky bar
+   stays at the bottom edge at the end of the page too */
+main:has(> .cw-line:not([hidden])) {
+    padding-bottom: 0;
+}
+
 
 
 .header {

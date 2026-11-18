@@ -2604,17 +2604,44 @@ img.flag {
     min-width: 0;
 }
 
-.live-spots-slider {
-    width: 16px;
+/* scroll bar of the live spots (live-spots.js: updateLiveScroll) */
+.live-scroll {
+    position: relative;
+    flex: 0 0 auto;
+    width: 10px;
     height: 640px;
-    margin: 4px 0 0 8px;
-
-    writing-mode: vertical-lr;
-    direction: ltr;
-
+    margin: 4px 0 0 10px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.07);
     cursor: pointer;
+    touch-action: none;
+}
 
-    accent-color: var(--cyan);
+.live-scroll-thumb {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    border-radius: 5px;
+    background: var(--cyan);
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.45);
+    cursor: grab;
+    transition: transform .08s linear;
+}
+
+.live-scroll.dragging .live-scroll-thumb {
+    cursor: grabbing;
+    transition: none;
+}
+
+.live-scroll:hover .live-scroll-thumb { background: #5cf0ff; }
+
+.live-scroll.disabled { cursor: default; }
+
+.live-scroll.disabled .live-scroll-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: none;
+    cursor: default;
 }
 
 /* the height follows the number of rows (live-spots.js) */

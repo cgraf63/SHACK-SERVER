@@ -1321,37 +1321,6 @@ function renderLiveSpots() {
     );
 
 
-    const pageSlider =
-        document.getElementById(
-            "liveSpotsSlider"
-        );
-
-
-    if (
-        pageSlider &&
-        pageSlider.dataset.ready !== "1"
-    ) {
-
-        pageSlider.dataset.ready =
-            "1";
-
-        pageSlider.addEventListener(
-            "input",
-            () => {
-
-                liveSpotOffset =
-                    Number(
-                        pageSlider.value
-                    ) || 0;
-
-                renderLiveSpots();
-
-            }
-        );
-
-    }
-
-
     const maxOffset =
         Math.max(
             0,
@@ -1370,19 +1339,7 @@ function renderLiveSpots() {
         );
 
 
-    if (pageSlider) {
-        pageSlider.style.height = `${(window.screen.height < 1100 ? 480 : 640) - 33 * (window.shackCwLines || 0)}px`;
-
-        pageSlider.max =
-            String(maxOffset);
-
-        pageSlider.value =
-            String(liveSpotOffset);
-
-        pageSlider.disabled =
-            maxOffset === 0;
-
-    }
+    updateLiveScroll(sorted.length, maxOffset);
 
 
     sorted
@@ -3613,3 +3570,100 @@ async function handleSpotTuneClick(event) {
             }
 
         }
+
+
+/*
+ * Scroll bar next to the live spots (instead of a range slider): the
+ * handle is as long as the visible part of the list - long with 25
+ * spots, short with 300. Drag the handle, click the track to jump,
+ * the mouse wheel works as before (attachLiveSpotWheel).
+ */
+/* the bar is as tall as one page of rows (measured row height) */
+let liveRowHeight = 32;
+
+function liveScrollHeight() {
+    const row = document.querySelector(".live-table tbody tr");
+    const h = row ? row.getBoundingClientRect().height : 0;
+    if (h > 10 && h < 80) liveRowHeight = h;
+    return Math.round(getLiveSpotPageSize() * liveRowHeight);
+}
+
+function updateLiveScroll(total, maxOffset) {
+
+    const track = document.getElementById("liveSpotsScroll");
+    if (!track) return;
+
+    setupLiveScroll(track);
+
+    const height = liveScrollHeight();
+    track.style.height = `${height}px`;
+    track.dataset.total = String(total);
+    track.dataset.max = String(maxOffset);
+
+    const thumb = track.querySelector(".live-scroll-thumb");
+    const page = getLiveSpotPageSize();
+    const thumbHeight = maxOffset > 0 ? Math.max(28, Math.round(height * page / Math.max(total, 1))) : height;
+    const top = maxOffset > 0 ? Math.round((height - thumbHeight) * liveSpotOffset / maxOffset) : 0;
+
+    thumb.style.height = `${thumbHeight}px`;
+    thumb.style.transform = `translateY(${top}px)`;
+    track.classList.toggle("disabled", maxOffset === 0);
+
+    const first = total ? liveSpotOffset + 1 : 0;
+    const last = Math.min(total, liveSpotOffset + page);
+    track.title = total ? `Spots ${first}–${last} of ${total}` : "No spots";
+
+}
+
+function setupLiveScroll(track) {
+
+    if (track.dataset.ready === "1") return;
+    track.dataset.ready = "1";
+
+    const thumb = track.querySelector(".live-scroll-thumb");
+
+    const offsetAt = clientY => {
+        const rect = track.getBoundingClientRect();
+        const thumbHeight = thumb.getBoundingClientRect().height;
+        const max = Number(track.dataset.max) || 0;
+        const free = rect.height - thumbHeight;
+        if (max <= 0 || free <= 0) return 0;
+        const position = (clientY - rect.top - thumbHeight / 2) / free;
+        return Math.round(Math.max(0, Math.min(1, position)) * max);
+    };
+
+    const go = offset => {
+        if (offset === liveSpotOffset) return;
+        liveSpotOffset = offset;
+        renderLiveSpots();
+    };
+
+    let dragging = false;
+    let grab = 0;
+
+    thumb.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        dragging = true;
+        grab = event.clientY - thumb.getBoundingClientRect().top - thumb.getBoundingClientRect().height / 2;
+        thumb.setPointerCapture(event.pointerId);
+        track.classList.add("dragging");
+    });
+
+    thumb.addEventListener("pointermove", event => {
+        if (dragging) go(offsetAt(event.clientY - grab));
+    });
+
+    const stop = () => {
+        dragging = false;
+        track.classList.remove("dragging");
+    };
+    thumb.addEventListener("pointerup", stop);
+    thumb.addEventListener("pointercancel", stop);
+
+    // click on the track: the handle jumps there
+    track.addEventListener("pointerdown", event => {
+        if (event.target === thumb) return;
+        go(offsetAt(event.clientY));
+    });
+
+}

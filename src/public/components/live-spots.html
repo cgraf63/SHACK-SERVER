@@ -196,16 +196,15 @@
 
     </div>
 
-    <input
-        id="liveSpotsSlider"
-        class="live-spots-slider"
-        type="range"
-        min="0"
-        max="0"
-        value="0"
-        step="1"
-        aria-label="Live spots navigation"
-    >
+    <!-- scroll bar: the handle shows how much of the list is visible -->
+    <div
+        id="liveSpotsScroll"
+        class="live-scroll"
+        role="scrollbar"
+        aria-orientation="vertical"
+        aria-label="Live spots navigation">
+        <div class="live-scroll-thumb"></div>
+    </div>
 
 </div>
 
