@@ -370,6 +370,8 @@ const viewButton =
 
         window.shackCallCheck = window.attachCallCheck(callInput, {
 
+            escShowsOnAir: true,
+
             frequencyKhz() {
                 const value = Number(String(field("manual-qso-frequency")?.value || "").replace(",", "."));
                 if (!Number.isFinite(value) || value <= 0) return "";

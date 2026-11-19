@@ -159,7 +159,7 @@ Schon beim Tippen öffnet sich unter dem Feld eine Liste:
   - die **SCP-Datenbank** (Super Check Partial) mit rund 180'000 aktiven Rufzeichen von Club Log, wöchentlich aktualisiert.
 - Der getippte Teil darf irgendwo im Rufzeichen stehen: „Q2A“ findet SQ2ABC. Ein `?` steht für ein Zeichen, das man nicht verstanden hat: „SQ2?BC“.
 - **Falsch verstanden?** Rufzeichen mit genau einem Zeichen anders, zu viel oder zu wenig erscheinen mit `≈`. Zeichen, die in CW oder SSB ähnlich klingen (S/H/5, B/D/6, M/N, P/T …), kommen dabei zuerst.
-- Klickt man ins **leere Feld**, zeigt die Liste, wer gerade auf der eigenen Frequenz gespottet ist.
+- Klickt man ins **leere Feld**, zeigt die Liste, wer gerade auf der eigenen Frequenz gespottet ist. **Esc** leert das Feld und zeigt diese Liste wieder; ein zweites Esc schliesst sie.
 
 Mit den Pfeiltasten und **Enter** oder per Klick übernimmt man einen Vorschlag: Rufzeichen, Band, Mode und Frequenz werden eingetragen und die QRZ-Abfrage läuft.
 

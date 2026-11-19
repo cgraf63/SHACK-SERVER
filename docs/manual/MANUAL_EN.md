@@ -159,7 +159,7 @@ A list opens below the field while you type:
   - the **SCP database** (Super Check Partial) with about 180,000 active callsigns from Club Log, updated weekly.
 - The typed part may be anywhere in the callsign: "Q2A" finds SQ2ABC. A `?` stands for a character you did not copy: "SQ2?BC".
 - **Misheard?** Callsigns with exactly one character different, extra or missing are shown with `≈`. Characters that sound alike in CW or SSB (S/H/5, B/D/6, M/N, P/T …) come first.
-- Clicking into the **empty field** shows who is spotted on your frequency right now.
+- Clicking into the **empty field** shows who is spotted on your frequency right now. **Esc** clears the field and shows this list again; a second Esc closes it.
 
 Arrow keys and **Enter** or a click take a suggestion: callsign, band, mode and frequency are filled in and the QRZ lookup runs.
 

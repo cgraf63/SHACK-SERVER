@@ -144,8 +144,8 @@
             }).join("");
 
             const foot = result.scp?.calls
-                ? `<div class="callcheck-foot">↑↓ Enter · "?" = unknown character · SCP ${result.scp.calls.toLocaleString("en")} calls</div>`
-                : `<div class="callcheck-foot">↑↓ Enter · "?" = unknown character · SCP database not loaded yet</div>`;
+                ? `<div class="callcheck-foot">↑↓ Enter${options.escShowsOnAir ? " · Esc = clear" : ""} · "?" = unknown character · SCP ${result.scp.calls.toLocaleString("en")} calls</div>`
+                : `<div class="callcheck-foot">↑↓ Enter${options.escShowsOnAir ? " · Esc = clear" : ""} · "?" = unknown character · SCP database not loaded yet</div>`;
 
             box.innerHTML = head + (rows || `<div class="callcheck-none">No suggestions</div>`) + foot;
             box.hidden = false;
@@ -198,7 +198,8 @@
         function schedule() {
 
             const text = callInput.value.trim().toUpperCase();
-            if (text === lastQuery && !box.hidden) return;
+            // empty field: always the list of stations on the air
+            if (text && text === lastQuery && !box.hidden) return;
             lastQuery = text;
 
             if (!text) options.onEntity?.(null);
@@ -217,7 +218,29 @@
 
         callInput.addEventListener("blur", () => setTimeout(close, 150));
 
+        /* the field has the focus already: a click shows the list again */
+        callInput.addEventListener("click", () => {
+            if (box.hidden && document.activeElement === callInput) {
+                lastQuery = null;
+                schedule();
+            }
+        });
+
         callInput.addEventListener("keydown", event => {
+            /* Manual QSO (option escShowsOnAir): Esc clears the field and
+               shows who is on the air near the frequency; Esc again
+               closes the list. The contest keeps its own Esc (new QSO). */
+            if (event.key === "Escape" && options.escShowsOnAir && (callInput.value || box.hidden)) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (callInput.value) {
+                    callInput.value = "";
+                    callInput.dispatchEvent(new Event("input", { bubbles: true }));
+                }
+                lastQuery = null;
+                schedule();
+                return;
+            }
             if (box.hidden) return;
             if (event.key === "ArrowDown") { event.preventDefault(); setHighlight(highlighted + 1); }
             else if (event.key === "ArrowUp") { event.preventDefault(); setHighlight(highlighted - 1); }
