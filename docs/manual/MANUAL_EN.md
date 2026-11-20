@@ -465,6 +465,8 @@ Settings on the QMX: CAT over the virtual COM port (USB), in the system menu **K
 
 The RGO ONE has its own remote page with modes (including DIG), VFO A/B and split, a VFO knob with tuning steps (1 Hz to 1 kHz, mouse, mouse wheel, arrows or CTR2-MIDI), CW speed, break-in, power (0–50 W), bands, preamp, ATT, NB, AGC, tuner (internal ATU, menu 34), RF and mic gain, a meter for S/PWR/ALC/SWR/COMP and RX audio in the browser (AUDIO). RGO firmware 1.11 or newer is needed.
 
+The **SDR** button in the waterfall selects the input of the SDRplay: **ANT** (on an antenna, the SDR follows the band), **IF 9 MHz** (on the IF output of the RGO, the SDR stays on 9 MHz and the picture is converted to the frequency of the RGO) or **IF INV** (the same, mirrored). If the signals are mirrored, choose the other IF setting.
+
 As with Yaesu, the waterfall is not sent over USB; the SDRplay SDR is integrated for this (see [SDR](#sdr-sdrplay-rsp1b)). Other radios with CAT can be added with little effort; for remote operation with audio the radio only needs a USB sound card.
 
 ## CTR2-MIDI

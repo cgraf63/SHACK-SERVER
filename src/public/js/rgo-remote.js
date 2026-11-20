@@ -1689,6 +1689,78 @@ function initRitXitControl() {
     }
 
 
+    /*
+     * SDR input (button in the SDR panel, remembered in this browser):
+     *   ANT     the RSP1B on an antenna: tuned to the middle of the band
+     *   IF      the RGO IF output (9 MHz): the RSP1B stays on 9 MHz,
+     *           RF = dial + (SDR frequency - 9 MHz)
+     *   IF INV  the same, spectrum mirrored (LO above the signal)
+     */
+    const RGO_IF_HZ = 9000000;
+    const SDR_INPUTS = ["ANT", "IF", "IF INV"];
+    let sdrInput = "ANT";
+    try { sdrInput = localStorage.getItem("rgo-sdr-input") || "ANT"; } catch { /* no storage */ }
+    if (!SDR_INPUTS.includes(sdrInput)) sdrInput = "ANT";
+
+    let sdrTunedTo = 0;
+
+    /* SDR center wanted for the current input / band */
+    function wantedSdrCenter() {
+        return sdrInput === "ANT"
+            ? getSdrBandRange().center
+            : RGO_IF_HZ;
+    }
+
+    function tuneSdr(force = false) {
+        const center = Math.round(wantedSdrCenter());
+        if (!force && center === sdrTunedTo) return;
+        if (!sdrSocket || sdrSocket.readyState !== WebSocket.OPEN) return;
+        sdrSocket.send(JSON.stringify({ type: "center", freq: center }));
+        sdrTunedTo = center;
+        spectrumHistory = [];
+        window.__rgoSpectrumDisplayFrame = null;
+    }
+
+    /* RF frequency (Hz) -> SDR frequency */
+    function sdrFrequencyOf(rf) {
+        if (sdrInput === "ANT") return rf;
+        const dial = Number(rgoState?.frequency) || 0;
+        const offset = rf - dial;
+        return RGO_IF_HZ + (sdrInput === "IF INV" ? -offset : offset);
+    }
+
+    /* screen column x of width -> FFT bin, -1 = outside the SDR window */
+    function sdrBinAt(x, width, bins) {
+        const range = getSdrBandRange();
+        const rf = range.start + (x + 0.5) * (range.end - range.start) / width;
+        const center = sdrTunedTo || wantedSdrCenter();
+        const bin = Math.floor((sdrFrequencyOf(rf) - (center - SDR_SAMPLE_RATE / 2)) / SDR_SAMPLE_RATE * bins);
+        return bin >= 0 && bin < bins ? bin : -1;
+    }
+
+    function initSdrInput() {
+        const title = document.querySelector(".rgo-sdr-panel .panel-title");
+        if (!title || document.getElementById("rgo-sdr-input")) return;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.id = "rgo-sdr-input";
+        button.className = "rgo-sdr-input";
+        const show = () => {
+            button.textContent = sdrInput === "ANT" ? "SDR: ANT" : `SDR: ${sdrInput} 9 MHz`;
+            button.title = "SDR input: antenna, RGO IF output (9 MHz) or IF mirrored - click to change";
+        };
+        show();
+        button.addEventListener("click", () => {
+            sdrInput = SDR_INPUTS[(SDR_INPUTS.indexOf(sdrInput) + 1) % SDR_INPUTS.length];
+            try { localStorage.setItem("rgo-sdr-input", sdrInput); } catch { /* no storage */ }
+            show();
+            tuneSdr(true);
+        });
+        title.appendChild(button);
+    }
+
+    initSdrInput();
+
     function getBandBins(bins) {
 
         const range =
@@ -1897,18 +1969,12 @@ function initRitXitControl() {
         for (let x = 0; x < width; x++) {
 
             const bin =
-                Math.min(
-                    endBin,
-                    startBin +
-                    Math.floor(
-                        x *
-                        (endBin - startBin) /
-                        width
-                    )
-                );
+                sdrBinAt(x, width, bins);
 
             const db =
-                displayFrame[bin];
+                bin < 0
+                    ? floorDb
+                    : displayFrame[bin];
 
             let level =
                 (
@@ -1963,18 +2029,12 @@ function initRitXitControl() {
         for (let x = 0; x < width; x++) {
 
             const bin =
-                Math.min(
-                    endBin,
-                    startBin +
-                    Math.floor(
-                        x *
-                        (endBin - startBin) /
-                        width
-                    )
-                );
+                sdrBinAt(x, width, bins);
 
             const db =
-                displayFrame[bin];
+                bin < 0
+                    ? floorDb
+                    : displayFrame[bin];
 
             let level =
                 (
@@ -2247,21 +2307,15 @@ function initRitXitControl() {
         for (let x = 0; x < width; x++) {
 
             const bin =
-                Math.min(
-                    endBin,
-                    startBin +
-                    Math.floor(
-                        x *
-                        (endBin - startBin) /
-                        width
-                    )
-                );
+                sdrBinAt(x, width, bins);
 
             const db =
-                data.getFloat32(
-                    2 + (bin * 4),
-                    true
-                );
+                bin < 0
+                    ? floor
+                    : data.getFloat32(
+                        2 + (bin * 4),
+                        true
+                    );
 
             let level =
                 (
@@ -2428,6 +2482,9 @@ function initRitXitControl() {
 
         sdrSocket.onopen = () => {
 
+            sdrTunedTo = 0;
+            tuneSdr(true);
+
             console.log(
                 "RGO SDR: WebSocket connected"
             );
@@ -2471,6 +2528,8 @@ function initRitXitControl() {
 
 
             sdrFrames++;
+
+            tuneSdr();
 
 
             drawSpectrum(data);
