@@ -285,8 +285,13 @@ function updateRgoDisplay() {
 
     updateVfo();
 
-
     updateMode();
+
+    updateControls();
+
+    updateMeter();
+
+    updateRgoExtras();
 
 
     const breakInDelaySlider =
@@ -297,6 +302,7 @@ function updateRgoDisplay() {
 
     if (
         breakInDelaySlider &&
+        !rgoEditing(breakInDelaySlider) &&
         breakInDelayValue &&
         Number.isFinite(Number(rgoState.breakInDelay))
     ) {
@@ -317,6 +323,7 @@ function updateRgoDisplay() {
 
     if (
         cwSpeedSlider &&
+        !rgoEditing(cwSpeedSlider) &&
         cwSpeedValue &&
         Number.isFinite(Number(rgoState.cwSpeed))
     ) {
@@ -337,6 +344,7 @@ function updateRgoDisplay() {
 
     if (
         powerSlider &&
+        !rgoEditing(powerSlider) &&
         powerValue &&
         Number.isFinite(Number(rgoState.power))
     ) {
@@ -696,7 +704,14 @@ function initMeterSelector() {
                         button.dataset.meter ||
                         "S";
 
-                    updateMeter();
+                    // PWR / ALC / SWR / COMP: the radio measures one at a time (RM)
+                    if (selectedMeter !== "S") {
+                        rgoControl("meter", selectedMeter);
+                    }
+
+                    if (rgoState) {
+                        updateMeter();
+                    }
 
                 }
             );
@@ -714,25 +729,16 @@ function updateMeter() {
             rgoState.meterS
         );
 
-    const powerValue =
-        Number(
-            rgoState.meterPower
-        );
+    /* RM: one meter function at a time, 0 PWR, 1 ALC, 2 SWR, 3 COMP */
+    const rm = code =>
+        Number(rgoState.meterFunction) === code
+            ? Number(rgoState.meterValue)
+            : 0;
 
-    const alcValue =
-        Number(
-            rgoState.meterAlc
-        );
-
-    const swrValue =
-        Number(
-            rgoState.meterSwr
-        );
-
-    const compValue =
-        Number(
-            rgoState.meterValue
-        );
+    const powerValue = rm(0);
+    const alcValue = rm(1);
+    const swrValue = rm(2);
+    const compValue = rm(3);
 
 
     let meter = 0;
@@ -807,16 +813,22 @@ function updateMeter() {
 
 
     if (reading) {
+        if (selectedMeter === "S") {
+            /* SM 0-15: 0-9 S units, above S9 about +10 dB per step */
+            const level = Math.max(0, Math.min(15, Math.round(sValue || 0)));
+            reading.textContent = level <= 9 ? `S${level}` : `S9+${(level - 9) * 10}`;
+        }
+        else {
+            reading.textContent = `${Math.round(meter)}/15`;
+        }
+    }
 
-        reading.textContent =
-            `S${Math.max(
-                0,
-                Math.min(
-                    9,
-                    Math.round(sValue)
-                )
-            )}`;
+    const meterLabel = document.getElementById("rgo-meter-label");
 
+    if (meterLabel) {
+        meterLabel.textContent = {
+            S: "S-METER", PWR: "RF POWER", ALC: "ALC", SWR: "SWR", COMP: "COMPRESSION"
+        }[selectedMeter] || "";
     }
 
 }
@@ -904,11 +916,13 @@ function setSliderValue(
                 );
 
 
-            if (input) {
+            if (input && rgoEditing(input)) {
+                return;
+            }
 
+            if (input) {
                 input.value =
                     String(value ?? 0);
-
             }
 
 
@@ -2823,3 +2837,378 @@ function updateVfo() {
 
 
 
+
+
+
+/* =========================================================
+   RGO CONTROLS (CAT manual v1.05)
+   POST /api/rgo/control { control, value }
+   ========================================================= */
+
+/* a control the user is moving is not overwritten by the poll */
+const rgoEditUntil = new WeakMap();
+
+function rgoEditing(element) {
+    return (rgoEditUntil.get(element) || 0) > Date.now();
+}
+
+function rgoHold(element, ms = 2500) {
+    rgoEditUntil.set(element, Date.now() + ms);
+}
+
+async function rgoControl(control, value) {
+    try {
+        const response = await fetch("/api/rgo/control", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ control, value })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            rgoFlash(result.error || `HTTP ${response.status}`);
+            return false;
+        }
+        return true;
+    }
+    catch {
+        rgoFlash("SHACK-SERVER not reachable");
+        return false;
+    }
+}
+
+/* short error message at the bottom of the page */
+let rgoFlashTimer = null;
+
+function rgoFlash(message) {
+    console.error("RGO:", message);
+    let box = document.getElementById("rgo-flash");
+    if (!box) {
+        box = document.createElement("div");
+        box.id = "rgo-flash";
+        box.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;"
+            + "background:#3a0d0d;border:1px solid #ff4d4d;color:#ffb3b3;padding:8px 14px;border-radius:6px;font:13px sans-serif;max-width:90vw";
+        document.body.appendChild(box);
+    }
+    box.textContent = message;
+    box.hidden = false;
+    clearTimeout(rgoFlashTimer);
+    rgoFlashTimer = setTimeout(() => { box.hidden = true; }, 6000);
+}
+
+/* slider -> control (sent when released, the value shown while moving) */
+function bindRgoSlider(id, control, format = value => String(value)) {
+    const slider = document.getElementById(id);
+    if (!slider) return;
+    const output = slider.parentElement?.querySelector("output");
+    slider.addEventListener("input", () => {
+        rgoHold(slider);
+        if (output) output.textContent = format(slider.value);
+    });
+    slider.addEventListener("change", async () => {
+        rgoHold(slider);
+        await rgoControl(control, Number(slider.value));
+        rgoHold(slider, 1500);
+    });
+}
+
+function updateRgoExtras() {
+
+    if (!rgoState) return;
+
+    // ATU: TUNE / TUNING, greyed when the tuner is off (menu 34)
+    const tune = document.getElementById("rgo-atu-tune");
+    if (tune) {
+        tune.textContent = rgoState.atuTuning ? "TUNING" : "TUNE";
+        tune.classList.toggle("tuning", rgoState.atuTuning === true);
+        tune.classList.toggle("unavailable", rgoState.atuEnabled !== true);
+        tune.title = rgoState.atuEnabled
+            ? "Start / stop the internal tuner"
+            : "Internal tuner off (menu 34) or no ATU board";
+    }
+
+    const split = document.getElementById("rgo-split");
+    if (split) split.classList.toggle("active", rgoState.split === true);
+
+}
+
+function initRgoControls() {
+
+    bindRgoSlider("rgo-power-slider", "power", value => `${value} W`);
+    bindRgoSlider("rgo-break-in-delay-slider", "breakIn");
+    bindRgoSlider("rgo-rf-gain", "rfGain");
+    bindRgoSlider("rgo-mic-gain", "micGain");
+
+    // PREAMP / ATT / NB: toggle
+    document.querySelectorAll("[data-fn]").forEach(button => {
+        button.addEventListener("click", async () => {
+            const on = !button.classList.contains("active");
+            button.classList.toggle("active", on);
+            button.textContent = on ? "ON" : "OFF";
+            if (rgoState) {
+                if (button.dataset.fn === "preamp") rgoState.preamp = on;
+                if (button.dataset.fn === "att") rgoState.rgoAttenuator = on;
+                if (button.dataset.fn === "nb") rgoState.rgoNoiseBlanker = on;
+            }
+            await rgoControl(button.dataset.fn, on);
+        });
+    });
+
+    // AGC
+    document.querySelectorAll("[data-agc]").forEach(button => {
+        button.addEventListener("click", async () => {
+            if (rgoState) rgoState.agc = button.dataset.agc;
+            updateAgc();
+            await rgoControl("agc", button.dataset.agc);
+        });
+    });
+
+    // ATU TUNE
+    const tune = document.getElementById("rgo-atu-tune");
+    tune?.addEventListener("click", async () => {
+        const start = !(rgoState?.atuTuning);
+        if (await rgoControl("tune", start) && rgoState) {
+            rgoState.atuTuning = start;
+            updateRgoExtras();
+        }
+    });
+
+    initRgoTuning();
+    initRgoAudio();
+    initRgoCtr2();
+
+}
+
+/* ---------------------------------------------------------------- VFO knob */
+
+const RGO_STEPS = [1, 10, 100, 1000];
+let rgoStep = 100;
+try { rgoStep = Number(localStorage.getItem("rgo-step")) || 100; } catch { /* no storage */ }
+if (!RGO_STEPS.includes(rgoStep)) rgoStep = 100;
+
+/* the frequency moves at once on the page, the radio gets at most
+   ~12 commands per second (absolute frequency, nothing gets lost) */
+const rgoTuning = { target: 0, holdUntil: 0, timer: null, angle: 0 };
+
+function rgoActiveFrequency() {
+    if (!rgoState) return 0;
+    return Number(rgoState.rxVfo) === 1 ? Number(rgoState.frequencyB) : Number(rgoState.frequency);
+}
+
+function rgoTuneBy(steps, step = rgoStep) {
+    if (!rgoState || !steps) return;
+    const now = Date.now();
+    const base = now < rgoTuning.holdUntil && rgoTuning.target ? rgoTuning.target : rgoActiveFrequency();
+    if (!(base > 0)) return;
+    rgoTuning.target = Math.max(100000, Math.min(60e6, Math.round(base / step) * step + steps * step));
+    rgoTuning.holdUntil = now + 1200;
+
+    // shown at once
+    if (Number(rgoState.rxVfo) === 1) rgoState.frequencyB = rgoTuning.target;
+    else rgoState.frequency = rgoTuning.target;
+    updateFrequency();
+    updateVfo();
+
+    if (!rgoTuning.timer) rgoSendTarget();
+}
+
+function rgoSendTarget() {
+    rgoTuning.timer = setTimeout(async () => {
+        const target = rgoTuning.target;
+        await rgoControl("frequency", target);
+        rgoTuning.timer = null;
+        if (rgoTuning.target !== target) rgoSendTarget();
+    }, 80);
+}
+
+function rgoRotateKnob(deg) {
+    rgoTuning.angle = (rgoTuning.angle + deg) % 360;
+    document.querySelector(".vfo-knob")?.style.setProperty("--knob-angle", `${rgoTuning.angle}deg`);
+}
+
+function initRgoTuning() {
+
+    const setStep = value => {
+        rgoStep = value;
+        try { localStorage.setItem("rgo-step", String(value)); } catch { /* no storage */ }
+        document.querySelectorAll("[data-step]").forEach(button =>
+            button.classList.toggle("active", Number(button.dataset.step) === value));
+    };
+    setStep(rgoStep);
+    document.querySelectorAll("[data-step]").forEach(button =>
+        button.addEventListener("click", () => setStep(Number(button.dataset.step))));
+
+    document.getElementById("rgo-step-down")?.addEventListener("click", () => { rgoRotateKnob(-8); rgoTuneBy(-1); });
+    document.getElementById("rgo-step-up")?.addEventListener("click", () => { rgoRotateKnob(8); rgoTuneBy(1); });
+
+    const knob = document.querySelector(".vfo-knob");
+    if (!knob) return;
+
+    let last = null;
+    let acc = 0;
+    const angleOf = event => {
+        const r = knob.getBoundingClientRect();
+        return Math.atan2(event.clientY - (r.top + r.height / 2), event.clientX - (r.left + r.width / 2)) * 180 / Math.PI;
+    };
+
+    knob.addEventListener("pointerdown", event => {
+        knob.setPointerCapture(event.pointerId);
+        last = angleOf(event);
+        acc = 0;
+    });
+
+    knob.addEventListener("pointermove", event => {
+        if (last === null) return;
+        const a = angleOf(event);
+        let d = a - last;
+        if (d > 180) d -= 360;
+        if (d < -180) d += 360;
+        last = a;
+        rgoRotateKnob(d);
+        acc += d;
+        // one step per 8 degrees
+        const steps = Math.trunc(acc / 8);
+        if (steps) {
+            acc -= steps * 8;
+            rgoTuneBy(steps);
+        }
+    });
+
+    const end = () => { last = null; };
+    knob.addEventListener("pointerup", end);
+    knob.addEventListener("pointercancel", end);
+
+    knob.addEventListener("wheel", event => {
+        event.preventDefault();
+        const steps = event.deltaY < 0 ? 1 : -1;
+        rgoRotateKnob(steps * 8);
+        rgoTuneBy(steps);
+    }, { passive: false });
+
+}
+
+/* ---------------------------------------------------------------- AUDIO */
+
+/* RX audio of the transceiver (USB sound card of SHACK-SERVER, /audio) */
+function initRgoAudio() {
+
+    const button = document.getElementById("rgo-audio-on");
+    if (!button) return;
+
+    let socket = null;
+    let context = null;
+    let node = null;
+    const queue = [];
+    let pending = null;
+
+    const enqueue = data => {
+        const bytes = new Uint8Array(data);
+        let offset = 0;
+        if (pending !== null && bytes.length) {
+            const v = pending | (bytes[0] << 8);
+            queue.push(v < 0x8000 ? v / 32768 : (v - 0x10000) / 32768);
+            pending = null;
+            offset = 1;
+        }
+        const end = bytes.length - ((bytes.length - offset) % 2);
+        for (let i = offset; i < end; i += 2) {
+            const v = bytes[i] | (bytes[i + 1] << 8);
+            queue.push(v < 0x8000 ? v / 32768 : (v - 0x10000) / 32768);
+        }
+        if (end < bytes.length) pending = bytes[end];
+        // at most 0.5 s buffered
+        if (queue.length > 24000) queue.splice(0, queue.length - 24000);
+    };
+
+    const stop = () => {
+        const s = socket;
+        socket = null;
+        s?.close();
+        if (node) { node.disconnect(); node.onaudioprocess = null; node = null; }
+        context?.close().catch(() => {});
+        context = null;
+        queue.length = 0;
+        pending = null;
+        button.classList.remove("active");
+        button.textContent = "AUDIO";
+    };
+
+    const start = () => {
+        context = new AudioContext({ sampleRate: 48000 });
+        node = context.createScriptProcessor(4096, 0, 1);
+        node.onaudioprocess = event => {
+            const out = event.outputBuffer.getChannelData(0);
+            for (let i = 0; i < out.length; i++) out[i] = queue.length ? queue.shift() : 0;
+        };
+        node.connect(context.destination);
+
+        socket = new WebSocket(`${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/audio`);
+        socket.binaryType = "arraybuffer";
+        socket.onopen = () => {
+            context?.resume();
+            button.classList.add("active");
+            button.textContent = "AUDIO ON";
+        };
+        socket.onmessage = event => {
+            if (event.data instanceof ArrayBuffer) enqueue(event.data);
+            else if (event.data instanceof Blob) event.data.arrayBuffer().then(enqueue);
+        };
+        socket.onerror = () => rgoFlash("No audio: check Settings > Audio (USB sound card)");
+        socket.onclose = () => { if (socket) stop(); };
+    };
+
+    button.title = "RX audio of the transceiver in this browser";
+    button.addEventListener("click", () => (socket ? stop() : start()));
+
+}
+
+/* ---------------------------------------------------------------- CTR2-MIDI */
+
+/* CTR2-MIDI encoder (WebHID, Chrome / Edge): CC100 65 = right, 63 = left */
+function initRgoCtr2() {
+
+    const button = document.getElementById("rgo-ctr2-midi");
+    if (!button) return;
+
+    button.title = "Connect a CTR2-MIDI encoder (Chrome / Edge, USB) as the VFO knob";
+
+    let device = null;
+
+    const report = event => {
+        const bytes = new Uint8Array(event.data.buffer);
+        if (bytes.length < 3 || bytes[0] !== 0xB0 || bytes[1] !== 100) return;
+        if (bytes[2] === 0x41) { rgoRotateKnob(8); rgoTuneBy(1); }
+        else if (bytes[2] === 0x3F) { rgoRotateKnob(-8); rgoTuneBy(-1); }
+    };
+
+    button.addEventListener("click", async () => {
+        if (!navigator.hid) {
+            rgoFlash("CTR2: this browser has no WebHID (Chrome or Edge, over https or localhost)");
+            return;
+        }
+        if (device) return;
+        try {
+            const devices = await navigator.hid.requestDevice({ filters: [{ vendorId: 0x2886, productId: 0x0056 }] });
+            if (!devices.length) return;
+            device = devices[0];
+            if (!device.opened) await device.open();
+            device.addEventListener("inputreport", report);
+            button.classList.add("active");
+            button.textContent = "CTR2 ON";
+        }
+        catch (error) {
+            device = null;
+            rgoFlash(`CTR2: ${error.message || error}`);
+        }
+    });
+
+    navigator.hid?.addEventListener("disconnect", event => {
+        if (event.device === device) {
+            device = null;
+            button.classList.remove("active");
+            button.textContent = "CTR2-MIDI";
+        }
+    });
+
+}
+
+document.addEventListener("DOMContentLoaded", initRgoControls);

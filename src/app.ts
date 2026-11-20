@@ -20,6 +20,7 @@ import rotatorRouter from "./routes/rotator.js";
 import ftx1Router from "./routes/ftx1.js";
 import ic7300Router from "./routes/ic7300.js";
 import qmxRouter from "./routes/qmx.js";
+import rgoRouter from "./routes/rgo.js";
 import cwRouter from "./routes/cw.js";
 import dxpeditionsRouter from "./routes/dxpeditions.js";
 import backupRouter from "./routes/backup.js";
@@ -210,6 +211,12 @@ app.use(
 app.use(
     "/api/qmx",
     qmxRouter
+);
+
+// RGO ONE remote page
+app.use(
+    "/api/rgo",
+    rgoRouter
 );
 
 // CW decoder and CW sending (dashboard)

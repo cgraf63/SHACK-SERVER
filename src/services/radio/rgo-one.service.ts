@@ -54,6 +54,9 @@ export class RgoOneService extends SerialRadioBase implements RadioService {
 
     private buffer = "";
 
+    private kyWaiters: Array<(busy: boolean) => void> = [];
+    private cwJob = 0;
+
 
 
     constructor(
@@ -307,6 +310,9 @@ export class RgoOneService extends SerialRadioBase implements RadioService {
             this.rxVfo =
                 Number(match[1]);
 
+            this.split =
+                this.rxVfo !== this.txVfo;
+
             return;
 
         }
@@ -326,6 +332,9 @@ export class RgoOneService extends SerialRadioBase implements RadioService {
 
             this.txVfo =
                 Number(match[1]);
+
+            this.split =
+                this.rxVfo !== this.txVfo;
 
             return;
 
@@ -700,11 +709,32 @@ export class RgoOneService extends SerialRadioBase implements RadioService {
 
         if (match) {
 
+            // P1 = 1 always, P2 = ATU on (menu 34), P3 = tuning
             this.atuEnabled =
-                match[1] === "1";
+                match[2] === "1";
 
             this.atuTuning =
-                match[2] === "1";
+                match[3] === "1";
+
+            return;
+
+        }
+
+
+        /*
+         * CW keyer buffer: KY0 empty, KY1 full (busy)
+         */
+
+        match =
+            response.match(
+                /^KY([01]);$/
+            );
+
+        if (match) {
+
+            const busy = match[1] === "1";
+            const waiters = this.kyWaiters.splice(0);
+            waiters.forEach(resolve => resolve(busy));
 
             return;
 
@@ -873,12 +903,12 @@ export class RgoOneService extends SerialRadioBase implements RadioService {
             Number(offsetText);
 
         /*
-         * Status fields after the RIT/XIT offset.
+         * Status fields after the RIT/XIT offset (TS-480):
          *
-         * offset ends at body[20]
-         * RIT = body[21]
-         * XIT = body[22]
-         * TX  = body[23]
+         * RIT = body[21], XIT = body[22],
+         * memory bank / channel = body[23..25],
+         * TX = body[26], mode = body[27], VFO = body[28],
+         * scan = body[29], split = body[30]
          */
 
         this.ritEnabled =
@@ -887,8 +917,21 @@ export class RgoOneService extends SerialRadioBase implements RadioService {
         this.xitEnabled =
             body[22] === "1";
 
-        this.txState =
-            body[23] === "1";
+        if (body.length >= 27) {
+            this.txState =
+                body[26] === "1";
+        }
+
+        if (body.length >= 28 && /[1-7]/.test(body[27] ?? "")) {
+            this.mode =
+                this.modeFromCode(Number(body[27]));
+        }
+
+        if (body.length >= 31) {
+            // FR / FT (RX VFO != TX VFO) count as well
+            this.split =
+                body[30] === "1" || this.rxVfo !== this.txVfo;
+        }
 
         console.log(
             "RGO IF STATUS:",
@@ -1195,7 +1238,12 @@ export class RgoOneService extends SerialRadioBase implements RadioService {
                 FM: "4",
                 AM: "5",
                 DIGI: "6",
-                "CW-R": "7"
+                DIG: "6",
+                DATA: "6",
+                RTTY: "6",
+                "CW-U": "3",
+                "CW-R": "7",
+                "CW-L": "7"
 
             };
 
@@ -1217,7 +1265,7 @@ export class RgoOneService extends SerialRadioBase implements RadioService {
 
 
         this.mode =
-            normalizedMode;
+            this.modeFromCode(Number(code));
 
 
         this.send(
@@ -1336,9 +1384,9 @@ export class RgoOneService extends SerialRadioBase implements RadioService {
 
         const value =
             Math.max(
-                4,
+                5,
                 Math.min(
-                    60,
+                    45,
                     Math.round(speed)
                 )
             );
@@ -1531,5 +1579,225 @@ setSplit(
     this.split = enabled;
 
 }
+
+
+
+    /* =========================================================
+       Controls of the RGO remote page (CAT manual v1.05)
+       ========================================================= */
+
+    getPowerRange(): { min: number; max: number } {
+        return { min: 0, max: 50 };
+    }
+
+    /*
+     * control name -> CAT command. The setting is shown at once
+     * and read back from the radio right after.
+     */
+    control(control: string, value: unknown): void {
+
+        if (!this.isConnected()) throw new Error("RGO CAT not connected");
+
+        const num = (min: number, max: number) => {
+            const n = Math.round(Number(value));
+            if (!Number.isFinite(n) || n < min || n > max) throw new Error(`Invalid value for ${control}: ${min}-${max}`);
+            return n;
+        };
+        const bool = () => value === true || value === 1 || value === "1" || String(value).toUpperCase() === "ON";
+        const pad = (n: number, width: number) => String(n).padStart(width, "0");
+
+        switch (control) {
+
+            case "power":
+                this.power = num(0, 50);
+                this.send(`PC${pad(this.power, 3)};`);
+                this.send("PC;");
+                return;
+
+            case "rfGain":
+                this.rfGain = num(0, 100);
+                this.send(`RG${pad(this.rfGain, 3)};`);
+                this.send("RG;");
+                return;
+
+            case "micGain":
+                this.micGain = num(0, 10);
+                this.send(`MG${pad(this.micGain, 3)};`);
+                this.send("MG;");
+                return;
+
+            case "preamp":
+                this.preamp = bool();
+                this.send(`PA${this.preamp ? 1 : 0};`);
+                this.send("PA;");
+                return;
+
+            case "att":
+                this.attenuator = bool();
+                this.send(`RA${this.attenuator ? "01" : "00"};`);
+                this.send("RA;");
+                return;
+
+            case "nb":
+                this.noiseBlanker = bool();
+                this.send(`NB${this.noiseBlanker ? 1 : 0};`);
+                this.send("NB;");
+                return;
+
+            case "agc": {
+                const names = ["OFF", "FAST", "SLOW"];
+                const code = typeof value === "string" && names.includes(value.toUpperCase())
+                    ? names.indexOf(value.toUpperCase())
+                    : num(0, 2);
+                this.agcCode = code;
+                this.agc = names[code] ?? "UNKNOWN";
+                this.send(`GT${pad(code, 3)};`);
+                this.send("GT;");
+                return;
+            }
+
+            case "breakIn":
+                this.breakInDelay = num(0, 1200);
+                this.send(`SD${pad(this.breakInDelay, 4)};`);
+                this.send("SD;");
+                return;
+
+            case "cwSpeed":
+                this.setCwSpeed(num(5, 45));
+                this.send("KS;");
+                return;
+
+            case "meter": {
+                const names = ["PWR", "ALC", "SWR", "COMP"];
+                const code = typeof value === "string" && names.includes(value.toUpperCase())
+                    ? names.indexOf(value.toUpperCase())
+                    : num(0, 3);
+                this.meterFunction = code;
+                this.send(`RM${code};`);
+                this.send("RM;");
+                return;
+            }
+
+            case "tune":
+                // internal ATU (menu 34, ATU board): AC1 1 1 = start, AC1 1 0 = stop
+                if (!this.atuEnabled) throw new Error("Internal tuner is off (menu 34) or not installed");
+                this.atuTuning = bool();
+                this.send(`AC11${this.atuTuning ? 1 : 0};`);
+                setTimeout(() => this.send("AC;"), 300);
+                return;
+
+            case "atu":
+                // ATU on / off (menu 34)
+                this.atuEnabled = bool();
+                this.send(`AC1${this.atuEnabled ? 1 : 0}0;`);
+                this.send("AC;");
+                return;
+
+            case "fine":
+                this.fineTuning = bool();
+                this.send(`FS${this.fineTuning ? 1 : 0};`);
+                this.send("FS;");
+                return;
+
+            case "frequency": {
+                const hz = num(100000, 60000000);
+                if (this.rxVfo === 1) this.setFrequencyB(hz);
+                else this.setFrequency(hz);
+                return;
+            }
+
+            case "split":
+                this.setSplit(bool());
+                return;
+
+            default:
+                throw new Error(`Unknown control: ${control}`);
+        }
+
+    }
+
+
+    /* ---------------------------------------------------- CW text (KY) */
+
+    /* KY; -> KY0 (buffer empty) / KY1 (full); null = no answer */
+    private queryKeyer(timeoutMs = 800): Promise<boolean | null> {
+        return new Promise(resolve => {
+            const waiter = (busy: boolean) => { clearTimeout(timer); resolve(busy); };
+            const timer = setTimeout(() => {
+                this.kyWaiters = this.kyWaiters.filter(w => w !== waiter);
+                resolve(null);
+            }, timeoutMs);
+            this.kyWaiters.push(waiter);
+            this.send("KY;");
+        });
+    }
+
+    /*
+     * Text -> CW through the keyer buffer (TS-480 format: "KY " +
+     * 24 characters, unused characters are spaces). Longer texts go
+     * in blocks of whole words; the next block when the buffer is
+     * empty again. Returns after the first block.
+     */
+    async sendCwText(text: string): Promise<boolean> {
+
+        if (!this.isConnected()) return false;
+
+        const clean = String(text)
+            .toUpperCase()
+            .replace(/[^A-Z0-9 .,?/=+\-@]/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        if (!clean) return false;
+
+        const blocks: string[] = [];
+        let current = "";
+        for (const word of clean.split(" ")) {
+            const piece = word.slice(0, 23);
+            const next = current ? `${current} ${piece}` : piece;
+            if (next.length > 24) {
+                blocks.push(current);
+                current = ` ${piece}`;      // the word space at the start of the next block
+            }
+            else {
+                current = next;
+            }
+        }
+        if (current) blocks.push(current);
+
+        const job = ++this.cwJob;
+
+        const sendBlock = (block: string) => this.send(`KY ${block.padEnd(24, " ")};`);
+
+        sendBlock(blocks[0]!);
+
+        if (blocks.length > 1) {
+            void (async () => {
+                for (const block of blocks.slice(1)) {
+                    const until = Date.now() + 90_000;
+                    for (;;) {
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        if (job !== this.cwJob || !this.isConnected()) return;
+                        const busy = await this.queryKeyer();
+                        if (busy === false) break;
+                        if (Date.now() > until) return;
+                    }
+                    if (job !== this.cwJob) return;
+                    sendBlock(block);
+                }
+            })();
+        }
+
+        return true;
+
+    }
+
+    /* 24 spaces stop the message */
+    async stopCwText(): Promise<boolean> {
+        this.cwJob++;
+        if (!this.isConnected()) return false;
+        this.send(`KY ${" ".repeat(24)};`);
+        return true;
+    }
 
 }

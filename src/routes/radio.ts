@@ -2311,7 +2311,8 @@ router.post(
             "CW",
             "CW-R",
             "AM",
-            "FM"
+            "FM",
+            "DIGI"
         ];
 
         const normalizedMode =

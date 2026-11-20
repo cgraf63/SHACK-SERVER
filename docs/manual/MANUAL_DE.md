@@ -181,6 +181,7 @@ Die untersten zwei Zeilen des Dashboards lassen sich für CW verwenden (die Live
 | Transceiver | CW-Text senden |
 |---|---|
 | IC-7300, QMX / QMX+ | direkt per CAT |
+| RGO ONE | direkt per CAT (KY, Firmware 1.11 oder neuer) |
 | FTDX10, FTX-1 | über Keyer-Speicher 5 (wird beschrieben, abgespielt und danach wiederhergestellt) |
 | Hamlib | `send_morse`, sofern das Modell es unterstützt |
 
@@ -462,7 +463,7 @@ Einstellungen am QMX: CAT über den virtuellen COM-Port (USB), im System-Menü d
 
 ![RGO ONE](images/remote-rgo.jpg)
 
-Für den RGO ONE gibt es eine eigene Fernsteuerungsseite mit Modes, Abstimmschritten, CW-Tempo, Break-in, Leistung, Bändern, AGC, Tuner sowie RF- und Mic-Gain.
+Für den RGO ONE gibt es eine eigene Fernsteuerungsseite mit Modes (auch DIG), VFO A/B und Split, VFO-Knopf mit Abstimmschritten (1 Hz bis 1 kHz, Maus, Mausrad, Pfeile oder CTR2-MIDI), CW-Tempo, Break-in, Leistung (0–50 W), Bändern, Preamp, ATT, NB, AGC, Tuner (interner ATU, Menü 34), RF- und Mic-Gain, Messinstrument S/PWR/ALC/SWR/COMP und RX-Audio im Browser (AUDIO). Nötig ist die RGO-Firmware 1.11 oder neuer.
 
 Wie bei Yaesu wird der Wasserfall nicht über USB übertragen; dafür ist das SDRplay-SDR eingebunden (siehe [SDR](#sdr-sdrplay-rsp1b)). Weitere Geräte mit CAT lassen sich mit wenig Aufwand einbinden; für Remote-Betrieb mit Audio braucht das Gerät nur eine USB-Soundkarte.
 

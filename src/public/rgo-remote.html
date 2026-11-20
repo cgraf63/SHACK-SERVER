@@ -6,7 +6,7 @@
 
     <title>RGO ONE Remote</title>
 
-    <link rel="stylesheet" href="/css/rgo-remote.css">
+    <link rel="stylesheet" href="/css/rgo-remote.css?v=2">
 </head>
 
 <body>
@@ -78,8 +78,8 @@
             </div>
 
             <div class="meter-reading">
-                <strong>S9+20</strong>
-                <span>-92 dBm</span>
+                <strong id="rgo-meter-reading">S0</strong>
+                <span id="rgo-meter-label">S-METER</span>
             </div>
 
             <div class="meter-select">
@@ -119,7 +119,7 @@
                 <button type="button" onclick="selectRgoMode('CW-R')">CW-R</button>
                 <button type="button" onclick="selectRgoMode('AM')">AM</button>
                 <button type="button" onclick="selectRgoMode('FM')">FM</button>
-                <button type="button" disabled>DIG</button>
+                <button type="button" onclick="selectRgoMode('DIGI')">DIG</button>
             </div>
 
             <div class="frequency-display">
@@ -224,18 +224,18 @@
 
                     <div class="step-title">STEP</div>
 
-                    <button>1 Hz</button>
-                    <button>10 Hz</button>
-                    <button class="active">100 Hz</button>
-                    <button>1 kHz</button>
+                    <button type="button" data-step="1">1 Hz</button>
+                    <button type="button" data-step="10">10 Hz</button>
+                    <button type="button" data-step="100" class="active">100 Hz</button>
+                    <button type="button" data-step="1000">1 kHz</button>
 
                 </div>
 
             </div>
 
             <div class="vfo-arrows">
-                <button>‹</button>
-                <button>›</button>
+                <button type="button" id="rgo-step-down" title="One step down">‹</button>
+                <button type="button" id="rgo-step-up" title="One step up">›</button>
             </div>
 
         </div>
@@ -263,8 +263,8 @@
                 <input
                     id="rgo-cw-speed-slider"
                     type="range"
-                    min="4"
-                    max="60"
+                    min="5"
+                    max="45"
                     value="20"
                 >
 
@@ -280,7 +280,8 @@
                     id="rgo-break-in-delay-slider"
                     type="range"
                     min="0"
-                    max="600"
+                    max="1200"
+                    step="10"
                     value="300"
                 >
 
@@ -364,7 +365,6 @@
                 <button
                     id="rgo-split"
                     type="button"
-                    disabled
                     onclick="toggleRgoSplit()"
                 >
                     SPLIT
@@ -402,7 +402,7 @@
                     id="rgo-power-slider"
                     type="range"
                     min="0"
-                    max="100"
+                    max="50"
                     value="50"
                 >
 
@@ -466,31 +466,31 @@
 
                 <div class="function-item">
                     <span>PREAMP</span>
-                    <button class="active">ON</button>
+                    <button type="button" data-fn="preamp">OFF</button>
                 </div>
 
                 <div class="function-item">
                     <span>ATT</span>
-                    <button>OFF</button>
+                    <button type="button" data-fn="att">OFF</button>
                 </div>
 
                 <div class="function-item">
                     <span>NB</span>
-                    <button>OFF</button>
+                    <button type="button" data-fn="nb" title="NB board required">OFF</button>
                 </div>
 
                 <div class="function-item agc-item">
                     <span>AGC</span>
                     <div>
-                        <button class="active">FAST</button>
-                        <button>SLOW</button>
-                        <button>OFF</button>
+                        <button type="button" data-agc="FAST">FAST</button>
+                        <button type="button" data-agc="SLOW">SLOW</button>
+                        <button type="button" data-agc="OFF">OFF</button>
                     </div>
                 </div>
 
                 <div class="function-item">
                     <span>ATU</span>
-                    <button>TUNE</button>
+                    <button type="button" id="rgo-atu-tune" title="Internal tuner (menu 34, ATU board)">TUNE</button>
                 </div>
 
             </div>
@@ -509,6 +509,7 @@
                 <label>RF GAIN</label>
 
                 <input
+                    id="rgo-rf-gain"
                     type="range"
                     min="0"
                     max="100"
@@ -524,9 +525,10 @@
                 <label>MIC GAIN</label>
 
                 <input
+                    id="rgo-mic-gain"
                     type="range"
                     min="0"
-                    max="100"
+                    max="10"
                     value="7"
                 >
 
@@ -551,7 +553,7 @@
 </div>
 
     <script src="/js/bandplan-data.js"></script>
-    <script src="/js/rgo-remote.js?v=2"></script>
+    <script src="/js/rgo-remote.js?v=3"></script>
 
 <script src="/js/demo-banner.js?v=1"></script>
 </body>
