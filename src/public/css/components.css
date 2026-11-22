@@ -4629,3 +4629,21 @@ D.sidebar.collapsed {
 .station-inline {
     margin-top: -20px;
 }
+
+/* band conditions: labels exactly above their points */
+.band-labels {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    justify-items: center;
+}
+
+#bandGraph {
+    display: block;
+    width: 600px;
+    height: 40px;
+    overflow: visible;
+}
+
+#bandGraph circle {
+    cursor: help;
+}

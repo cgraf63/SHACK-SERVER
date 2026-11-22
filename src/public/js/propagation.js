@@ -171,264 +171,131 @@ if (
 
 
 /*
-    Update propagation bands
-
-    The API returns:
-
-    [
-        {
-            band: "6m",
-            score: 20,
-            condition: "Poor"
-        }
-    ]
-
-    We display narrow floating
-    horizontal lines with a vertical
-    position based on the score.
+    Band conditions: one point per band (height = score 0-100,
+    colour = condition), joined by a smooth line with a soft area
+    below it. The API returns [{ band: "20m", score: 72, condition: "Good" }].
 */
-
-function updateBandGraph(
-    bands
-) {
-
-    const graph =
-        document.getElementById(
-            "bandGraph"
-        );
-
-
-    if (!graph) {
-
-        return;
-
-    }
-
-
-    graph.innerHTML =
-        "";
-
-
-    const width =
-        600;
-
-
-    const height =
-        40;
-
-
-    const bandNames = [
-
-        "10m",
-        "12m",
-        "15m",
-        "17m",
-        "20m",
-        "30m",
-        "40m",
-        "60m",
-        "80m"
-
-    ];
-
-
-    /*
-        Convert API array into
-        an easy lookup object
-    */
-
-    const bandScores =
-        {};
-
-
-    bands.forEach(
-        item => {
-
-            bandScores[
-                item.band
-            ] =
-                Number(
-                    item.score
-                );
-
-        }
-    );
-
-
-    const segmentWidth =
-        width /
-        bandNames.length;
-
-
-    /*
-        Horizontal line width
-
-        Approximately 30% narrower
-        than the previous version.
-    */
-
-    const lineWidth =
-        segmentWidth *
-        0.45;
-
-
-    const lineHeight =
-        3;
-
-
-    bandNames.forEach(
-        (
-            band,
-            index
-        ) => {
-
-            const value =
-                bandScores[
-                    band
-                ];
-
-
-            let normalized =
-                Number.isFinite(
-                    value
-                )
-                    ? value
-                    : 0;
-
-
-            normalized =
-                Math.max(
-                    0,
-                    Math.min(
-                        100,
-                        normalized
-                    )
-                );
-
-
-            /*
-                Higher score =
-                higher floating line
-            */
-
-            const usableHeight =
-                height -
-                lineHeight;
-
-
-            const y =
-                usableHeight -
-                (
-                    normalized /
-                    100
-                ) *
-                usableHeight;
-
-
-            /*
-                Center the line
-                inside its segment
-            */
-
-            const x =
-                index *
-                segmentWidth +
-                (
-                    segmentWidth -
-                    lineWidth
-                ) /
-                2;
-
-
-            const rect =
-                document.createElementNS(
-                    "http://www.w3.org/2000/svg",
-                    "rect"
-                );
-
-
-            rect.setAttribute(
-                "x",
-                String(
-                    x
-                )
-            );
-
-
-            rect.setAttribute(
-                "y",
-                String(
-                    y
-                )
-            );
-
-
-            rect.setAttribute(
-                "width",
-                String(
-                    lineWidth
-                )
-            );
-
-
-            rect.setAttribute(
-                "height",
-                String(
-                    lineHeight
-                )
-            );
-
-
-            rect.setAttribute(
-                "rx",
-                "1.5"
-            );
-
-
-            /*
-                Colour according
-                to propagation score
-            */
-
-            if (
-                normalized >= 70
-            ) {
-
-                rect.setAttribute(
-                    "fill",
-                    "#27d17f"
-                );
-
-            }
-            else if (
-                normalized >= 40
-            ) {
-
-                rect.setAttribute(
-                    "fill",
-                    "#f0b429"
-                );
-
-            }
-            else {
-
-                rect.setAttribute(
-                    "fill",
-                    "#e05252"
-                );
-
-            }
-
-
-            graph.appendChild(
-                rect
-            );
-
-        }
-    );
-
+const BAND_GRAPH_BANDS = ["10m", "12m", "15m", "17m", "20m", "30m", "40m", "60m", "80m"];
+
+function bandColor(score) {
+    if (score >= 70) return "#27d17f";
+    if (score >= 40) return "#f0b429";
+    return "#e05252";
 }
 
+function updateBandGraph(bands) {
+
+    const graph = document.getElementById("bandGraph");
+    if (!graph) return;
+
+    const NS = "http://www.w3.org/2000/svg";
+    const width = 600;
+    const height = 40;
+    const top = 6;              // room for the point at 100
+    const bottom = height - 6;  // and at 0
+
+    graph.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    graph.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+    const byBand = {};
+    (bands || []).forEach(item => { byBand[item.band] = item; });
+
+    const step = width / BAND_GRAPH_BANDS.length;
+
+    const points = BAND_GRAPH_BANDS.map((band, index) => {
+        const item = byBand[band] || {};
+        const raw = Number(item.score);
+        const known = Number.isFinite(raw);
+        const score = known ? Math.max(0, Math.min(100, raw)) : 0;
+        return {
+            band,
+            known,
+            score,
+            condition: item.condition || "",
+            x: index * step + step / 2,
+            y: bottom - (score / 100) * (bottom - top)
+        };
+    });
+
+    const known = points.filter(point => point.known);
+
+    /* smooth line through the points (Catmull-Rom as Bezier) */
+    const curve = list => list.map((point, index) => {
+        if (index === 0) return `M ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+        const p0 = list[index - 2] || list[index - 1];
+        const p1 = list[index - 1];
+        const p3 = list[index + 1] || point;
+        const c1x = p1.x + (point.x - p0.x) / 6;
+        const c1y = p1.y + (point.y - p0.y) / 6;
+        const c2x = point.x - (p3.x - p1.x) / 6;
+        const c2y = point.y - (p3.y - p1.y) / 6;
+        return `C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+    }).join(" ");
+
+    const el = (name, attrs) => {
+        const node = document.createElementNS(NS, name);
+        Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
+        return node;
+    };
+
+    graph.innerHTML = "";
+
+    const defs = el("defs", {});
+    const area = el("linearGradient", { id: "bandAreaFill", x1: 0, y1: 0, x2: 0, y2: 1 });
+    area.appendChild(el("stop", { offset: "0%", "stop-color": "#00e5ff", "stop-opacity": 0.22 }));
+    area.appendChild(el("stop", { offset: "100%", "stop-color": "#00e5ff", "stop-opacity": 0 }));
+    defs.appendChild(area);
+
+    /* line colour along x follows the colour of the points */
+    const lineGradient = el("linearGradient", { id: "bandLineColor", x1: 0, y1: 0, x2: width, y2: 0, gradientUnits: "userSpaceOnUse" });
+    points.forEach(point => lineGradient.appendChild(el("stop", {
+        offset: `${(point.x / width) * 100}%`,
+        "stop-color": point.known ? bandColor(point.score) : "#455560"
+    })));
+    defs.appendChild(lineGradient);
+    graph.appendChild(defs);
+
+    /* faint guides at the colour limits (40 fair, 70 good) */
+    [40, 70].forEach(limit => {
+        const y = bottom - (limit / 100) * (bottom - top);
+        graph.appendChild(el("line", {
+            x1: 0, x2: width, y1: y, y2: y,
+            stroke: "rgba(255,255,255,0.07)", "stroke-width": 1, "stroke-dasharray": "3 4"
+        }));
+    });
+
+    if (known.length >= 2) {
+        const line = curve(known);
+        const first = known[0];
+        const last = known[known.length - 1];
+        graph.appendChild(el("path", {
+            d: `${line} L ${last.x.toFixed(1)} ${height} L ${first.x.toFixed(1)} ${height} Z`,
+            fill: "url(#bandAreaFill)"
+        }));
+        graph.appendChild(el("path", {
+            d: line, fill: "none", stroke: "url(#bandLineColor)",
+            "stroke-width": 2, "stroke-linecap": "round", "stroke-linejoin": "round", opacity: 0.85
+        }));
+    }
+
+    points.forEach(point => {
+        const dot = el("circle", {
+            cx: point.x.toFixed(1),
+            cy: point.y.toFixed(1),
+            r: point.known ? 4.5 : 3,
+            fill: point.known ? bandColor(point.score) : "#455560",
+            stroke: "#0b1117",
+            "stroke-width": 2
+        });
+        const tip = el("title", {});
+        tip.textContent = point.known
+            ? `${point.band}: ${point.condition || ""} (score ${Math.round(point.score)})`
+            : `${point.band}: no data`;
+        dot.appendChild(tip);
+        graph.appendChild(dot);
+    });
+
+}
 
 
 /*
