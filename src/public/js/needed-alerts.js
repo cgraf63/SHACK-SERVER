@@ -43,20 +43,38 @@
 
         if (!box || !list) return;
 
-        const recent = (alerts || []).filter(a => Date.now() - a.at < 3 * 3600_000).slice(0, 5);
+        const all = (alerts || []).filter(a => Date.now() - a.at < 3 * 3600_000);
 
-        box.hidden = recent.length === 0;
+        lastAll = all;
+        offset = Math.max(0, Math.min(offset, all.length - PAGE));
 
-        if (priority) priority.hidden = recent.length > 0;
+        const recent = all.slice(offset, offset + PAGE);
+
+        box.hidden = all.length === 0;
+
+        if (priority) priority.hidden = all.length > 0;
 
         if (title) {
-            title.textContent = recent.length ? 'New – "needed" callsigns' : "Priority DX";
-            title.title = recent.length
-                ? "Stations you still need (new DXCC entity / band), last 3 hours - click to tune. Without alerts: Priority DX."
-                : "Priority DX: the most distant stations in the live spots";
+            if (all.length) {
+                /* more than 5: up / down (and the mouse wheel over the list) */
+                const nav = all.length > PAGE
+                    ? `<span class="needed-nav">
+                           <button type="button" class="needed-nav-btn" data-nav="-1" ${offset === 0 ? "disabled" : ""} title="Newer">▲</button>
+                           <span class="needed-nav-pos">${offset + 1}–${offset + recent.length}/${all.length}</span>
+                           <button type="button" class="needed-nav-btn" data-nav="1" ${offset + PAGE >= all.length ? "disabled" : ""} title="Older">▼</button>
+                       </span>`
+                    : "";
+                title.innerHTML = `<span>${nav ? 'New "needed"' : 'New – "needed" callsigns'}</span>${nav}`;
+                title.title = `Stations you still need (new DXCC entity / band), last 3 hours - click to tune.\n`
+                    + all.map(a => `${SHORT[a.level] || a.level}  ${a.callsign}  ${(Number(a.frequency) / 1000).toFixed(3)} ${a.mode && a.mode !== "UNKNOWN" ? a.mode : ""}  ${age(a.at)}`).join("\n");
+            }
+            else {
+                title.textContent = "Priority DX";
+                title.title = "Priority DX: the most distant stations in the live spots";
+            }
         }
 
-        lastRecent = recent;
+        lastRecent = all;
 
         list.innerHTML = recent.map(a => `
             <div class="needed-alert-item level-${esc(SHORT[a.level] || "NEW").toLowerCase().replace(".", "")}"
@@ -95,6 +113,24 @@
     }
 
     let lastRecent = [];
+
+    const PAGE = 5;
+    let offset = 0;
+    let lastAll = [];
+
+    function scrollBy(step) {
+        const next = Math.max(0, Math.min(offset + step, lastAll.length - PAGE));
+        if (next === offset) return false;
+        offset = next;
+        render(lastAll);
+        return true;
+    }
+
+    /* mouse wheel over the list */
+    document.addEventListener("wheel", event => {
+        if (!event.target.closest?.("#needed-alerts") || lastAll.length <= PAGE) return;
+        if (scrollBy(event.deltaY > 0 ? 1 : -1)) event.preventDefault();
+    }, { passive: false });
 
     /* the live spot of this call (all fields), else built from the alert */
     function spotFor(call) {
@@ -145,6 +181,13 @@
     }
 
     document.addEventListener("click", async event => {
+
+        const nav = event.target.closest?.(".needed-nav-btn");
+        if (nav) {
+            event.stopPropagation();
+            scrollBy(Number(nav.dataset.nav));
+            return;
+        }
 
         const button = event.target.closest?.(".needed-btn");
         if (button) {
