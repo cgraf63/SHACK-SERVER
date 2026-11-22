@@ -4583,3 +4583,49 @@ D.sidebar.collapsed {
 
 .needed-nav { gap: 3px; }
 .needed-nav-btn { width: 18px; height: 18px; }
+
+/* =========================================================
+   Propagation bar: one style for the three titles, labels
+   smaller than the values (as in the other cards)
+   ========================================================= */
+.propagation-bar h2,
+.sidc-title,
+.station-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cyan, #00e5ff);
+}
+
+.solar-data > div:not(.sun-icon) {
+    font-size: 13px;
+    color: var(--muted, #9aa7b0);
+}
+
+.solar-data strong {
+    font-size: 20px;
+    margin-top: 2px;
+}
+
+.sidc-item {
+    font-size: 12px;
+}
+
+.sidc-item > span {
+    color: var(--muted, #9aa7b0);
+}
+
+.sidc-item strong {
+    font-size: 13px !important;
+}
+
+.band-labels {
+    font-size: 13px;
+    color: var(--muted, #9aa7b0);
+}
+
+/* STATION on the line of the other two titles */
+.station-inline {
+    margin-top: -20px;
+}
