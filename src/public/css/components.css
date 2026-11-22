@@ -4532,7 +4532,8 @@ D.sidebar.collapsed {
 
 
 /* needed list: more than 5 -> up / down in the title */
-#dx-focus-title {
+#dx-focus-title,
+#cluster-title {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -4572,7 +4573,8 @@ D.sidebar.collapsed {
     cursor: default;
 }
 
-#dx-focus-title > span:first-child {
+#dx-focus-title > span:first-child,
+#cluster-title > span:first-child {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;

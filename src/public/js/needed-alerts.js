@@ -182,7 +182,7 @@
 
     document.addEventListener("click", async event => {
 
-        const nav = event.target.closest?.(".needed-nav-btn");
+        const nav = event.target.closest?.(".needed-nav-btn[data-nav]");
         if (nav) {
             event.stopPropagation();
             scrollBy(Number(nav.dataset.nav));
