@@ -2424,6 +2424,17 @@ router.post(
             memory
         );
 
+        // tune() / playCwMemory() only fail when the CAT port is closed
+        const connected = (activeRadio as { isConnected?: () => boolean }).isConnected?.();
+        if (connected === false) {
+            const lastError = (activeRadio as { getLastError?: () => string }).getLastError?.() || "";
+            console.warn("RADIO CW MEMORY: CAT port not open", lastError);
+            return res.status(503).json({
+                error: `Transceiver not connected (CAT port closed${lastError ? `: ${lastError}` : ""})`,
+                sent: false
+            });
+        }
+
         try {
 
             activeRadio.setMode(
