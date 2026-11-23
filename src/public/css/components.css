@@ -4647,3 +4647,8 @@ D.sidebar.collapsed {
 #bandGraph circle {
     cursor: help;
 }
+
+/* NEAR / DXP badges stay on the line of the call (no taller rows) */
+.live-table td {
+    white-space: nowrap;
+}

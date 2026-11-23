@@ -1399,6 +1399,17 @@ function renderLiveSpots() {
 
     updateLiveScroll(sorted.length, maxOffset);
 
+    /* rows taller / lower than assumed (badges, font): fit again once */
+    requestAnimationFrame(() => {
+        const rows = table.querySelectorAll("tr");
+        if (rows.length < 3) return;
+        const height = table.getBoundingClientRect().height / rows.length;
+        if (height > 10 && height < 80 && Math.abs(height - liveSpotRowHeight) > 2) {
+            liveSpotRowHeight = height;
+            renderLiveSpots();
+        }
+    });
+
 
     sorted
         .slice(
