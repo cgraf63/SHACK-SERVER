@@ -3,14 +3,53 @@ console.log("LIVE SPOTS JS LOADED");
 
 let currentSpots = [];
 
+/*
+ * Rows of the live spots table: as many as fit between the table head
+ * and the bottom of the window (minus the CW lines), so the dashboard
+ * does not scroll and no row hides behind the CW bar.
+ */
+let liveSpotRowHeight = 32;
+
 function getLiveSpotPageSize() {
-    // every line of the CW decoder / encoder (cw-line.js) takes one row
-    return (window.screen.height < 1100 ? 17 : 21) - (window.shackCwLines || 0);
+
+    const fallback = (window.screen.height < 1100 ? 17 : 21) - (window.shackCwLines || 0);
+
+    const body = document.querySelector(".live-table tbody");
+    if (!body || !window.innerHeight) return fallback;
+
+    // row height of the last render (32 px before the first one)
+    const row = body.querySelector("tr");
+    const measured = row ? row.getBoundingClientRect().height : 0;
+    if (measured > 10 && measured < 80) liveSpotRowHeight = measured;
+    const rowHeight = liveSpotRowHeight;
+
+    const top = body.getBoundingClientRect().top + window.scrollY;
+    const bar = document.querySelector("main > .cw-line:not([hidden])");
+    const barHeight = bar ? bar.getBoundingClientRect().height + 6 : 0;
+
+    // small screens (phone, tablet): the page scrolls anyway
+    if (window.innerWidth < 900) return fallback;
+
+    const rows = Math.floor((window.innerHeight - top - barHeight - 12) / rowHeight);
+
+    return Math.max(8, Math.min(40, rows));
+
 }
 
 window.addEventListener("shack:cw-lines", () => {
     try { renderLiveSpots(); } catch (error) { console.error(error); }
 });
+
+/* window size changed: fit the rows again */
+(() => {
+    let timer = null;
+    window.addEventListener("resize", () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            try { renderLiveSpots(); } catch (error) { console.error(error); }
+        }, 200);
+    });
+})();
 let liveSpotOffset = 0;
 
 let liveSpotOrder = [];
