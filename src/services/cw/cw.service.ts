@@ -21,7 +21,7 @@ const KEEP = 600;       // characters kept for the dashboard
 class CwService {
 
     private enabled = false;
-    private stopped = false;    // START / STOP in the CW RX line (not saved)
+    private stopped = true;     // START / STOP in the CW RX line (not saved): stopped after a start of SHACK-SERVER
     private pitch = 0;
     private decoder: CwDecoder | null = null;
     private unsubscribe: (() => void) | null = null;
