@@ -123,7 +123,8 @@ function setStatus(connected) {
 function requestSdr(want) {
     sdrWanted = want;
     if (sdrSocket && sdrSocket.readyState === WebSocket.OPEN) {
-        sdrSocket.send(JSON.stringify({ type: want ? "sdr_start" : "sdr_stop" }));
+        // DISCONNECT here stops the RSP1B for every page (main switch)
+        sdrSocket.send(JSON.stringify(want ? { type: "sdr_start" } : { type: "sdr_stop", all: !autoPaused }));
     }
     setStatus(true);
 }

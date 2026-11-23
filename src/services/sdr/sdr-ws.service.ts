@@ -403,9 +403,34 @@ export function startSdrWebSocket(server: Server): void {
         }
     );
 
+    /*
+     * Heartbeat: a page whose connection died without a close (laptop
+     * lid closed, phone asleep, WiFi gone) would keep the RSP1B running
+     * for ever. Every 30 s a ping; no pong until the next one -> gone.
+     */
+    const alive = new WeakMap<WebSocket, boolean>();
+
+    setInterval(() => {
+        for (const client of clients) {
+            if (alive.get(client) === false) {
+                console.log("SDR WS: no answer from a page - connection closed");
+                clients.delete(client);
+                try { client.terminate(); } catch { /* gone */ }
+                updateSdr("disconnect");
+                broadcastStatus();
+                continue;
+            }
+            alive.set(client, false);
+            try { client.ping(); } catch { /* closed */ }
+        }
+    }, 30_000).unref();
+
     wss.on(
         "connection",
         (socket, request: { url?: string }) => {
+
+            alive.set(socket, true);
+            socket.on("pong", () => alive.set(socket, true));
 
             console.log(
                 "SDR WS: client connected"
@@ -448,6 +473,19 @@ export function startSdrWebSocket(server: Server): void {
                     try {
                         command = JSON.parse(text);
                     } catch (_) {
+                        return;
+                    }
+
+                    /*
+                     * DISCONNECT on /sdr ("all": true) is the main switch:
+                     * the RSP1B stops for every page. A page gets it
+                     * again with CONNECT, a reload or when it is shown again.
+                     */
+                    if (command.type === "sdr_stop" && command.all === true) {
+                        for (const client of clients) wanting.set(client, false);
+                        sweepUntil = 0;
+                        void stopSdrProcess("DISCONNECT by the user");
+                        broadcastStatus();
                         return;
                     }
 
