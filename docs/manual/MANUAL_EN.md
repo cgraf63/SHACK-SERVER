@@ -493,8 +493,20 @@ The **Reverse Beacon Network (RBN)** is a worldwide network of receiving station
 
 The **RBN & Memory** page combines both:
 
-- **Transceiver Memory**: ten buttons for the transceiver's voice or CW memories (Yaesu), plus frequency and mode, which can also be changed here.
-- **RBN Spots**: as soon as skimmers report your own callsign, they appear in the list and on the map – you see at once how well and where your signal is getting out. Typical use: send CQ with a memory button and watch who hears you.
+- **Transceiver Memory**: five buttons **CW 1–5** play the CW memory channels of the transceiver (Yaesu FTDX10 and FTX-1). Frequency and mode are on the right; the frequency can also be changed here.
+- **RBN Spots**: as soon as skimmers report your own callsign, they appear here and on the map (**MAP**). You see at once how well and where your signal is getting out. Typical use: send CQ with a memory button and watch who hears you.
+
+Five tiles at the top sum it up:
+
+| Tile | Content |
+|---|---|
+| **Heard** | reported callsign, frequency (or bands) and mode |
+| **Skimmers** | number of skimmers, below it the number of reports |
+| **Best Signal** | best SNR and the skimmer that measured it |
+| **Farthest** | farthest skimmer with its distance |
+| **Last Report** | time of the last report (UTC) and how long ago it was |
+
+Below them there is **one line per skimmer**: flag and callsign (several reports of the same skimmer as "×2", the best signal counts), **distance** from your QTH, **signal** as a bar with the dB value (green from +20 dB, yellow from +10 dB, otherwise red), **WPM** and **Last** (time of the last report). A click on **DISTANCE**, **SIGNAL** or **LAST** sorts by it; the browser remembers the choice. If you are heard on several bands, each band gets its own table. Hovering over a line shows the number of reports and the frequency of the best signal. Skimmers without a locator have no distance.
 
 The page is switched on under *Settings → Optional Modules*. Independently of it, SHACK-SERVER uses the complete RBN feed for the live spots and for "heard near you".
 

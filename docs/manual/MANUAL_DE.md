@@ -493,8 +493,20 @@ Das **Reverse Beacon Network (RBN)** ist ein weltweites Netz von Empfangsstation
 
 Die Seite **RBN & Memory** verbindet beides:
 
-- **Transceiver Memory**: zehn Tasten für die Sprach- oder CW-Speicher des Transceivers (Yaesu) sowie Frequenz und Mode, die man hier auch ändern kann.
-- **RBN Spots**: Sobald Skimmer das eigene Rufzeichen melden, erscheinen sie in der Liste und auf der Karte – man sieht sofort, wie gut und wohin das eigene Signal gerade kommt. Typisch: CQ über eine Speichertaste senden und zusehen, wer einen hört.
+- **Transceiver Memory**: fünf Tasten **CW 1–5** rufen die CW-Speicherkanäle des Transceivers ab (Yaesu FTDX10 und FTX-1). Rechts stehen Frequenz und Mode; die Frequenz kann man hier auch ändern.
+- **RBN Spots**: Sobald Skimmer das eigene Rufzeichen melden, erscheinen sie hier und auf der Karte (**MAP**). Man sieht sofort, wie gut und wohin das eigene Signal gerade kommt. Typisch: CQ über eine Speichertaste senden und zusehen, wer einen hört.
+
+Oben fassen fünf Kacheln zusammen:
+
+| Kachel | Inhalt |
+|---|---|
+| **Heard** | gemeldetes Rufzeichen, Frequenz (oder Bänder) und Mode |
+| **Skimmers** | Anzahl Skimmer, darunter die Anzahl Meldungen |
+| **Best Signal** | bestes SNR und der Skimmer, der es gemessen hat |
+| **Farthest** | weitester Skimmer mit Distanz |
+| **Last Report** | Zeit der letzten Meldung (UTC) und wie lange sie her ist |
+
+Darunter steht pro Skimmer **eine Zeile**: Flagge und Rufzeichen (mehrere Meldungen desselben Skimmers als «×2», es zählt das beste Signal), **Distanz** vom eigenen QTH, **Signal** als Balken mit dB-Wert (grün ab +20 dB, gelb ab +10 dB, sonst rot), **WPM** und **Last** (Zeit der letzten Meldung). Ein Klick auf **DISTANCE**, **SIGNAL** oder **LAST** sortiert danach; der Browser merkt sich die Wahl. Wird man auf mehreren Bändern gehört, gibt es pro Band eine eigene Tabelle. Mouse-over auf eine Zeile zeigt Anzahl Meldungen und Frequenz des besten Signals. Skimmer ohne Locator haben keine Distanz.
 
 Die Seite wird unter *Settings → Optional Modules* eingeschaltet. Unabhängig davon nutzt SHACK-SERVER den kompletten RBN-Datenstrom für die Live-Spots und für „Heard near you“.
 
