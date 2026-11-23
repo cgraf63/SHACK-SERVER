@@ -251,195 +251,193 @@ function escapeHtml(
 }
 
 
+/*
+ * RBN page: who hears my signal?
+ *
+ *   summary   call / frequency, number of skimmers, best signal,
+ *             farthest skimmer, last report
+ *   table     one line per skimmer (best SNR, number of reports,
+ *             last time), per band when there are several;
+ *             sorted by SNR, distance or time (click the head)
+ */
+let rbnSort = "snr";
+try { rbnSort = localStorage.getItem("rbn-sort") || "snr"; } catch { /* no storage */ }
+
+function rbnBand(khz) {
+    const bands = [[1800, 2000, "160m"], [3500, 4000, "80m"], [5250, 5450, "60m"], [7000, 7300, "40m"],
+        [10100, 10150, "30m"], [14000, 14350, "20m"], [18068, 18168, "17m"], [21000, 21450, "15m"],
+        [24890, 24990, "12m"], [28000, 29700, "10m"], [50000, 54000, "6m"]];
+    const band = bands.find(([low, high]) => khz >= low && khz <= high);
+    return band ? band[2] : `${(khz / 1000).toFixed(3)} MHz`;
+}
+
+/* "IT9GSF-#" -> "IT9GSF" (the "-#" only marks a skimmer) */
+function rbnSkimmerName(spotter) {
+    return String(spotter || "").replace(/-#$/, "");
+}
+
+function rbnSnrColor(snr) {
+    if (snr >= 20) return "#27d17f";
+    if (snr >= 10) return "#f0b429";
+    return "#e05252";
+}
+
+/* "1440Z" -> minutes ago (today, or yesterday when in the future) */
+function rbnMinutesAgo(time) {
+    const match = /^(\d{2})(\d{2})Z$/.exec(String(time || ""));
+    if (!match) return null;
+    const now = new Date();
+    let spot = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), Number(match[1]), Number(match[2]));
+    if (spot > now.getTime() + 60000) spot -= 86400000;
+    return Math.max(0, Math.round((now.getTime() - spot) / 60000));
+}
+
+function rbnAgoText(minutes) {
+    if (minutes === null) return "—";
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return `${minutes} min ago`;
+    return `${Math.floor(minutes / 60)} h ${minutes % 60} min ago`;
+}
+
+function rbnSkimmers(spots) {
+    const map = new Map();
+    for (const spot of spots) {
+        const key = String(spot.spotter || "").toUpperCase();
+        if (!key) continue;
+        const snr = Number(spot.snr);
+        const minutes = rbnMinutesAgo(spot.time);
+        const entry = map.get(key);
+        if (!entry) {
+            map.set(key, { ...spot, snr, minutes, count: 1 });
+            continue;
+        }
+        entry.count++;
+        if (Number.isFinite(snr) && !(snr <= entry.snr)) {
+            entry.snr = snr;
+            entry.frequency = spot.frequency;
+            entry.speed = spot.speed;
+        }
+        if (minutes !== null && (entry.minutes === null || minutes < entry.minutes)) {
+            entry.minutes = minutes;
+            entry.time = spot.time;
+        }
+        if (entry.distanceKm == null && spot.distanceKm != null) entry.distanceKm = spot.distanceKm;
+    }
+    const list = [...map.values()];
+    const by = {
+        snr: (a, b) => (b.snr ?? -99) - (a.snr ?? -99),
+        distance: (a, b) => (b.distanceKm ?? -1) - (a.distanceKm ?? -1),
+        time: (a, b) => (a.minutes ?? 1e9) - (b.minutes ?? 1e9)
+    };
+    return list.sort(by[rbnSort] || by.snr);
+}
+
+function rbnTable(skimmers, maxSnr) {
+    const head = (key, label) =>
+        `<span class="rbn-sort${rbnSort === key ? " active" : ""}" data-rbn-sort="${key}" title="Sort">${label}${rbnSort === key ? " ▾" : ""}</span>`;
+    return `
+        <div class="rbn-table rbn-skimmers">
+            <div class="rbn-table-header">
+                <span>SKIMMER</span>
+                ${head("distance", "DISTANCE")}
+                ${head("snr", "SIGNAL")}
+                <span>WPM</span>
+                ${head("time", "LAST")}
+            </div>
+            <div class="rbn-table-body">
+                ${skimmers.map(skimmer => {
+                    const snr = Number(skimmer.snr);
+                    const width = Number.isFinite(snr) ? Math.max(4, Math.min(100, (snr / Math.max(30, maxSnr)) * 100)) : 0;
+                    return `
+                        <div class="rbn-table-row" title="${escapeHtml(`${skimmer.spotter}: ${skimmer.count} report(s), best ${snr} dB on ${(Number(skimmer.frequency) / 1000).toFixed(3)} MHz`)}">
+                            <span>
+                                ${skimmer.spotterCountryCode ? `<img class="rbn-flag" src="/assets/flags/${escapeHtml(skimmer.spotterCountryCode)}.svg" alt="">` : ""}
+                                ${escapeHtml(rbnSkimmerName(skimmer.spotter))}${skimmer.count > 1 ? `<span class="rbn-count">×${skimmer.count}</span>` : ""}
+                            </span>
+                            <span>${skimmer.distanceKm != null ? `${skimmer.distanceKm} km` : '<span class="rbn-muted">—</span>'}</span>
+                            <span class="rbn-snr">
+                                <span class="rbn-snr-bar"><i style="width:${width}%;background:${rbnSnrColor(snr)}"></i></span>
+                                <span class="rbn-snr-value" style="color:${rbnSnrColor(snr)}">${Number.isFinite(snr) ? `${snr >= 0 ? "+" : ""}${snr} dB` : "—"}</span>
+                            </span>
+                            <span>${skimmer.speed ? escapeHtml(skimmer.speed) : '<span class="rbn-muted">—</span>'}</span>
+                            <span>${escapeHtml(skimmer.time || "—")}</span>
+                        </div>`;
+                }).join("")}
+            </div>
+        </div>`;
+}
+
 async function loadRbnData() {
 
-    const content =
-        document.getElementById(
-            "rbn-content"
-        );
-
-
-    if (!content) {
-        return;
-    }
-
+    const content = document.getElementById("rbn-content");
+    if (!content) return;
 
     try {
 
-        const response =
-            await fetch(
-                "/api/rbn"
-            );
+        const response = await fetch("/api/rbn", { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
+        const spots = await response.json();
 
-        if (!response.ok) {
-
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-
-        }
-
-
-        const spots =
-            await response.json();
-
-
-        if (
-            !Array.isArray(spots) ||
-            spots.length === 0
-        ) {
-
-            content.innerHTML =
-                "Waiting for RBN data";
-
+        if (!Array.isArray(spots) || spots.length === 0) {
+            content.innerHTML = '<div class="rbn-muted">Waiting for RBN data - call CQ in CW and the skimmers report you here.</div>';
             return;
-
         }
 
+        const all = rbnSkimmers(spots);
+        const calls = [...new Set(spots.map(spot => String(spot.callsign || "").toUpperCase()).filter(Boolean))];
+        const best = [...all].sort((a, b) => (b.snr ?? -99) - (a.snr ?? -99))[0];
+        const farthest = [...all].filter(s => s.distanceKm != null).sort((a, b) => b.distanceKm - a.distanceKm)[0];
+        const latest = [...all].filter(s => s.minutes !== null).sort((a, b) => a.minutes - b.minutes)[0];
+        const maxSnr = Math.max(...all.map(s => Number.isFinite(s.snr) ? s.snr : 0));
 
-        const visibleSpots =
-            spots.slice(
-                0,
-                20
-            );
+        // per band (frequency of the reports)
+        const bands = new Map();
+        for (const spot of spots) {
+            const band = rbnBand(Number(spot.frequency));
+            if (!bands.has(band)) bands.set(band, []);
+            bands.get(band).push(spot);
+        }
 
+        const freqs = [...new Set(spots.map(spot => (Number(spot.frequency) / 1000).toFixed(3)))];
+        const modes = [...new Set(spots.map(spot => spot.mode).filter(Boolean))];
+
+        const stat = (label, value, sub = "", cls = "") => `
+            <div class="rbn-stat">
+                <div class="rbn-stat-label">${label}</div>
+                <div class="rbn-stat-value ${cls}">${value}</div>
+                <div class="rbn-stat-sub">${sub || "&nbsp;"}</div>
+            </div>`;
 
         content.innerHTML = `
-
-            <div class="rbn-table">
-
-                <div class="rbn-table-header">
-
-                    <span>CALL</span>
-                    <span>FREQUENCY</span>
-                    <span>MODE</span>
-                    <span>SNR</span>
-                    <span>SPOTTER</span>
-                    <span>DISTANCE</span>
-                    <span>TIME</span>
-
-                </div>
-
-                <div class="rbn-table-body">
-
-                    ${visibleSpots
-                        .map(
-                            spot => {
-
-                                const frequency =
-                                    Number(
-                                        spot.frequency
-                                    ) / 1000;
-
-
-                                const frequencyText =
-                                    Number.isFinite(
-                                        frequency
-                                    )
-                                        ? `${frequency.toFixed(3)} MHz`
-                                        : "—";
-
-
-                                const snr =
-                                    Number(
-                                        spot.snr
-                                    );
-
-
-                                const snrText =
-                                    Number.isFinite(
-                                        snr
-                                    )
-                                        ? (
-                                            snr >= 0
-                                                ? `+${snr}`
-                                                : `${snr}`
-                                        )
-                                        : "—";
-
-
-                                const distance =
-                                    spot.distanceKm != null
-                                        ? `${spot.distanceKm} km`
-                                        : "—";
-
-
-                                return `
-
-                                    <div class="rbn-table-row">
-
-                                        <span>
-                                            ${escapeHtml(
-                                                spot.callsign
-                                            )}
-                                        </span>
-
-                                        <span>
-                                            ${frequencyText}
-                                        </span>
-
-                                        <span>
-                                            ${escapeHtml(
-                                                spot.mode
-                                            )}
-                                        </span>
-
-                                        <span>
-                                            ${snrText} dB
-                                        </span>
-
-                                        <span>
-                                            ${
-                                                spot.spotterCountryCode
-                                                    ? `<img class="rbn-flag" src="/assets/flags/${spot.spotterCountryCode}.svg" alt="">`
-                                                    : ""
-                                            }
-                                            ${escapeHtml(
-                                                spot.spotter
-                                            )}
-                                        </span>
-
-                                        <span>
-                                            ${escapeHtml(
-                                                distance
-                                            )}
-                                        </span>
-
-                                        <span>
-                                            ${escapeHtml(
-                                                spot.time
-                                            )}
-                                        </span>
-
-                                    </div>
-
-                                `;
-
-                            }
-                        )
-                        .join("")}
-
-                </div>
-
+            <div class="rbn-summary">
+                ${stat("Heard", escapeHtml(calls.join(", ")), `${escapeHtml(freqs.length === 1 ? `${freqs[0]} MHz` : [...bands.keys()].join(", "))} · ${escapeHtml(modes.join("/"))}`, "cyan")}
+                ${stat("Skimmers", String(all.length), `${spots.length} report(s)`)}
+                ${stat("Best signal", best && Number.isFinite(best.snr) ? `${best.snr >= 0 ? "+" : ""}${best.snr} dB` : "—", best ? escapeHtml(rbnSkimmerName(best.spotter)) : "")}
+                ${stat("Farthest", farthest ? `${farthest.distanceKm} km` : "—", farthest ? escapeHtml(rbnSkimmerName(farthest.spotter)) : "")}
+                ${stat("Last report", latest ? escapeHtml(latest.time) : "—", latest ? rbnAgoText(latest.minutes) : "")}
             </div>
+            ${bands.size > 1
+                ? [...bands.entries()].map(([band, list]) => `<div class="rbn-band-title">${escapeHtml(band)}</div>${rbnTable(rbnSkimmers(list), maxSnr)}`).join("")
+                : rbnTable(all, maxSnr)}
         `;
 
     }
     catch (error) {
-
-        console.error(
-            "RBN popup:",
-            error
-        );
-
-
-        content.innerHTML =
-            "RBN data unavailable";
-
+        console.error("RBN:", error);
+        content.innerHTML = '<div class="rbn-muted">RBN data unavailable</div>';
     }
 
 }
+
+/* click on DISTANCE / SIGNAL / LAST: sort */
+document.addEventListener("click", event => {
+    const head = event.target.closest?.("[data-rbn-sort]");
+    if (!head) return;
+    rbnSort = head.dataset.rbnSort;
+    try { localStorage.setItem("rbn-sort", rbnSort); } catch { /* no storage */ }
+    loadRbnData();
+});
 
 
 async function openRbnMap() {

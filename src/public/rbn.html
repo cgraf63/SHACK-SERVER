@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="css/variables.css">
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/components.css">
-<link rel="stylesheet" href="css/rbn.css">
+<link rel="stylesheet" href="css/rbn.css?v=2">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 </head>
 
@@ -21,7 +21,7 @@
         <h1 id="rbn-page-title" style="font-size:20px;margin:0">RBN &amp; MEMORY</h1>
     </div>
 
-    <!-- ===== OBEN: Memory-Buttons (2x5) + Frequenz/Mode ===== -->
+    <!-- ===== OBEN: CW memory keys 1-5 + Frequenz/Mode ===== -->
     <section class="rbn-memory-section">
 
         <div style="display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap">
@@ -67,26 +67,16 @@
         <div class="memory-panel-page" id="trx-memory-panel">
 
             <div class="memory-row">
-                <span class="memory-label">CW</span>
+                <span class="memory-label" title="CW memory channels of the transceiver">CW</span>
                 <div class="memory-buttons">
-                    <button type="button" class="memory-button cw-memory">1</button>
-                    <button type="button" class="memory-button cw-memory">2</button>
-                    <button type="button" class="memory-button cw-memory">3</button>
-                    <button type="button" class="memory-button cw-memory">4</button>
-                    <button type="button" class="memory-button cw-memory">5</button>
+                    <button type="button" class="memory-button cw-memory" title="Play CW memory channel 1 of the transceiver">1</button>
+                    <button type="button" class="memory-button cw-memory" title="Play CW memory channel 2 of the transceiver">2</button>
+                    <button type="button" class="memory-button cw-memory" title="Play CW memory channel 3 of the transceiver">3</button>
+                    <button type="button" class="memory-button cw-memory" title="Play CW memory channel 4 of the transceiver">4</button>
+                    <button type="button" class="memory-button cw-memory" title="Play CW memory channel 5 of the transceiver">5</button>
                 </div>
             </div>
 
-            <div class="memory-row">
-                <span class="memory-label">SSB</span>
-                <div class="memory-buttons">
-                    <button type="button" class="memory-button ssb-memory">1</button>
-                    <button type="button" class="memory-button ssb-memory">2</button>
-                    <button type="button" class="memory-button ssb-memory">3</button>
-                    <button type="button" class="memory-button ssb-memory">4</button>
-                    <button type="button" class="memory-button ssb-memory">5</button>
-                </div>
-            </div>
 
         </div>
 
@@ -97,7 +87,7 @@
                 font-weight:600;
                 min-height:18px;
             "
-        >&nbsp;</div>
+        ></div>
     </section>
 
     <!-- ===== UNTEN: RBN ===== -->
@@ -125,7 +115,7 @@
 <script src="js/station.js?v=2"></script>
 <script>
 /*
- * Memory keys (CW/SSB 1-5) are Yaesu CAT commands: show them only
+ * Memory keys (CW 1-5) are Yaesu CAT commands: show them only
  * when the active transceiver is a Yaesu FTDX10 or FTX-1.
  * Frequency/mode and RBN spots work with every transceiver.
  */
@@ -167,7 +157,7 @@
 <script src="/js/bandplan-data.js"></script>
 <script src="/js/bandplan.js"></script>
 <script src="vendor/leaflet/leaflet.js"></script>
-<script src="js/rbn.js"></script>
+<script src="js/rbn.js?v=2"></script>
 
 <script>
 // RBN auf dieser Seite ohne Popup: direkt laden + alle 5s refreshen
