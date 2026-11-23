@@ -10,6 +10,25 @@ let currentSpots = [];
  */
 let liveSpotRowHeight = 32;
 
+/*
+ * Country name for a flag code. Intl.DisplayNames throws for codes
+ * like "gb-sct" (Scotland) - that stopped the rendering of the table
+ * at that spot, the rest of the page stayed empty.
+ */
+const spotRegionNames = (() => {
+    try { return new Intl.DisplayNames(["de-CH"], { type: "region" }); }
+    catch { return null; }
+})();
+
+function spotRegionName(spot) {
+    const code = String(spot?.countryCode ?? "").toUpperCase();
+    if (code && spotRegionNames && /^[A-Z]{2}$/.test(code)) {
+        try { return spotRegionNames.of(code) || spot.country || ""; }
+        catch { /* not a region code */ }
+    }
+    return spot?.country || "";
+}
+
 function getLiveSpotPageSize() {
 
     const fallback = (window.screen.height < 1100 ? 17 : 21) - (window.shackCwLines || 0);
@@ -1411,14 +1430,7 @@ function renderLiveSpots() {
     class="call-cell"
     title="${
         spot.countryCode
-            ? new Intl.DisplayNames(
-                  ["de-CH"],
-                  { type: "region" }
-              ).of(
-                  String(
-                      spot.countryCode
-                  ).toUpperCase()
-              ) || ""
+            ? spotRegionName(spot)
             : ""
     }"
 >
@@ -1443,14 +1455,7 @@ function renderLiveSpots() {
                   src="/assets/flags/${spot.countryCode}.svg"
                   class="flag"
                   title="${
-                      new Intl.DisplayNames(
-                          ["de-CH"],
-                          { type: "region" }
-                      ).of(
-                          String(
-                              spot.countryCode
-                          ).toUpperCase()
-                      ) || ""
+                      spotRegionName(spot)
                   }"
                   alt=""
               >`
@@ -3229,8 +3234,8 @@ function maidenheadToLatLon(locator) {
         }
 
 
-        const country =
-            countryNames.of(code);
+        let country = "";
+        try { country = countryNames.of(code); } catch { /* e.g. gb-sct */ }
 
         if (!country) {
             return;
