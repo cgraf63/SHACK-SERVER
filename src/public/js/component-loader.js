@@ -62,6 +62,30 @@ function markActiveSidebarLink() {
 
 }
 
+function loadScriptOnce(src) {
+    const name = src.split("?")[0].split("/").pop();
+    const present = [...document.scripts].some(script => (script.getAttribute("src") || "").split("?")[0].endsWith("/" + name) || (script.getAttribute("src") || "").split("?")[0] === name);
+    if (present) return Promise.resolve();
+    return new Promise(resolve => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = resolve;
+        document.body.appendChild(script);
+    });
+}
+
+async function ensureBandplan() {
+    if (![...document.styleSheets].some(sheet => (sheet.href || "").includes("bandplan.css"))) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "/css/bandplan.css";
+        document.head.appendChild(link);
+    }
+    await loadScriptOnce("/js/bandplan-data.js");
+    await loadScriptOnce("/js/bandplan.js");
+}
+
 async function loadComponentsOnce() {
 
     /*
@@ -75,6 +99,16 @@ async function loadComponentsOnce() {
 
 
     markActiveSidebarLink();
+
+
+    /*
+        Bandplan (menu entry in the sidebar): CSS + data + script, on
+        every page with the sidebar, unless the page loads them itself.
+    */
+
+    if (document.getElementById("bandplan-btn")) {
+        await ensureBandplan();
+    }
 
 
     /*
