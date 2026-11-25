@@ -109,3 +109,8 @@ data/scp.txt.tmp
 # manual build output
 docs/manual/out/
 docs/manual/_*.html
+
+# Beacon history, openings ("when to work"), voice keyer recordings
+data/beacons.json
+data/openings.json
+data/voice-keyer/

@@ -154,8 +154,13 @@ class OpeningsService {
         }
         this.prune();
         setInterval(() => this.save(), SAVE_MS).unref?.();
-        process.once("SIGTERM", () => this.save());
-        process.once("SIGINT", () => this.save());
+        /* save on pm2 stop / restart; exit only if nobody else handles the signal */
+        for (const signal of ["SIGTERM", "SIGINT"] as const) {
+            process.once(signal, () => {
+                this.save();
+                if (process.listenerCount(signal) === 0) process.exit(0);
+            });
+        }
     }
 
     private save(): void {
