@@ -21,6 +21,7 @@ import ftx1Router from "./routes/ftx1.js";
 import ic7300Router from "./routes/ic7300.js";
 import qmxRouter from "./routes/qmx.js";
 import rgoRouter from "./routes/rgo.js";
+import beaconsRouter from "./routes/beacons.js";
 import cwRouter from "./routes/cw.js";
 import dxpeditionsRouter from "./routes/dxpeditions.js";
 import backupRouter from "./routes/backup.js";
@@ -217,6 +218,12 @@ app.use(
 app.use(
     "/api/rgo",
     rgoRouter
+);
+
+// Beacon monitor (NCDXF / IARU)
+app.use(
+    "/api/beacons",
+    beaconsRouter
 );
 
 // CW decoder and CW sending (dashboard)

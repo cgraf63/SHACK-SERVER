@@ -510,6 +510,26 @@ Darunter steht pro Skimmer **eine Zeile**: Flagge und Rufzeichen (mehrere Meldun
 
 Die Seite wird unter *Settings → Optional Modules* eingeschaltet. Unabhängig davon nutzt SHACK-SERVER den kompletten RBN-Datenstrom für die Live-Spots und für „Heard near you“.
 
+# Baken-Monitor
+
+Die Seite **Beacons** (Sidebar) hört mit dem eigenen Transceiver die 18 Baken des **NCDXF / IARU International Beacon Project** auf 14.100, 18.110, 21.150, 24.930 und 28.200 MHz ab – eine Ausbreitungsanzeige aus dem eigenen Empfang, ganz ohne SDR. Unterstützt werden der **Yaesu FTDX10** und der **FTX-1** (IC-7300 folgt).
+
+Jede Bake sendet 10 Sekunden: Rufzeichen in CW, dann vier Striche mit **100 W, 10 W, 1 W und 0,1 W**. Nach 3 Minuten sind alle 18 durch. SHACK-SERVER kennt den Zeitplan (genaue Uhrzeit des Pi) und weiss deshalb jederzeit, welche Bake gerade wo sendet. Gemessen wird doppelt: über die **USB-Soundkarte** (Ton, genaue Zeit der Striche) und über das **S-Meter** (CAT, absolute Stärke). Ohne Audio werden die Striche aus dem S-Meter gezählt.
+
+| Bedienung | |
+|---|---|
+| **ALL BANDS** | jede 10 Sekunden das nächste Band – nach 15 Minuten ist jede Bake auf jedem Band gemessen |
+| **ONE BAND** | auf einem Band bleiben – alle 18 Baken alle 3 Minuten |
+| **START / STOP** | der Transceiver wird auf CW und die Bakenfrequenz gestellt; STOP stellt Frequenz und Mode zurück |
+
+- **Propagation Radar**: Karte rund um das eigene QTH (Locator aus Settings → Station), Baken nach Richtung und Distanz. Die Farbe zeigt, bis zu welchem Strich die Bake gehört wurde: rot 100 W, orange 10 W, gelb 1 W, grün 0,1 W. Der Zeiger zeigt in die Richtung der Bake, die gerade gehört wird. **BEST** zeigt das beste Band der letzten 30 Minuten, die Band-Knöpfe ein einzelnes Band. Mouse-over zeigt alle Bänder einer Bake.
+- **Now Listening**: Bake, Band, Distanz, S-Meter, ein Countdown für die 10 Sekunden und die Signalkurve live; darunter das Ergebnis der letzten Bake.
+- **On the Air**: welche Bake gerade auf welchem Band sendet.
+- **Beacons × Bands**: das letzte Ergebnis jeder Bake auf jedem Band (vier Balken = vier Striche); älter als 30 Minuten = blass.
+- **Band Openings**: pro Band, wie viele Baken in den letzten 1–24 Stunden gehört wurden – man sieht, wann ein Band auf- und zugeht. Die Messungen bleiben 24 Stunden gespeichert; **CLEAR** löscht sie.
+
+Während der Monitor läuft, ist der Transceiver belegt. Er sendet nie, er hört nur.
+
 # SOTA und POTA
 
 SOTA- und POTA-Aktivierungen werden aus den Spots erkannt und in den Live-Spots markiert: POTA mit einem grünen, SOTA mit einem weissen Dreieck. SOTA-Spots kommen über den SOTA-Cluster, POTA-Spots über die POTA-Schnittstelle.

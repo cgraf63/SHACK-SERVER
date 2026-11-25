@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beacons - SHACK-SERVER</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/layout.css?v=2">
+    <link rel="stylesheet" href="/css/components.css?v=35">
+    <link rel="stylesheet" href="/css/beacons.css?v=1">
+</head>
+
+<body>
+
+<div id="app">
+
+    <div id="sidebar"></div>
+
+    <main>
+        <div class="bm-page">
+
+            <!-- ===== header + controls ===== -->
+            <header class="bm-header">
+                <div class="bm-title">
+                    <h1>BEACON MONITOR</h1>
+                    <div class="bm-subtitle">NCDXF / IARU International Beacon Project · 18 beacons · 5 bands · your transceiver listens</div>
+                </div>
+
+                <div class="bm-controls">
+                    <div class="bm-segment" role="group" aria-label="Mode">
+                        <button type="button" data-mode="rotate" class="active" title="The next band every 10 s - every beacon on every band within 15 minutes">ALL BANDS</button>
+                        <button type="button" data-mode="band" title="Stay on one band - all 18 beacons every 3 minutes">ONE BAND</button>
+                    </div>
+                    <div class="bm-bands" id="bm-band-select"></div>
+                    <button type="button" class="bm-start" id="bm-start">
+                        <span class="bm-start-dot"></span><span id="bm-start-text">START</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="bm-alert" id="bm-alert" hidden></div>
+
+            <!-- ===== radar + now ===== -->
+            <section class="bm-top">
+
+                <div class="bm-card bm-radar-card">
+                    <div class="bm-card-head">
+                        <span class="bm-card-title">PROPAGATION RADAR</span>
+                        <div class="bm-chips" id="bm-radar-band"></div>
+                    </div>
+                    <div class="bm-radar-wrap">
+                        <canvas id="bm-radar"></canvas>
+                        <div class="bm-radar-tip" id="bm-radar-tip" hidden></div>
+                    </div>
+                    <div class="bm-legend">
+                        <span><i class="d0"></i>not heard</span>
+                        <span><i class="d1"></i>100 W</span>
+                        <span><i class="d2"></i>10 W</span>
+                        <span><i class="d3"></i>1 W</span>
+                        <span><i class="d4"></i>0.1 W</span>
+                    </div>
+                </div>
+
+                <div class="bm-side">
+
+                    <div class="bm-card bm-now">
+                        <div class="bm-card-head">
+                            <span class="bm-card-title">NOW LISTENING</span>
+                            <span class="bm-source" id="bm-source">IDLE</span>
+                        </div>
+                        <div class="bm-now-main">
+                            <div class="bm-ring">
+                                <svg viewBox="0 0 120 120">
+                                    <circle class="bm-ring-bg" cx="60" cy="60" r="52"></circle>
+                                    <circle class="bm-ring-fg" id="bm-ring" cx="60" cy="60" r="52"></circle>
+                                </svg>
+                                <div class="bm-ring-text">
+                                    <strong id="bm-sec">--</strong>
+                                    <span>sec</span>
+                                </div>
+                            </div>
+                            <div class="bm-now-info">
+                                <div class="bm-now-call"><img id="bm-now-flag" alt=""><span id="bm-now-call">—</span></div>
+                                <div class="bm-now-place" id="bm-now-place">Press START to listen</div>
+                                <div class="bm-now-meta">
+                                    <span id="bm-now-band">—</span>
+                                    <span id="bm-now-dist">—</span>
+                                    <span id="bm-now-sm">—</span>
+                                </div>
+                            </div>
+                        </div>
+                        <canvas id="bm-trace" class="bm-trace"></canvas>
+                        <div class="bm-dashes" id="bm-last">
+                            <div class="bm-dashes-label">LAST BEACON</div>
+                            <div class="bm-dash-row"></div>
+                        </div>
+                    </div>
+
+                    <div class="bm-card bm-onair">
+                        <div class="bm-card-head">
+                            <span class="bm-card-title">ON THE AIR</span>
+                            <span class="bm-cycle" id="bm-cycle">cycle --:--</span>
+                        </div>
+                        <div class="bm-onair-list" id="bm-onair"></div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ===== matrix ===== -->
+            <section class="bm-card">
+                <div class="bm-card-head">
+                    <span class="bm-card-title">BEACONS × BANDS</span>
+                    <span class="bm-hint">last result per beacon and band · faded = older than 30 min</span>
+                </div>
+                <div class="bm-matrix" id="bm-matrix"></div>
+            </section>
+
+            <!-- ===== timeline ===== -->
+            <section class="bm-card">
+                <div class="bm-card-head">
+                    <span class="bm-card-title">BAND OPENINGS</span>
+                    <div class="bm-chips" id="bm-hours"></div>
+                    <button type="button" class="bm-clear" id="bm-clear" title="Delete the history">CLEAR</button>
+                </div>
+                <div class="bm-timeline" id="bm-timeline"></div>
+            </section>
+
+        </div>
+    </main>
+
+</div>
+
+<script src="/js/component-loader.js?v=27"></script>
+<script src="/js/system-status.js?v=2"></script>
+<script src="/js/beacons.js?v=1"></script>
+<script src="/js/demo-banner.js?v=1"></script>
+</body>
+</html>

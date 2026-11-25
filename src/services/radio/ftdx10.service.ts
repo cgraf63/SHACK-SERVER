@@ -1545,6 +1545,11 @@ setFrequencyB(frequency: number): void {
         return this.nbLevel;
     }
 
+    /* beacon monitor: S-meter now (the answer updates getSMeter()) */
+    requestSMeter(): void {
+        if (this.isConnected()) this.send("SM0;");
+    }
+
     getSMeter(): number {
         return this.smeter;
     }

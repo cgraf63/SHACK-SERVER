@@ -1142,6 +1142,11 @@ export class Ftx1Service extends SerialRadioBase implements RadioService {
     getDnrLevel(): number { return this.side().dnrLevel; }
     getNb(): boolean { return this.side().nbLevel > 0; }
     getNbLevel(): number { return this.side().nbLevel; }
+    /* beacon monitor: S-meter now (the answer updates getSMeter()) */
+    requestSMeter(): void {
+        if (this.isConnected()) this.send("SM0;");
+    }
+
     getSMeter(): number { return this.side().smeter; }
     getMeterAlc(): number { return this.meterAlc; }
     getMeterPower(): number { return this.meterPo; }

@@ -510,6 +510,26 @@ Below them there is **one line per skimmer**: flag and callsign (several reports
 
 The page is switched on under *Settings → Optional Modules*. Independently of it, SHACK-SERVER uses the complete RBN feed for the live spots and for "heard near you".
 
+# Beacon monitor
+
+The **Beacons** page (sidebar) listens with your own transceiver to the 18 beacons of the **NCDXF / IARU International Beacon Project** on 14.100, 18.110, 21.150, 24.930 and 28.200 MHz – a propagation display from your own reception, no SDR needed. Supported: **Yaesu FTDX10** and **FTX-1** (IC-7300 will follow).
+
+Every beacon sends for 10 seconds: its callsign in CW, then four dashes at **100 W, 10 W, 1 W and 0.1 W**. After 3 minutes all 18 have sent. SHACK-SERVER knows the schedule (exact time of the Pi), so it always knows which beacon is on which band. It measures twice: through the **USB sound card** (tone, exact timing of the dashes) and through the **S-meter** (CAT, absolute strength). Without audio the dashes are counted from the S-meter.
+
+| Control | |
+|---|---|
+| **ALL BANDS** | the next band every 10 seconds – after 15 minutes every beacon is measured on every band |
+| **ONE BAND** | stay on one band – all 18 beacons every 3 minutes |
+| **START / STOP** | the transceiver is set to CW and the beacon frequency; STOP restores frequency and mode |
+
+- **Propagation Radar**: a map around your QTH (locator from Settings → Station), beacons by bearing and distance. The colour shows down to which dash a beacon was heard: red 100 W, orange 10 W, yellow 1 W, green 0.1 W. The pointer shows the direction of the beacon you hear right now. **BEST** shows the best band of the last 30 minutes, the band buttons a single band. Mouse-over shows all bands of a beacon.
+- **Now Listening**: beacon, band, distance, S-meter, a countdown for the 10 seconds and the live signal trace; below it the result of the last beacon.
+- **On the Air**: which beacon is sending on which band right now.
+- **Beacons × Bands**: the last result of every beacon on every band (four bars = four dashes); older than 30 minutes = faded.
+- **Band Openings**: per band, how many beacons were heard in the last 1–24 hours – you see when a band opens and closes. Measurements are kept for 24 hours; **CLEAR** deletes them.
+
+While the monitor runs, the transceiver is busy. It never transmits, it only listens.
+
 # SOTA and POTA
 
 SOTA and POTA activations are recognised in the spots and marked in the live spots: POTA with a green, SOTA with a white triangle. SOTA spots come from the SOTA cluster, POTA spots from the POTA interface.
