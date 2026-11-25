@@ -1,3 +1,4 @@
+import { upcomingContests } from "../services/contest/contest-calendar.js";
 import { Router, Request, Response } from "express";
 import { uploadQueue } from "../services/upload/upload-queue.service.js";
 import { readFile } from "node:fs/promises";
@@ -12,6 +13,17 @@ import {
 const router = Router();
 
 /* Contest-only read access to the local CTY database. */
+/*
+ * Contest calendar: dates computed from the contest rules
+ *   GET /api/contests/calendar?days=60
+ */
+router.get("/calendar", (req, res) => {
+    const days = Math.max(1, Math.min(400, Number(req.query.days) || 60));
+    res.set("Cache-Control", "no-store");
+    res.json(upcomingContests(days));
+});
+
+
 router.get("/cty.dat", async (_req, res) => {
     try {
         const file = path.resolve(process.cwd(), "data", "cty.dat");

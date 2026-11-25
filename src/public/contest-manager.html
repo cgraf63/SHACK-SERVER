@@ -91,6 +91,20 @@
             </div>
 
 
+            <!-- CONTEST CALENDAR (computed from the contest rules) -->
+
+            <section class="card cc-card">
+                <div class="card-header cc-head">
+                    <div>
+                        <h2>Upcoming Contests</h2>
+                        <p class="cc-sub">Dates computed from the contest rules · times in your local time</p>
+                    </div>
+                    <div class="cc-filters" id="cc-filters"></div>
+                </div>
+                <div id="cc-list" class="cc-list"></div>
+            </section>
+
+
             <!-- DEFINITIONS -->
 
             <section class="card">
@@ -1086,6 +1100,9 @@
     src="js/contest-manager.js"
 ></script>
 
+
+<script src="js/contest-calendar.js?v=1"></script>
+<link rel="stylesheet" href="css/contest-calendar.css?v=1">
 
 <script src="/js/demo-banner.js?v=1"></script>
 </body>

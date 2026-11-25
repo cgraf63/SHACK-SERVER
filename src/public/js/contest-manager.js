@@ -1931,3 +1931,33 @@ loadOperators();
 /*
  * Contest Operators
  */
+
+
+
+/*
+ * "Use" in the contest calendar (contest-calendar.js): a new contest
+ * definition prefilled from the calendar entry.
+ */
+window.addEventListener("shack:contest-prefill", event => {
+
+    const c = event.detail || {};
+
+    openNewEditor();
+
+    contestName.value = c.name || "";
+    contestShortName.value = c.short || "";
+    contestDescription.value = [c.sponsor, c.note, c.url].filter(Boolean).join(" · ");
+
+    applyRules({
+        bands: c.bands || [],
+        modes: c.modes || [],
+        exchange: { sent: c.exchange || "serial", received: c.exchange || "serial" },
+        dupe: { key: "call_band_mode" },
+        scoring: { type: "one" },
+        multipliers: c.multipliers || [],
+        rst: { send: true, receive: true }
+    });
+
+    editor.scrollIntoView({ behavior: "smooth", block: "start" });
+
+});

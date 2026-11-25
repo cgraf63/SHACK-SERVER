@@ -38,6 +38,10 @@ then reload the page with **Ctrl+F5**.
   Propagation radar around your QTH, live signal trace, beacons × bands
   matrix and band openings over 24 hours – measured with USB audio and the
   S-meter.
+- **Contest calendar** in the Contest Manager: the contests of the next 60
+  days (CQ WW, WPX, ARRL DX, IARU, WAE, Helvetia, IARU R1 VHF/UHF, DARC …),
+  dates computed from the contest rules, local time, ON AIR marker, filters
+  CH / EU / WORLD / VHF / NA, USE creates a contest definition.
 - **Setting for an external tuner** (FTDX10): no internal tuner start before
   CW text.
 - **Raspberry Pi Zero 2 W** supported: swap file on small Pis, SDR switched

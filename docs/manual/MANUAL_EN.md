@@ -346,6 +346,8 @@ The QSO history shows all contest QSOs with operator and station. The **Cabrillo
 
 ![Contest Manager](images/contest-manager.jpg)
 
+**Upcoming Contests** (top of the Contest Manager): the contests of the next 60 days – CQ WW, WPX, ARRL DX, IARU HF, WAE, Helvetia, the IARU R1 VHF/UHF contests, DARC contests and more. SHACK-SERVER computes the dates itself from the contest rules (e.g. "CQ WW SSB = last full weekend of October, 00:00 UTC, 48 h") – for every year, without an outside data source. Shown in your local time with UTC start, duration and countdown; a running contest is marked red (**ON AIR**). Filters: **CH**, **EU**, **WORLD**, **VHF**, **NA**. **RULES** opens the announcement, **USE** creates a new contest definition with name, bands, modes and exchange. "check rules" means: date from the usual rule – check the current announcement before the contest.
+
 The Contest Manager manages the contests: they are entered here and then selected and started in the contest console. The callsigns taking part in contests are entered here as well.
 
 # Station and transceivers
