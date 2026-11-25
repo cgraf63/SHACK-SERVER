@@ -140,3 +140,19 @@
 @media (max-width: 1000px) {
     .cc-row { grid-template-columns: 1fr; gap: 6px; }
 }
+
+/* the list scrolls inside the card (about 5 contests visible) */
+.cc-list {
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 6px;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 229, 255, 0.45) rgba(255, 255, 255, 0.04);
+}
+
+.cc-list::-webkit-scrollbar { width: 8px; }
+.cc-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 4px; }
+.cc-list::-webkit-scrollbar-thumb { background: rgba(0, 229, 255, 0.45); border-radius: 4px; }
+
+.cc-row { padding: 8px 12px; }
