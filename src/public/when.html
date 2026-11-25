@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>When to Work - SHACK-SERVER</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/layout.css?v=2">
+    <link rel="stylesheet" href="/css/components.css?v=36">
+    <link rel="stylesheet" href="/css/when.css?v=1">
+</head>
+
+<body>
+
+<div id="app">
+
+    <div id="sidebar"></div>
+
+    <main>
+        <div class="wh-page">
+
+            <header class="wh-header">
+                <div>
+                    <h1>WHEN CAN I WORK IT?</h1>
+                    <div class="wh-sub" id="wh-sub">Openings towards your QTH per band and hour – learned from cluster, RBN and PSK Reporter</div>
+                </div>
+                <form class="wh-search" id="wh-form" autocomplete="off">
+                    <input id="wh-q" list="wh-entities" spellcheck="false" placeholder="Callsign, prefix or country (e.g. 3B8, VK9X, Japan)">
+                    <datalist id="wh-entities"></datalist>
+                    <button type="submit">SHOW</button>
+                </form>
+            </header>
+
+            <section class="wh-layout">
+
+                <div class="wh-card wh-main" id="wh-main">
+                    <div class="wh-empty">Search for a callsign or country – or pick one of the needed countries on the right.</div>
+                </div>
+
+                <aside class="wh-card wh-soon">
+                    <div class="wh-card-head">
+                        <span class="wh-card-title">NEEDED · NEXT 3 HOURS</span>
+                    </div>
+                    <div class="wh-hint">Countries not in your log yet, heard near you at this time of day</div>
+                    <div class="wh-soon-list" id="wh-soon"></div>
+                </aside>
+
+            </section>
+
+        </div>
+    </main>
+
+</div>
+
+<script src="/js/component-loader.js?v=28"></script>
+<script src="/js/system-status.js?v=2"></script>
+<script src="/js/when.js?v=1"></script>
+<script src="/js/demo-banner.js?v=1"></script>
+</body>
+</html>

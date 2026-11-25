@@ -339,6 +339,17 @@ Die DXCC-Tabelle zeigt alle 340 DXCC-Gebiete über die Bänder 160 m bis 6 m: ge
 - **Diagramme**: QSOs pro Monat und pro Stunde (UTC, der stärkste Wert gelb), Bänder und Modes.
 - **Listen**: die zehn meistgearbeiteten Länder, alle neuen DXCC, das weiteste QSO und der stärkste Tag.
 
+# Wann kann ich es arbeiten?
+
+![When to Work](images/when-to-work.jpg)
+
+**When to Work** in der Seitenleiste (oder ⏱ in der „needed“-Liste) zeigt für ein Land, auf welchem Band und zu welcher Stunde (UTC) der Weg zu deinem QTH offen ist. Gesucht wird nach Rufzeichen, Präfix oder Landesname.
+
+- **HEARD NEAR YOU**: SHACK-SERVER lernt aus jedem Report, den es sieht (DX-Cluster, RBN-Skimmer, PSK Reporter). Hört ein Spotter im Umkreis von 1500 km eine Station des Landes auf einem Band, war der Weg in dieser Stunde offen. Die Farbe zeigt, an wie vielen der letzten bis zu 28 Tage das so war. Das Lernen beginnt mit dem Update; nach einigen Tagen wird das Bild aussagekräftig.
+- **SUN MODEL**: eine Faustregel aus dem Sonnenstand entlang des Weges – hohe Bänder brauchen Tag in der Wegmitte, tiefe Bänder Nacht an beiden Enden, die Greyline hilft. Wird angezeigt, solange noch zu wenige Tage gesammelt sind.
+- Darüber zwei Streifen mit Tag, Greyline und Nacht hier und dort sowie Sonnenauf- und -untergang. Die Zusammenfassung nennt „Open now“, das nächste Fenster und die besten Fenster. Ein ✓ beim Band heisst: Land auf diesem Band schon im Log.
+- **NEEDED · NEXT 3 HOURS** rechts: Länder, die noch nicht im Log sind und zu dieser Tageszeit oft bei dir zu hören waren. Ein Klick zeigt die Details.
+
 # DXpeditionen
 
 ![DXpeditionen](../images/screenshots/05-dxpeditions.jpg)

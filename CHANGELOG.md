@@ -14,6 +14,10 @@ then reload the page with **Ctrl+F5**.
   great-circle lines per band; QSOs per month, hour, band and mode; top
   countries, farthest QSO, busiest day.
 
+- **When can I work it?**: per country the open bands and hours towards
+  your QTH – learned from cluster, RBN and PSK Reporter reports heard
+  within 1500 km (up to 28 days), with a sun model and greyline until
+  enough is collected; the needed countries open in the next 3 hours.
 - **Voice keyer (SSB)**: 8 recorded messages (microphone or audio file),
   played into the USB sound card with PTT by CAT – a line on the dashboard
   and in the contest console (F1–F8), with a CQ loop (repeat every n s).

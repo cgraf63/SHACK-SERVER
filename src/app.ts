@@ -23,6 +23,7 @@ import qmxRouter from "./routes/qmx.js";
 import rgoRouter from "./routes/rgo.js";
 import beaconsRouter from "./routes/beacons.js";
 import voiceRouter from "./routes/voice.js";
+import whenRouter from "./routes/when.js";
 import cwRouter from "./routes/cw.js";
 import dxpeditionsRouter from "./routes/dxpeditions.js";
 import backupRouter from "./routes/backup.js";
@@ -219,6 +220,12 @@ app.use(
 app.use(
     "/api/rgo",
     rgoRouter
+);
+
+// "When can I work it?" (openings per entity and band)
+app.use(
+    "/api/when",
+    whenRouter
 );
 
 // Voice keyer (SSB)

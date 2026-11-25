@@ -3,6 +3,7 @@ import { DistanceService } from "../geo/distance.service.js";
 import { MaidenheadService } from "../geo/maidenhead.service.js";
 import { ShackLocationService } from "../geo/shack-location.service.js";
 import { settingsService } from "../settings/settings.service.js";
+import { openingsService } from "../propagation/openings.service.js";
 
 
 /*
@@ -84,6 +85,14 @@ class HeardService {
         if (!key || !report.spotter) return;
 
         if (report.locator) this.learnLocator(report.spotter, report.locator);
+
+        /* "when can I work it": paths open towards the own QTH */
+        try {
+            openingsService.record(key, report.spotter, report.band, report.locator ?? this.locators.get(report.spotter.toUpperCase()), report.at);
+        }
+        catch {
+            // never stop the reports
+        }
 
         let list = this.reports.get(key);
 

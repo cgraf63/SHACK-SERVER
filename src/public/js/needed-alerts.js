@@ -88,6 +88,7 @@
                 <span class="needed-alert-actions">
                     <button type="button" class="needed-btn" data-act="view" data-call="${esc(a.callsign)}" title="Details (QRZ)">VIEW</button>
                     <button type="button" class="needed-btn log" data-act="log" data-call="${esc(a.callsign)}" title="Log a QSO">LOG</button>
+                    <button type="button" class="needed-btn" data-act="when" data-call="${esc(a.callsign)}" title="When can I work it? (best bands and hours)">⏱</button>
                 </span>
             </div>
         `).join("");
@@ -193,6 +194,7 @@
         if (button) {
             event.stopPropagation();
             if (button.dataset.act === "view") viewCall(button.dataset.call);
+            else if (button.dataset.act === "when") window.open(`/when.html?q=${encodeURIComponent(button.dataset.call)}`, "shack-when");
             else logCall(button.dataset.call);
             return;
         }
