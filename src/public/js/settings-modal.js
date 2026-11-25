@@ -2871,3 +2871,16 @@ function initSoftwareUpdate() {
         .catch(() => undefined);
 
 }
+
+
+/*
+ * Number fields in the settings: the mouse wheel must not change them.
+ * (A focused number field changes its value with every wheel notch -
+ * scrolling the settings could turn "Near = within 1000 km" into 50.)
+ */
+document.addEventListener("wheel", event => {
+    const input = event.target;
+    if (input instanceof HTMLInputElement && input.type === "number" && input.closest?.("#settings-modal, .settings-modal, .settings-page")) {
+        input.blur();
+    }
+}, { passive: true });
