@@ -516,6 +516,8 @@ Die Seite **Beacons** (Sidebar) hört mit dem eigenen Transceiver die 18 Baken d
 
 Jede Bake sendet 10 Sekunden: Rufzeichen in CW, dann vier Striche mit **100 W, 10 W, 1 W und 0,1 W**. Nach 3 Minuten sind alle 18 durch. SHACK-SERVER kennt den Zeitplan (genaue Uhrzeit des Pi) und weiss deshalb jederzeit, welche Bake gerade wo sendet. Gemessen wird doppelt: über die **USB-Soundkarte** (Ton, genaue Zeit der Striche) und über das **S-Meter** (CAT, absolute Stärke). Ohne Audio werden die Striche aus dem S-Meter gezählt.
 
+![Baken-Monitor](images/beacon-monitor.jpg)
+
 | Bedienung | |
 |---|---|
 | **ALL BANDS** | jede 10 Sekunden das nächste Band – nach 15 Minuten ist jede Bake auf jedem Band gemessen |

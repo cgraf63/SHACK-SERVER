@@ -516,6 +516,8 @@ The **Beacons** page (sidebar) listens with your own transceiver to the 18 beaco
 
 Every beacon sends for 10 seconds: its callsign in CW, then four dashes at **100 W, 10 W, 1 W and 0.1 W**. After 3 minutes all 18 have sent. SHACK-SERVER knows the schedule (exact time of the Pi), so it always knows which beacon is on which band. It measures twice: through the **USB sound card** (tone, exact timing of the dashes) and through the **S-meter** (CAT, absolute strength). Without audio the dashes are counted from the S-meter.
 
+![Beacon monitor](images/beacon-monitor.jpg)
+
 | Control | |
 |---|---|
 | **ALL BANDS** | the next band every 10 seconds – after 15 minutes every beacon is measured on every band |

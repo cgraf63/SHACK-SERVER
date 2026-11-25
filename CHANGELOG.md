@@ -33,6 +33,11 @@ then reload the page with **Ctrl+F5**.
 - **RBN page** redesigned: summary (skimmers, best signal, farthest skimmer,
   last report) and one line per skimmer with a signal bar, sortable, per band;
   the map works, the country appears on mouse-over of the flag.
+- **Beacon monitor** (FTDX10, FTX-1): the transceiver listens to the 18
+  NCDXF / IARU beacons on 20–10 m, on one band or rotating through all five.
+  Propagation radar around your QTH, live signal trace, beacons × bands
+  matrix and band openings over 24 hours – measured with USB audio and the
+  S-meter.
 - **Setting for an external tuner** (FTDX10): no internal tuner start before
   CW text.
 - **Raspberry Pi Zero 2 W** supported: swap file on small Pis, SDR switched
