@@ -310,6 +310,17 @@ Als Standort dienen der Locator aus *Settings → Station*, die DXCC-Nummer aus 
 
 Die DXCC-Tabelle zeigt alle 340 DXCC-Gebiete über die Bänder 160 m bis 6 m: gearbeitet oder bestätigt (QSL oder LoTW), wahlweise für alle Modes, CW, Phone oder Digital. Filter zeigen zum Beispiel nur die fehlenden Gebiete (*Needed*), die gearbeiteten, aber noch nicht bestätigten, oder einen einzelnen Kontinent.
 
+# Jahresrückblick
+
+![Jahresrückblick](images/year-review.jpg)
+
+**Year in Review** in der Seitenleiste fasst ein Jahr aus dem eigenen Log zusammen. Oben wählt man das Jahr; ohne Auswahl erscheint das letzte Jahr mit QSOs.
+
+- **Kacheln**: QSOs, verschiedene Stationen, DXCC-Gebiete und Kontinente, **neue DXCC** (Gebiete, mit denen man in diesem Jahr zum ersten Mal überhaupt ein QSO hatte), aktive Tage, Bestätigungsquote und die Summe aller Distanzen ("× um die Erde").
+- **Karte**: jede Station als Punkt, mit Grosskreis-Linie vom eigenen QTH, farbig nach Band; die Band-Knöpfe zeigen nur ein Band. Ein Klick auf einen Punkt zeigt Rufzeichen, Land, Band, Mode, Distanz und Datum. Die Position kommt aus dem Locator des QSOs, sonst aus dem DXCC-Gebiet.
+- **Diagramme**: QSOs pro Monat und pro Stunde (UTC, der stärkste Wert gelb), Bänder und Modes.
+- **Listen**: die zehn meistgearbeiteten Länder, alle neuen DXCC, das weiteste QSO und der stärkste Tag.
+
 # DXpeditionen
 
 ![DXpeditionen](../images/screenshots/05-dxpeditions.jpg)

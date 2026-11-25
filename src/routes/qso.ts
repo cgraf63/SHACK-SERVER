@@ -1,3 +1,4 @@
+import { yearReview } from "../services/qso/year-review.service.js";
 import { Router } from "express";
 import { getWorkedIndex } from "../services/needed/worked-index.js";
 import { qsoService } from "../services/qso/qso-instance.js";
@@ -383,6 +384,19 @@ country_code:
 /*
     Get all QSOs
 */
+
+/*
+ * Year in review: GET /api/qso/review?year=2026 (no year = latest year with QSOs)
+ */
+router.get("/review", (req, res) => {
+    try {
+        res.json(yearReview(Number(req.query.year) || 0));
+    }
+    catch (error) {
+        res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+    }
+});
+
 
 router.get(
     "/",

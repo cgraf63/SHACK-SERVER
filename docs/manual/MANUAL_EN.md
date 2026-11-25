@@ -310,6 +310,17 @@ The station location uses the locator from *Settings → Station*, the DXCC numb
 
 The DXCC table shows all 340 DXCC entities across the bands 160 m to 6 m: worked or confirmed (QSL or LoTW), for all modes, CW, phone or digital. Filters show, for example, only the missing entities (*Needed*), the ones worked but not yet confirmed, or a single continent.
 
+# Year in review
+
+![Year in review](images/year-review.jpg)
+
+**Year in Review** in the sidebar sums up one year of your log. Pick the year at the top; without a choice the latest year with QSOs is shown.
+
+- **Tiles**: QSOs, different stations, DXCC entities and continents, **new DXCC** (entities you worked for the very first time in that year), active days, confirmation rate and the sum of all distances ("× around the earth").
+- **Map**: every station as a dot with a great-circle line from your QTH, coloured by band; the band buttons show one band only. A click on a dot shows callsign, country, band, mode, distance and date. The position comes from the QSO locator, otherwise from the DXCC entity.
+- **Charts**: QSOs per month and per hour (UTC, the busiest value in yellow), bands and modes.
+- **Lists**: the ten most worked countries, all new DXCC, the farthest QSO and the busiest day.
+
 # DXpeditions
 
 ![DXpeditions](../images/screenshots/05-dxpeditions.jpg)

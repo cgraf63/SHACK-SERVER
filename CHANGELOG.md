@@ -5,6 +5,15 @@ versions are listed; the automatic versions in between (1.4.1, 1.4.2 …)
 are collected in the next milestone. Update: **Settings → Software update**,
 then reload the page with **Ctrl+F5**.
 
+## Next version
+
+### New
+
+- **Year in Review**: one year of your log on one page – QSOs, stations,
+  DXCC, new DXCC, active days, confirmations, kilometres; world map with
+  great-circle lines per band; QSOs per month, hour, band and mode; top
+  countries, farthest QSO, busiest day.
+
 ## 1.4.0 – 2026-11-25
 
 ### New
