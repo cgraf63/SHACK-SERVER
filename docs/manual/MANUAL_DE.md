@@ -346,9 +346,9 @@ Die QSO-Historie zeigt alle Contest-QSOs mit Operator und Station. Der **Cabrill
 
 ![Contest Manager](images/contest-manager.jpg)
 
-**Upcoming Contests** (oben im Contest Manager): die Contests der nächsten 60 Tage – CQ WW, WPX, ARRL DX, IARU HF, WAE, Helvetia, die IARU-R1-VHF/UHF-Contests, DARC-Contests und weitere. Die Termine berechnet SHACK-SERVER selbst aus den Regeln der Contests (z. B. «CQ WW SSB = letztes volles Wochenende im Oktober, 00:00 UTC, 48 h») – für jedes Jahr, ohne fremde Datenquelle. Angezeigt in der eigenen Ortszeit, mit UTC-Start, Dauer und Countdown; ein laufender Contest ist rot markiert (**ON AIR**). Filter: **CH**, **EU**, **WORLD**, **VHF**, **NA**. **RULES** öffnet die Ausschreibung, **USE** legt eine neue Contest-Definition mit Name, Bändern, Modes und Exchange an. «check rules» heisst: Termin nach der üblichen Regel – vor dem Contest die aktuelle Ausschreibung prüfen.
-
 Der Contest Manager verwaltet die Contests: Hier werden sie erfasst und danach in der Contest-Konsole gewählt und gestartet. Auch die Rufzeichen, die an Contests teilnehmen, werden hier erfasst.
+
+**Upcoming Contests** (oben im Contest Manager): die Contests der nächsten 60 Tage – CQ WW, WPX, ARRL DX, IARU HF, WAE, Helvetia, die IARU-R1-VHF/UHF-Contests, DARC-Contests und weitere. Die Termine berechnet SHACK-SERVER selbst aus den Regeln der Contests (z. B. «CQ WW SSB = letztes volles Wochenende im Oktober, 00:00 UTC, 48 h») – für jedes Jahr, ohne fremde Datenquelle. Angezeigt in der eigenen Ortszeit, mit UTC-Start, Dauer und Countdown; ein laufender Contest ist rot markiert (**ON AIR**). Filter: **CH**, **EU**, **WORLD**, **VHF**, **NA**. **RULES** öffnet die Ausschreibung, **USE** legt eine neue Contest-Definition mit Name, Bändern, Modes und Exchange an. «check rules» heisst: Termin nach der üblichen Regel – vor dem Contest die aktuelle Ausschreibung prüfen.
 
 # Station und Transceiver
 
