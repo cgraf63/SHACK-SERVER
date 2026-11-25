@@ -102,8 +102,10 @@ function createRbnModal() {
             }
         );
 
-    document
-        .getElementById("rbn-map-btn")
+    const mapButton = document.getElementById("rbn-map-btn");
+    if (mapButton) mapButton.dataset.bound = "1";
+
+    mapButton
         ?.addEventListener(
             "click",
             () => {
@@ -440,7 +442,36 @@ document.addEventListener("click", event => {
 });
 
 
+/* locator -> centre of the square (the RBN page does not load live-spots.js) */
+function rbnLocatorToLatLon(locator) {
+    const loc = String(locator || "").trim().toUpperCase();
+    if (!/^[A-R]{2}[0-9]{2}([A-X]{2})?/.test(loc)) return null;
+    let lon = (loc.charCodeAt(0) - 65) * 20 - 180 + Number(loc[2]) * 2;
+    let lat = (loc.charCodeAt(1) - 65) * 10 - 90 + Number(loc[3]);
+    if (loc.length >= 6 && /[A-X]{2}/.test(loc.slice(4, 6))) {
+        lon += (loc.charCodeAt(4) - 65) * (5 / 60) + 2.5 / 60;
+        lat += (loc.charCodeAt(5) - 65) * (2.5 / 60) + 1.25 / 60;
+    }
+    else {
+        lon += 1;
+        lat += 0.5;
+    }
+    return { lat, lon };
+}
+
+if (!window.maidenheadToLatLon) window.maidenheadToLatLon = rbnLocatorToLatLon;
+
+/* MAP button on the RBN page (the popup binds its own) */
+document.addEventListener("click", event => {
+    const button = event.target.closest?.("#rbn-map-btn");
+    if (!button || button.dataset.bound) return;
+    openRbnMap();
+});
+
 async function openRbnMap() {
+
+    if (document.getElementById("rbn-map-overlay")) return;
+
 
     try {
 
@@ -481,9 +512,12 @@ async function openRbnMap() {
 
         if (!qthPosition) {
 
-            console.error(
-                "RBN map: invalid shack locator"
-            );
+            console.error("RBN map: invalid shack locator");
+            const button = document.getElementById("rbn-map-btn");
+            if (button) {
+                button.textContent = "No locator - Settings > Station";
+                setTimeout(() => { button.innerHTML = "&#128506; MAP"; }, 5000);
+            }
 
             return;
 
