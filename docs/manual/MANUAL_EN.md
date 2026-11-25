@@ -189,6 +189,24 @@ FTDX10: before CW memories and CW text the internal tuner is checked and started
 
 The same two lines are available at the bottom of the **contest console**, switched on separately (*Show the CW decoder / encoder in the contest console*). A click on a callsign in the decoded text puts it into the callsign field there (with call check and dupe display).
 
+## Voice keyer (SSB)
+
+![Voice keyer: eight messages](images/voice-keyer.jpg)
+
+The voice keyer plays recorded messages (CQ, report, TU, your callsign …) into the **USB sound card** of the transceiver, the same path as the remote microphone, and keys the transceiver by CAT (PTT). It works with the FTDX10, FTX-1, IC-7300, RGO ONE and Hamlib, in SSB, AM and FM; it does not transmit in CW.
+
+**Recording** on the page *Voice keyer* (button ✎ at the right of the line, or the link in the settings): each of the 8 messages has a name for its button and these buttons:
+
+- **● REC / ■ STOP**: record with the PC microphone. The browser allows the microphone only on an **HTTPS page** (`https://<Pi>`, see the chapter Network). 30 seconds at most.
+- **FILE**: loads an audio file (WAV, MP3, M4A …) recorded elsewhere. This also works without HTTPS.
+- **▶ LISTEN**: listen in the browser. **TX** transmits the message as a test. **✕** deletes it.
+
+Silence at the start and end is cut off, and all messages are brought to the same level. Set the TX level once on the transceiver (USB modulation level) so the ALC barely moves. In SSB the transceiver must take its audio from USB, as for the remote microphone.
+
+![Voice keyer line on the dashboard](images/voice-line.jpg)
+
+**Transmitting**: in *Settings › Split & CW* switch on the **VOICE** line on the dashboard and, separately, in the contest console. A click on a message transmits it; a second click or **STOP** stops it. **ONCE / ↻ n s** repeats the message after n seconds of listening (CQ loop), until STOP, another message or 30 minutes. In the contest console **F1–F8** transmit the messages. Safety: PTT is always released at the end of the message, at the latest 3 seconds after its length. While the remote microphone transmits, the voice keyer is locked.
+
 ## New – "needed" callsigns
 
 ![New – "needed" callsigns](../images/screenshots/needed-alerts.jpg)

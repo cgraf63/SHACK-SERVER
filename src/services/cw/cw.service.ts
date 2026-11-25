@@ -109,6 +109,8 @@ class CwService {
             showEncoder: Boolean(cw?.encoder),
             contestDecoder: Boolean(cw?.contestDecoder),
             contestEncoder: Boolean(cw?.contestEncoder),
+            showVoice: Boolean(cw?.voice),
+            contestVoice: Boolean(cw?.contestVoice),
             wpm: cw?.wpm ?? 22,
             pitch: this.pitch,
             seq: this.seq,

@@ -271,7 +271,7 @@ await new Promise(resolve => {
         );
 
     settingsScript.src =
-        "js/settings-modal.js?v=27";
+        "js/settings-modal.js?v=28";
 
     document.body.appendChild(
         settingsScript

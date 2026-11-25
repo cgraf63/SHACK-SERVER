@@ -204,6 +204,12 @@ export class Ic7300Service extends SerialRadioBase implements RadioService {
         return this.write(Buffer.from([0xFE, 0xFE, this.civ, CONTROLLER, ...cmd, ...data, 0xFD]));
     }
 
+    /* PTT via CI-V (voice keyer, remote microphone) */
+    setPtt(enabled: boolean): void {
+        if (!this.isConnected()) return;
+        this.sendChecked([0x1C, 0x00], [enabled ? 0x01 : 0x00]);
+    }
+
     private sendChecked(cmd: number[], data: number[] = []): void {
         if (!this.isConnected()) throw new Error("IC-7300 not connected");
         this.send(cmd, data);

@@ -189,6 +189,24 @@ FTDX10: Vor CW-Speichern und CW-Text wird der eingebaute Tuner geprüft und bei 
 
 Dieselben zwei Zeilen gibt es unten in der **Contest-Konsole**, getrennt einschaltbar (*Show the CW decoder / encoder in the contest console*). Ein Klick auf ein Rufzeichen im decodierten Text setzt es dort ins Callsign-Feld (mit Rufzeichen-Prüfung und Dupe-Anzeige).
 
+## Voice Keyer (SSB)
+
+![Voice Keyer: acht Meldungen](images/voice-keyer.jpg)
+
+Der Voice Keyer spielt aufgenommene Meldungen (CQ, Rapport, TU, eigenes Rufzeichen …) in die **USB-Soundkarte** des Transceivers, also auf denselben Weg wie das Remote-Mikrofon, und tastet den Transceiver dabei per CAT (PTT). Er funktioniert mit FTDX10, FTX-1, IC-7300, RGO ONE und Hamlib, in SSB, AM und FM; in CW sendet er nicht.
+
+**Aufnehmen** auf der Seite *Voice keyer* (Knopf ✎ rechts in der Zeile oder Link in den Settings): Jede der 8 Meldungen hat einen Namen für den Knopf und folgende Knöpfe:
+
+- **● REC / ■ STOP**: Aufnahme mit dem Mikrofon des PCs. Der Browser erlaubt das Mikrofon nur auf einer **HTTPS-Seite** (`https://<Pi>`, siehe Kapitel Netzwerk). Höchstens 30 Sekunden.
+- **FILE**: lädt eine Audiodatei (WAV, MP3, M4A …), die man woanders aufgenommen hat. Das geht auch ohne HTTPS.
+- **▶ LISTEN**: anhören im Browser. **TX** sendet die Meldung zum Test. **✕** löscht sie.
+
+Stille am Anfang und Ende wird abgeschnitten, und alle Meldungen werden auf denselben Pegel gebracht. Den Sendepegel stellt man einmal am Transceiver ein (USB-Modulationspegel), so dass die ALC kaum ausschlägt. Der Transceiver muss in SSB das Audio von USB nehmen, wie beim Remote-Mikrofon.
+
+![Voice-Keyer-Zeile im Dashboard](images/voice-line.jpg)
+
+**Senden**: Unter *Settings › Split & CW* schaltet man die Zeile **VOICE** im Dashboard und getrennt in der Contest-Konsole ein. Ein Klick auf eine Meldung sendet sie, ein zweiter Klick oder **STOP** bricht ab. **ONCE / ↻ n s** wiederholt die Meldung nach n Sekunden Hören (CQ-Schleife), bis STOP, eine andere Meldung oder 30 Minuten. In der Contest-Konsole senden **F1–F8** die Meldungen. Sicherheit: PTT fällt nach dem Ende der Meldung immer ab, spätestens 3 Sekunden nach ihrer Länge. Solange das Remote-Mikrofon sendet, ist der Voice Keyer gesperrt.
+
 ## New – "needed" Callsigns
 
 ![New – "needed" Callsigns](../images/screenshots/needed-alerts.jpg)

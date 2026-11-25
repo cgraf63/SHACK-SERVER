@@ -14,6 +14,11 @@ then reload the page with **Ctrl+F5**.
   great-circle lines per band; QSOs per month, hour, band and mode; top
   countries, farthest QSO, busiest day.
 
+- **Voice keyer (SSB)**: 8 recorded messages (microphone or audio file),
+  played into the USB sound card with PTT by CAT – a line on the dashboard
+  and in the contest console (F1–F8), with a CQ loop (repeat every n s).
+  FTDX10, FTX-1, IC-7300, RGO ONE, Hamlib.
+
 ## 1.4.0 – 2026-11-25
 
 ### New

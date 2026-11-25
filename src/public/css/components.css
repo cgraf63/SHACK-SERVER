@@ -4492,6 +4492,82 @@ D.sidebar.collapsed {
 .cw-btn.run.stopped { color: var(--green); border-color: rgba(140, 255, 0, 0.5); }
 .cw-rx.stopped .cw-text { opacity: .5; }
 
+/* voice keyer line */
+.cw-tag.voice {
+    color: #e08cff;
+    border-color: rgba(224, 140, 255, 0.45);
+}
+
+.cw-led.tx { background: var(--red); box-shadow: 0 0 10px var(--red); }
+
+.vk-slots {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    gap: 6px;
+    overflow: hidden;
+}
+
+.cw-btn.vk-slot {
+    flex: 1 1 0;
+    min-width: 54px;
+    max-width: 130px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #e8d4ff;
+    border-color: rgba(224, 140, 255, 0.35);
+}
+
+.cw-btn.vk-slot small {
+    color: var(--muted);
+    font-size: 9px;
+    margin-right: 5px;
+    font-weight: 600;
+}
+
+.cw-btn.vk-slot.empty { color: #4f5f6a; border-style: dashed; border-color: var(--panel-border); }
+.cw-btn.vk-slot.tx { background: var(--red); border-color: var(--red); color: #fff; }
+.cw-btn.vk-slot.tx small { color: #ffe0e0; }
+.cw-btn.vk-slot.wait { border-color: var(--red); color: #ffb4b4; animation: vk-wait 1.2s ease-in-out infinite; }
+
+@keyframes vk-wait { 50% { background: rgba(255, 82, 82, 0.18); } }
+
+.vk-repeat {
+    flex: 0 0 auto;
+    height: 27px;
+    border-radius: 6px;
+    border: 1px solid var(--panel-border);
+    background: #0d1720;
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0 6px;
+}
+
+.vk-status {
+    flex: 0 1 auto;
+    max-width: 260px;
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--muted);
+}
+
+.vk-status.tx { color: var(--red); font-weight: 800; letter-spacing: 1px; }
+.vk-status.wait { color: #ffb4b4; }
+.vk-status.error { color: var(--red); }
+
+a.cw-btn.vk-edit {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    font-size: 13px;
+}
+
 
 /* "needed" list: small VIEW / LOG buttons - shown on mouse over at the
    right end of the row (over the age), so long calls still fit */

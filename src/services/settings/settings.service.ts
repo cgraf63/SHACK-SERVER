@@ -204,6 +204,8 @@ export class SettingsService {
                     encoder: Boolean(cw.encoder),
                     contestDecoder: Boolean(cw.contestDecoder),
                     contestEncoder: Boolean(cw.contestEncoder),
+                    voice: Boolean(cw.voice),
+                    contestVoice: Boolean(cw.contestVoice),
                     wpm: Number.isFinite(wpm) ? Math.min(60, Math.max(5, wpm)) : 22,
                     pitch: Number.isFinite(pitch) && pitch >= 300 && pitch <= 1100 ? pitch : 0
                 };

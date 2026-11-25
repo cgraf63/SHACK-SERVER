@@ -324,6 +324,8 @@ async function loadSettings() {
         setBox("cw-encoder-show", cw.encoder);
         setBox("cw-contest-decoder-show", cw.contestDecoder);
         setBox("cw-contest-encoder-show", cw.contestEncoder);
+        setBox("voice-keyer-show", cw.voice);
+        setBox("voice-keyer-contest-show", cw.contestVoice);
         const cwWpm = document.getElementById("cw-wpm");
         if (cwWpm) cwWpm.value = cw.wpm || 22;
         const cwPitch = document.getElementById("cw-pitch");
@@ -814,6 +816,8 @@ async function saveSettings() {
             encoder: document.getElementById("cw-encoder-show")?.checked === true,
             contestDecoder: document.getElementById("cw-contest-decoder-show")?.checked === true,
             contestEncoder: document.getElementById("cw-contest-encoder-show")?.checked === true,
+            voice: document.getElementById("voice-keyer-show")?.checked === true,
+            contestVoice: document.getElementById("voice-keyer-contest-show")?.checked === true,
             wpm: Number(document.getElementById("cw-wpm")?.value) || 22,
             pitch: Number(document.getElementById("cw-pitch")?.value) || 0
         },

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Keyer - SHACK-SERVER</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/layout.css?v=2">
+    <link rel="stylesheet" href="/css/components.css?v=36">
+    <link rel="stylesheet" href="/css/voice-keyer.css?v=1">
+</head>
+
+<body>
+
+<div id="app">
+
+    <div id="sidebar"></div>
+
+    <main>
+        <div class="vkp-page">
+
+            <header class="vkp-header">
+                <div>
+                    <h1>VOICE KEYER</h1>
+                    <div class="vkp-sub">8 messages for SSB · played into the USB sound card of the transceiver · PTT by CAT</div>
+                </div>
+                <div class="vkp-radio" id="vkp-radio"><span class="dot"></span><span id="vkp-radio-text">…</span></div>
+            </header>
+
+            <div class="vkp-note" id="vkp-https" hidden>
+                <b>Microphone needs HTTPS.</b> The browser only allows recording on a secure page –
+                open SHACK-SERVER as <span id="vkp-https-url">https://…</span> (see the manual, chapter Network),
+                or load an audio file (WAV, MP3, M4A …) that you recorded elsewhere with <b>FILE</b>.
+            </div>
+
+            <div class="vkp-note subtle">
+                Speak about a hand's width from the microphone. The recording is trimmed (silence at the start and end)
+                and brought to the same level. Set the TX level on the transceiver (USB modulation gain) once
+                so the ALC barely moves. Show the line on the dashboard / in the contest console in
+                <b>Settings › Split &amp; CW</b>; in the contest console F1–F8 play the messages.
+            </div>
+
+            <section class="vkp-grid" id="vkp-grid"></section>
+
+            <input type="file" id="vkp-file" accept="audio/*,.wav,.mp3,.m4a,.ogg,.flac" hidden>
+
+        </div>
+    </main>
+
+</div>
+
+<script src="/js/component-loader.js?v=28"></script>
+<script src="/js/system-status.js?v=2"></script>
+<script src="/js/voice-keyer.js?v=1"></script>
+<script src="/js/demo-banner.js?v=1"></script>
+</body>
+</html>

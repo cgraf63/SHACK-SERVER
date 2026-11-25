@@ -10,6 +10,11 @@
  *   POST /api/cw/stop
  *   POST /api/cw/clear
  *
+ * Voice keyer line (SSB, Settings -> Split & CW): 8 recorded messages,
+ * a click keys the transceiver and plays the message (GET /api/voice,
+ * POST /api/voice/play { slot, repeat }, POST /api/voice/stop).
+ * Contest console: F1 - F8 play the messages, while the line is shown.
+ *
  * Every line shown takes the place of one live spot row
  * (window.shackCwLines, read by live-spots.js).
  *
@@ -26,8 +31,8 @@
 
     const callFieldId = contest ? "contest-call" : "manual-qso-call";
     const flags = s => contest
-        ? { decoder: Boolean(s.contestDecoder), encoder: Boolean(s.contestEncoder) }
-        : { decoder: Boolean(s.showDecoder), encoder: Boolean(s.showEncoder) };
+        ? { decoder: Boolean(s.contestDecoder), encoder: Boolean(s.contestEncoder), voice: Boolean(s.contestVoice) }
+        : { decoder: Boolean(s.showDecoder), encoder: Boolean(s.showEncoder), voice: Boolean(s.showVoice) };
 
     const bar = document.createElement("div");
     bar.className = contest ? "cw-line cw-line-contest" : "cw-line";
@@ -53,12 +58,31 @@
             <span class="cw-info" id="cw-wpm">— WPM</span>
             <button type="button" class="cw-btn send" id="cw-send">SEND</button>
             <button type="button" class="cw-btn stop" id="cw-stop">STOP</button>
+        </div>
+        <div class="cw-row cw-voice" hidden>
+            <span class="cw-tag voice" title="Voice keyer - recorded messages through the USB sound card, PTT by CAT">VOICE</span>
+            <span class="cw-led" id="vk-led" title="Transmitting"></span>
+            <div class="vk-slots" id="vk-slots"></div>
+            <select class="vk-repeat" id="vk-repeat" title="Repeat the message after n seconds of listening (CQ loop)">
+                <option value="0">ONCE</option>
+                <option value="3">↻ 3 s</option>
+                <option value="5">↻ 5 s</option>
+                <option value="8">↻ 8 s</option>
+                <option value="10">↻ 10 s</option>
+                <option value="15">↻ 15 s</option>
+                <option value="20">↻ 20 s</option>
+                <option value="30">↻ 30 s</option>
+            </select>
+            <span class="vk-status" id="vk-status"></span>
+            <button type="button" class="cw-btn stop" id="vk-stop" title="Stop - PTT off">STOP</button>
+            <a class="cw-btn vk-edit" href="/voice-keyer.html" title="Record the messages">✎</a>
         </div>`;
     main.appendChild(bar);
 
     const $ = id => document.getElementById(id);
     const rx = bar.querySelector(".cw-rx");
     const tx = bar.querySelector(".cw-tx");
+    const voice = bar.querySelector(".cw-voice");
 
     let seq = null;
     let text = "";
@@ -102,8 +126,11 @@
 
         rx.hidden = !show.decoder;
         tx.hidden = !show.encoder;
-        bar.hidden = !show.decoder && !show.encoder;
-        if (!contest) setLines((show.decoder ? 1 : 0) + (show.encoder ? 1 : 0));
+        const voiceWasHidden = voice.hidden;
+        voice.hidden = !show.voice;
+        bar.hidden = !show.decoder && !show.encoder && !show.voice;
+        if (!contest) setLines((show.decoder ? 1 : 0) + (show.encoder ? 1 : 0) + (show.voice ? 1 : 0));
+        if (show.voice && voiceWasHidden) voicePoll();
 
         if (show.decoder) {
 
@@ -259,6 +286,121 @@
     });
 
     fetch("/api/settings").then(r => r.json()).then(s => { myCall = String(s.callsign || "").toUpperCase(); }).catch(() => {});
+
+    /* ------------------------------------------------------------ voice keyer */
+
+    let voiceState = null;
+    let voiceTimer = null;
+    let voiceMessage = "";
+    let voiceMessageTimer = null;
+
+    try {
+        const saved = localStorage.getItem("vk-repeat");
+        if (saved !== null) $("vk-repeat").value = saved;
+    }
+    catch { /* no storage */ }
+
+    $("vk-repeat").addEventListener("change", event => {
+        try { localStorage.setItem("vk-repeat", event.target.value); } catch { /* no storage */ }
+    });
+
+    function voiceFlash(message) {
+        voiceMessage = message;
+        clearTimeout(voiceMessageTimer);
+        voiceMessageTimer = setTimeout(() => { voiceMessage = ""; renderVoice(); }, 8000);
+        renderVoice();
+    }
+
+    function renderVoice() {
+        const s = voiceState;
+        if (!s) return;
+
+        const slots = $("vk-slots");
+        const html = s.slots.map(m => `<button type="button" class="cw-btn vk-slot${m.recorded ? "" : " empty"}${s.playing === m.slot ? (s.phase === "tx" ? " tx" : " wait") : ""}" data-slot="${m.slot}" title="${contest ? `F${m.slot} · ` : ""}${m.recorded ? `${escapeHtml(m.label)} · ${m.seconds} s` : "Not recorded - ✎ to record"}">${contest ? `<small>F${m.slot}</small>` : ""}${escapeHtml(m.label)}</button>`).join("");
+        if (slots.dataset.html !== html) {
+            slots.innerHTML = html;
+            slots.dataset.html = html;
+        }
+
+        $("vk-led").classList.toggle("tx", s.phase === "tx");
+
+        const status = $("vk-status");
+        let text = "";
+        let cls = "";
+        if (voiceMessage) { text = voiceMessage; cls = "error"; }
+        else if (s.phase === "tx") { text = `TX ${s.slots[s.playing - 1]?.label ?? ""}`; cls = "tx"; }
+        else if (s.phase === "wait") { text = `next in ${Math.ceil(s.nextIn)} s`; cls = "wait"; }
+        else if (!s.ready) { text = s.problem; cls = "muted"; }
+        else if (s.error) { text = s.error; cls = "error"; }
+        status.textContent = text;
+        status.title = text;
+        status.className = `vk-status ${cls}`;
+    }
+
+    async function voicePoll() {
+        clearTimeout(voiceTimer);
+        if (voice.hidden) return;
+        try {
+            const response = await fetch("/api/voice", { cache: "no-store" });
+            if (response.ok) {
+                voiceState = await response.json();
+                renderVoice();
+            }
+        }
+        catch {
+            // server not reachable
+        }
+        const busy = voiceState && voiceState.phase !== "idle";
+        voiceTimer = setTimeout(voicePoll, document.hidden ? 5000 : busy ? 400 : 2500);
+    }
+
+    async function voiceCall(url, body) {
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body ?? {})
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) voiceFlash(result.error || `Error ${response.status}`);
+            else { voiceState = result; voiceMessage = ""; renderVoice(); }
+        }
+        catch {
+            voiceFlash("SHACK-SERVER not reachable");
+        }
+        voicePoll();
+    }
+
+    function voicePlay(slot) {
+        const message = voiceState?.slots?.[slot - 1];
+        if (message && !message.recorded) {
+            voiceFlash(`${message.label} is not recorded - ✎`);
+            return;
+        }
+        /* the same message again while it runs = stop */
+        if (voiceState?.playing === slot && voiceState.phase !== "idle") {
+            voiceCall("/api/voice/stop");
+            return;
+        }
+        voiceCall("/api/voice/play", { slot, repeat: Number($("vk-repeat").value) || 0 });
+    }
+
+    $("vk-slots").addEventListener("click", event => {
+        const button = event.target.closest("[data-slot]");
+        if (button) voicePlay(Number(button.dataset.slot));
+    });
+
+    $("vk-stop").addEventListener("click", () => voiceCall("/api/voice/stop"));
+
+    if (contest) {
+        document.addEventListener("keydown", event => {
+            if (voice.hidden || event.altKey || event.ctrlKey || event.metaKey) return;
+            const match = /^F([1-8])$/.exec(event.key);
+            if (!match) return;
+            event.preventDefault();
+            voicePlay(Number(match[1]));
+        }, true);
+    }
 
     poll().then(schedule);
 

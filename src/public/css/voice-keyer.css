@@ -1,0 +1,211 @@
+/* =========================================================
+   VOICE KEYER (recording page)
+   ========================================================= */
+
+.vkp-page {
+    --vk-card: linear-gradient(160deg, rgba(14, 32, 42, 0.92), rgba(7, 18, 25, 0.96));
+    --vk-line: rgba(224, 140, 255, 0.18);
+    --vk-accent: #e08cff;
+    --vk-text: #d8eef5;
+    --vk-muted: #6f8d99;
+
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 18px 24px 40px;
+    color: var(--vk-text);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.vkp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.vkp-header h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #fff;
+}
+
+.vkp-sub {
+    font-size: 13px;
+    color: var(--vk-muted);
+}
+
+.vkp-radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.vkp-radio .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--red);
+}
+
+.vkp-radio.ok .dot {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+}
+
+.vkp-radio.tx .dot {
+    background: var(--red);
+    box-shadow: 0 0 10px var(--red);
+}
+
+.vkp-note {
+    border: 1px solid rgba(255, 196, 0, 0.35);
+    background: rgba(255, 196, 0, 0.06);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.vkp-note.subtle {
+    border-color: var(--panel-border);
+    background: transparent;
+    color: var(--vk-muted);
+}
+
+.vkp-note b { color: #fff; }
+
+.vkp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 14px;
+}
+
+.vkp-card {
+    background: var(--vk-card);
+    border: 1px solid var(--vk-line);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.vkp-card.rec {
+    border-color: var(--red);
+    box-shadow: 0 0 0 1px var(--red), 0 0 24px rgba(255, 82, 82, 0.25);
+}
+
+.vkp-card.tx {
+    border-color: var(--red);
+}
+
+.vkp-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.vkp-num {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 12px;
+    color: var(--vk-accent);
+    border: 1px solid var(--vk-line);
+}
+
+.vkp-label {
+    flex: 1;
+    min-width: 0;
+    height: 30px;
+    border-radius: 7px;
+    border: 1px solid var(--panel-border);
+    background: #050b10;
+    color: #fff;
+    padding: 0 10px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.vkp-label:focus {
+    outline: none;
+    border-color: var(--vk-accent);
+}
+
+.vkp-len {
+    flex: none;
+    font-size: 12px;
+    color: var(--vk-muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 46px;
+    text-align: right;
+}
+
+.vkp-wave {
+    width: 100%;
+    height: 64px;
+    border-radius: 8px;
+    background: #050b10;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    display: block;
+}
+
+.vkp-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.vkp-btn {
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 7px;
+    border: 1px solid var(--panel-border);
+    background: #0d1720;
+    color: var(--text);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.vkp-btn:hover:not(:disabled) { border-color: var(--vk-accent); }
+.vkp-btn:disabled { opacity: .35; cursor: default; }
+.vkp-btn.rec { color: var(--red); border-color: rgba(255, 82, 82, 0.45); }
+.vkp-btn.rec.on { background: var(--red); color: #fff; }
+.vkp-btn.tx { color: #fff; background: rgba(255, 82, 82, 0.18); border-color: rgba(255, 82, 82, 0.5); margin-left: auto; }
+.vkp-btn.tx.on { background: var(--red); }
+.vkp-btn.del { color: var(--vk-muted); }
+
+.vkp-msg {
+    font-size: 12px;
+    min-height: 16px;
+    color: var(--vk-muted);
+}
+
+.vkp-msg.error { color: var(--red); }
+.vkp-msg.ok { color: var(--green); }
+
+@media (max-width: 700px) {
+    .vkp-page { padding: 12px 16px 30px; }
+    .vkp-grid { grid-template-columns: 1fr; }
+}

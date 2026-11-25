@@ -37,6 +37,11 @@ const BLOCKED: Array<[string, RegExp]> = [
        beyond frequency / mode / band */
     ["POST", /^\/api\/radio\/(ptt|cw-memory|tune-start|monitor|power|dsp-control|filter-gain|vfo-control|vfo|split|split-frequency|split-up5)$/],
 
+    /* Voice keyer: recordings and transmitting */
+    ["POST", /^\/api\/voice(\/.*)?$/],
+    ["PUT", /^\/api\/voice(\/.*)?$/],
+    ["DELETE", /^\/api\/voice(\/.*)?$/],
+
     /* Antenna rotator */
     ["POST", /^\/api\/rotator\//],
 

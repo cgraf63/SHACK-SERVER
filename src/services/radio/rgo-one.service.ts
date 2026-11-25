@@ -175,6 +175,11 @@ export class RgoOneService extends SerialRadioBase implements RadioService {
     }
 
 
+    /* PTT (TS-480 style TX / RX) for the voice keyer */
+    setPtt(enabled: boolean): void {
+        this.send(enabled ? "TX;" : "RX;");
+    }
+
     private send(command: string): void {
 
         if (!this.isConnected()) {

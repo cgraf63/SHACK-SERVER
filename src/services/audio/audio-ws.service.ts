@@ -398,6 +398,12 @@ function startTxAudio(): void {
 }
 
 
+/* TX audio of a remote page running (browser microphone) */
+export function txAudioBusy(): boolean {
+    return txAudioProcess !== null;
+}
+
+
 function stopTxAudio(): void {
 
     if (!txAudioProcess) {

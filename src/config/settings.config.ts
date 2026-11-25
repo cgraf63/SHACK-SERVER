@@ -96,6 +96,8 @@ export interface ShackSettings {
         encoder: boolean;
         contestDecoder: boolean;        // same lines in the contest console
         contestEncoder: boolean;
+        voice?: boolean;                // voice keyer line (SSB) on the dashboard
+        contestVoice?: boolean;         // ... and in the contest console
         wpm: number;
         pitch: number;
     };
