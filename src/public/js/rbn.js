@@ -273,6 +273,23 @@ function rbnBand(khz) {
     return band ? band[2] : `${(khz / 1000).toFixed(3)} MHz`;
 }
 
+/* flag code -> country name (tooltip of the flag) */
+const RBN_SPECIAL_COUNTRIES = { "gb-eng": "England", "gb-sct": "Scotland", "gb-wls": "Wales", "gb-nir": "Northern Ireland" };
+const rbnRegionNames = (() => {
+    try { return new Intl.DisplayNames(["en"], { type: "region" }); }
+    catch { return null; }
+})();
+
+function rbnCountryName(code) {
+    const key = String(code || "").toLowerCase();
+    if (RBN_SPECIAL_COUNTRIES[key]) return RBN_SPECIAL_COUNTRIES[key];
+    if (rbnRegionNames && /^[a-z]{2}$/.test(key)) {
+        try { return rbnRegionNames.of(key.toUpperCase()) || key.toUpperCase(); }
+        catch { /* not a region */ }
+    }
+    return key.toUpperCase();
+}
+
 /* "IT9GSF-#" -> "IT9GSF" (the "-#" only marks a skimmer) */
 function rbnSkimmerName(spotter) {
     return String(spotter || "").replace(/-#$/, "");
@@ -353,7 +370,7 @@ function rbnTable(skimmers, maxSnr) {
                     return `
                         <div class="rbn-table-row" title="${escapeHtml(`${skimmer.spotter}: ${skimmer.count} report(s), best ${snr} dB on ${(Number(skimmer.frequency) / 1000).toFixed(3)} MHz`)}">
                             <span>
-                                ${skimmer.spotterCountryCode ? `<img class="rbn-flag" src="/assets/flags/${escapeHtml(skimmer.spotterCountryCode)}.svg" alt="">` : ""}
+                                ${skimmer.spotterCountryCode ? `<img class="rbn-flag" src="/assets/flags/${escapeHtml(skimmer.spotterCountryCode)}.svg" alt="${escapeHtml(rbnCountryName(skimmer.spotterCountryCode))}" title="${escapeHtml(rbnCountryName(skimmer.spotterCountryCode))}">` : ""}
                                 ${escapeHtml(rbnSkimmerName(skimmer.spotter))}${skimmer.count > 1 ? `<span class="rbn-count">×${skimmer.count}</span>` : ""}
                             </span>
                             <span>${skimmer.distanceKm != null ? `${skimmer.distanceKm} km` : '<span class="rbn-muted">—</span>'}</span>
