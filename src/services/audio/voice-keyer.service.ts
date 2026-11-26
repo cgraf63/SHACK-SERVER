@@ -121,7 +121,7 @@ class VoiceKeyerService {
 
         fs.mkdirSync(DIR, { recursive: true });
         fs.writeFileSync(this.file(n), pcm);
-        this.slots[n - 1] = { label: this.labels[n - 1], rate: sampleRate, samples, updated: new Date().toISOString() };
+        this.slots[n - 1] = { label: this.labels[n - 1] ?? "", rate: sampleRate, samples, updated: new Date().toISOString() };
         if (label !== undefined) this.setLabel(n, label);
         this.save();
     }
@@ -129,7 +129,7 @@ class VoiceKeyerService {
     setLabel(slot: number, label: string): void {
         const n = this.check(slot);
         const clean = String(label ?? "").replace(/[<>]/g, "").trim().toUpperCase().slice(0, 12);
-        this.labels[n - 1] = clean || DEFAULT_LABELS[n - 1];
+        this.labels[n - 1] = clean || DEFAULT_LABELS[n - 1] || `MSG ${n}`;
         this.save();
     }
 

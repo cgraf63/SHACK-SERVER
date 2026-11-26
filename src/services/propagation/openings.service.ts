@@ -283,7 +283,7 @@ class OpeningsService {
             const eMid = sunElevation(mid.lat, mid.lon, at);
             sun.home.push(Math.round(eHome));
             sun.dx.push(Math.round(eDx));
-            for (const band of OPENING_BANDS) bands[band].push(Math.round(Math.min(1, modelScore(band, eHome, eDx, eMid, km)) * 100) / 100);
+            for (const band of OPENING_BANDS) bands[band]?.push(Math.round(Math.min(1, modelScore(band, eHome, eDx, eMid, km)) * 100) / 100);
         }
         return { bands, sun };
     }
@@ -346,8 +346,8 @@ class OpeningsService {
         const best = new Map<string, { band: string; hour: number; p: number }>();
 
         for (const [key, days] of Object.entries(this.store.data)) {
-            const [entityKey, band] = key.split("|");
-            if (worked.entities.has(entityKey)) continue;
+            const [entityKey = "", band = ""] = key.split("|");
+            if (!entityKey || worked.entities.has(entityKey)) continue;
             const counts = new Array(24).fill(0);
             for (const mask of Object.values(days)) for (const h of next) if (mask & (1 << h)) counts[h]++;
             for (const h of next) {
