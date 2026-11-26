@@ -14,10 +14,10 @@ Open-source platform for intelligent amateur radio information processing.
 
 <p align="center">
   <a href="docs/media/shack-server-tour.mp4">
-    <img src="docs/images/screenshots/video-poster.jpg" alt="SHACK-SERVER tour (video, 93 s)" width="720">
+    <img src="docs/images/screenshots/video-poster.jpg" alt="SHACK-SERVER tour (video, 104 s)" width="720">
   </a>
   <br>
-  <sub>▶ <a href="docs/media/shack-server-tour.mp4">Watch the 90-second tour</a> (MP4)</sub>
+  <sub>▶ <a href="docs/media/shack-server-tour.mp4">Watch the 100-second tour</a> (MP4)</sub>
 </p>
 
 ---
