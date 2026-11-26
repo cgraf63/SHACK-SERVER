@@ -396,3 +396,22 @@
     font-size: 12px;
     line-height: 1.5;
 }
+
+.wh-best .src {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--wh-cyan);
+    margin-bottom: 2px;
+}
+
+.wh-heard {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--wh-line);
+}
+
+.wh-heard .src {
+    color: #2ee88c;
+}

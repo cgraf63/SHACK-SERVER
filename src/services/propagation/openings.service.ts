@@ -19,7 +19,11 @@ import { getWorkedIndex } from "../needed/worked-index.js";
  * open on B in that UTC hour. Stored per entity and band as one 24-bit
  * mask per day, 28 days:
  *
- *   probability(hour) = days with a report in that hour / days observed
+ *   probability(hour) = days with a report in that hour
+ *                       / days on which SHACK-SERVER was receiving reports in that hour
+ *
+ * The hours with reports at all ("listening") are stored per day as well,
+ * so a partial first day or a switched-off Pi does not lower the values.
  *
  * In addition a sun model (no learning needed): high bands need daylight
  * at the middle of the path, low bands darkness at both ends, greyline
@@ -135,6 +139,7 @@ function modelScore(band: string, home: number, dx: number, mid: number, km: num
 interface Store {
     firstDay: number;
     data: Record<string, Record<string, number>>;   // "KEY|band" -> day -> mask
+    listening?: Record<string, number>;             // day -> hours with any report
 }
 
 class OpeningsService {
@@ -143,6 +148,7 @@ class OpeningsService {
     private dirty = false;
     private home: { at: number; lat: number; lon: number } | null = null;
     private spotterPositions = new Map<string, { lat: number; lon: number } | null>();
+    private observedCache: { at: number; hours: number[] } | null = null;
 
     constructor() {
         try {
@@ -183,6 +189,9 @@ class OpeningsService {
             for (const day of Object.keys(days)) if (Number(day) < oldest) delete days[day];
             if (!Object.keys(days).length) delete this.store.data[key];
         }
+        for (const day of Object.keys(this.store.listening ?? {})) {
+            if (Number(day) < oldest) delete this.store.listening![day];
+        }
     }
 
     private homePosition(): { lat: number; lon: number } {
@@ -213,6 +222,17 @@ class OpeningsService {
     record(call: string, spotter: string, band: string, locator?: string, at = Date.now()): void {
         const b = String(band || "").toLowerCase();
         if (!OPENING_BANDS.includes(b) || !call || !spotter) return;
+        if (today(at) < today() - DAYS + 1 || at > Date.now() + 60_000) return;
+
+        /* SHACK-SERVER was receiving reports in this hour */
+        const listening = (this.store.listening ??= {});
+        const dayKey = String(today(at));
+        const hourBit = 1 << new Date(at).getUTCHours();
+        if (!((listening[dayKey] ?? 0) & hourBit)) {
+            listening[dayKey] = (listening[dayKey] ?? 0) | hourBit;
+            this.observedCache = null;
+            this.dirty = true;
+        }
 
         const position = this.spotterPosition(spotter, locator);
         if (!position) return;
@@ -223,7 +243,6 @@ class OpeningsService {
         if (!entity) return;
 
         const key = `${entity.key}|${b}`;
-        if (today(at) < today() - DAYS + 1 || at > Date.now() + 60_000) return;
         if (today(at) < this.store.firstDay) this.store.firstDay = today(at);
         const day = String(today(at));
         const bit = 1 << new Date(at).getUTCHours();
@@ -238,8 +257,23 @@ class OpeningsService {
         return Math.max(1, Math.min(DAYS, today() - this.store.firstDay + 1));
     }
 
-    private measured(entityKey: string): Record<string, number[]> {
-        const observed = this.observedDays();
+    /* per UTC hour: on how many days SHACK-SERVER was receiving reports
+       (stored listening hours; for older data the hours with any report) */
+    private observedHours(): number[] {
+        if (this.observedCache && Date.now() - this.observedCache.at < 60_000) return this.observedCache.hours;
+        const perDay = new Map<string, number>();
+        for (const [day, mask] of Object.entries(this.store.listening ?? {})) perDay.set(day, mask);
+        for (const days of Object.values(this.store.data)) {
+            for (const [day, mask] of Object.entries(days)) perDay.set(day, (perDay.get(day) ?? 0) | mask);
+        }
+        const hours = new Array(24).fill(0);
+        for (const mask of perDay.values()) for (let h = 0; h < 24; h++) if (mask & (1 << h)) hours[h]++;
+        this.observedCache = { at: Date.now(), hours };
+        return hours;
+    }
+
+    /* days with a report per band and hour */
+    private heardDays(entityKey: string): Record<string, number[]> {
         const result: Record<string, number[]> = {};
         for (const band of OPENING_BANDS) {
             const days = this.store.data[`${entityKey}|${band}`];
@@ -249,7 +283,15 @@ class OpeningsService {
                     for (let h = 0; h < 24; h++) if (mask & (1 << h)) hours[h]++;
                 }
             }
-            result[band] = hours.map(n => Math.round(Math.min(1, n / observed) * 100) / 100);
+            result[band] = hours;
+        }
+        return result;
+    }
+
+    private measured(heard: Record<string, number[]>, observed: number[]): Record<string, number[]> {
+        const result: Record<string, number[]> = {};
+        for (const [band, hours] of Object.entries(heard)) {
+            result[band] = hours.map((n, h) => Math.round(Math.min(1, n / Math.max(1, observed[h] ?? 0)) * 100) / 100);
         }
         return result;
     }
@@ -306,7 +348,9 @@ class OpeningsService {
         const km = Math.round(distance.distanceKm({ latitude: home.lat, longitude: home.lon }, { latitude: entity.latitude, longitude: entity.longitude }));
         const worked = getWorkedIndex();
         const model = this.model(entity, home, km);
-        const measured = this.measured(entity.key);
+        const heard = this.heardDays(entity.key);
+        const observed = this.observedHours();
+        const measured = this.measured(heard, observed);
         const last = this.lastHeard(entity.key);
 
         return {
@@ -324,6 +368,8 @@ class OpeningsService {
             observedDays: this.observedDays(),
             reports: Object.values(measured).reduce((s, h) => s + h.reduce((a, v) => a + (v > 0 ? 1 : 0), 0), 0),
             measured,
+            heardDays: heard,
+            observedHours: observed,
             model: model.bands,
             sun: {
                 home: model.sun.home,
@@ -337,23 +383,44 @@ class OpeningsService {
         };
     }
 
-    /* needed entities (not worked at all) with the best chance in the next hours */
+    /* needed entities (not worked at all) with the best chance in the next hours.
+       Ranking: smoothed share of days (few days count less), then how often
+       the entity was heard in the window over all bands, then how recently. */
     soon(hours = 3, limit = 15) {
         const worked = getWorkedIndex();
-        const observed = this.observedDays();
+        const observed = this.observedHours();
         const now = new Date().getUTCHours();
         const next = Array.from({ length: hours }, (_, i) => (now + i) % 24);
-        const best = new Map<string, { band: string; hour: number; p: number }>();
+        const todayKey = today();
+
+        interface Candidate { band: string; hour: number; days: number; of: number; score: number }
+        const best = new Map<string, Candidate>();
+        const activity = new Map<string, { hits: number; last: number }>();
 
         for (const [key, days] of Object.entries(this.store.data)) {
             const [entityKey = "", band = ""] = key.split("|");
             if (!entityKey || worked.entities.has(entityKey)) continue;
+
+            const act = activity.get(entityKey) ?? { hits: 0, last: 0 };
             const counts = new Array(24).fill(0);
-            for (const mask of Object.values(days)) for (const h of next) if (mask & (1 << h)) counts[h]++;
+            for (const [day, mask] of Object.entries(days)) {
+                for (const h of next) {
+                    if (mask & (1 << h)) {
+                        counts[h]++;
+                        act.hits++;
+                        act.last = Math.max(act.last, Number(day));
+                    }
+                }
+            }
+            activity.set(entityKey, act);
+
             for (const h of next) {
-                const p = Math.min(1, counts[h] / observed);
-                const current = best.get(entityKey);
-                if (p > 0 && (!current || p > current.p)) best.set(entityKey, { band, hour: h, p });
+                const k = counts[h];
+                if (!k) continue;
+                const n = Math.max(k, observed[h] ?? 0);
+                const score = (k + 0.5) / (n + 1);      // 1 of 1 day < 3 of 3 days
+                const item = best.get(entityKey);
+                if (!item || score > item.score) best.set(entityKey, { band, hour: h, days: k, of: n, score });
             }
         }
 
@@ -367,11 +434,17 @@ class OpeningsService {
                     flag: entity ? entityFlag(entity.key, entity.name) : "",
                     band: b.band,
                     hour: b.hour,
-                    probability: Math.round(b.p * 100) / 100
+                    days: b.days,
+                    of: b.of,
+                    probability: Math.round(b.days / b.of * 100) / 100,
+                    hits: activity.get(key)?.hits ?? 0,
+                    heardToday: activity.get(key)?.last === todayKey,
+                    score: b.score
                 };
             })
-            .sort((a, b) => b.probability - a.probability || a.hour - b.hour)
-            .slice(0, limit);
+            .sort((a, b) => b.score - a.score || b.hits - a.hits || Number(b.heardToday) - Number(a.heardToday) || a.name.localeCompare(b.name))
+            .slice(0, limit)
+            .map(({ score: _score, ...rest }) => rest);
     }
 
     entities() {

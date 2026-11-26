@@ -346,7 +346,7 @@ The DXCC table shows all 340 DXCC entities across the bands 160 m to 6 m: worked
 **When to Work** in the sidebar (or ⏱ in the "needed" list) shows for one country on which band and at which hour (UTC) the path to your QTH is open. Search by callsign, prefix or country name.
 
 - **HEARD NEAR YOU**: SHACK-SERVER learns from every report it sees (DX cluster, RBN skimmers, PSK Reporter). When a spotter within 1500 km hears a station of the country on a band, the path was open in that hour. The colour shows on how many of the last up to 28 days that happened. Learning starts with the update; after a few days the picture becomes meaningful.
-- **SUN MODEL**: a rule of thumb from the sun along the path – high bands need daylight in the middle of the path, low bands darkness at both ends, greyline helps. Shown while too few days are collected.
+- **SUN MODEL**: a rule of thumb from the sun along the path – high bands need daylight in the middle of the path, low bands darkness at both ends, greyline helps. Shown while too few days are collected; below it you see what was really heard so far (**HEARD NEAR YOU SO FAR**). Only hours in which SHACK-SERVER was running count – during the first week as "2 of 3 days" instead of a percentage.
 - Above, two strips with day, greyline and night here and there, plus sunrise and sunset. The summary names "Open now", the next window and the best windows. A ✓ at a band means: country already in the log on that band.
 - **NEEDED · NEXT 3 HOURS** on the right: countries not in the log yet that were often heard near you at this time of day. A click shows the details.
 

@@ -100,11 +100,26 @@
         const top = [...all].sort((a, b) => b.peak - a.peak).slice(0, 3);
         const range = w => `${hh(w.from)}–${hh(w.to)} UTC`;
 
-        let text = "";
+        let text = `<span class="src">${measured ? "HEARD NEAR YOU" : "SUN MODEL"}</span>`;
         if (open.length) text += `<span class="now">Open now:</span> ${open.map(w => `<b>${esc(w.band)}</b> (${pct(w.peak)})`).join(", ")}<br>`;
         if (ahead.length) text += `Next: <b>${esc(ahead[0].band)}</b> ${range(ahead[0])} – in ${ahead[0].wait} h<br>`;
         text += `Best: ${top.map(w => `<b>${esc(w.band)}</b> ${range(w)} (${pct(w.peak)})`).join(" · ")}`;
         return text;
+    }
+
+    /* while the sun model is shown: what was really heard so far */
+    function heardLine() {
+        const cells = [];
+        for (const [band, days] of Object.entries(data.heardDays || {})) {
+            days.forEach((k, h) => { if (k) cells.push({ band, h, k, n: Math.max(k, data.observedHours?.[h] ?? k) }); });
+        }
+        if (!cells.length) return "";
+        cells.sort((a, b) => b.k / b.n - a.k / a.n || b.k - a.k || ((a.h - data.nowHour + 24) % 24) - ((b.h - data.nowHour + 24) % 24));
+        return `<div class="wh-heard"><span class="src">HEARD NEAR YOU SO FAR</span>${cells.slice(0, 4).map(c => `<b>${esc(c.band)}</b> ${hh(c.h)}z (${daysText(c.k, c.n)})`).join(" · ")}</div>`;
+    }
+
+    function daysText(k, n) {
+        return n < 7 ? `${k} of ${n} day${n === 1 ? "" : "s"}` : pct(k / n);
     }
 
     /* ------------------------------------------------------------ render */
@@ -125,7 +140,7 @@
             const worked = data.workedBands.includes(band);
             grid += `<div class="lbl${worked ? " worked" : ""}" title="${worked ? `${esc(band)}: already in your log` : esc(band)}">${esc(band)}</div>`;
             set[band].forEach((p, h) => {
-                grid += `<div class="wh-cell${h === now ? " now" : ""}${measured ? "" : " model"}" style="${p ? `background-color:${color(p)}` : ""}" title="${esc(band)} · ${hh(h)}–${hh(h + 1)} UTC (${localHour(h)} local) · ${measured ? `heard near you on ${pct(p)} of the days` : `sun model ${pct(p)}`}"></div>`;
+                grid += `<div class="wh-cell${h === now ? " now" : ""}${measured ? "" : " model"}" style="${p ? `background-color:${color(p)}` : ""}" title="${esc(band)} · ${hh(h)}–${hh(h + 1)} UTC (${localHour(h)} local) · ${measured ? `heard near you on ${daysText(data.heardDays?.[band]?.[h] ?? 0, Math.max(1, data.observedHours?.[h] ?? 0))}` : `sun model ${pct(p)}`}"></div>`;
             });
         }
 
@@ -143,7 +158,7 @@
                 </div>
                 <span class="wh-badge${data.worked ? " worked" : ""}">${data.worked ? `WORKED · ${data.workedBands.length} band${data.workedBands.length === 1 ? "" : "s"}` : "NEEDED"}</span>
             </div>
-            <div class="wh-best">${bestText(set, measured)}</div>
+            <div class="wh-best">${bestText(set, measured)}${measured ? "" : heardLine()}</div>
             <div class="wh-sun">
                 <span>Your QTH: sunrise <b>${data.sun.homeTimes.rise ?? "—"}</b> · sunset <b>${data.sun.homeTimes.set ?? "—"}</b> UTC</span>
                 <span>${esc(e.name)}: sunrise <b>${data.sun.dxTimes.rise ?? "—"}</b> · sunset <b>${data.sun.dxTimes.set ?? "—"}</b> UTC</span>
@@ -197,10 +212,10 @@
             const list = await (await fetch("/api/when/soon", { cache: "no-store" })).json();
             $("wh-soon").innerHTML = list.length
                 ? list.map(s => `
-                    <div class="wh-soon-row" data-key="${esc(s.key)}" title="${esc(s.name)} – ${esc(s.band)} around ${hh(s.hour)} UTC on ${pct(s.probability)} of the days">
+                    <div class="wh-soon-row" data-key="${esc(s.key)}" title="${esc(s.name)} – heard near you on ${esc(s.band)} around ${hh(s.hour)} UTC on ${s.days} of ${s.of} days${s.heardToday ? " (also today)" : ""}">
                         ${flag(s.flag)}<span class="name">${esc(s.name)}</span>
                         <span class="when">${esc(s.band)} · ${hh(s.hour)}z</span>
-                        <span class="p" style="color:${color(s.probability)}">${pct(s.probability)}</span>
+                        <span class="p" style="color:${color(s.probability)}">${s.of < 7 ? `${s.days}/${s.of} d` : pct(s.probability)}</span>
                     </div>`).join("")
                 : `<div class="wh-none">Nothing yet. SHACK-SERVER learns from the spots it receives – after a day or two the countries you still need show up here.</div>`;
             if (data) document.querySelectorAll(".wh-soon-row").forEach(row => row.classList.toggle("active", row.dataset.key === data.entity.key));
