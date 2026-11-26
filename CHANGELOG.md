@@ -7,6 +7,12 @@ then reload the page with **Ctrl+F5**.
 
 ## Next version
 
+### Removed
+
+- **Docker demo** (image `ghcr.io/cgraf63/shack-server:demo`, Dockerfile,
+  compose file, DEMO_DOCKER.md). SHACK-SERVER is installed from the
+  Raspberry Pi image or with the installer.
+
 ### New
 
 - **Year in Review**: one year of your log on one page – QSOs, stations,

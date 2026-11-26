@@ -7,7 +7,7 @@ Thank you for your interest in SHACK-SERVER! Bug reports, feature ideas, radio-s
 Please open an issue and include:
 
 - your transceiver model (e.g. FTDX10, FTDX101, FT-710, FT-991A) and firmware version
-- how SHACK-SERVER is installed (Raspberry Pi, Linux PC, Docker, ...)
+- how SHACK-SERVER is installed (Raspberry Pi image, Raspberry Pi / Linux PC with the installer, ...)
 - what you did, what you expected and what happened
 - relevant log output, with **all passwords, API keys and e-mail addresses removed**
 

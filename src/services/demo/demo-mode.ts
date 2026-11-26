@@ -1,5 +1,5 @@
 /*
- * Demo version (Docker image "shack-server:demo")
+ * Demo mode (screenshots, video, try-out)
  *
  * SHACK_DEMO=1 in the environment switches SHACK-SERVER into a
  * try-out mode: no real CAT (simulated transceiver), no remote

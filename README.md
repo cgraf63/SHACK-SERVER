@@ -54,25 +54,13 @@ Open-source platform for intelligent amateur radio information processing.
 
 **And more:** antenna rotator (Hamlib), remote control and audio for Yaesu transceivers, internal SDR, propagation overview, RBN, backup to Dropbox / NAS, runs on a Raspberry Pi and in any browser.
 
-<sub>Screenshots and video: the Docker demo (simulated transceiver, sample log, real live spots). The "needed" callsigns in the picture are example alerts made from real spots of that moment - in the demo the alerts cannot be switched on.</sub>
+<sub>Screenshots and video: demo data (simulated transceiver, sample log, real live spots). The "needed" callsigns in the picture are example alerts made from real spots of that moment.</sub>
 
 ---
 
 ## User manual
 
 **[User manual (PDF, English)](https://github.com/cgraf63/SHACK-SERVER/releases/download/manual/SHACK-SERVER_Manual_EN.pdf)** · **[Benutzerhandbuch (PDF, Deutsch)](https://github.com/cgraf63/SHACK-SERVER/releases/download/manual/SHACK-SERVER_Handbuch_DE.pdf)** – always the latest version, built from [docs/manual](docs/manual). Installation: [English](docs/INSTALLATION_EN.md) · [Deutsch](docs/INSTALLATION_DE.md).
-
-## Try it - demo on Windows, macOS or Linux
-
-No Raspberry Pi and no transceiver needed. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), then run:
-
-```bash
-docker run -d --name shack-demo -p 3000:3000 ghcr.io/cgraf63/shack-server:demo
-```
-
-Open **http://localhost:3000**. The demo uses a simulated transceiver and real live DX spots; remote audio / transmit and online uploads are disabled and the log is limited. Remove it again with `docker rm -f shack-demo` (this also resets the demo data).
-
-Details, limits and troubleshooting: [docs/DEMO_DOCKER.md](docs/DEMO_DOCKER.md). For the full version on a Raspberry Pi see [docs/INSTALLATION_EN.md](docs/INSTALLATION_EN.md).
 
 ## Why SHACK-SERVER?
 
